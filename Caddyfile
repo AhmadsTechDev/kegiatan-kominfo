@@ -1,0 +1,24 @@
+# =============================================================================
+# CADDY: pintu masuk HTTPS di VPS
+# =============================================================================
+# Caddy menerima permintaan dari internet (port 80 dan 443) lalu meneruskannya ke frontend Next.js.
+# Frontend meneruskan /api/* ke backend, jadi hanya Caddy yang terbuka ke luar.
+#
+# Sertifikat HTTPS diurus otomatis:
+#   - DOMAIN berupa nama domain (mis. kegiatan.palembang.go.id) → sertifikat Let's Encrypt,
+#     asalkan DNS domain sudah menunjuk ke IP VPS dan port 80/443 terbuka
+#   - DOMAIN berupa alamat IP atau localhost → sertifikat internal Caddy (peramban memberi
+#     peringatan, tetapi aplikasi tetap berjalan; cocok untuk uji coba sebelum ada domain)
+# HTTPS wajib: di produksi cookie login hanya dikirim lewat HTTPS (apps/api/src/lib/auth.ts).
+# =============================================================================
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# NFR-10: peramban selalu memakai HTTPS untuk domain ini
+	header Strict-Transport-Security "max-age=31536000"
+
+	# Caddy mengisi X-Forwarded-For dengan IP asli pengunjung (nilai kiriman pengunjung tidak dipercaya),
+	# dan backend membaca IP pertama di header itu untuk audit log dan pembatas laju login
+	reverse_proxy frontend:3000
+}

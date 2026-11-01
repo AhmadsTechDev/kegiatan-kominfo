@@ -1,0 +1,154 @@
+// =============================================================================
+// DEFINISI TIPE DATA FITUR ADMINISTRASI
+// =============================================================================
+// Gunanya: mendefinisikan seluruh tipe data TypeScript yang digunakan pada fitur
+// administrasi: master data, pengelolaan akun, audit log, dan impor lembar kerja.
+//
+// Isi berkas:
+//   - JenisUnitAdmin, IsiJenisUnit : tipe hierarki dan formulir jenis unit
+//   - UnitKerjaAdmin, IsiUnit : tipe master unit kerja dinas dan formulirnya
+//   - PegawaiAdmin, IsiPegawai, IsiPegawaiBaru, FilterPegawai : tipe entitas pegawai
+//   - JenisKegiatanAdmin : tipe referensi kategori jenis kegiatan dinas
+//   - Halaman<T> : tipe generik pembungkus respons data berpaginasi dari server
+//   - AkunAdmin, IsiAkun, FilterAkun : tipe akun pengguna dan parameter filternya
+//   - AuditItem, AuditDetail, FilterAudit, PilihanAudit : tipe riwayat jejak audit
+//   - PermintaanAkun, StatusPermintaan, IsiUndangan : tipe pendaftaran akun baru
+//   - StatusImpor, BarisImpor, HasilImpor : tipe hasil impor pegawai dari Excel
+//
+// Catatan penting:
+//   - Menjadi kontrak data bersama antara klien API, hooks query, dan komponen UI.
+//   - Tipe Halaman<T> menggunakan generic TypeScript untuk standarisasi paginasi.
+//
+// Dipakai oleh: api/admin.ts, hooks/use-admin.ts, dan komponen fitur admin
+// =============================================================================
+
+import type { Role } from "@/types/auth";
+
+export type JenisUnitAdmin = {
+  id: number;
+  nama: string;
+  indukJenisId: number | null;
+  aktif: boolean;
+  jumlahUnit: number;
+  jumlahUnitAktif: number;
+  updatedAt: string;
+};
+
+export type IsiJenisUnit = { nama: string; indukJenisId: number | null; aktif?: boolean };
+
+export type UnitKerjaAdmin = {
+  id: number;
+  kode: string;
+  nama: string;
+  jenisUnitId: number;
+  jenis: string;
+  parentId: number | null;
+  induk: string | null;
+  aktif: boolean;
+  jumlahPegawaiAktif: number;
+  updatedAt: string;
+};
+
+export type IsiUnit = { kode?: string; nama: string; jenisUnitId: number; parentId: number | null; aktif?: boolean };
+
+export type PegawaiAdmin = {
+  id: number;
+  nip: string | null;
+  nama: string;
+  jabatan: string | null;
+  unitKerja: { id: number; nama: string };
+  aktif: boolean;
+  akun: { id: string; email: string; aktif: boolean } | null;
+  updatedAt: string;
+};
+
+export type IsiPegawai = { nip: string | null; nama: string; jabatan: string | null; unitKerjaId: number; aktif?: boolean };
+export type IsiPegawaiBaru = IsiPegawai & { email?: string | null; role?: "PEGAWAI" | "PIMPINAN" };
+export type HasilPegawaiBaru = { id: number; undangan: { email: string; galat: string | null } | null };
+
+export type FilterPegawai = { q: string; unit: string | null; aktif: "1" | "0" | null; page: number };
+
+export type JenisKegiatanAdmin = { id: number; nama: string; aktif: boolean; jumlahKegiatan: number; updatedAt: string };
+
+export type Halaman<T> = { items: T[]; total: number; page: number; pageSize: number };
+
+export type AkunAdmin = {
+  id: string;
+  name: string;
+  email: string;
+  username: string | null;
+  role: Role;
+  banned: boolean;
+  banReason: string | null;
+  pegawaiId: number | null;
+  createdAt: string;
+  foto: string | null;
+  pegawai: { id: number; nama: string; nip: string | null; jabatan: string | null; unitKerja: string | null; unitInduk: string | null } | null;
+  terkunci: boolean;
+  menungguAktivasi: boolean;
+  bisaDihapus: boolean;
+};
+
+export type IsiAkun = { name: string; email: string; nip: string | null; role: Role; pegawaiId: number | null };
+
+export type FilterAkun = { q: string; role: Role | null; aktif: "1" | "0" | null; page: number };
+
+export type AuditItem = {
+  id: number;
+  waktu: string;
+  aktor: { id: string; nama: string; email: string | null } | null;
+  aksi: string;
+  entitas: string;
+  entitasId: string | null;
+  ip: string | null;
+};
+
+export type AuditDetail = AuditItem & { dataSebelum: unknown; dataSesudah: unknown; userAgent: string | null };
+
+export type FilterAudit = {
+  aktor: string | null;
+  aksi: string | null;
+  entitas: string | null;
+  dari: string | null;
+  sampai: string | null;
+  page: number;
+};
+
+export type PilihanAudit = { aktor: { id: string; nama: string; email: string }[]; entitas: string[]; aksi: string[] };
+
+export type StatusPermintaan = "MENUNGGU" | "DISETUJUI" | "DITOLAK";
+
+export type PermintaanAkun = {
+  id: number;
+  nama: string;
+  email: string;
+  catatan: string | null;
+  status: StatusPermintaan;
+  alasanTolak: string | null;
+  diprosesAt: string | null;
+  diprosesOleh: string | null;
+  createdAt: string;
+  pegawai: { id: number; nip: string | null; nama: string; jabatan: string | null } | null;
+  unitKerja: string | null;
+};
+
+export type IsiUndangan = { email: string; role: Role; unitKerjaId?: number; jabatan?: string | null };
+
+export type IsiHubungkan = { pegawaiId?: number; pegawaiBaru?: { unitKerjaId: number; jabatan: string | null; nip: string | null } };
+
+export type StatusImpor = "baru" | "perbarui" | "sama" | "galat";
+export type BarisImpor = {
+  baris: number;
+  nip: string;
+  nama: string;
+  jabatan: string | null;
+  unit: { id: number; nama: string } | null;
+  unitTeks: string;
+  status: StatusImpor;
+  pesan: string[];
+};
+export type HasilImpor = {
+  ringkasan: { total: number } & Record<StatusImpor, number>;
+  baris: BarisImpor[];
+  disimpan: boolean;
+};

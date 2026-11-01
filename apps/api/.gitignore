@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.log
+storage
+storage-test
+# Prisma Client hasil `prisma generate` (dibuat ulang otomatis saat bun install)
+src/generated

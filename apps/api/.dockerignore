@@ -1,0 +1,9 @@
+# Berkas yang tidak ikut ke image Docker
+node_modules
+src/generated
+storage
+storage-test
+tests
+.env
+.env.*
+*.log

@@ -1,0 +1,7 @@
+# Berkas yang tidak ikut ke image Docker (apps/web/Dockerfile)
+node_modules
+.next
+.env
+.env.*
+*.log
+tsconfig.tsbuildinfo

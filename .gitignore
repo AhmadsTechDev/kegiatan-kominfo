@@ -1,0 +1,14 @@
+# Dokumen perencanaan, disimpan di laptop saja (tidak diunggah ke repo)
+/PRD.md
+/features/
+
+# Cadangan dan catatan pribadi (berisi data atau kata sandi)
+backup-dev/
+test.txt
+
+# Rahasia dan dependensi (apps/api/ dan apps/web/ juga punya .gitignore sendiri)
+.env
+.env.*
+!.env.example
+!docker.env.example
+node_modules/

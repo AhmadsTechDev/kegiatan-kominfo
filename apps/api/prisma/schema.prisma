@@ -1,0 +1,336 @@
+// Skema basis data Aplikasi Pendataan Kegiatan.
+// Nama tabel dan kolom di PostgreSQL memakai snake_case (lihat @map / @@map),
+// sedangkan di kode TypeScript memakai camelCase.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enum
+// ---------------------------------------------------------------------------
+
+enum StatusPermintaan {
+  MENUNGGU
+  DISETUJUI
+  DITOLAK
+
+  @@map("status_permintaan")
+}
+
+enum JenisPengingat {
+  H_MINUS_1
+  DOKUMENTASI
+
+  @@map("jenis_pengingat")
+}
+
+// ---------------------------------------------------------------------------
+// Autentikasi (dipakai Better Auth). Kolom username berisi NIP untuk login.
+// ---------------------------------------------------------------------------
+
+model User {
+  id               String    @id @db.VarChar(36)
+  name             String    @db.VarChar(150)
+  email            String    @unique(map: "user_email_unique") @db.VarChar(255)
+  emailVerified    Boolean   @default(false) @map("email_verified")
+  image            String?
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  username         String?   @unique(map: "user_username_unique") @db.VarChar(32)
+  displayUsername  String?   @map("display_username") @db.VarChar(32)
+  role             String    @default("PEGAWAI") @db.VarChar(20)
+  banned           Boolean   @default(false)
+  banReason        String?   @map("ban_reason")
+  banExpires       DateTime? @map("ban_expires") @db.Timestamptz(3)
+  pegawaiId        Int?      @map("pegawai_id")
+  kontak           String?   @db.VarChar(50)
+  failedLoginCount Int       @default(0) @map("failed_login_count")
+  lockedUntil      DateTime? @map("locked_until") @db.Timestamptz(3)
+
+  pegawai             Pegawai?             @relation(fields: [pegawaiId], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "user_pegawai_id_pegawai_id_fk")
+  sessions            Session[]
+  accounts            Account[]
+  kegiatanDibuat      Kegiatan[]
+  catatanPemeriksaan  CatatanPemeriksaan[]
+  dokumentasiDiunggah Dokumentasi[]
+  drafKegiatan        DrafKegiatan[]
+  permintaanDiproses  PermintaanAkun[]
+  pengingat           Pengingat[]
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id @db.VarChar(36)
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(3)
+  token          String   @unique(map: "session_token_unique") @db.VarChar(255)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  ipAddress      String?  @map("ip_address") @db.VarChar(45)
+  userAgent      String?  @map("user_agent")
+  userId         String   @map("user_id") @db.VarChar(36)
+  impersonatedBy String?  @map("impersonated_by") @db.VarChar(36)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "session_user_id_user_id_fk")
+
+  @@index([userId], map: "session_user_id_idx")
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @db.VarChar(36)
+  accountId             String    @map("account_id") @db.VarChar(255)
+  providerId            String    @map("provider_id") @db.VarChar(50)
+  userId                String    @map("user_id") @db.VarChar(36)
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(3)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "account_user_id_user_id_fk")
+
+  @@index([userId], map: "account_user_id_idx")
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @db.VarChar(36)
+  identifier String   @db.VarChar(255)
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([identifier], map: "verification_identifier_idx")
+  @@map("verification")
+}
+
+// ---------------------------------------------------------------------------
+// Data master. Tidak pernah dihapus, cukup dinonaktifkan (kolom aktif).
+// ---------------------------------------------------------------------------
+
+model JenisUnit {
+  id           Int      @id @default(autoincrement())
+  nama         String   @unique(map: "jenis_unit_nama_unique") @db.VarChar(100)
+  indukJenisId Int?     @map("induk_jenis_id")
+  aktif        Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  indukJenis   JenisUnit?  @relation("IndukJenisUnit", fields: [indukJenisId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "jenis_unit_induk_jenis_id_jenis_unit_id_fk")
+  turunanJenis JenisUnit[] @relation("IndukJenisUnit")
+  unitKerja    UnitKerja[]
+
+  @@map("jenis_unit")
+}
+
+model UnitKerja {
+  id          Int      @id @default(autoincrement())
+  parentId    Int?     @map("parent_id")
+  kode        String   @unique(map: "unit_kerja_kode_unique") @db.VarChar(30)
+  nama        String   @db.VarChar(150)
+  jenisUnitId Int      @map("jenis_unit_id")
+  aktif       Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  parent    UnitKerja?  @relation("PohonUnit", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "unit_kerja_parent_id_unit_kerja_id_fk")
+  turunan   UnitKerja[] @relation("PohonUnit")
+  jenisUnit JenisUnit   @relation(fields: [jenisUnitId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "unit_kerja_jenis_unit_id_jenis_unit_id_fk")
+  pegawai   Pegawai[]
+  kegiatan  Kegiatan[]
+
+  @@index([parentId], map: "unit_kerja_parent_id_idx")
+  @@map("unit_kerja")
+}
+
+model Pegawai {
+  id          Int      @id @default(autoincrement())
+  nip         String?  @unique(map: "pegawai_nip_unique") @db.VarChar(18)
+  nama        String   @db.VarChar(150)
+  jabatan     String?  @db.VarChar(150)
+  unitKerjaId Int      @map("unit_kerja_id")
+  aktif       Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  unitKerja          UnitKerja        @relation(fields: [unitKerjaId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "pegawai_unit_kerja_id_unit_kerja_id_fk")
+  users              User[]
+  kegiatanDitanggung Kegiatan[]
+  permintaanAkun     PermintaanAkun[]
+
+  @@index([unitKerjaId], map: "pegawai_unit_kerja_id_idx")
+  @@map("pegawai")
+}
+
+model JenisKegiatan {
+  id        Int      @id @default(autoincrement())
+  nama      String   @unique(map: "jenis_kegiatan_nama_unique") @db.VarChar(100)
+  aktif     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  kegiatan Kegiatan[]
+
+  @@map("jenis_kegiatan")
+}
+
+// ---------------------------------------------------------------------------
+// Kegiatan dan turunannya. Waktu disimpan UTC (timestamptz).
+// updatedAt dipakai sebagai "versi" untuk deteksi bentrok ubah (HTTP 409).
+// ---------------------------------------------------------------------------
+
+model Kegiatan {
+  id                Int       @id @default(autoincrement())
+  judul             String    @db.VarChar(200)
+  jenisId           Int       @map("jenis_id")
+  uraian            String?
+  lokasiNama        String?   @map("lokasi_nama") @db.VarChar(255)
+  lat               Decimal?  @db.Decimal(9, 6)
+  lng               Decimal?  @db.Decimal(9, 6)
+  tglMulai          DateTime  @map("tgl_mulai") @db.Timestamptz(6)
+  tglSelesai        DateTime  @map("tgl_selesai") @db.Timestamptz(6)
+  unitKerjaId       Int       @map("unit_kerja_id")
+  penanggungJawabId Int       @map("penanggung_jawab_id")
+  dibuatOleh        String    @map("dibuat_oleh") @db.VarChar(36)
+  jumlahPeserta     Int?      @map("jumlah_peserta")
+  hasil             String?
+  dibatalkanAt      DateTime? @map("dibatalkan_at") @db.Timestamptz(3)
+  alasanBatal       String?   @map("alasan_batal")
+  refEksternal      String?   @map("ref_eksternal") @db.VarChar(255)
+  statusPemeriksaan String    @default("terkirim") @map("status_pemeriksaan") @db.VarChar(20)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  jenis              JenisKegiatan        @relation(fields: [jenisId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_jenis_id_jenis_kegiatan_id_fk")
+  unitKerja          UnitKerja            @relation(fields: [unitKerjaId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_unit_kerja_id_unit_kerja_id_fk")
+  penanggungJawab    Pegawai              @relation(fields: [penanggungJawabId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_penanggung_jawab_id_pegawai_id_fk")
+  pembuat            User                 @relation(fields: [dibuatOleh], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_dibuat_oleh_user_id_fk")
+  catatanPemeriksaan CatatanPemeriksaan[]
+  dokumentasi        Dokumentasi[]
+  pengingat          Pengingat[]
+
+  @@index([unitKerjaId, tglMulai], map: "kegiatan_unit_tgl_mulai_idx")
+  @@index([tglMulai], map: "kegiatan_tgl_mulai_idx")
+  @@index([deletedAt], map: "kegiatan_deleted_at_idx")
+  @@index([statusPemeriksaan], map: "kegiatan_status_pemeriksaan_idx")
+  @@map("kegiatan")
+}
+
+model CatatanPemeriksaan {
+  id          Int      @id @default(autoincrement())
+  kegiatanId  Int      @map("kegiatan_id")
+  pemeriksaId String   @map("pemeriksa_id") @db.VarChar(36)
+  status      String   @db.VarChar(20)
+  isi         String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  kegiatan  Kegiatan @relation(fields: [kegiatanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "catatan_pemeriksaan_kegiatan_id_kegiatan_id_fk")
+  pemeriksa User     @relation(fields: [pemeriksaId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "catatan_pemeriksaan_pemeriksa_id_user_id_fk")
+
+  @@index([kegiatanId], map: "catatan_pemeriksaan_kegiatan_id_idx")
+  @@map("catatan_pemeriksaan")
+}
+
+model Dokumentasi {
+  id           Int      @id @default(autoincrement())
+  kegiatanId   Int      @map("kegiatan_id")
+  path         String   @db.VarChar(255)
+  namaAsli     String   @map("nama_asli") @db.VarChar(255)
+  mime         String   @db.VarChar(50)
+  ukuran       Int
+  sha256       String   @db.Char(64)
+  diunggahOleh String   @map("diunggah_oleh") @db.VarChar(36)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  kegiatan   Kegiatan @relation(fields: [kegiatanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "dokumentasi_kegiatan_id_kegiatan_id_fk")
+  pengunggah User     @relation(fields: [diunggahOleh], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "dokumentasi_diunggah_oleh_user_id_fk")
+
+  @@index([kegiatanId], map: "dokumentasi_kegiatan_id_idx")
+  @@map("dokumentasi")
+}
+
+model DrafKegiatan {
+  id        Int      @id @default(autoincrement())
+  pemilikId String   @map("pemilik_id") @db.VarChar(36)
+  isi       Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  pemilik User @relation(fields: [pemilikId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "draf_kegiatan_pemilik_id_user_id_fk")
+
+  @@index([pemilikId], map: "draf_kegiatan_pemilik_id_idx")
+  @@map("draf_kegiatan")
+}
+
+// ---------------------------------------------------------------------------
+// Pendukung: audit log (append-only), permintaan akun, log pengingat email
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id          BigInt   @id @default(autoincrement())
+  aktorId     String?  @map("aktor_id") @db.VarChar(36)
+  aksi        String   @db.VarChar(30)
+  entitas     String   @db.VarChar(50)
+  entitasId   String?  @map("entitas_id") @db.VarChar(64)
+  dataSebelum Json?    @map("data_sebelum")
+  dataSesudah Json?    @map("data_sesudah")
+  ip          String?  @db.VarChar(45)
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([entitas, entitasId], map: "audit_log_entitas_idx")
+  @@index([aktorId], map: "audit_log_aktor_id_idx")
+  @@index([createdAt], map: "audit_log_created_at_idx")
+  @@map("audit_log")
+}
+
+model PermintaanAkun {
+  id           Int              @id @default(autoincrement())
+  pegawaiId    Int?             @map("pegawai_id")
+  nama         String           @db.VarChar(150)
+  email        String           @db.VarChar(255)
+  catatan      String?
+  status       StatusPermintaan @default(MENUNGGU)
+  alasanTolak  String?          @map("alasan_tolak")
+  diprosesOleh String?          @map("diproses_oleh") @db.VarChar(36)
+  diprosesAt   DateTime?        @map("diproses_at") @db.Timestamptz(3)
+  ip           String?          @db.VarChar(45)
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  pegawai   Pegawai? @relation(fields: [pegawaiId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "permintaan_akun_pegawai_id_pegawai_id_fk")
+  pemroses  User?    @relation(fields: [diprosesOleh], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "permintaan_akun_diproses_oleh_user_id_fk")
+
+  @@index([status], map: "permintaan_akun_status_idx")
+  @@index([pegawaiId], map: "permintaan_akun_pegawai_id_idx")
+  @@map("permintaan_akun")
+}
+
+model Pengingat {
+  id         Int            @id @default(autoincrement())
+  kegiatanId Int            @map("kegiatan_id")
+  jenis      JenisPengingat
+  userId     String         @map("user_id") @db.VarChar(36)
+  dikirimAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  kegiatan Kegiatan @relation(fields: [kegiatanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pengingat_kegiatan_id_kegiatan_id_fk")
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pengingat_user_id_user_id_fk")
+
+  @@unique([kegiatanId, jenis, userId], map: "pengingat_kegiatan_jenis_user_uq")
+  @@index([userId], map: "pengingat_user_id_idx")
+  @@map("pengingat")
+}

@@ -1,0 +1,351 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Mode gelap aktif lewat kelas .dark di <html>, dipasang next-themes (pilihan pengguna atau preferensi sistem) */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Token desain sesuai DESIGN.md bagian 2, tema terang (putih) sebagai bawaan.
+ * Palet mengacu pada identitas visual Diskominfo Kota Palembang:
+ *   - Biru navy (#1a2a6e) sebagai warna utama institusi
+ *   - Kuning emas (#c8a951) dari lambang Kota Palembang sebagai aksen grafik
+ *   - Putih bersih untuk permukaan konten
+ * Semua pasangan teks/latar dipilih agar memenuhi kontras WCAG AA di kedua tema.
+ * Jangan mengganti nilai hex tanpa memeriksa ulang kontras.
+ */
+:root {
+  --radius: 0.75rem;
+
+  /* Permukaan: latar hampir putih, kartu putih murni */
+  --background: #f7f8fb;
+  --foreground: #0d1b3e;
+  --card: #ffffff;
+  --card-foreground: #0d1b3e;
+  --popover: #ffffff;
+  --popover-foreground: #0d1b3e;
+
+  /* Aksi utama: biru navy institusional */
+  --primary: #1a2a6e;
+  --primary-foreground: #ffffff;
+  --secondary: #eaeefa;
+  --secondary-foreground: #1a2a6e;
+
+  /* Netral */
+  --muted: #f0f2f7;
+  --muted-foreground: #4f5a78;
+  --accent: #e4e9f7;
+  --accent-foreground: #1a2a6e;
+  --border: #e3e7f0;
+  --input: #c9d1e3;
+  --ring: #2563eb;
+
+  /* Bahaya */
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+
+  /* Sidebar mengambang (reference/dashboard-admin/assets/img/Sidebar UI.webp):
+   * kartu putih di tema terang, navy gelap di tema gelap. Item aktif berupa ikon bulat + pil label. */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #5b6785;
+  --sidebar-strong: #0d1b3e;
+  --sidebar-group: #f3f5fa;
+  --sidebar-hover: #e9eef9;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-border: #e6e9f2;
+
+  /* Status pelaksanaan (latar lembut + teks gelap untuk kontras) */
+  --status-akan-datang-bg: #e0f2fe;
+  --status-akan-datang-fg: #075985;
+  --status-berlangsung-bg: #fef3c7;
+  --status-berlangsung-fg: #92400e;
+  --status-selesai-bg: #dcfce7;
+  --status-selesai-fg: #166534;
+  --status-dibatalkan-bg: #ffe4e6;
+  --status-dibatalkan-fg: #9f1239;
+
+  /* Palet grafik (6 warna, aman untuk buta warna umum).
+   * chart-1 selaras dengan primary navy, chart-3 memakai emas lambang kota. */
+  --chart-1: #1a2a6e;
+  --chart-2: #0d9488;
+  --chart-3: #c8a951;
+  --chart-4: #7c3aed;
+  --chart-5: #e11d48;
+  --chart-6: #64748b;
+}
+
+/* Tema gelap: navy pekat seperti sidebar referensi. Primary dibuat terang dengan teks gelap agar kontras tetap AA. */
+.dark {
+  --background: #0b1120;
+  --foreground: #e6ebf5;
+  --card: #111a2c;
+  --card-foreground: #e6ebf5;
+  --popover: #141e32;
+  --popover-foreground: #e6ebf5;
+
+  --primary: #8fb0ff;
+  --primary-foreground: #0b1120;
+  --secondary: #1b2742;
+  --secondary-foreground: #c3d3ff;
+
+  --muted: #172036;
+  --muted-foreground: #9aa6bf;
+  --accent: #1e2a45;
+  --accent-foreground: #dbe5ff;
+  --border: #233049;
+  --input: #34425f;
+  --ring: #60a5fa;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --sidebar: #131c2e;
+  --sidebar-foreground: #8b97b0;
+  --sidebar-strong: #f1f5f9;
+  --sidebar-group: #18233a;
+  --sidebar-hover: #1f2b45;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #04203a;
+  --sidebar-border: #1f2a40;
+
+  --status-akan-datang-bg: #0c2b40;
+  --status-akan-datang-fg: #7dd3fc;
+  --status-berlangsung-bg: #362609;
+  --status-berlangsung-fg: #fcd34d;
+  --status-selesai-bg: #0e2e1c;
+  --status-selesai-fg: #86efac;
+  --status-dibatalkan-bg: #3b1220;
+  --status-dibatalkan-fg: #fda4af;
+
+  --chart-1: #8fb0ff;
+  --chart-2: #2dd4bf;
+  --chart-3: #e2c46f;
+  --chart-4: #a78bfa;
+  --chart-5: #fb7185;
+  --chart-6: #94a3b8;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-jakarta), var(--font-inter), sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-strong: var(--sidebar-strong);
+  --color-sidebar-group: var(--sidebar-group);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-status-akan-datang: var(--status-akan-datang-bg);
+  --color-status-akan-datang-foreground: var(--status-akan-datang-fg);
+  --color-status-berlangsung: var(--status-berlangsung-bg);
+  --color-status-berlangsung-foreground: var(--status-berlangsung-fg);
+  --color-status-selesai: var(--status-selesai-bg);
+  --color-status-selesai-foreground: var(--status-selesai-fg);
+  --color-status-dibatalkan: var(--status-dibatalkan-bg);
+  --color-status-dibatalkan-foreground: var(--status-dibatalkan-fg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Gerak (DESIGN.md bagian 8). Kurva dipakai lewat kelas ease-out-expo dan ease-in-out-smooth. */
+@theme inline {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* masuk: cepat di awal, mendarat halus */
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1); /* perpindahan dua posisi */
+}
+
+/* Menyorot baris yang baru disimpan, lalu memudar */
+@keyframes sorot-baris {
+  from {
+    background-color: var(--accent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+/* Batang progres tumbuh dari kiri (grafik sebaran jenis), hanya transform sesuai DESIGN.md bagian 8 */
+@keyframes tumbuh-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@layer utilities {
+  .animate-sorot {
+    animation: sorot-baris 1.2s var(--ease-out-expo) 1;
+  }
+  .animate-tumbuh-x {
+    transform-origin: left;
+    animation: tumbuh-x 400ms var(--ease-out-expo) both;
+  }
+}
+
+/* Pengguna yang mematikan animasi di sistem operasi tidak boleh dipaksa melihatnya */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Kontrol dan popup MapLibre mengikuti token tema (terang dan gelap) */
+.maplibregl-map {
+  font-family: inherit;
+}
+.maplibregl-popup-content {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 2rem 0.75rem 0.875rem;
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.35);
+}
+.maplibregl-popup-close-button {
+  top: 0.375rem;
+  right: 0.375rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.375rem;
+  color: var(--muted-foreground);
+  font-size: 1.125rem;
+}
+.maplibregl-popup-close-button:hover {
+  background: var(--muted);
+}
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: var(--popover);
+}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: var(--popover);
+}
+.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--popover);
+}
+.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--popover);
+}
+.maplibregl-ctrl-group {
+  border-radius: 0.5rem !important;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08) !important;
+}
+.dark .maplibregl-ctrl.maplibregl-ctrl-group {
+  background: var(--card);
+}
+.dark .maplibregl-ctrl-group button + button {
+  border-top-color: var(--border);
+}
+.dark .maplibregl-ctrl-icon {
+  filter: invert(1) hue-rotate(180deg);
+}
+.dark .maplibregl-ctrl.maplibregl-ctrl-attrib,
+.dark .maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgb(15 23 42 / 0.75);
+  color: #cbd5e1;
+}
+.dark .maplibregl-ctrl-attrib a {
+  color: #cbd5e1;
+}
+.dark .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+.maplibregl-cooperative-gesture-screen {
+  font-size: 0.875rem;
+}
+/* Warna latar peta gelap sebelum tile pertama tergambar, agar tidak berkedip terang */
+.dark .maplibregl-map {
+  background: #0f1a2e;
+}
+
+/* Cetak langsung laporan (features/laporan): hanya salinan laporan di .laporan-cetak yang tercetak,
+   tanpa menu, tombol, atau elemen aplikasi lain. Setiap .halaman-laporan menjadi satu lembar A4 mendatar. */
+.laporan-cetak {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  body > *:not(.laporan-cetak) {
+    display: none !important;
+  }
+
+  .laporan-cetak {
+    display: block;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .laporan-cetak > div {
+    gap: 0;
+  }
+
+  .laporan-cetak .halaman-laporan {
+    width: 297mm;
+    max-width: none;
+    height: 210mm;
+    aspect-ratio: auto;
+    box-shadow: none;
+    break-after: page;
+  }
+
+  .laporan-cetak .halaman-laporan:last-child {
+    break-after: auto;
+  }
+}
