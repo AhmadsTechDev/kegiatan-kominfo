@@ -45,6 +45,7 @@ bun run dev                   # http://localhost:3001/api
 | `bun run dev` | Server dengan auto-reload |
 | `bun run start` | Produksi: migrasi, hak akses DB, seed, lalu server |
 | `bun run typecheck` | Cek tipe TypeScript |
+| `bun test` | Menjalankan semua uji di `tests/` (butuh `.env.test`, lihat `.env.test.example`) |
 | `bun run db:generate` | Membuat ulang Prisma Client setelah `schema.prisma` diubah |
 | `bun run db:migrate` | Membuat migrasi baru dari perubahan `schema.prisma` (development) |
 | `bun run db:migrate:prod` | Menerapkan migrasi yang ada (produksi) |

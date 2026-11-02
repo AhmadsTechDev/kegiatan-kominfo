@@ -9,14 +9,15 @@
 //
 // Catatan penting:
 //   - Ikon matahari dan bulan ditukar via kelas CSS untuk mencegah galat hidrasi.
+//   - Pilihan tema ikut disimpan ke preferensi akun sehingga berlaku di perangkat lain.
 // =============================================================================
 
 "use client";
 
 import { Check, Monitor, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useTema } from "@/features/pengaturan/hooks/use-akun-saya";
 
 const PILIHAN = [
   { nilai: "light", label: "Terang", ikon: Sun },
@@ -25,7 +26,7 @@ const PILIHAN = [
 ] as const;
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { tema, pilih } = useTema();
 
   return (
     <DropdownMenu>
@@ -38,10 +39,10 @@ export function ThemeToggle() {
       <DropdownMenuContent align="end" className="w-44">
         <DropdownMenuLabel className="text-xs text-muted-foreground">Tema tampilan</DropdownMenuLabel>
         {PILIHAN.map(({ nilai, label, ikon: Ikon }) => (
-          <DropdownMenuItem key={nilai} onSelect={() => setTheme(nilai)}>
+          <DropdownMenuItem key={nilai} onSelect={() => pilih(nilai)}>
             <Ikon aria-hidden />
             {label}
-            {theme === nilai && <Check aria-hidden className="ml-auto" />}
+            {tema === nilai && <Check aria-hidden className="ml-auto" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

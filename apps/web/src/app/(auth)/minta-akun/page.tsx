@@ -16,12 +16,16 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { KartuPublik } from "@/features/auth/components/kartu-publik";
 import { MintaAkunForm } from "@/features/auth/components/minta-akun-form";
 
-export const metadata: Metadata = { title: "Minta akun" };
+export const metadata: Metadata = { title: "Hubungi Administrator" };
 
 export default function MintaAkunPage() {
   return (
     <AuthShell>
-      <KartuPublik eyebrow="Permintaan akun" judul="Minta akun">
+      <KartuPublik
+        eyebrow="Akses aplikasi"
+        judul="Hubungi Administrator"
+        deskripsi="Akun hanya dibuat administrator. Kirim data Anda; setelah identitas diverifikasi, tautan aktivasi dikirim ke email pribadi Anda."
+      >
         <MintaAkunForm />
       </KartuPublik>
     </AuthShell>

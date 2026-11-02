@@ -1,14 +1,25 @@
 import { t } from "elysia";
-import { ROLES } from "@/utils/konstanta";
+import { ROLES, STATUS_AKUN } from "@/utils/konstanta";
 
 const role = t.UnionEnum(ROLES, { error: "Role tidak valid" });
-const sandi = t.String({ minLength: 10, maxLength: 128, error: "Kata sandi minimal 10 karakter" });
-const nip = t.Optional(t.Nullable(t.String({ pattern: "^\\d{18}$", error: "NIP harus 18 digit angka" })));
+// Untuk filter query sengaja memakai t.Union: t.Optional(t.UnionEnum) di query diisi otomatis nilai pertama ("PEGAWAI")
+const roleFilter = t.Union(
+  ROLES.map((r) => t.Literal(r)),
+  { error: "Role tidak valid" },
+);
+const statusFilter = t.Union(
+  STATUS_AKUN.map((s) => t.Literal(s)),
+  { error: "Status akun tidak valid" },
+);
 
+// Isian form Buat/Ubah akun. Akun selalu tertaut ke data pegawai: jabatan dan unit kerja wajib, NIP opsional.
+// pegawaiId diisi bila admin memilih pegawai yang sudah terdaftar di Master data
 const isiAkun = {
   name: t.String({ minLength: 1, maxLength: 150, error: "Nama wajib diisi, maksimal 150 karakter" }),
   email: t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }),
-  nip,
+  nip: t.Optional(t.Nullable(t.String({ pattern: "^(\\d{18})?$", error: "NIP harus 18 digit angka" }))),
+  jabatan: t.String({ minLength: 1, maxLength: 150, error: "Jabatan wajib diisi, maksimal 150 karakter" }),
+  unitKerjaId: t.Integer({ minimum: 1, error: "Unit kerja wajib dipilih" }),
   role,
   pegawaiId: t.Optional(t.Nullable(t.Integer({ minimum: 1, error: "Pegawai tidak valid" }))),
 };
@@ -19,24 +30,13 @@ export const UserValidator = {
 
   daftarQuery: t.Object({
     q: t.Optional(t.String({ maxLength: 100, error: "Kata kunci maksimal 100 karakter" })),
-    role: t.Optional(role),
-    aktif: t.Optional(t.Union([t.Literal("1"), t.Literal("0")], { error: "Filter aktif tidak valid" })),
+    role: t.Optional(roleFilter),
+    status: t.Optional(statusFilter),
     page: t.Optional(t.Numeric({ minimum: 1, default: 1, error: "Halaman tidak valid" })),
     pageSize: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20, error: "Ukuran halaman 1 sampai 100" })),
   }),
 
-  buat: t.Object({ ...isiAkun, password: sandi }),
+  buat: t.Object(isiAkun),
   ubah: t.Object(isiAkun),
   nonaktifkan: t.Object({ alasan: t.Optional(t.String({ maxLength: 255, error: "Alasan maksimal 255 karakter" })) }),
-  resetSandi: t.Object({ password: sandi }),
-  hubungkan: t.Object({
-    pegawaiId: t.Optional(t.Integer({ minimum: 1, error: "Pegawai tidak valid" })),
-    pegawaiBaru: t.Optional(
-      t.Object({
-        nip,
-        jabatan: t.Optional(t.Nullable(t.String({ maxLength: 150, error: "Jabatan maksimal 150 karakter" }))),
-        unitKerjaId: t.Integer({ minimum: 1, error: "Unit kerja wajib dipilih" }),
-      }),
-    ),
-  }),
 };

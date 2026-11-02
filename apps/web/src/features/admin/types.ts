@@ -10,9 +10,9 @@
 //   - PegawaiAdmin, IsiPegawai, IsiPegawaiBaru, FilterPegawai : tipe entitas pegawai
 //   - JenisKegiatanAdmin : tipe referensi kategori jenis kegiatan dinas
 //   - Halaman<T> : tipe generik pembungkus respons data berpaginasi dari server
-//   - AkunAdmin, IsiAkun, FilterAkun : tipe akun pengguna dan parameter filternya
+//   - AkunAdmin, AkunDetail, IsiAkun, FilterAkun : tipe akun pengguna, detail, form, dan filternya
 //   - AuditItem, AuditDetail, FilterAudit, PilihanAudit : tipe riwayat jejak audit
-//   - PermintaanAkun, StatusPermintaan, IsiUndangan : tipe pendaftaran akun baru
+//   - PermintaanAkun, StatusPermintaan, IsiUndangan : tipe permintaan akun dan undangan
 //   - StatusImpor, BarisImpor, HasilImpor : tipe hasil impor pegawai dari Excel
 //
 // Catatan penting:
@@ -22,7 +22,7 @@
 // Dipakai oleh: api/admin.ts, hooks/use-admin.ts, dan komponen fitur admin
 // =============================================================================
 
-import type { Role } from "@/types/auth";
+import type { Role, StatusAkun } from "@/types/auth";
 
 export type JenisUnitAdmin = {
   id: number;
@@ -76,22 +76,52 @@ export type AkunAdmin = {
   id: string;
   name: string;
   email: string;
-  username: string | null;
+  emailBaru: string | null;
+  emailVerified: boolean;
   role: Role;
+  status: StatusAkun;
   banned: boolean;
   banReason: string | null;
   pegawaiId: number | null;
   createdAt: string;
   foto: string | null;
-  pegawai: { id: number; nama: string; nip: string | null; jabatan: string | null; unitKerja: string | null; unitInduk: string | null } | null;
+  pegawai: {
+    id: number;
+    nama: string;
+    nip: string | null;
+    jabatan: string | null;
+    unitKerjaId: number;
+    unitKerja: string;
+    unitInduk: string | null;
+  } | null;
   terkunci: boolean;
-  menungguAktivasi: boolean;
   bisaDihapus: boolean;
 };
 
-export type IsiAkun = { name: string; email: string; nip: string | null; role: Role; pegawaiId: number | null };
+export type SesiAkun = { id: string; ipAddress: string | null; userAgent: string | null; createdAt: string; updatedAt: string; expiresAt: string };
 
-export type FilterAkun = { q: string; role: Role | null; aktif: "1" | "0" | null; page: number };
+export type AkunDetail = Omit<AkunAdmin, "pegawai"> & {
+  kontak: string | null;
+  updatedAt: string;
+  pegawai: {
+    id: number;
+    nip: string | null;
+    nama: string;
+    jabatan: string | null;
+    aktif: boolean;
+    unitKerja: { id: number; nama: string; parent: { id: number; nama: string } | null };
+  } | null;
+  undangan: { kedaluwarsa: string | null } | null;
+  sesi: SesiAkun[];
+  riwayat: AuditItem[];
+};
+
+// Isian form Buat/Ubah akun. NIP opsional; jabatan dan unit kerja wajib (akun selalu tertaut ke data pegawai)
+export type IsiAkun = { name: string; email: string; nip: string | null; jabatan: string; unitKerjaId: number; role: Role };
+
+export type HasilSimpanAkun = { id: string; undangan: { email: string; galat: string | null } | null };
+
+export type FilterAkun = { q: string; role: Role | null; status: StatusAkun | null; page: number };
 
 export type AuditItem = {
   id: number;
@@ -133,8 +163,6 @@ export type PermintaanAkun = {
 };
 
 export type IsiUndangan = { email: string; role: Role; unitKerjaId?: number; jabatan?: string | null };
-
-export type IsiHubungkan = { pegawaiId?: number; pegawaiBaru?: { unitKerjaId: number; jabatan: string | null; nip: string | null } };
 
 export type StatusImpor = "baru" | "perbarui" | "sama" | "galat";
 export type BarisImpor = {

@@ -16,7 +16,7 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 
 | Kebutuhan | Fitur |
 | --- | --- |
-| FR-01 | Login dengan NIP atau email, penguncian 15 menit setelah 5 kali salah. Akun dibuat admin, diundang lewat email, atau diminta dari halaman login (NIP opsional) |
+| FR-01 | Login hanya dengan email pribadi, penguncian 15 menit setelah 5 kali salah. Tanpa pendaftaran mandiri: akun dibuat admin lalu diaktivasi pemiliknya lewat tautan email. Lupa/atur ulang sandi, ganti email terverifikasi, sesi aktif, dan preferensi di Pengaturan |
 | FR-02 | Master pegawai (NIP opsional untuk non-ASN, impor Excel dengan templat dan pratinjau), unit kerja dan sub bagian/seksi, jenis unit, jenis kegiatan, dan akun beserta unit kerjanya. Akun yang belum pernah dipakai (mis. salah email) bisa dihapus; yang sudah dipakai dinonaktifkan |
 | FR-03 | Audit log append-only (dijaga sampai hak basis data) dengan filter dan nilai sebelum/sesudah |
 | FR-04, FR-05 | Catat kegiatan dalam 2 langkah, ubah, isi hasil, batalkan (alasan wajib), dan hapus; status pelaksanaan dihitung otomatis; pengubahan bersamaan dijawab 409 |
@@ -26,7 +26,9 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | FR-09 | Dashboard dinas untuk pimpinan dan admin, dashboard tugas untuk pegawai |
 | Tambahan | Kalender, pencarian cepat Ctrl+K, mode gelap, foto profil dan halaman Pengaturan, pengingat email otomatis (H-1 dan dokumentasi) |
 
-**Hak akses.** Pegawai melihat kegiatan unit kerjanya dan mengubah kegiatan miliknya. Pimpinan melihat seluruh dinas tanpa mengubah data. Admin mengelola semuanya. Aturan ditegakkan di backend pada setiap permintaan; kegiatan di luar lingkup dijawab 404.
+**Hak akses.** Operator (role `PEGAWAI` di basis data) melihat kegiatan unit kerjanya dan mengubah kegiatan miliknya. Pimpinan melihat seluruh dinas tanpa mengubah data. Admin mengelola semuanya. Aturan ditegakkan di backend pada setiap permintaan; kegiatan di luar lingkup dijawab 404.
+
+**Akun.** Tidak ada pendaftaran mandiri. Admin membuat akun (nama, email pribadi, NIP opsional, jabatan, unit kerja, role), lalu sistem mengirim tautan aktivasi ke email pribadi pemiliknya. Pemilik akun membuat kata sandi sendiri; admin tidak pernah menentukan atau melihat kata sandi. Karena itu **pengiriman email wajib berfungsi** sebelum aplikasi dipakai.
 
 ## Menjalankan untuk pengembangan
 
@@ -52,19 +54,44 @@ Frontend meneruskan `/api/*` ke backend, sehingga UI dan API berada di satu orig
 ## Pengujian
 
 ```bash
-cd apps/web && bun test src     # uji skema form, format tampilan, NIP, dan jam
+cd apps/api && bun test         # 147 uji API dan unit, memakai basis data terpisah kominfo_pd_kg_test
+cd apps/web && bun test src     # uji skema form, format tampilan, NIP, jam, dan kebijakan kata sandi
 ```
 
-Uji otomatis backend lama belum dibuat ulang untuk backend Prisma yang baru.
+Uji backend butuh PostgreSQL khusus uji dan berkas `apps/api/.env.test` (salin dari `.env.test.example`):
 
-Uji backend mencakup kriteria penerimaan PRD bagian 10: penguncian akun, 403 untuk pegawai lain dan pimpinan, 409 pengubahan bersamaan, 422 tanggal terbalik, berkas .exe dan 20,01 MB ditolak, unduhan tanpa login ditolak, audit log untuk setiap aksi, serta angka dashboard, rekap, dan ekspor yang konsisten. Basis data uji dibuat ulang otomatis setiap kali uji dijalankan; uji menolak berjalan bila `DATABASE_URL` tidak berakhiran `_test`.
+```bash
+docker run -d --name kominfo-pg-test -e POSTGRES_PASSWORD=uji123 -e POSTGRES_DB=kominfo_pd_kg_test -p 5435:5432 postgres:17
+```
+
+Uji backend mencakup kriteria penerimaan PRD bagian 10: penguncian akun, 403 untuk pegawai lain dan pimpinan, 409 pengubahan bersamaan, 422 tanggal terbalik, berkas .exe dan 20,01 MB ditolak, unduhan tanpa login ditolak, audit log untuk setiap aksi, serta angka dashboard, rekap, dan ekspor yang konsisten. Basis data uji dibuat ulang otomatis setiap kali uji dijalankan; uji menolak berjalan bila `DATABASE_URL` tidak berakhiran `_test`. Email tidak pernah benar-benar dikirim saat pengujian; email ditangkap di memori agar isinya (mis. tautan aktivasi) bisa diperiksa.
+
+## File `.env`: mana yang dipakai di mana
+
+Setiap cara menjalankan aplikasi membaca pengaturan dari tempat yang berbeda. Semua file `.env` dikecualikan di `.gitignore` karena berisi rahasia; yang masuk repository hanya contohnya (`*.example`).
+
+| Dipakai saat | File atau tempat | Dibuat dari |
+| --- | --- | --- |
+| Development backend | `apps/api/.env` | `apps/api/.env.example` |
+| Development frontend | `apps/web/.env` (opsional, hanya `API_URL`) | `apps/web/.env.example` |
+| Uji backend | `apps/api/.env.test` | `apps/api/.env.test.example` |
+| Deploy VPS dengan Docker | **`.env` di root proyek**, dibaca `docker-compose.yml` | `docker.env.example` |
+| Deploy Railway + Vercel | Tidak ada file; isi di tab **Variables** Railway dan **Environment Variables** Vercel | Daftar di bawah |
+
+Jadi `.env` di root hanya ada di server VPS. Di laptop atau saat memakai Railway + Vercel, file itu memang tidak perlu.
+
+Yang harus benar di produksi, apa pun caranya:
+
+- **Email** (`BREVO_API_KEY`, atau `SMTP_*`): tanpa email, akun baru tidak bisa diaktivasi dan lupa sandi tidak bisa dipakai.
+- **`FRONTEND_URL` dan `BETTER_AUTH_URL`** sama persis dengan alamat publik aplikasi (`https://`, tanpa garis miring di akhir). Tautan di email dibuat dari `FRONTEND_URL`, dan backend menolak permintaan pengubah data yang `Origin`-nya tidak cocok (403 `ASAL_DITOLAK`, perlindungan CSRF).
+- **`SEED_ADMIN_PASSWORD`** mengikuti kebijakan kata sandi: minimal 10 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin.
 
 ## Deploy (online lewat Railway dan Vercel)
 
 Aplikasi dipasang di empat layanan. Semuanya cukup diatur lewat klik di situs masing-masing, tanpa server sendiri.
 
 ```
-Pengguna → Vercel (frontend Next.js) → Railway (backend Elysia) → Railway (MySQL)
+Pengguna → Vercel (frontend Next.js) → Railway (backend Elysia) → Railway (PostgreSQL)
                                           ├→ Cloudinary (simpan foto dan dokumen)
                                           └→ Brevo (kirim email undangan dan pengingat)
 ```
@@ -73,9 +100,9 @@ Pengguna → Vercel (frontend Next.js) → Railway (backend Elysia) → Railway 
 | --- | --- | --- |
 | Frontend | [Vercel](https://vercel.com) | Gratis. Meneruskan `/api/*` ke backend, jadi cookie login tetap milik domain Vercel |
 | Backend | [Railway](https://railway.com) | Dibangun dari `apps/api/Dockerfile`. Setiap kali menyala (`bun run start`), backend menjalankan migrasi tabel dan data awal sendiri |
-| MySQL | Railway | Satu klik, alamat koneksinya langsung tersedia untuk backend |
+| PostgreSQL | Railway | Satu klik, alamat koneksinya langsung tersedia untuk backend |
 | Berkas | [Cloudinary](https://cloudinary.com) | Paket gratis. Foto dan PDF disimpan privat (tipe *authenticated*), hanya bisa dibuka lewat backend setelah login |
-| Email | [Brevo](https://www.brevo.com) | Paket gratis. Railway Hobby memblokir SMTP (termasuk Zoho), jadi email dikirim lewat API Brevo. Alamat Zoho tetap bisa menjadi pengirimnya |
+| Email | [Brevo](https://www.brevo.com) | Paket gratis. Railway Hobby memblokir SMTP (termasuk Zoho), jadi email dikirim lewat API Brevo. Alamat Zoho tetap bisa menjadi pengirimnya. Wajib: aktivasi akun, lupa sandi, dan ganti email memakai tautan email |
 
 Railway memberi kredit percobaan, setelah itu paket Hobby berbayar (sekitar US$5 per bulan; cek harga terbaru di situsnya).
 
@@ -102,27 +129,27 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
 2. Di **Dashboard** (atau **Settings → API Keys**), salin **API environment variable**. Bentuknya `cloudinary://API_KEY:API_SECRET@CLOUD_NAME`. Bagian `CLOUDINARY_URL=` di depannya tidak ikut disalin.
 3. Buka **Settings → Security**, centang **Allow delivery of PDF and ZIP files**, lalu simpan. Tanpa ini dokumen PDF tidak bisa dibuka.
 
-### Langkah 3: backend dan MySQL di Railway
+### Langkah 3: backend dan PostgreSQL di Railway
 
 1. Masuk ke Railway dengan akun GitHub, lalu **New Project → Deploy from GitHub repo** dan pilih repository tadi.
 2. Klik layanan yang terbentuk, buka **Settings → Root Directory**, isi `apps/api`. Railway mengenali proyek Bun dari `package.json` dan `bun.lock`.
-3. Di kanvas proyek klik **+ Create → Database → MySQL**.
+3. Di kanvas proyek klik **+ Create → Database → PostgreSQL**.
 4. Buka tab **Variables** layanan backend, lalu tambahkan (volume tidak diperlukan lagi karena berkas disimpan di Cloudinary):
 
    | Variable | Isi |
    | --- | --- |
-   | `DATABASE_URL` | `${{MySQL.MYSQL_URL}}` (diketik persis begitu; Railway mengisinya otomatis) |
+   | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (diketik persis begitu; Railway mengisinya otomatis. Sesuaikan `Postgres` bila nama layanan database Anda berbeda) |
    | `NODE_ENV` | `production` |
    | `BETTER_AUTH_SECRET` | Teks acak minimal 32 karakter, buat di Git Bash dengan `openssl rand -hex 32` |
    | `BETTER_AUTH_URL` | Sementara `https://contoh.vercel.app`, diganti di langkah 5 |
    | `FRONTEND_URL` | Sama dengan `BETTER_AUTH_URL` |
    | `CLOUDINARY_URL` | Nilai dari langkah 2b.2 (`cloudinary://...`) |
    | `SEED_ADMIN_EMAIL` | Email admin pertama |
-   | `SEED_ADMIN_PASSWORD` | Sandi admin pertama, minimal 10 karakter |
+   | `SEED_ADMIN_PASSWORD` | Sandi admin pertama: minimal 10 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin |
    | `BREVO_API_KEY` | Kunci dari langkah 2 |
    | `SMTP_FROM` | `Aplikasi Pendataan Kegiatan <alamat-zoho-yang-diverifikasi-di-brevo@domain.go.id>` |
 
-5. Buka **Settings → Networking → Generate Domain**. Anda mendapat alamat seperti `https://xxx.up.railway.app`. Buka `https://xxx.up.railway.app/api/health`; bila tampil `{"status":"ok"}`, backend sudah jalan dan tersambung ke MySQL.
+5. Buka **Settings → Networking → Generate Domain**. Anda mendapat alamat seperti `https://xxx.up.railway.app`. Buka `https://xxx.up.railway.app/api/health`; bila tampil `{"status":"ok"}`, backend sudah jalan dan tersambung ke PostgreSQL.
 
 ### Langkah 4: frontend di Vercel
 
@@ -135,6 +162,8 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
 
 Kembali ke Railway, ubah `BETTER_AUTH_URL` dan `FRONTEND_URL` menjadi alamat Vercel dari langkah 4.4. Railway akan menyalakan ulang backend otomatis. Setelah itu buka alamat Vercel dan login dengan `SEED_ADMIN_EMAIL` dan `SEED_ADMIN_PASSWORD`.
 
+Sebelum membuat akun pegawai, uji email: buat satu akun dengan email Anda sendiri di **Manajemen akun → Buat akun**, lalu pastikan tautan aktivasinya sampai dan bisa dibuka. Bila email gagal, akun tetap tersimpan dan halaman admin menampilkan pesan galatnya; setelah pengaturan email diperbaiki, pakai **Kirim ulang undangan**.
+
 ### Memperbarui aplikasi
 
 Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala.
@@ -146,19 +175,22 @@ Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel 
 | Halaman Vercel terbuka tapi login gagal atau "server tidak dapat dihubungi" | `API_URL` di Vercel, dan `BETTER_AUTH_URL`/`FRONTEND_URL` di Railway harus persis alamat Vercel (`https://`, tanpa garis miring di akhir) |
 | Backend Railway gagal menyala | Tab **Deployments → View logs**; biasanya ada variable wajib yang belum diisi (pesannya menyebut namanya) |
 | Email tidak sampai | `BREVO_API_KEY` dan `SMTP_FROM` (harus sender yang sudah diverifikasi). Periksa juga folder spam |
+| Tautan di email mengarah ke alamat yang salah | `FRONTEND_URL` di Railway harus alamat publik frontend |
+| Simpan data atau login dijawab 403 `ASAL_DITOLAK` | `FRONTEND_URL`/`BETTER_AUTH_URL` tidak sama dengan alamat yang dibuka di peramban |
+| Banyak pegawai mendapat "Terlalu banyak permintaan" saat login bersamaan | Login dibatasi 10 percobaan per menit per alamat IP (`apps/api/src/lib/auth.ts`, `customRules`). Pegawai di satu kantor biasanya keluar lewat satu IP publik, jadi naikkan batas ini bila perlu |
 | Unggah foto gagal | `CLOUDINARY_URL` di Railway (harus diawali `cloudinary://`). Pesan galatnya ada di log backend |
 | Dokumen PDF tidak bisa dibuka | Cloudinary **Settings → Security → Allow delivery of PDF and ZIP files** belum dicentang |
 | Berkas di atas 10 MB ditolak | Batas paket gratis Cloudinary untuk berkas non-gambar. Perkecil PDF-nya, atau naikkan paket Cloudinary |
 
 ## Deploy ke VPS dengan Docker
 
-Alternatif dari Railway + Vercel bila aplikasi dipasang di VPS sendiri (mis. server Diskominfo). Satu `docker compose` menjalankan empat container: MySQL, backend (`apps/api/Dockerfile`), frontend (`apps/web/Dockerfile`), dan Caddy (`Caddyfile`) sebagai pintu masuk HTTPS. Hanya Caddy yang membuka port ke luar (80 dan 443).
+Alternatif dari Railway + Vercel bila aplikasi dipasang di VPS sendiri (mis. server Diskominfo). Satu `docker compose` menjalankan empat container: PostgreSQL, backend (`apps/api/Dockerfile`), frontend (`apps/web/Dockerfile`), dan Caddy (`Caddyfile`) sebagai pintu masuk HTTPS. Hanya Caddy yang membuka port ke luar (80 dan 443).
 
 1. Pasang Docker di VPS, lalu salin proyek ini ke sana (`git clone`).
 2. Arahkan DNS domain (mis. `kegiatan.palembang.go.id`) ke IP VPS. Belum punya domain? Pakai IP VPS dulu (peramban akan memberi peringatan sertifikat).
-3. Di root proyek: `cp docker.env.example .env`, lalu isi `DOMAIN`, `DB_PASSWORD`, `DB_ROOT_PASSWORD`, `BETTER_AUTH_SECRET`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, dan pengaturan email.
+3. Di root proyek: `cp docker.env.example .env`, lalu isi `DOMAIN`, `DB_PASSWORD`, `BETTER_AUTH_SECRET` (buat dengan `openssl rand -base64 48`), `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, dan pengaturan email (`SMTP_*` atau `BREVO_API_KEY`). File `.env` ini hanya ada di server dan tidak ikut ke Git.
 4. Jalankan `docker compose up -d --build`. Backend otomatis menjalankan migrasi dan membuat akun admin pertama.
-5. Buka `https://DOMAIN` dan login dengan akun admin dari langkah 3.
+5. Buka `https://DOMAIN`, login dengan akun admin dari langkah 3, lalu uji email dengan membuat satu akun untuk email Anda sendiri (lihat langkah 5 deploy Railway).
 
 HTTPS wajib, karena di produksi cookie login hanya dikirim lewat HTTPS. Caddy mengurus sertifikatnya sendiri.
 
@@ -166,14 +198,19 @@ HTTPS wajib, karena di produksi cookie login hanya dikirim lewat HTTPS. Caddy me
 | --- | --- |
 | Memperbarui aplikasi | `git pull` lalu `docker compose up -d --build` |
 | Melihat log | `docker compose logs -f backend` |
-| Cadangan database | `docker compose exec mysql sh -c 'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" kominfo_pd_kg' > cadangan.sql` |
+| Cadangan database | `docker compose exec postgres pg_dump -U postgres kominfo_pd_kg > cadangan.sql` |
 | Cadangan berkas dokumentasi | `docker run --rm -v kominfo-kegiatan_storage:/data -v "$PWD":/out alpine tar czf /out/storage.tgz -C /data .` |
 
-Data MySQL, berkas dokumentasi, dan sertifikat tersimpan di volume Docker, sehingga tetap aman saat container dibuat ulang. Jangan jalankan `docker compose down -v`, karena perintah itu menghapus volume.
+Data PostgreSQL, berkas dokumentasi, dan sertifikat tersimpan di volume Docker, sehingga tetap aman saat container dibuat ulang. Jangan jalankan `docker compose down -v`, karena perintah itu menghapus volume.
 
 ## Keputusan yang masih menunggu dinas
 
 - Bagan organisasi resmi (O5) dan daftar jenis kegiatan resmi (O6): data seed masih contoh dari situs dinas.
 - Alamat dan format kop surat untuk ekspor PDF.
 - Lokasi hosting dan domain produksi (O4). Railway dan Vercel tidak punya server di Indonesia, padahal NFR-07 mensyaratkannya; cocok untuk demo, perlu diputuskan sebelum dipakai resmi.
-- PRD menyebut PostgreSQL; proyek memakai MySQL 8 atas keputusan pemilik proyek.
+
+## Catatan rilis: autentikasi dan manajemen akun
+
+- Login dengan NIP sudah dihapus. Migrasi `1_akun_dan_autentikasi` berjalan otomatis saat backend menyala; umumkan ke pegawai bahwa mereka masuk dengan email.
+- Undangan aktivasi yang terkirim sebelum migrasi tetap berlaku sampai kedaluwarsa (tokennya diubah menjadi hash oleh migrasi).
+- Kata sandi lama tetap bisa dipakai dan otomatis disimpan ulang dengan Argon2id saat pemiliknya login.

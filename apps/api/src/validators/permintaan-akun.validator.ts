@@ -5,7 +5,7 @@ export const PermintaanAkunValidator = {
   params: t.Object({ id: t.Numeric({ minimum: 1, error: "ID permintaan tidak valid" }) }),
   ajukan: t.Object({
     nama: t.String({ minLength: 1, maxLength: 150, error: "Nama wajib diisi, maksimal 150 karakter" }),
-    nip: t.Optional(t.Nullable(t.String({ pattern: "^(\d{18})?$", error: "NIP harus 18 digit angka" }))),
+    nip: t.Optional(t.Nullable(t.String({ pattern: "^(\\d{18})?$", error: "NIP harus 18 digit angka" }))),
     email: t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }),
     catatan: t.Optional(t.Nullable(t.String({ maxLength: 500, error: "Catatan maksimal 500 karakter" }))),
   }),

@@ -124,6 +124,18 @@ export const AuditLogRepository = {
     return baris.map((b) => ({ id: Number(b.id), aksi: b.aksi, aktor: b.aktorId ? (peta.get(b.aktorId)?.nama ?? null) : null, waktu: b.createdAt }));
   },
 
+  // Riwayat terbaru yang menyangkut satu akun: aksi terhadap akun itu dan aksi yang dilakukannya
+  async riwayatAkun(userId: string, batas = 15) {
+    const baris = await prisma.auditLog.findMany({
+      where: { OR: [{ entitas: "user", entitasId: userId }, { aktorId: userId }] },
+      select: { id: true, aksi: true, entitas: true, entitasId: true, aktorId: true, ip: true, createdAt: true },
+      orderBy: { id: "desc" },
+      take: batas,
+    });
+    const peta = await petaAktor(baris.map((b) => b.aktorId));
+    return baris.map(({ id, createdAt, ...b }) => denganAktor({ id: Number(id), waktu: createdAt, ...b }, peta));
+  },
+
   // Siapa dan kapan terakhir mengubah/membatalkan kegiatan; null bila belum pernah
   async pengubahTerakhirKegiatan(kegiatanId: number) {
     const b = await prisma.auditLog.findFirst({

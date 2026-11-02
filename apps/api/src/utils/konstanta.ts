@@ -1,6 +1,12 @@
 // Daftar nilai tetap yang dipakai di validator, service, dan repository
 
+// PEGAWAI adalah role operator (pencatat kegiatan); di antarmuka ditampilkan sebagai "Operator"
 export const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const;
+
+// Status akun, diturunkan dari kolom banned dan ada-tidaknya kredensial (lihat utils/status-akun.ts)
+export const STATUS_AKUN = ["MENUNGGU_AKTIVASI", "AKTIF", "NONAKTIF"] as const;
+
+export const TEMA = ["light", "dark", "system"] as const;
 
 // Role yang boleh membuat/mengubah kegiatan, draf, dan dokumentasi
 export const PENULIS = ["PEGAWAI", "ADMIN"] as const;
@@ -35,4 +41,11 @@ export const AKSI_AUDIT = [
   "minta_akun",
   "setujui",
   "tolak",
+  "minta_reset_sandi",
+  "kirim_reset_sandi",
+  "ganti_sandi",
+  "minta_ganti_email",
+  "ganti_email",
+  "batal_ganti_email",
+  "cabut_sesi",
 ] as const;

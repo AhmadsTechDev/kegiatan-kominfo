@@ -6,6 +6,7 @@
     "dev": "bun --watch src/index.ts",
     "start": "prisma migrate deploy && bun scripts/hak-akses.ts && bun prisma/seed.ts && bun src/index.ts",
     "typecheck": "tsc --noEmit",
+    "test": "bun test",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

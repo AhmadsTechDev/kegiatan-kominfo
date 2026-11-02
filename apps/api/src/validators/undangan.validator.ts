@@ -7,5 +7,4 @@ export const UndanganValidator = {
     email: t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }),
     role: t.UnionEnum(ROLES, { error: "Role tidak valid" }),
   }),
-  aktivasiQuery: t.Object({ token: t.String({ minLength: 10, maxLength: 100, error: "Token tidak valid" }) }),
 };

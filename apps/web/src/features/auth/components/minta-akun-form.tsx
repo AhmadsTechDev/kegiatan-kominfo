@@ -2,7 +2,7 @@
 // KOMPONEN FORMULIR PERMINTAAN AKUN (MintaAkunForm)
 // =============================================================================
 // Gunanya: Menyediakan formulir pengajuan akun baru bagi pegawai atau non-ASN kepada admin,
-// mencakup nama, NIP (opsional), email dinas, catatan, serta visualisasi status hasil.
+// mencakup nama, NIP (opsional), email pribadi, catatan, serta visualisasi status hasil.
 //
 // Isi berkas:
 //   - KOLOM         : pemetaan nama kolom galat dari respons backend ke properti formulir
@@ -83,7 +83,7 @@ export function MintaAkunForm() {
             Administrator akan meninjau permintaan Anda. Bila disetujui, tautan aktivasi dikirim ke <span className="font-semibold text-foreground">{getValues("email")}</span>.
           </p>
         </div>
-        <Button asChild variant="outline" className="h-10">
+        <Button asChild variant="outline" className="h-10 pointer-coarse:min-h-11">
           <Link href="/login">
             <ArrowLeft aria-hidden />
             Kembali ke halaman masuk
@@ -118,7 +118,7 @@ export function MintaAkunForm() {
         </Field>
         <Field data-invalid={!!formState.errors.email}>
           <FieldLabel htmlFor="minta-email">
-            Email <Wajib />
+            Email pribadi <Wajib />
           </FieldLabel>
           <Input id="minta-email" type="email" autoComplete="email" maxLength={255} className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
           <FieldError errors={[formState.errors.email]} />
@@ -131,9 +131,9 @@ export function MintaAkunForm() {
       </FieldGroup>
       <Button type="submit" className="h-11 w-full" disabled={ajukan.isPending}>
         {ajukan.isPending && <Spinner />}
-        {ajukan.isPending ? "Mengirim..." : "Kirim permintaan"}
+        {ajukan.isPending ? "Mengirim..." : "Kirim ke administrator"}
       </Button>
-      <Link href="/login" className="mx-auto inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground">
+      <Link href="/login" className="mx-auto inline-flex items-center gap-1.5 rounded text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11">
         <ArrowLeft aria-hidden className="size-4" />
         Kembali ke halaman masuk
       </Link>

@@ -11,8 +11,8 @@
 //   - useJenisUnitAdmin, useSimpanJenisUnit : kueri dan mutasi hierarki jenis unit
 //   - usePegawaiAdmin, useSimpanPegawai, useImporPegawai : kueri dan mutasi pegawai
 //   - useJenisAdmin, useSimpanJenis : kueri dan mutasi master kategori kegiatan
-//   - useAkunAdmin, useSimpanAkun, useStatusAkun, useHapusAkun : manajemen akun
-//   - useHubungkanPegawai, useResetSandi, useUndangPegawai : administrasi akun pegawai
+//   - useAkunAdmin, useDetailAkun, useSimpanAkun, useStatusAkun, useHapusAkun : manajemen akun
+//   - useKirimUlangUndangan, useResetSandi, useCabutSesiAkun, useUndangPegawai : aksi akun lainnya
 //   - useAuditLog, useAuditDetail, usePilihanAudit : kueri jejak audit aktivitas
 //   - usePermintaanAkun, useJumlahPermintaan, useProsesPermintaan : permintaan akun
 //
@@ -34,7 +34,9 @@ import {
   buatJenisUnit,
   buatPegawai,
   buatUnitKerja,
+  cabutSesiAkun,
   getAkun,
+  getDetailAkun,
   getAuditDetail,
   getJumlahPermintaan,
   getPermintaanAkun,
@@ -46,9 +48,9 @@ import {
   getPilihanAudit,
   getUnitKerja,
   hapusAkun,
+  kirimUlangUndangan,
   nonaktifkanAkun,
   resetSandiAkun,
-  hubungkanPegawai,
   setujuiPermintaan,
   tolakPermintaan,
   undangPegawai,
@@ -58,7 +60,7 @@ import {
   ubahPegawai,
   ubahUnitKerja,
 } from "../api/admin";
-import type { FilterAkun, FilterAudit, FilterPegawai, IsiAkun, IsiHubungkan, IsiJenisUnit, IsiPegawaiBaru, HasilPegawaiBaru, IsiUndangan, IsiUnit, StatusPermintaan } from "../types";
+import type { FilterAkun, FilterAudit, FilterPegawai, IsiAkun, IsiJenisUnit, IsiPegawaiBaru, HasilPegawaiBaru, IsiUndangan, IsiUnit, StatusPermintaan } from "../types";
 
 export const adminKeys = {
   unitKerja: ["admin", "unit-kerja"] as const,
@@ -67,7 +69,8 @@ export const adminKeys = {
   daftarPegawai: (f: FilterPegawai) => [...adminKeys.pegawai, f] as const,
   jenis: ["admin", "jenis-kegiatan"] as const,
   akun: ["admin", "akun"] as const,
-  daftarAkun: (f: FilterAkun) => [...adminKeys.akun, f] as const,
+  daftarAkun: (f: FilterAkun) => [...adminKeys.akun, "daftar", f] as const,
+  detailAkun: (id: string) => [...adminKeys.akun, "detail", id] as const,
   audit: ["admin", "audit-log"] as const,
   daftarAudit: (f: FilterAudit) => [...adminKeys.audit, "daftar", f] as const,
   detailAudit: (id: number) => [...adminKeys.audit, "detail", id] as const,
@@ -139,11 +142,12 @@ export function useSimpanJenis() {
 export const useAkunAdmin = (f: FilterAkun) =>
   useQuery({ queryKey: adminKeys.daftarAkun(f), queryFn: () => getAkun(f), placeholderData: keepPreviousData });
 
+export const useDetailAkun = (id: string) => useQuery({ queryKey: adminKeys.detailAkun(id), queryFn: () => getDetailAkun(id) });
+
 export function useSimpanAkun() {
   const segarkan = useSegarkan(adminKeys.akun, adminKeys.pegawai);
   return useMutation({
-    mutationFn: ({ id, isi, password }: { id?: string; isi: IsiAkun; password?: string }) =>
-      id ? ubahAkun(id, isi) : buatAkun({ ...isi, password: password ?? "" }),
+    mutationFn: ({ id, isi }: { id?: string; isi: IsiAkun }) => (id ? ubahAkun(id, isi) : buatAkun(isi)),
     onSuccess: segarkan,
   });
 }
@@ -162,20 +166,19 @@ export function useHapusAkun() {
   return useMutation({ mutationFn: (id: string) => hapusAkun(id), onSuccess: segarkan });
 }
 
-export function useHubungkanPegawai() {
-  const segarkan = useSegarkan(adminKeys.akun, adminKeys.pegawai, adminKeys.unitKerja);
-  return useMutation({
-    mutationFn: ({ id, isi }: { id: string; isi: IsiHubungkan }) => hubungkanPegawai(id, isi),
-    onSuccess: segarkan,
-  });
+export function useKirimUlangUndangan() {
+  const segarkan = useSegarkan(adminKeys.akun);
+  return useMutation({ mutationFn: kirimUlangUndangan, onSuccess: segarkan });
 }
 
 export function useResetSandi() {
   const segarkan = useSegarkan(adminKeys.akun);
-  return useMutation({
-    mutationFn: ({ id, password }: { id: string; password: string }) => resetSandiAkun(id, password),
-    onSuccess: segarkan,
-  });
+  return useMutation({ mutationFn: resetSandiAkun, onSuccess: segarkan });
+}
+
+export function useCabutSesiAkun() {
+  const segarkan = useSegarkan(adminKeys.akun);
+  return useMutation({ mutationFn: cabutSesiAkun, onSuccess: segarkan });
 }
 
 export const useAuditLog = (f: FilterAudit) =>

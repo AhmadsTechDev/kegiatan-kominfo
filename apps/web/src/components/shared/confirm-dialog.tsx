@@ -42,6 +42,8 @@ type ConfirmDialogProps = {
   pendingLabel?: string;
   onConfirm: () => void;
   pending?: boolean;
+  // "default" untuk aksi yang tidak merusak (mis. kirim ulang undangan)
+  confirmVariant?: "destructive" | "default";
   children?: React.ReactNode;
 };
 
@@ -54,6 +56,7 @@ export function ConfirmDialog({
   pendingLabel = "Memproses...",
   onConfirm,
   pending,
+  confirmVariant = "destructive",
   children,
 }: ConfirmDialogProps) {
   return (
@@ -65,10 +68,10 @@ export function ConfirmDialog({
         </AlertDialogHeader>
         {children}
         <AlertDialogFooter>
-          <AlertDialogCancel className="h-10" disabled={pending}>
+          <AlertDialogCancel className="h-10 pointer-coarse:min-h-11" disabled={pending}>
             Kembali
           </AlertDialogCancel>
-          <Button variant="destructive" className="h-10" onClick={onConfirm} disabled={pending}>
+          <Button variant={confirmVariant} className="h-10 pointer-coarse:min-h-11" onClick={onConfirm} disabled={pending}>
             {pending && <Spinner />}
             {pending ? pendingLabel : confirmLabel}
           </Button>

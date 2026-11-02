@@ -51,6 +51,7 @@ services:
       # Bila diisi, foto dan dokumen disimpan di Cloudinary (volume storage di bawah tidak terpakai)
       CLOUDINARY_URL: ${CLOUDINARY_URL:-}
       CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-kominfo-kegiatan}
+
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
       SMTP_HOST: ${SMTP_HOST:-smtp.zoho.com}
@@ -62,7 +63,7 @@ services:
       BREVO_API_KEY: ${BREVO_API_KEY:-}
       TZ: Asia/Jakarta
     volumes:
-      # Foto dan dokumen kegiatan bila CLOUDINARY_URL kosong (NFR-04: di luar folder publik)
+      # Foto dan dokumen kegiatan bila CLOUDINARY_URL kosong 
       - storage:/data/storage
 
   frontend:

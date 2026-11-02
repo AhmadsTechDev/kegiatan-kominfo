@@ -10,10 +10,10 @@
 //   - getPegawai, buatPegawai, ubahPegawai : API master pegawai
 //   - imporPegawai, unduhTemplatPegawai : impor massal dan templat Excel pegawai
 //   - getJenisKegiatan, buatJenisKegiatan, ubahJenisKegiatan : API jenis kegiatan
-//   - getAkun, buatAkun, ubahAkun, nonaktifkanAkun, aktifkanAkun, hapusAkun : API akun
-//   - hubungkanPegawai, resetSandiAkun, undangPegawai : pengelolaan akun pegawai
+//   - getAkun, getDetailAkun, buatAkun, ubahAkun, nonaktifkanAkun, aktifkanAkun, hapusAkun : API akun
+//   - kirimUlangUndangan, resetSandiAkun, cabutSesiAkun, undangPegawai : aksi akun lainnya
 //   - getAuditLog, getAuditDetail, getPilihanAudit : API jejak audit aktivitas
-//   - getPermintaanAkun, getJumlahPermintaan, setujuiPermintaan, tolakPermintaan : API registrasi
+//   - getPermintaanAkun, getJumlahPermintaan, setujuiPermintaan, tolakPermintaan : API permintaan akun
 //
 // Catatan penting:
 //   - Mendukung kebutuhan master data (FR-02) dan jejak audit aktivitas (FR-03).
@@ -25,6 +25,8 @@
 import { apiClient } from "@/lib/api-client";
 import type {
   AkunAdmin,
+  AkunDetail,
+  HasilSimpanAkun,
   AuditDetail,
   AuditItem,
   FilterAkun,
@@ -33,7 +35,6 @@ import type {
   Halaman,
   HasilImpor,
   IsiAkun,
-  IsiHubungkan,
   IsiUndangan,
   IsiPegawai,
   IsiPegawaiBaru,
@@ -100,16 +101,18 @@ export const getAkun = (f: FilterAkun) =>
   apiClient
     .get<Halaman<AkunAdmin>>("/admin/akun", { params: params({ ...f, q: f.q.trim(), pageSize: UKURAN_HALAMAN_ADMIN }) })
     .then((r) => r.data);
-export const buatAkun = (isi: IsiAkun & { password: string }) => apiClient.post<Hasil<string>>("/admin/akun", isi).then((r) => r.data);
-export const ubahAkun = (id: string, isi: IsiAkun) => apiClient.patch<Hasil<string>>(`/admin/akun/${id}`, isi).then((r) => r.data);
+export const getDetailAkun = (id: string) => apiClient.get<AkunDetail>(`/admin/akun/${id}`).then((r) => r.data);
+export const buatAkun = (isi: IsiAkun) => apiClient.post<HasilSimpanAkun>("/admin/akun", isi).then((r) => r.data);
+export const ubahAkun = (id: string, isi: IsiAkun) => apiClient.patch<HasilSimpanAkun>(`/admin/akun/${id}`, isi).then((r) => r.data);
 export const nonaktifkanAkun = (id: string, alasan: string) =>
   apiClient.post<Hasil<string>>(`/admin/akun/${id}/nonaktifkan`, { alasan }).then((r) => r.data);
 export const aktifkanAkun = (id: string) => apiClient.post<Hasil<string>>(`/admin/akun/${id}/aktifkan`).then((r) => r.data);
 export const hapusAkun = (id: string) => apiClient.delete<Hasil<string>>(`/admin/akun/${id}`).then((r) => r.data);
-export const hubungkanPegawai = (id: string, isi: IsiHubungkan) =>
-  apiClient.post<Hasil<string>>(`/admin/akun/${id}/hubungkan-pegawai`, isi).then((r) => r.data);
-export const resetSandiAkun = (id: string, password: string) =>
-  apiClient.post<Hasil<string>>(`/admin/akun/${id}/reset-sandi`, { password }).then((r) => r.data);
+export const kirimUlangUndangan = (id: string) =>
+  apiClient.post<{ id: string; email: string; kedaluwarsa: string }>(`/admin/akun/${id}/kirim-ulang-undangan`).then((r) => r.data);
+export const resetSandiAkun = (id: string) =>
+  apiClient.post<{ id: string; email: string; sesiDicabut: number }>(`/admin/akun/${id}/reset-sandi`).then((r) => r.data);
+export const cabutSesiAkun = (id: string) => apiClient.post<{ id: string; jumlah: number }>(`/admin/akun/${id}/cabut-sesi`).then((r) => r.data);
 
 export const getAuditLog = (f: FilterAudit) =>
   apiClient.get<Halaman<AuditItem>>("/audit-log", { params: params({ ...f, pageSize: UKURAN_HALAMAN_AUDIT }) }).then((r) => r.data);

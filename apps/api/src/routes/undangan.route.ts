@@ -10,6 +10,4 @@ export const undanganRoutes = new Elysia()
     auth: ["ADMIN"],
     params: UndanganValidator.params,
     body: UndanganValidator.undang,
-  })
-  // Cek token aktivasi sebelum user membuat kata sandi (tanpa login)
-  .get("/aktivasi", UndanganController.infoToken, { query: UndanganValidator.aktivasiQuery });
+  });

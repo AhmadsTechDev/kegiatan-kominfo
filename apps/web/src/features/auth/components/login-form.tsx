@@ -1,14 +1,14 @@
 // =============================================================================
 // KOMPONEN FORMULIR LOGIN (LoginForm)
 // =============================================================================
-// Gunanya: Menangani interaksi formulir masuk pengguna (NIP/email dan kata sandi), validasi
+// Gunanya: Menangani interaksi formulir masuk pengguna (email dan kata sandi), validasi
 // input, pemanggilan mutasi autentikasi, serta penanganan akun terkunci sementara.
 //
 // Isi berkas:
 //   - LoginForm : komponen formulir login dengan visualisasi hitung mundur saat terkunci
 //
 // Cara kerja:
-//   1. Mengelola input identitas dan kata sandi dengan validasi skema loginSchema via React Hook Form.
+//   1. Mengelola input email dan kata sandi dengan validasi skema loginSchema via React Hook Form.
 //   2. Mengirim kredensial ke server melalui mutasi useLogin saat formulir dikirim.
 //   3. Menampilkan peringatan dan timer hitung mundur jika akun terkunci sementara (LoginError).
 //   4. Menonaktifkan tombol submit saat proses/sukses agar terhindar dari pengiriman ganda.
@@ -23,7 +23,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleAlert, Eye, EyeOff, Lock, LockKeyhole, UserRound } from "lucide-react";
+import { CircleAlert, Eye, EyeOff, Lock, LockKeyhole, Mail } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -45,7 +45,7 @@ export function LoginForm() {
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { identitas: "", password: "" },
+    defaultValues: { email: "", password: "" },
   });
 
   const error = loginMutation.error instanceof LoginError ? loginMutation.error : null;
@@ -79,30 +79,32 @@ export function LoginForm() {
       )}
 
       <FieldGroup className="gap-4">
-        <Field data-invalid={!!errors.identitas}>
-          <FieldLabel htmlFor="identitas">
-            NIP atau email
+        <Field data-invalid={!!errors.email}>
+          <FieldLabel htmlFor="email">
+            Email
             <span aria-hidden className="text-destructive">
               *
             </span>
           </FieldLabel>
           <div className="relative">
-            <UserRound
+            <Mail
               aria-hidden
               className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              id="identitas"
+              id="email"
+              type="email"
+              inputMode="email"
               autoComplete="username"
               autoFocus
-              placeholder="Masukkan NIP atau email"
+              placeholder="nama@contoh.com"
               className="h-11 pl-9"
               aria-required
-              aria-invalid={!!errors.identitas}
-              {...register("identitas")}
+              aria-invalid={!!errors.email}
+              {...register("email")}
             />
           </div>
-          <FieldError errors={[errors.identitas]} />
+          <FieldError errors={[errors.email]} />
         </Field>
 
         <Field data-invalid={!!errors.password}>
@@ -122,7 +124,7 @@ export function LoginForm() {
               placeholder="Masukkan kata sandi"
               type={tampilkanSandi ? "text" : "password"}
               autoComplete="current-password"
-              className="h-11 pr-11 pl-9"
+              className="h-11 pr-12 pl-9"
               aria-required
               aria-invalid={!!errors.password}
               {...register("password")}
@@ -131,7 +133,7 @@ export function LoginForm() {
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute top-1/2 right-1 -translate-y-1/2"
+              className="absolute top-1/2 right-1 -translate-y-1/2 pointer-coarse:right-0 pointer-coarse:size-11"
               aria-label={tampilkanSandi ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
               aria-pressed={tampilkanSandi}
               onClick={() => setTampilkanSandi((v) => !v)}

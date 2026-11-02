@@ -37,7 +37,7 @@ export function ErrorState({ message, onRetry, retrying, className }: ErrorState
           <p className="text-xs text-muted-foreground">{message ?? "Terjadi kesalahan. Coba lagi beberapa saat."}</p>
         </div>
         {onRetry && (
-          <Button variant="outline" className="h-10" onClick={onRetry} disabled={retrying}>
+          <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={onRetry} disabled={retrying}>
             <RotateCw className={cn(retrying && "animate-spin")} />
             Coba lagi
           </Button>

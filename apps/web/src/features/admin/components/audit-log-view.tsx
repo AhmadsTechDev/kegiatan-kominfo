@@ -69,6 +69,14 @@ const LABEL_AKSI: Record<string, string> = {
   minta_akun: "Minta akun",
   setujui: "Setujui",
   tolak: "Tolak",
+  minta_reset_sandi: "Minta atur ulang sandi",
+  kirim_reset_sandi: "Kirim tautan atur ulang sandi",
+  ganti_sandi: "Ganti sandi",
+  minta_ganti_email: "Minta ganti email",
+  ganti_email: "Ganti email",
+  batal_ganti_email: "Batal ganti email",
+  cabut_sesi: "Keluarkan sesi",
+  migrasi: "Migrasi data",
 };
 
 const LABEL_ENTITAS: Record<string, string> = {
@@ -82,9 +90,9 @@ const LABEL_ENTITAS: Record<string, string> = {
   permintaan_akun: "Permintaan akun",
 };
 
-const AKSI_PERINGATAN = new Set(["login_gagal", "akun_terkunci", "hapus", "hapus_file", "nonaktifkan", "reset_sandi", "tolak"]);
+const AKSI_PERINGATAN = new Set(["login_gagal", "akun_terkunci", "hapus", "hapus_file", "nonaktifkan", "reset_sandi", "kirim_reset_sandi", "cabut_sesi", "tolak"]);
 const AKSI_BARU = new Set(["buat", "unggah", "aktifkan", "aktivasi", "setujui"]);
-const AKSI_AKSES = new Set(["login", "logout", "ekspor", "minta_akun"]);
+const AKSI_AKSES = new Set(["login", "logout", "ekspor", "minta_akun", "minta_reset_sandi"]);
 
 function kelasAksi(aksi: string) {
   if (AKSI_PERINGATAN.has(aksi)) return "bg-status-dibatalkan text-status-dibatalkan-foreground";
@@ -93,10 +101,10 @@ function kelasAksi(aksi: string) {
   return "bg-secondary text-primary";
 }
 
-const labelAksi = (a: string) => LABEL_AKSI[a] ?? a;
-const labelEntitas = (e: string) => LABEL_ENTITAS[e] ?? e;
+export const labelAksi = (a: string) => LABEL_AKSI[a] ?? a;
+export const labelEntitas = (e: string) => LABEL_ENTITAS[e] ?? e;
 
-function ChipAksi({ aksi }: { aksi: string }) {
+export function ChipAksi({ aksi }: { aksi: string }) {
   return (
     <span
       className={cn("rounded-md px-2 py-0.5 text-xs font-semibold whitespace-nowrap", kelasAksi(aksi))}

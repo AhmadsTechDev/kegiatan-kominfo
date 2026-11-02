@@ -20,7 +20,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const COOKIE_SESI = ["better-auth.session_token", "__Secure-better-auth.session_token"];
-const HALAMAN_PUBLIK = ["/login", "/minta-akun", "/aktivasi"];
+const HALAMAN_PUBLIK = ["/login", "/minta-akun", "/aktivasi", "/lupa-sandi", "/reset-sandi", "/konfirmasi-email"];
 const TUJUAN_BAWAAN = ["/", "/dashboard"];
 
 export function proxy(request: NextRequest) {

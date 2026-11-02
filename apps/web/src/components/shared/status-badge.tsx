@@ -1,24 +1,26 @@
 // =============================================================================
-// LENCANA STATUS KEGIATAN DAN PEMERIKSAAN (STATUS BADGE)
+// LENCANA STATUS KEGIATAN, PEMERIKSAAN, DAN AKUN (STATUS BADGE)
 // =============================================================================
 // Gunanya: Menampilkan label status pelaksanaan kegiatan dan status pemeriksaan
-// pimpinan secara visual pada Aplikasi Pendataan Kegiatan.
+// pimpinan, dan status akun pengguna secara visual pada Aplikasi Pendataan Kegiatan.
 //
 // Isi berkas:
 //   - StatusBadge            : lencana bentuk pil untuk status pelaksanaan kegiatan
 //   - labelPemeriksaan       : fungsi pemetaan teks label status pemeriksaan pimpinan
 //   - StatusPemeriksaanBadge : lencana bentuk kotak untuk status pemeriksaan pimpinan
+//   - StatusAkunBadge        : lencana bentuk pil untuk status akun (menunggu aktivasi, aktif, nonaktif)
 //
 // Catatan penting:
 //   - Status pelaksanaan dihitung oleh backend; antarmuka hanya memetakan tampilannya.
 //   - Lencana pemeriksaan berbentuk kotak agar tidak tertukar dengan status pelaksanaan.
 //   - Teks status selalu dicantumkan agar pemahaman status tidak bergantung pada warna.
 //
-// Dipakai oleh: Tabel daftar kegiatan, tampilan detail kegiatan, dan modul pimpinan
+// Dipakai oleh: Tabel daftar kegiatan, tampilan detail kegiatan, modul pimpinan, manajemen akun, dan Pengaturan
 // =============================================================================
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { LABEL_STATUS_AKUN, type StatusAkun } from "@/types/auth";
 
 export type StatusPelaksanaan = "akan_datang" | "berlangsung" | "selesai" | "dibatalkan";
 
@@ -67,6 +69,23 @@ export function StatusPemeriksaanBadge({ status, className }: { status: StatusPe
   return (
     <Badge variant="outline" className={cn("rounded-md font-medium", kelas, className)}>
       {label}
+    </Badge>
+  );
+}
+
+// Bentuk sama dengan StatusBadge (pil + titik + teks). Warna meminjam token status yang artinya sejalan:
+// menunggu aktivasi = kuning (masih berjalan), aktif = hijau, nonaktif = netral (bukan merah, karena bukan galat)
+const AKUN: Record<StatusAkun, string> = {
+  MENUNGGU_AKTIVASI: "bg-status-berlangsung text-status-berlangsung-foreground",
+  AKTIF: "bg-status-selesai text-status-selesai-foreground",
+  NONAKTIF: "bg-muted text-muted-foreground",
+};
+
+export function StatusAkunBadge({ status, className }: { status: StatusAkun; className?: string }) {
+  return (
+    <Badge variant="outline" className={cn("gap-1.5 rounded-full border-transparent font-medium", AKUN[status], className)}>
+      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+      {LABEL_STATUS_AKUN[status]}
     </Badge>
   );
 }

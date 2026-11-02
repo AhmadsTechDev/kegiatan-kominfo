@@ -12,10 +12,15 @@
 // =============================================================================
 
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { PengaturanView } from "@/features/pengaturan/components/pengaturan-view";
 
 export const metadata: Metadata = { title: "Pengaturan" };
 
 export default function PengaturanPage() {
-  return <PengaturanView />;
+  return (
+    <Suspense>
+      <PengaturanView />
+    </Suspense>
+  );
 }

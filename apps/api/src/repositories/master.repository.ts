@@ -176,11 +176,6 @@ export const MasterRepository = {
     return (await prisma.pegawai.findUnique({ where: { nip }, select: { id: true, nama: true } })) ?? undefined;
   },
 
-  // Akun yang memakai username (NIP) tertentu
-  async akunDenganUsername(username: string) {
-    return (await prisma.user.findUnique({ where: { username }, select: { id: true, email: true, pegawaiId: true } })) ?? undefined;
-  },
-
   // Akun yang memakai email tertentu
   async akunDenganEmail(email: string) {
     return (await prisma.user.findUnique({ where: { email }, select: { id: true, name: true } })) ?? undefined;
@@ -191,9 +186,9 @@ export const MasterRepository = {
     return prisma.pegawai.findMany({ where: { nip: null } });
   },
 
-  // Menyamakan username (NIP) akun dengan NIP pegawai yang baru diubah
-  async samakanNipAkun(pegawaiId: number, nip: string | null, tx: Db) {
-    await tx.user.updateMany({ where: { pegawaiId }, data: { username: nip, displayUsername: nip } });
+  // Menyamakan nama akun dengan nama pegawai yang baru diubah
+  async samakanNamaAkun(pegawaiId: number, nama: string, tx: Db) {
+    await tx.user.updateMany({ where: { pegawaiId }, data: { name: nama } });
   },
 
   // ---------- Jenis kegiatan ----------

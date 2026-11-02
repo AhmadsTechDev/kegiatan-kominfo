@@ -99,25 +99,28 @@ export const PermintaanAkunService = {
     return PermintaanAkunRepository.jumlahMenunggu();
   },
 
-  // Menyetujui permintaan: buat/undang akun. Bila gagal, status permintaan dikembalikan ke MENUNGGU
+  // Menyetujui permintaan: buat data pegawai bila belum ada, lalu undang akunnya. Bila gagal, status permintaan dikembalikan ke MENUNGGU
   async setujui(id: number, isi: SetujuiPermintaan, admin: Admin) {
     const permintaan = await ambilAlih(id, { status: "DISETUJUI", diprosesOleh: admin.id });
     try {
       const email = isi.email ?? permintaan.email;
-      const pegawaiId =
-        permintaan.pegawaiId ??
-        (isi.unitKerjaId
-          ? (
-              await MasterService.buatPegawai(
-                { nip: null, nama: permintaan.nama, jabatan: isi.jabatan ?? null, unitKerjaId: isi.unitKerjaId },
-                { id: admin.id, role: "ADMIN", pegawaiId: null },
-                admin.meta,
-              )
-            ).id
-          : null);
-      const hasil = pegawaiId
-        ? await UndanganService.undang({ pegawaiId, email, role: isi.role }, admin)
-        : await UndanganService.undangTanpaPegawai({ nama: permintaan.nama, email, role: isi.role }, admin);
+      let pegawaiId = permintaan.pegawaiId;
+      if (!pegawaiId) {
+        // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa NIP terdaftar wajib diberi unit kerja dan jabatan
+        const galat = [
+          ...(isi.unitKerjaId ? [] : [{ field: "unitKerjaId", message: "Unit kerja wajib dipilih" }]),
+          ...(isi.jabatan?.trim() ? [] : [{ field: "jabatan", message: "Jabatan wajib diisi" }]),
+        ];
+        if (galat.length) throw Unprocessable("Lengkapi data pegawai pemohon", galat);
+        pegawaiId = (
+          await MasterService.buatPegawai(
+            { nip: null, nama: permintaan.nama, jabatan: isi.jabatan!, unitKerjaId: isi.unitKerjaId! },
+            { id: admin.id, role: "ADMIN", pegawaiId: null },
+            admin.meta,
+          )
+        ).id;
+      }
+      const hasil = await UndanganService.undang({ pegawaiId, email, role: isi.role }, admin);
       await AuditLogService.catat({ aktorId: admin.id, aksi: "setujui", entitas: "permintaan_akun", entitasId: id, sesudah: { role: isi.role, email: hasil.email }, ...admin.meta });
       return hasil;
     } catch (e) {

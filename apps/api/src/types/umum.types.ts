@@ -1,8 +1,9 @@
-import type { AKSI_AUDIT, ROLES, SATUAN_REKAP, STATUS_PELAKSANAAN, STATUS_PEMERIKSAAN, STATUS_PERMINTAAN } from "@/utils/konstanta";
+import type { AKSI_AUDIT, ROLES, SATUAN_REKAP, STATUS_AKUN, STATUS_PELAKSANAAN, STATUS_PEMERIKSAAN, STATUS_PERMINTAAN } from "@/utils/konstanta";
 
 // Tipe yang dipakai bersama oleh banyak modul
 
 export type Role = (typeof ROLES)[number];
+export type StatusAkun = (typeof STATUS_AKUN)[number];
 export type StatusPelaksanaan = (typeof STATUS_PELAKSANAAN)[number];
 export type StatusPemeriksaan = (typeof STATUS_PEMERIKSAAN)[number];
 export type StatusPermintaan = (typeof STATUS_PERMINTAAN)[number];
@@ -18,8 +19,8 @@ export type Aktor = { id: string; role: Role; pegawaiId: number | null };
 // IP dan user-agent pemanggil, untuk audit log
 export type MetaRequest = { ip: string | null; userAgent: string | null };
 
-// Admin yang memanggil API Better Auth (butuh header cookie aslinya)
-export type Admin = { id: string; headers: Headers; meta: MetaRequest };
+// Admin yang menjalankan aksi manajemen akun; sesiId = sesi yang sedang dipakai admin (tidak ikut dicabut)
+export type Admin = { id: string; headers: Headers; meta: MetaRequest; sesiId?: string };
 
 // Rentang waktu [mulai, akhir)
 export type Rentang = { mulai: Date; akhir: Date };
@@ -37,6 +38,7 @@ export type GalatField = { field: string; message: string };
 // Bagian konteks Elysia yang dipakai controller. B = body, P = params, Q = query
 export type Konteks<B = unknown, P = unknown, Q = unknown> = {
   user: UserSesi;
+  session: { id: string };
   request: Request;
   body: B;
   params: P;

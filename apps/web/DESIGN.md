@@ -55,7 +55,7 @@ Lokasi: `src/app/globals.css`.
   --accent: #dce3f5;
   --accent-foreground: #1a2a6e;
   --border: #d1d8ec;
-  --input: #b8c2dc;
+  --input: #7f8aa8;                 /* batas kolom isian, 3,44:1 di atas putih (komponen UI minimal 3:1). Gelap: #61708f */
   --ring: #1a2a6e;
 
   /* Bahaya dan peringatan */
@@ -339,7 +339,7 @@ Setiap halaman memakai `AppShell` dan `PageHeader`. Kotak ASCII di bawah menunju
 
 ### 5.1 Login
 
-Kartu di tengah layar di atas latar `muted`: nama sistem, logo dinas, kolom NIP atau email, kata sandi (dengan tombol tampilkan), tombol "Masuk". Setelah penguncian akun (NFR-01), tampilkan pesan "Terlalu banyak percobaan. Coba lagi dalam 15 menit." beserta hitung mundur. Tidak ada tautan pendaftaran (akun dibuat admin).
+Kartu di tengah layar di atas latar `muted`: nama sistem, logo dinas, kolom email (email pribadi adalah satu-satunya identitas login; NIP tidak dipakai untuk masuk), kata sandi (dengan tombol tampilkan), tombol "Masuk", tautan "Lupa kata sandi?", dan kalimat "Belum memiliki akun? Hubungi Administrator untuk mendapatkan akses." dengan "Hubungi Administrator" sebagai tautan ke formulir permintaan akses. Setelah penguncian akun (NFR-01), tampilkan pesan "Terlalu banyak percobaan. Coba lagi dalam 15 menit." beserta hitung mundur. Tidak ada tautan pendaftaran (akun dibuat admin).
 
 ### 5.2 Dashboard pimpinan (FR-09)
 

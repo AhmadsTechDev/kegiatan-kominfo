@@ -14,17 +14,24 @@ export type KandidatPengingat = {
   nama: string;
 };
 
+// Akun penerima pengingat: aktif dan tidak mematikan notifikasi jenis ini di Preferensi (belum punya preferensi = mau)
+function penerima(jenis: JenisPengingat): Prisma.UserWhereInput {
+  const notif = jenis === "H_MINUS_1" ? { notifPengingatKegiatan: true } : { notifPengingatDokumentasi: true };
+  return { banned: false, OR: [{ preferensi: { is: null } }, { preferensi: { is: notif } }] };
+}
+
 // Kegiatan yang perlu diingatkan + akun penanggung jawabnya, kecuali yang sudah pernah dikirimi pengingat jenis ini
 async function kandidat(jenis: JenisPengingat, syarat: Prisma.KegiatanWhereInput): Promise<KandidatPengingat[]> {
+  const kepada = penerima(jenis);
   const kegiatan = await prisma.kegiatan.findMany({
-    where: { deletedAt: null, dibatalkanAt: null, ...syarat, penanggungJawab: { users: { some: { banned: false } } } },
+    where: { deletedAt: null, dibatalkanAt: null, ...syarat, penanggungJawab: { users: { some: kepada } } },
     select: {
       id: true,
       judul: true,
       tglMulai: true,
       tglSelesai: true,
       lokasiNama: true,
-      penanggungJawab: { select: { users: { where: { banned: false }, select: { id: true, email: true, name: true } } } },
+      penanggungJawab: { select: { users: { where: kepada, select: { id: true, email: true, name: true } } } },
       pengingat: { where: { jenis }, select: { userId: true } },
     },
     take: BATAS_PER_PUTARAN,

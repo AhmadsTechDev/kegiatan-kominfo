@@ -7,7 +7,7 @@
 // Isi berkas:
 //   - KartuPublik : komponen wadah kartu dengan lambang kota untuk antarmuka publik
 //
-// Dipakai oleh: Halaman minta akun dan halaman aktivasi akun
+// Dipakai oleh: Halaman hubungi administrator, aktivasi, lupa/atur ulang sandi, verifikasi email
 // =============================================================================
 
 import Image from "next/image";

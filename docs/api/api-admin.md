@@ -158,7 +158,7 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 
 ### `PATCH /api/admin/pegawai/:id`
 
-**Body**: `nip`, `nama`, `jabatan`, `unitKerjaId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional). Bila NIP berubah, username login akunnya ikut berubah.
+**Body**: `nip`, `nama`, `jabatan`, `unitKerjaId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
 
 **Respons 200**: `{ "id": 1 }`
 
@@ -242,6 +242,8 @@ Impor pegawai dari Excel. Kirim dulu tanpa `simpan` untuk pratinjau, lalu kirim 
 
 ## Manajemen akun
 
+Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi pemilik akun; pemiliknya membuat kata sandi sendiri. Admin tidak pernah menentukan, melihat, atau mengirim kata sandi. Setiap akun tertaut ke data pegawai (jabatan dan unit kerja wajib, NIP opsional). Status akun dijelaskan di [api-auth.md](api-auth.md#status-akun).
+
 ### `GET /api/admin/akun`
 
 **Query** (opsional)
@@ -249,9 +251,9 @@ Impor pegawai dari Excel. Kirim dulu tanpa `simpan` untuk pratinjau, lalu kirim 
 | Field | Tipe | Keterangan |
 | --- | --- | --- |
 | `q` | string | Cari nama, email, atau NIP |
-| `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | |
-| `aktif` | `1` \| `0` | `0` = akun yang dinonaktifkan |
-| `page`, `pageSize` | angka | Bawaan 1 dan 20 |
+| `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | `PEGAWAI` = Operator di antarmuka |
+| `status` | `MENUNGGU_AKTIVASI` \| `AKTIF` \| `NONAKTIF` | |
+| `page`, `pageSize` | angka | Bawaan 1 dan 20 (maks. 100) |
 
 **Respons 200**
 
@@ -261,9 +263,11 @@ Impor pegawai dari Excel. Kirim dulu tanpa `simpan` untuk pratinjau, lalu kirim 
     {
       "id": "07747c26-fd62-4ab6-8584-ebf7b244fc3a",
       "name": "Andi Saputra",
-      "email": "andi@diskominfo.local",
-      "username": "198702152011012002",
+      "email": "andi@contoh.com",
+      "emailBaru": null,
+      "emailVerified": true,
       "role": "PEGAWAI",
+      "status": "AKTIF",
       "banned": false,
       "banReason": null,
       "pegawaiId": 1,
@@ -273,11 +277,11 @@ Impor pegawai dari Excel. Kirim dulu tanpa `simpan` untuk pratinjau, lalu kirim 
         "nama": "Andi Saputra",
         "nip": "198702152011012002",
         "jabatan": "Analis Data",
+        "unitKerjaId": 10,
         "unitKerja": "Seksi Pengelolaan Data dan Persediaan",
         "unitInduk": "Bidang Teknologi Informasi dan Persandian"
       },
-      "foto": "/api/me/foto/07747c26-...?v=e2e12a91-...",
-      "menungguAktivasi": false,
+      "foto": null,
       "terkunci": false,
       "bisaDihapus": false
     }
@@ -290,77 +294,95 @@ Impor pegawai dari Excel. Kirim dulu tanpa `simpan` untuk pratinjau, lalu kirim 
 
 | Field | Keterangan |
 | --- | --- |
-| `banned` | `true` = akun dinonaktifkan |
-| `menungguAktivasi` | Undangan belum diaktivasi (belum punya kata sandi) |
+| `emailBaru` | Email baru yang diajukan pemilik akun dan belum diverifikasi |
 | `terkunci` | Sedang dikunci 15 menit karena salah kata sandi 5 kali |
 | `bisaDihapus` | `false` bila akun pernah dipakai (pernah beraksi, membuat kegiatan, atau mengunggah) |
 
+### `GET /api/admin/akun/:id`
+
+Detail akun: semua field daftar, ditambah `kontak`, `updatedAt`, data pegawai lengkap (`unitKerja: { id, nama, parent }`), `undangan` (`{ "kedaluwarsa": "..." }` untuk akun `MENUNGGU_AKTIVASI`, selain itu `null`), `sesi` (sesi aktif tanpa token), dan `riwayat` (15 catatan audit terbaru terkait akun).
+
+**Galat**: 404 bila tidak ada.
+
 ### `POST /api/admin/akun`
 
-Membuat akun langsung dengan kata sandi (tanpa email undangan).
+Membuat akun beserta data pegawainya dalam satu transaksi, lalu mengirim email aktivasi (berlaku 72 jam).
 
 **Body**
 
 | Field | Tipe | Wajib | Keterangan |
 | --- | --- | --- | --- |
-| `name` | string | ya | 1–150 karakter |
-| `email` | string | ya | Unik |
+| `name` | string | ya | Nama lengkap, 1–150 karakter |
+| `email` | string | ya | Email pribadi, unik. Menjadi identitas login |
+| `nip` | string \| null | tidak | 18 digit. Bila milik pegawai terdaftar yang belum punya akun, data pegawai itu dipakai (tidak diduplikasi) |
+| `jabatan` | string | ya | 1–150 karakter |
+| `unitKerjaId` | angka | ya | Unit kerja aktif |
 | `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | ya | |
-| `password` | string | ya | 10–128 karakter |
-| `pegawaiId` | angka \| null | tidak | Tautkan ke pegawai; NIP pegawai menjadi username login |
-| `nip` | string \| null | tidak | Dipakai bila tanpa `pegawaiId`; tidak boleh NIP milik pegawai terdaftar |
+| `pegawaiId` | angka \| null | tidak | Pakai pegawai tertentu dari Master data |
 
-**Respons 201**: `{ "id": "07747c26-..." }`
+```json
+{ "name": "Andi Saputra", "email": "andi@contoh.com", "nip": null, "jabatan": "Analis Data", "unitKerjaId": 10, "role": "PEGAWAI" }
+```
 
-**Galat**: 422 bila email/NIP sudah dipakai atau pegawai sudah tertaut ke akun lain.
+**Respons 201**
+
+```json
+{ "id": "07747c26-...", "undangan": { "email": "andi@contoh.com", "galat": null } }
+```
+
+Bila email gagal dikirim, akun tetap tersimpan dan `undangan.galat` berisi pesannya; kirim ulang lewat `kirim-ulang-undangan`.
+
+**Galat**: 422 (email/NIP sudah dipakai, pegawai sudah tertaut ke akun lain, jabatan kosong, unit tidak ada/nonaktif).
 
 ### `PATCH /api/admin/akun/:id`
 
-Body sama dengan `POST` tanpa `password`. Bila role berubah, akun itu otomatis logout dari semua perangkat. Admin tidak bisa mengubah role akunnya sendiri.
+Body sama dengan `POST`. Data pegawai tertaut ikut diperbarui (dibuat bila akun lama belum punya).
 
-**Respons 200**: `{ "id": "..." }`
+- Role berubah: semua sesi akun dicabut. Admin tidak bisa mengubah role akunnya sendiri.
+- Email berubah pada akun `MENUNGGU_AKTIVASI`: undangan baru dikirim ke email baru, tautan lama tidak berlaku.
+- Email berubah pada akun `AKTIF`: email ditandai belum terverifikasi.
 
-### `POST /api/admin/akun/:id/hubungkan-pegawai`
-
-Menautkan akun ke pegawai yang ada, atau membuat pegawai baru dari nama akun.
-
-**Body** (isi salah satu)
-
-```json
-{ "pegawaiId": 1 }
-```
-
-```json
-{ "pegawaiBaru": { "unitKerjaId": 10, "nip": null, "jabatan": "Staf" } }
-```
-
-**Respons 200**: `{ "id": "..." }`
+**Respons 200**: `{ "id": "...", "undangan": null }` (atau objek undangan seperti `POST`)
 
 ### `POST /api/admin/akun/:id/nonaktifkan`
 
 **Body**: `{ "alasan": "Pindah tugas" }` (opsional, maks. 255 karakter)
 
-**Respons 200**: `{ "id": "..." }`
+Akun tidak bisa login, semua sesinya dicabut, dan tautan email yang belum dipakai dibatalkan.
 
-**Galat**: 422 bila menonaktifkan akun sendiri atau akun sudah nonaktif.
+**Respons 200**: `{ "id": "..." }`. **Galat**: 422 bila akun sendiri atau sudah nonaktif.
 
 ### `POST /api/admin/akun/:id/aktifkan`
 
-**Body**: tidak ada
+**Respons 200**: `{ "id": "...", "status": "AKTIF" }` (`MENUNGGU_AKTIVASI` bila belum pernah diaktivasi; kirim ulang undangan).
 
-**Respons 200**: `{ "id": "..." }`
+### `POST /api/admin/akun/:id/kirim-ulang-undangan`
+
+Hanya untuk akun `MENUNGGU_AKTIVASI`. Tautan lama tidak berlaku lagi.
+
+**Respons 200**: `{ "id": "...", "email": "andi@contoh.com", "kedaluwarsa": "..." }`
+
+**Galat**: 422 (akun aktif atau nonaktif), 502 (email gagal dikirim).
 
 ### `POST /api/admin/akun/:id/reset-sandi`
 
-Mengatur kata sandi baru. Kunci login dibuka dan akun itu logout dari semua perangkat.
+Reset kata sandi lewat mekanisme resmi: tautan atur ulang (berlaku 1 jam) dikirim ke email pemilik akun, kunci login dibuka, dan semua sesinya dicabut. Kata sandi lama tetap berlaku sampai pemiliknya membuat yang baru. Hanya untuk akun `AKTIF`.
 
-**Body**: `{ "password": "sandibaru12345" }` (10–128 karakter)
+**Body**: tidak ada
 
-**Respons 200**: `{ "id": "..." }`
+**Respons 200**: `{ "id": "...", "email": "andi@contoh.com", "sesiDicabut": 1 }`
+
+**Galat**: 422 (akun menunggu aktivasi atau nonaktif), 502 (email gagal dikirim).
+
+### `POST /api/admin/akun/:id/cabut-sesi`
+
+Mengeluarkan akun dari semua perangkat. Bila admin mencabut sesinya sendiri, sesi yang sedang dipakai tetap berlaku.
+
+**Respons 200**: `{ "id": "...", "jumlah": 2 }`
 
 ### `DELETE /api/admin/akun/:id`
 
-Menghapus akun yang belum pernah dipakai.
+Menghapus akun yang belum pernah dipakai. Data pegawainya tetap ada.
 
 **Respons 200**: `{ "id": "..." }`
 
@@ -372,7 +394,7 @@ Menghapus akun yang belum pernah dipakai.
 
 ### `POST /api/admin/pegawai/:id/undang`
 
-Membuat akun untuk pegawai lalu mengirim email aktivasi. Bisa dipanggil ulang untuk mengirim ulang undangan yang belum diaktivasi (tautan lama tidak berlaku lagi).
+Membuat akun untuk pegawai di Master data lalu mengirim email aktivasi. Bisa dipanggil ulang untuk akun yang belum diaktivasi (tautan lama tidak berlaku lagi).
 
 **Body**
 
@@ -384,7 +406,7 @@ Membuat akun untuk pegawai lalu mengirim email aktivasi. Bisa dipanggil ulang un
 **Respons 200**
 
 ```json
-{ "userId": "07747c26-...", "email": "andi@diskominfo.local", "kirimUlang": false }
+{ "userId": "07747c26-...", "email": "andi@contoh.com", "kirimUlang": false }
 ```
 
 **Galat**
@@ -441,7 +463,7 @@ Untuk badge di menu admin.
 
 ### `POST /api/admin/permintaan-akun/:id/setujui`
 
-Menyetujui permintaan: akun dibuat dan email aktivasi dikirim. Bila pemohon tanpa NIP dan `unitKerjaId` diisi, data pegawai baru dibuat dulu.
+Menyetujui permintaan setelah identitas pemohon diverifikasi: akun dibuat dan email aktivasi dikirim. Bila pemohon tidak punya data pegawai, data pegawai baru dibuat dari `unitKerjaId` dan `jabatan` (keduanya wajib dalam kasus ini).
 
 **Body**
 
@@ -449,8 +471,8 @@ Menyetujui permintaan: akun dibuat dan email aktivasi dikirim. Bila pemohon tanp
 | --- | --- | --- | --- |
 | `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | ya | |
 | `email` | string | tidak | Ganti email pemohon bila perlu |
-| `unitKerjaId` | angka | tidak | Untuk membuat data pegawai baru |
-| `jabatan` | string \| null | tidak | Jabatan pegawai baru |
+| `unitKerjaId` | angka | bila tanpa data pegawai | Unit kerja pegawai baru |
+| `jabatan` | string | bila tanpa data pegawai | Jabatan pegawai baru |
 
 **Respons 200**: sama dengan undangan, `{ "userId": "...", "email": "...", "kirimUlang": false }`
 
@@ -527,6 +549,6 @@ Isi pilihan filter.
 {
   "aktor": [{ "id": "1ef5cd20-...", "nama": "Administrator", "email": "admin@diskominfo.local" }],
   "entitas": ["dokumentasi", "kegiatan", "pegawai", "permintaan_akun", "unit_kerja", "user"],
-  "aksi": ["login", "login_gagal", "akun_terkunci", "logout", "buat", "ubah", "hapus", "batal", "unggah", "hapus_file", "ganti_file", "periksa", "ekspor", "aktifkan", "nonaktifkan", "reset_sandi", "undang", "aktivasi", "minta_akun", "setujui", "tolak"]
+  "aksi": ["login", "login_gagal", "akun_terkunci", "logout", "buat", "ubah", "hapus", "batal", "unggah", "hapus_file", "ganti_file", "periksa", "ekspor", "aktifkan", "nonaktifkan", "reset_sandi", "undang", "aktivasi", "minta_akun", "setujui", "tolak", "minta_reset_sandi", "kirim_reset_sandi", "ganti_sandi", "minta_ganti_email", "ganti_email", "batal_ganti_email", "cabut_sesi"]
 }
 ```

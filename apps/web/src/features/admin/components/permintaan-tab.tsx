@@ -195,7 +195,7 @@ export function PermintaanTab() {
               <p className="text-xs text-muted-foreground">
                 {setujui.pegawai
                   ? `NIP ${setujui.pegawai.nip} · ${setujui.unitKerja}`
-                  : "Tanpa NIP. Pilih unit kerjanya di bawah supaya ia langsung tercatat sebagai pegawai unit itu."}
+                  : "Tanpa NIP terdaftar. Isi jabatan dan unit kerjanya; data pegawainya dibuat bersamaan dengan akun."}
               </p>
             </>
           }

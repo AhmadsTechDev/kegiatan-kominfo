@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { auditLogRoutes } from "./audit-log.route";
-import { authRoutes } from "./auth.route";
+import { akunPublikRoutes, authRoutes } from "./auth.route";
 import { dashboardRoutes } from "./dashboard.route";
 import { dokumentasiRoutes } from "./dokumentasi.route";
 import { drafKegiatanRoutes } from "./draf-kegiatan.route";
@@ -20,6 +20,7 @@ import { userRoutes } from "./user.route";
 export const apiRoutes = new Elysia({ prefix: "/api" })
   .use(healthRoutes)
   .use(authRoutes)
+  .use(akunPublikRoutes)
   .use(dashboardRoutes)
   .use(referensiRoutes)
   .use(kegiatanRoutes)

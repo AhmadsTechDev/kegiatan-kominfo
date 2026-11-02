@@ -106,8 +106,9 @@ async function validasiJenisUnit(isi: Omit<IsiJenisUnit, "aktif">, sebelum?: Jen
   return { nama, indukJenisId: isi.indukJenisId };
 }
 
-// Memeriksa isian pegawai: NIP sah dan belum dipakai, email belum dipakai, unit kerja ada dan aktif
-async function validasiPegawai(
+// Memeriksa isian pegawai: NIP sah dan belum dipakai, email belum dipakai, unit kerja ada dan aktif.
+// Juga dipakai user.service.ts saat admin membuat/mengubah akun beserta data pegawainya
+export async function validasiPegawai(
   isi: IsiPegawai,
   unitLamaId?: number,
   nipLama?: string | null,
@@ -118,9 +119,8 @@ async function validasiPegawai(
   const salahNip = nip && nip !== nipLama ? periksaNip(nip) : null;
   if (salahNip) galat.push({ field: "nip", message: salahNip });
   if (nip && !salahNip && nip !== nipLama) {
-    const [pemilik, akun] = await Promise.all([MasterRepository.pegawaiDenganNip(nip), MasterRepository.akunDenganUsername(nip)]);
+    const pemilik = await MasterRepository.pegawaiDenganNip(nip);
     if (pemilik && pemilik.id !== opsi.pegawaiId) galat.push({ field: "nip", message: `NIP sudah terdaftar atas nama ${pemilik.nama}` });
-    else if (akun && akun.pegawaiId !== opsi.pegawaiId) galat.push({ field: "nip", message: `NIP sudah dipakai akun ${akun.email}` });
   }
   if (opsi.email && (await MasterRepository.akunDenganEmail(opsi.email))) galat.push({ field: "email", message: "Email sudah dipakai akun lain" });
   if (!isi.nama.trim()) galat.push({ field: "nama", message: "Nama wajib diisi" });
@@ -271,7 +271,7 @@ export const MasterService = {
     );
   },
 
-  // Mengubah atau (non)aktifkan pegawai; bila NIP berubah, username akun ikut disamakan
+  // Mengubah atau (non)aktifkan pegawai; bila nama berubah, nama akun tertaut ikut disamakan
   async ubahPegawai(id: number, isi: IsiPegawai, aktor: Aktor, meta: MetaRequest) {
     const sebelum = await MasterRepository.pegawaiById(id);
     if (!sebelum) throw NotFound("Pegawai tidak ditemukan");
@@ -279,7 +279,7 @@ export const MasterService = {
     return denganCekDuplikat("nip", "NIP sudah terdaftar", () =>
       prisma.$transaction(async (tx) => {
         await MasterRepository.updatePegawai(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif }, tx);
-        if (nilai.nip !== sebelum.nip) await MasterRepository.samakanNipAkun(id, nilai.nip, tx);
+        if (nilai.nama !== sebelum.nama) await MasterRepository.samakanNamaAkun(id, nilai.nama, tx);
         const sesudah = await MasterRepository.pegawaiById(id, tx);
         await AuditLogService.catat({ aktorId: aktor.id, aksi: aksiUbah(sebelum, isi.aktif), entitas: "pegawai", entitasId: id, sebelum, sesudah, ...meta }, tx);
         return { id };

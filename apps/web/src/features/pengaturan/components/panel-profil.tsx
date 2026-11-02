@@ -1,30 +1,24 @@
 // =============================================================================
-// PANEL PENGATURAN DATA PROFIL PENGGUNA
+// PANEL PROFIL: DATA KEPEGAWAIAN DAN KONTAK
 // =============================================================================
-// Gunanya: Menyediakan formulir bagi pengguna untuk memperbarui informasi
-// profil pribadi seperti nama lengkap, jabatan dinas, dan nomor kontak.
+// Gunanya: Menampilkan data kepegawaian (dikelola administrator, hanya dibaca) dan
+// formulir nomor kontak yang boleh diubah sendiri oleh pemilik akun.
 //
 // Isi berkas:
-//   - PanelProfil : komponen form pembaruan data profil dan kontak pengguna
-//
-// Cara kerja:
-//   1. Menginisialisasi nilai awal form dari data profil pengguna saat ini.
-//   2. Memvalidasi nama wajib diisi dan format nomor telepon di sisi klien.
-//   3. Mengirim perubahan data ke server backend melalui permintaan PATCH /me.
-//   4. Memperbarui cache TanStack Query dan sesi login setelah berhasil disimpan.
+//   - Baris, Kosong      : baris label-nilai dan penanda nilai kosong (dipakai panel lain)
+//   - PanelKepegawaian   : nama, NIP, jabatan, dan unit kerja (read-only)
+//   - PanelKontak        : formulir nomor kontak (PATCH /me)
 //
 // Catatan penting:
-//   - Mengacu pada features/07-masuk-kelola-akun.md (sub-fitur Atur Profil).
-//   - Kolom jabatan hanya dapat diedit jika akun telah terhubung ke data pegawai.
-//   - Galat validasi 422 dari backend dipetakan langsung ke masing-masing input.
+//   - Nama, NIP, jabatan, dan unit kerja hanya bisa diubah admin; backend menolak perubahan dari pemilik akun.
+//   - Foto profil diubah dari kartu profil di bagian atas halaman Pengaturan.
 //
 // Dipakai oleh: frontend/src/features/pengaturan/components/pengaturan-view.tsx
 // =============================================================================
 
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check } from "lucide-react";
+import { Check, IdCard } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
@@ -33,75 +27,92 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import type { Profil } from "@/features/auth/hooks/use-profil";
-import { ApiError, apiClient } from "@/lib/api-client";
-import { authClient } from "@/lib/auth-client";
+import { ApiError } from "@/lib/api-client";
+import { useUbahKontak } from "../hooks/use-akun-saya";
 
-type IsiProfil = { nama: string; jabatan: string; kontak: string };
+export function Baris({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5 px-5 py-3.5 sm:flex-row sm:items-baseline sm:gap-4 md:px-6">
+      <dt className="text-sm text-muted-foreground sm:w-36 sm:shrink-0">{label}</dt>
+      <dd className="min-w-0 text-sm font-medium">{children}</dd>
+    </div>
+  );
+}
 
-export function PanelProfil({ p }: { p: Profil }) {
-  const queryClient = useQueryClient();
-  const sesi = authClient.useSession();
-  const awal: IsiProfil = { nama: p.name, jabatan: p.pegawai?.jabatan ?? "", kontak: p.kontak ?? "" };
-  const [isi, setIsi] = useState<IsiProfil>(awal);
-  const [galat, setGalat] = useState<Partial<Record<keyof IsiProfil, string>>>({});
+export const Kosong = ({ teks = "-" }: { teks?: string }) => <span className="font-normal text-muted-foreground">{teks}</span>;
 
-  const simpan = useMutation({
-    mutationFn: async (v: IsiProfil) =>
-      (await apiClient.patch<Profil>("/me", { nama: v.nama.trim(), jabatan: v.jabatan.trim() || null, kontak: v.kontak.trim() || null })).data,
-    onSuccess: async () => {
-      toast.success("Profil berhasil diperbarui");
-      await Promise.all([queryClient.invalidateQueries({ queryKey: ["me"] }), sesi.refetch()]);
-    },
-    onError: (e) => {
-      if (e instanceof ApiError && e.details?.length) {
-        setGalat(Object.fromEntries(e.details.map((d) => [d.field === "nama" || d.field === "kontak" || d.field === "jabatan" ? d.field : "nama", d.message])));
-      } else toast.error(e.message);
-    },
-  });
+export function PanelKepegawaian({ p }: { p: Profil }) {
+  const unit = p.pegawai?.unitKerja;
+  return (
+    <Panel className="h-fit">
+      <PanelHeader title="Data kepegawaian" description="Dikelola administrator. Hubungi admin bila ada data yang keliru." />
+      {p.pegawai ? (
+        <dl className="divide-y divide-muted border-t border-muted">
+          <Baris label="Nama lengkap">{p.pegawai.nama}</Baris>
+          <Baris label="NIP">{p.pegawai.nip ? <span className="tabular-nums">{p.pegawai.nip}</span> : <Kosong teks="Tanpa NIP" />}</Baris>
+          <Baris label="Jabatan">{p.pegawai.jabatan ?? <Kosong />}</Baris>
+          <Baris label="Unit kerja">
+            {unit?.nama}
+            {unit?.parent && <span className="block text-xs font-normal text-muted-foreground">di bawah {unit.parent.nama}</span>}
+          </Baris>
+        </dl>
+      ) : (
+        <PanelBody className="flex items-start gap-3 border-t border-muted pt-4 md:pt-5">
+          <span className="flex size-10 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <IdCard aria-hidden className="size-5" />
+          </span>
+          <div className="text-sm">
+            <p className="font-medium">Belum terhubung ke data pegawai</p>
+            <p className="mt-0.5 text-muted-foreground">Minta administrator melengkapi jabatan dan unit kerja akun Anda.</p>
+          </div>
+        </PanelBody>
+      )}
+    </Panel>
+  );
+}
 
-  const berubah = isi.nama !== awal.nama || isi.jabatan !== awal.jabatan || isi.kontak !== awal.kontak;
+const POLA_KONTAK = /^[0-9+()\-\s]*$/;
+
+export function PanelKontak({ p }: { p: Profil }) {
+  const simpan = useUbahKontak();
+  const awal = p.kontak ?? "";
+  const [kontak, setKontak] = useState(awal);
+  const [galat, setGalat] = useState<string | null>(null);
+
   const kirim = (e: React.FormEvent) => {
     e.preventDefault();
-    const baru: typeof galat = {};
-    if (!isi.nama.trim()) baru.nama = "Nama wajib diisi";
-    if (isi.kontak && !/^[0-9+()\-\s]*$/.test(isi.kontak)) baru.kontak = "Kontak berupa nomor telepon, mis. 0812-3456-7890";
-    setGalat(baru);
-    if (Object.keys(baru).length === 0) simpan.mutate(isi);
+    if (!POLA_KONTAK.test(kontak)) return setGalat("Kontak berupa nomor telepon, mis. 0812-3456-7890");
+    setGalat(null);
+    simpan.mutate(kontak.trim() || null, {
+      onSuccess: () => toast.success("Kontak diperbarui"),
+      onError: (e) => (e instanceof ApiError && e.details?.length ? setGalat(e.details[0]!.message) : toast.error(e.message)),
+    });
   };
-  const ubah = (k: keyof IsiProfil) => (e: React.ChangeEvent<HTMLInputElement>) => setIsi((v) => ({ ...v, [k]: e.target.value }));
 
   return (
     <Panel className="h-fit">
-      <PanelHeader title="Atur profil" description="Nama dan jabatan ini tampil pada kegiatan yang Anda catat." />
+      <PanelHeader title="Kontak" description="Hanya terlihat oleh Anda dan administrator." />
       <PanelBody className="border-t border-muted pt-4 md:pt-5">
-        <form onSubmit={kirim} noValidate className="grid gap-4 sm:grid-cols-2">
-          <Field data-invalid={!!galat.nama} className="sm:col-span-2">
-            <FieldLabel htmlFor="profil-nama">
-              Nama lengkap{" "}
-              <span aria-hidden className="text-destructive">
-                *
-              </span>
-            </FieldLabel>
-            <Input id="profil-nama" className="h-10" maxLength={150} value={isi.nama} onChange={ubah("nama")} aria-required aria-invalid={!!galat.nama} />
-            {galat.nama && <FieldError>{galat.nama}</FieldError>}
+        <form onSubmit={kirim} noValidate className="flex flex-col gap-4">
+          <Field data-invalid={!!galat}>
+            <FieldLabel htmlFor="profil-kontak">Nomor telepon/WhatsApp</FieldLabel>
+            <Input
+              id="profil-kontak"
+              className="h-10 pointer-coarse:min-h-11"
+              inputMode="tel"
+              autoComplete="tel"
+              maxLength={50}
+              placeholder="0812-3456-7890"
+              value={kontak}
+              onChange={(e) => setKontak(e.target.value)}
+              aria-invalid={!!galat}
+            />
+            {galat ? <FieldError>{galat}</FieldError> : <FieldDescription>Boleh dikosongkan.</FieldDescription>}
           </Field>
-          <Field data-invalid={!!galat.jabatan}>
-            <FieldLabel htmlFor="profil-jabatan">Jabatan</FieldLabel>
-            <Input id="profil-jabatan" className="h-10" maxLength={150} value={isi.jabatan} onChange={ubah("jabatan")} disabled={!p.pegawai} />
-            {!p.pegawai && <FieldDescription>Tersedia setelah akun terhubung ke data pegawai.</FieldDescription>}
-            {galat.jabatan && <FieldError>{galat.jabatan}</FieldError>}
-          </Field>
-          <Field data-invalid={!!galat.kontak}>
-            <FieldLabel htmlFor="profil-kontak">Kontak (telepon/WhatsApp)</FieldLabel>
-            <Input id="profil-kontak" className="h-10" inputMode="tel" maxLength={50} placeholder="0812-3456-7890" value={isi.kontak} onChange={ubah("kontak")} aria-invalid={!!galat.kontak} />
-            {galat.kontak && <FieldError>{galat.kontak}</FieldError>}
-          </Field>
-          <div className="sm:col-span-2">
-            <Button type="submit" className="h-10" disabled={!berubah || simpan.isPending}>
-              {simpan.isPending ? <Spinner /> : <Check aria-hidden />}
-              Simpan profil
-            </Button>
-          </div>
+          <Button type="submit" className="h-10 pointer-coarse:min-h-11 w-fit" disabled={kontak === awal || simpan.isPending}>
+            {simpan.isPending ? <Spinner /> : <Check aria-hidden />}
+            Simpan kontak
+          </Button>
         </form>
       </PanelBody>
     </Panel>

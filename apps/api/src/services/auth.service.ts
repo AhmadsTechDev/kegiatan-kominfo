@@ -1,28 +1,28 @@
 import { APIError } from "better-auth/api";
-import { NotFound, Unprocessable } from "@/lib/errors";
+import { NotFound } from "@/lib/errors";
+import { hashSandi, perluHashUlang } from "@/lib/sandi";
 import { storage } from "@/lib/storage";
 import { AuthRepository } from "@/repositories/auth.repository";
 import type { UbahProfil } from "@/types/auth.types";
 import type { MetaRequest } from "@/types/umum.types";
 import { prosesFotoProfil } from "@/utils/berkas";
 import { requestMeta } from "@/utils/konteks";
+import { statusAkun } from "@/utils/status-akun";
 import { AuditLogService } from "./audit-log.service";
 
 export const BATAS_GAGAL_LOGIN = 5;
 export const LAMA_KUNCI_MS = 15 * 60 * 1000;
-export const PATH_LOGIN = ["/sign-in/email", "/sign-in/username"];
-export const PATH_RESET_PUBLIK = ["/request-password-reset", "/forget-password"];
+export const PATH_LOGIN = "/sign-in/email";
+
+// Endpoint Better Auth yang boleh dipanggil dari luar (HTTP). Selebihnya (daftar mandiri, reset sandi bawaan,
+// ubah user, endpoint admin, dll.) ditutup; fitur akun memakai endpoint aplikasi sendiri yang punya validasi dan audit
+export const PATH_AUTH_PUBLIK = [PATH_LOGIN, "/sign-out", "/get-session"];
 
 // URL foto profil; `?v=` berganti setiap foto diganti sehingga aman di-cache peramban
 export const urlFoto = (userId: string, key: string | null) => (key ? `/api/me/foto/${userId}?v=${key.split("/").pop()?.split(".")[0]}` : null);
 
-// Mencari akun yang sedang mencoba login dari isian email atau username (NIP)
-async function cariAkunLogin(path: string, body: unknown) {
-  const isian = (body ?? {}) as { email?: string; username?: string };
-  if (path === "/sign-in/email" && isian.email) return AuthRepository.findByEmail(isian.email);
-  if (path === "/sign-in/username" && isian.username) return AuthRepository.findByUsername(isian.username);
-  return null;
-}
+// Email yang sedang dipakai untuk login (dari body permintaan)
+const emailLogin = (body: unknown) => (body as { email?: unknown } | undefined)?.email;
 
 // Meta request dari header (bila ada)
 const metaDari = (headers?: Headers) => (headers ? requestMeta(headers) : {});
@@ -30,14 +30,15 @@ const metaDari = (headers?: Headers) => (headers ? requestMeta(headers) : {});
 export const AuthService = {
   // ---------- Aturan login (dipanggil dari hook Better Auth di lib/auth.ts) ----------
 
-  // Menolak reset kata sandi mandiri; reset hanya lewat admin
-  tolakResetMandiri(): never {
-    throw new APIError("FORBIDDEN", { code: "RESET_DISABLED", message: "Reset kata sandi mandiri tidak tersedia. Hubungi administrator." });
+  // Menolak endpoint Better Auth yang tidak dipakai aplikasi
+  tolakEndpointTertutup(): never {
+    throw new APIError("NOT_FOUND", { code: "NOT_FOUND", message: "Endpoint tidak ditemukan" });
   },
 
   // Menolak login bila akun masih terkunci karena terlalu sering salah kata sandi
-  async tolakJikaTerkunci(path: string, body: unknown) {
-    const akun = await cariAkunLogin(path, body);
+  async tolakJikaTerkunci(body: unknown) {
+    const email = emailLogin(body);
+    const akun = typeof email === "string" ? await AuthRepository.findByEmail(email) : null;
     if (akun?.lockedUntil && akun.lockedUntil > new Date()) {
       throw new APIError("TOO_MANY_REQUESTS", {
         code: "ACCOUNT_LOCKED",
@@ -47,16 +48,20 @@ export const AuthService = {
     }
   },
 
-  // Login berhasil: hapus hitungan gagal dan catat ke audit log
-  async catatLoginBerhasil(userId: string, headers?: Headers) {
+  // Login berhasil: hapus hitungan gagal, perbarui hash lama ke Argon2id, dan catat ke audit log
+  async catatLoginBerhasil(userId: string, body: unknown, headers?: Headers) {
     await AuthRepository.resetLoginGagal(userId);
+    const sandi = (body as { password?: unknown } | undefined)?.password;
+    const hash = await AuthRepository.hashSandi(userId);
+    if (typeof sandi === "string" && hash && perluHashUlang(hash)) await AuthRepository.gantiSandi(userId, await hashSandi(sandi));
     await AuditLogService.catat({ aktorId: userId, aksi: "login", entitas: "user", entitasId: userId, ...metaDari(headers) });
   },
 
   // Login gagal: tambah hitungan gagal; setelah 5 kali akun dikunci 15 menit
-  async catatLoginGagal(path: string, body: unknown, headers?: Headers) {
+  async catatLoginGagal(body: unknown, headers?: Headers) {
     const meta = metaDari(headers);
-    const akun = await cariAkunLogin(path, body);
+    const email = emailLogin(body);
+    const akun = typeof email === "string" ? await AuthRepository.findByEmail(email) : null;
     if (!akun) {
       await AuditLogService.catat({ aktorId: null, aksi: "login_gagal", entitas: "user", ...meta });
       return;
@@ -82,39 +87,23 @@ export const AuthService = {
     await AuditLogService.catat({ aktorId: userId, aksi: "logout", entitas: "user", entitasId: userId, ...metaDari(headers) });
   },
 
-  // Dipanggil setelah user membuat kata sandi lewat tautan undangan
-  async catatAktivasi(userId: string) {
-    await AuthRepository.tandaiAktif(userId);
-    await AuditLogService.catat({ aktorId: userId, aksi: "aktivasi", entitas: "user", entitasId: userId });
-  },
-
   // ---------- Profil user yang sedang login (/api/me) ----------
 
-  // Profil lengkap user beserta URL fotonya
+  // Profil lengkap: data kepegawaian (dikelola admin), info akun, status, dan URL foto
   async profil(userId: string) {
     const data = await AuthRepository.findProfil(userId);
     if (!data) throw NotFound("Pengguna tidak ditemukan");
-    const { image, ...profil } = data;
-    return { ...profil, foto: urlFoto(userId, image) };
+    const { image, banned, punyaKredensial, ...profil } = data;
+    return { ...profil, status: statusAkun({ banned, punyaKredensial }), foto: urlFoto(userId, image) };
   },
 
-  // Mengubah nama, jabatan, dan kontak; nama & jabatan ikut disalin ke data pegawai
+  // Mengubah nomor kontak. Nama, NIP, jabatan, dan unit kerja hanya bisa diubah admin
   async ubahProfil(userId: string, isi: UbahProfil, meta: MetaRequest) {
     const sebelum = await AuthRepository.findProfil(userId);
     if (!sebelum) throw NotFound("Pengguna tidak ditemukan");
-    const nama = isi.nama.trim();
-    if (!nama) throw Unprocessable("Periksa kembali isian profil", [{ field: "nama", message: "Nama wajib diisi" }]);
-    const nilai = { nama, jabatan: isi.jabatan?.trim() || null, kontak: isi.kontak?.trim() || null };
-    await AuthRepository.ubahProfil(userId, sebelum.pegawai?.id ?? null, nilai);
-    await AuditLogService.catat({
-      aktorId: userId,
-      aksi: "ubah",
-      entitas: "user",
-      entitasId: userId,
-      sebelum: { nama: sebelum.name, jabatan: sebelum.pegawai?.jabatan ?? null, kontak: sebelum.kontak },
-      sesudah: nilai,
-      ...meta,
-    });
+    const kontak = isi.kontak?.trim() || null;
+    await AuthRepository.ubahKontak(userId, kontak);
+    await AuditLogService.catat({ aktorId: userId, aksi: "ubah", entitas: "user", entitasId: userId, sebelum: { kontak: sebelum.kontak }, sesudah: { kontak }, ...meta });
     return AuthService.profil(userId);
   },
 

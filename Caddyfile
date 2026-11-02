@@ -15,7 +15,6 @@
 {$DOMAIN} {
 	encode zstd gzip
 
-	# NFR-10: peramban selalu memakai HTTPS untuk domain ini
 	header Strict-Transport-Security "max-age=31536000"
 
 	# Caddy mengisi X-Forwarded-For dengan IP asli pengunjung (nilai kiriman pengunjung tidak dipercaya),

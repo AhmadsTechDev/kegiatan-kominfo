@@ -22,7 +22,7 @@
 //   - AdminGuard mengamankan tampilan UI, sedangkan backend tetap memvalidasi role (403).
 //   - Debounce 300ms pada KolomCari mencegah pemanggilan kueri pencarian berlebihan.
 //
-// Dipakai oleh: akun-view.tsx, audit-log-view.tsx, hubungkan-pegawai-dialog.tsx,
+// Dipakai oleh: akun-view.tsx, akun-aksi.tsx, akun-detail-view.tsx, audit-log-view.tsx,
 //               master-view.tsx, pegawai-tab.tsx, unit-kerja-tab.tsx
 // =============================================================================
 
@@ -39,6 +39,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { ApiError } from "@/lib/api-client";
+import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
 import { cn } from "@/lib/utils";
 import type { UnitKerjaAdmin } from "../types";
 
@@ -176,28 +177,37 @@ export function KolomCari({
   );
 }
 
+// idPanel: id elemen role="tabpanel" yang isinya diganti tab ini; panel memakai aria-labelledby={idTab(idPanel, value)}
+export const idTab = (idPanel: string, nilai: string) => `${idPanel}-tab-${nilai}`;
+
 export function PilihanTab<T extends string>({
   value,
   onChange,
   opsi,
   label,
+  idPanel,
 }: {
   value: T;
   onChange: (v: T) => void;
   opsi: { nilai: T; label: string; jumlah?: number }[];
   label: string;
+  idPanel?: string;
 }) {
+  const nilai = opsi.map((o) => o.nilai);
   return (
-    <div role="tablist" aria-label={label} className="flex flex-wrap gap-1">
+    <div role="tablist" aria-label={label} className="flex flex-wrap gap-1" onKeyDown={(e) => tanganiPanah(e, nilai, value, onChange)}>
       {opsi.map((o) => (
         <Button
           key={o.nilai}
           role="tab"
           variant="ghost"
+          id={idPanel ? idTab(idPanel, o.nilai) : undefined}
+          aria-controls={idPanel}
           aria-selected={value === o.nilai}
+          tabIndex={tabIndexPilihan(o.nilai, value, nilai[0])}
           onClick={() => onChange(o.nilai)}
           className={cn(
-            "h-9 border border-transparent px-3 text-muted-foreground",
+            "h-9 border border-transparent px-3 text-muted-foreground pointer-coarse:min-h-11",
             value === o.nilai && "border-primary/30 bg-secondary text-primary hover:bg-secondary",
           )}
         >
@@ -213,7 +223,7 @@ export function PilihanTab<T extends string>({
 
 const LANGSUNG = "__langsung__";
 
-export function PilihUnit({ unit, value, onChange, id, invalid }: { unit: UnitKerjaAdmin[]; value: string; onChange: (v: string) => void; id: string; invalid?: boolean }) {
+export function PilihUnit({ unit, value, onChange, id, invalid, required }: { unit: UnitKerjaAdmin[]; value: string; onChange: (v: string) => void; id: string; invalid?: boolean; required?: boolean }) {
   const tampil = unit.filter((u) => u.aktif || String(u.id) === value);
   const dipilih = unit.find((u) => String(u.id) === value);
   const utamaId = dipilih ? (dipilih.parentId ?? dipilih.id) : null;
@@ -223,7 +233,7 @@ export function PilihUnit({ unit, value, onChange, id, invalid }: { unit: UnitKe
   return (
     <div className="flex flex-col gap-2">
       <Select value={utamaId ? String(utamaId) : ""} onValueChange={onChange}>
-        <SelectTrigger id={id} className="h-10 w-full" aria-invalid={invalid}>
+        <SelectTrigger id={id} className="h-10 w-full" aria-invalid={invalid} aria-required={required}>
           <SelectValue placeholder="Pilih unit kerja" />
         </SelectTrigger>
         <SelectContent>

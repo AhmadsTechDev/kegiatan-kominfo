@@ -37,7 +37,8 @@
   --accent: #e4e9f7;
   --accent-foreground: #1a2a6e;
   --border: #e3e7f0;
-  --input: #c9d1e3;
+  /* Batas kolom isian: 3,44:1 terhadap card, 3,24:1 terhadap background (komponen UI minimal 3:1) */
+  --input: #7f8aa8;
   --ring: #2563eb;
 
   /* Bahaya */
@@ -94,7 +95,8 @@
   --accent: #1e2a45;
   --accent-foreground: #dbe5ff;
   --border: #233049;
-  --input: #34425f;
+  /* Batas kolom isian: 3,5:1 terhadap card, 3,79:1 terhadap background */
+  --input: #61708f;
   --ring: #60a5fa;
 
   --destructive: #dc2626;
@@ -193,6 +195,43 @@
   html {
     @apply font-sans;
   }
+
+  /* Tailwind v4 mengembalikan kursor tombol ke panah; kontrol yang bisa diklik ditandai kursor tangan di satu tempat */
+  a[href],
+  button,
+  summary,
+  select,
+  label[for],
+  label:has(> input[type="checkbox"], > input[type="radio"]),
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="radio"],
+  [role="switch"],
+  [role="combobox"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"] {
+    cursor: pointer;
+  }
+  :disabled,
+  [aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed;
+  }
+}
+
+/* Butir menu dan pilihan shadcn memakai utilitas cursor-default. Aturan ini sengaja di luar @layer agar menang
+   atas utilitas tanpa mengubah komponen di components/ui (DESIGN.md bagian 4) */
+[data-slot="dropdown-menu-item"]:not([data-disabled]),
+[data-slot="dropdown-menu-checkbox-item"]:not([data-disabled]),
+[data-slot="dropdown-menu-radio-item"]:not([data-disabled]),
+[data-slot="dropdown-menu-sub-trigger"]:not([data-disabled]),
+[data-slot="select-item"]:not([data-disabled]) {
+  cursor: pointer;
 }
 
 /* Gerak (DESIGN.md bagian 8). Kurva dipakai lewat kelas ease-out-expo dan ease-in-out-smooth. */

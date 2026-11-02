@@ -1,0 +1,5 @@
+[test]
+# Menyiapkan basis data uji (kosongkan, migrasi, data awal) sekali sebelum semua berkas uji
+preload = ["./tests/setup.ts"]
+# Uji memakai basis data sungguhan; beri waktu lebih untuk hashing kata sandi dan olah gambar
+timeout = 30000

@@ -54,10 +54,10 @@ export function FormDialog({ open, onOpenChange, title, description, onSubmit, p
             </p>
           )}
           <DialogFooter>
-            <Button type="button" variant="outline" className="h-10" onClick={() => onOpenChange(false)} disabled={pending}>
+            <Button type="button" variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={() => onOpenChange(false)} disabled={pending}>
               Batal
             </Button>
-            <Button type="submit" className="h-10" disabled={pending}>
+            <Button type="submit" className="h-10 pointer-coarse:min-h-11" disabled={pending}>
               {pending && <Spinner />}
               {pending ? "Menyimpan..." : submitLabel}
             </Button>

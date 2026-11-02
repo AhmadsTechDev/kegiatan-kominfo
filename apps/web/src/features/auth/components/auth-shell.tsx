@@ -7,7 +7,7 @@
 // Isi berkas:
 //   - AuthShell : komponen pembungkus tata letak halaman otentikasi dengan identitas dinas
 //
-// Dipakai oleh: Halaman login, minta akun, dan aktivasi akun
+// Dipakai oleh: Halaman login, hubungi administrator, aktivasi, lupa/atur ulang sandi, verifikasi email
 // =============================================================================
 
 import { Building2 } from "lucide-react";

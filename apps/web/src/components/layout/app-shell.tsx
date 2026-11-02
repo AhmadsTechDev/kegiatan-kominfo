@@ -36,6 +36,7 @@ import { site } from "@/config/site";
 import { useJumlahPermintaan } from "@/features/admin/hooks/use-admin";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { PencarianCepat } from "@/features/pencarian/components/pencarian-cepat";
+import { SinkronTema } from "@/features/pengaturan/hooks/use-akun-saya";
 import { cn } from "@/lib/utils";
 import { Brand } from "./brand";
 import { kelasLabel, SidebarNav } from "./sidebar-nav";
@@ -156,6 +157,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh">
+      {user && <SinkronTema />}
       <aside
         className={cn(
           "sticky top-0 hidden h-dvh shrink-0 p-3 transition-[width] duration-200 ease-out md:block md:w-[92px]",
