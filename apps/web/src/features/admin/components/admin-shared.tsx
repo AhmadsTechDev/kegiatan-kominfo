@@ -28,13 +28,11 @@
 
 "use client";
 
-import { Ellipsis, Pencil, Power, PowerOff, Search, ShieldAlert } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Ellipsis, Pencil, Power, PowerOff, ShieldAlert } from "lucide-react";
 import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
@@ -88,13 +86,13 @@ export function AksiBaris({
 }) {
   return (
     <div className="flex items-center justify-end gap-1">
-      <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground" aria-label={`Ubah ${nama}`} onClick={onUbah}>
+      <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground pointer-coarse:h-11 pointer-coarse:px-3" aria-label={`Ubah ${nama}`} onClick={onUbah}>
         <Pencil aria-hidden className="size-3.5" />
         Ubah
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label={`Aksi lain untuk ${nama}`}>
+          <Button variant="ghost" size="icon" className="size-8 text-muted-foreground pointer-coarse:size-11" aria-label={`Aksi lain untuk ${nama}`}>
             <Ellipsis aria-hidden />
           </Button>
         </DropdownMenuTrigger>
@@ -136,46 +134,7 @@ export function terapkanGalatServer<T extends FieldValues>(
   return e instanceof Error ? e.message : "Terjadi kesalahan. Coba lagi beberapa saat.";
 }
 
-export function KolomCari({
-  value,
-  onChange,
-  placeholder,
-  label,
-  className,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  label: string;
-  className?: string;
-}) {
-  const [teks, setTeks] = useState(value);
-  const [nilaiTerakhir, setNilaiTerakhir] = useState(value);
-  if (value !== nilaiTerakhir) {
-    setNilaiTerakhir(value);
-    setTeks(value);
-  }
-  useEffect(() => {
-    if (teks === value) return;
-    const t = setTimeout(() => onChange(teks), 300);
-    return () => clearTimeout(t);
-  }, [teks, value, onChange]);
-
-  return (
-    <div className={cn("relative", className)}>
-      <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        type="search"
-        aria-label={label}
-        value={teks}
-        onChange={(e) => setTeks(e.target.value)}
-        placeholder={placeholder}
-        maxLength={100}
-        className="h-10 pl-9"
-      />
-    </div>
-  );
-}
+export { KolomCari } from "@/components/shared/kolom-cari";
 
 // idPanel: id elemen role="tabpanel" yang isinya diganti tab ini; panel memakai aria-labelledby={idTab(idPanel, value)}
 export const idTab = (idPanel: string, nilai: string) => `${idPanel}-tab-${nilai}`;
@@ -189,13 +148,14 @@ export function PilihanTab<T extends string>({
 }: {
   value: T;
   onChange: (v: T) => void;
-  opsi: { nilai: T; label: string; jumlah?: number }[];
+  /** jumlah: angka netral; lencana: angka merah untuk hal yang menunggu tindakan (mis. permintaan baru) */
+  opsi: { nilai: T; label: string; jumlah?: number; lencana?: number }[];
   label: string;
   idPanel?: string;
 }) {
   const nilai = opsi.map((o) => o.nilai);
   return (
-    <div role="tablist" aria-label={label} className="flex flex-wrap gap-1" onKeyDown={(e) => tanganiPanah(e, nilai, value, onChange)}>
+    <div role="tablist" aria-label={label} className="-mx-1 flex gap-1 overflow-x-auto px-1 py-0.5 sm:flex-wrap sm:overflow-visible" onKeyDown={(e) => tanganiPanah(e, nilai, value, onChange)}>
       {opsi.map((o) => (
         <Button
           key={o.nilai}
@@ -207,13 +167,20 @@ export function PilihanTab<T extends string>({
           tabIndex={tabIndexPilihan(o.nilai, value, nilai[0])}
           onClick={() => onChange(o.nilai)}
           className={cn(
-            "h-9 border border-transparent px-3 text-muted-foreground pointer-coarse:min-h-11",
+            "h-9 shrink-0 border border-transparent px-3 whitespace-nowrap text-muted-foreground pointer-coarse:min-h-11",
             value === o.nilai && "border-primary/30 bg-secondary text-primary hover:bg-secondary",
           )}
         >
           {o.label}
+          {!!o.lencana && (
+            <span className="min-w-5 rounded-full bg-destructive px-1.5 text-center text-xs font-semibold text-white tabular-nums">
+              <span className="sr-only">, </span>
+              {o.lencana}
+              <span className="sr-only"> menunggu</span>
+            </span>
+          )}
           {o.jumlah !== undefined && (
-            <span className={cn("rounded-full px-1.5 text-[11px] font-semibold tabular-nums", value === o.nilai ? "bg-primary/15" : "bg-muted")}>{o.jumlah}</span>
+            <span className={cn("rounded-full px-1.5 text-xs font-semibold tabular-nums", value === o.nilai ? "bg-primary/15" : "bg-muted")}>{o.jumlah}</span>
           )}
         </Button>
       ))}
@@ -234,7 +201,7 @@ export function PilihUnit({ unit, value, onChange, id, invalid, required }: { un
     <div className="flex flex-col gap-2">
       <Select value={utamaId ? String(utamaId) : ""} onValueChange={onChange}>
         <SelectTrigger id={id} className="h-10 w-full" aria-invalid={invalid} aria-required={required}>
-          <SelectValue placeholder="Pilih unit kerja" />
+          <SelectValue placeholder="Pilih bidang" />
         </SelectTrigger>
         <SelectContent>
           {akar.map((u) => (
@@ -244,10 +211,10 @@ export function PilihUnit({ unit, value, onChange, id, invalid, required }: { un
           ))}
         </SelectContent>
       </Select>
-      <span className="mt-1 text-xs font-medium text-muted-foreground">Sub bagian / seksi</span>
+      <span className="mt-1 text-xs font-medium text-muted-foreground">Sub bidang</span>
       <Select value={nilaiSub} onValueChange={(v) => onChange(v === LANGSUNG ? String(utamaId) : v)} disabled={sub.length === 0}>
-        <SelectTrigger className="h-10 w-full" aria-label="Sub bagian atau seksi">
-          <SelectValue placeholder={utamaId ? "Tidak ada sub bagian atau seksi" : "Pilih unit kerja dulu"} />
+        <SelectTrigger className="h-10 w-full" aria-label="Sub bidang">
+          <SelectValue placeholder={utamaId ? "Tidak ada sub bidang" : "Pilih bidang dulu"} />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={LANGSUNG}>Langsung di unit ini</SelectItem>
@@ -258,6 +225,31 @@ export function PilihUnit({ unit, value, onChange, id, invalid, required }: { un
           ))}
         </SelectContent>
       </Select>
+    </div>
+  );
+}
+
+// Tampilan kartu di bawah md (DESIGN.md bagian 10): kolom aksi tidak tersembunyi di balik gulir menyamping
+export function KartuMaster({ judul, aksi, children }: { judul: React.ReactNode; aksi: React.ReactNode; children?: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border bg-card p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1 font-semibold break-words">{judul}</div>
+        <div className="shrink-0">{aksi}</div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// Tombol Ubah untuk baris yang hanya punya satu aksi
+export function TombolUbah({ nama, onClick }: { nama: string; onClick: () => void }) {
+  return (
+    <div className="flex items-center justify-end">
+      <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground pointer-coarse:h-11 pointer-coarse:px-3" aria-label={`Ubah ${nama}`} onClick={onClick}>
+        <Pencil aria-hidden className="size-3.5" />
+        Ubah
+      </Button>
     </div>
   );
 }

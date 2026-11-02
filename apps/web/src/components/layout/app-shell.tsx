@@ -27,7 +27,7 @@
 import { ChevronRight, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -154,6 +154,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const groups = navUntukRole(user?.role);
   const permintaan = useJumlahPermintaan(user?.role === "ADMIN");
   const lencana = { "/admin/akun": permintaan.data?.menunggu ?? 0 };
+
+  // Penanda peran untuk token warna (globals.css): pimpinan mendapat aksen emas
+  const peran = user?.role === "PIMPINAN" ? "pimpinan" : null;
+  useEffect(() => {
+    const akar = document.documentElement;
+    if (peran) akar.dataset.peran = peran;
+    else delete akar.dataset.peran;
+    return () => {
+      delete akar.dataset.peran;
+    };
+  }, [peran]);
 
   return (
     <div className="flex min-h-dvh">

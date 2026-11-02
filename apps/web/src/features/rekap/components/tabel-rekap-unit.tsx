@@ -17,7 +17,7 @@
 //
 // Catatan penting:
 //   - Mengacu pada panduan antarmuka DESIGN.md bagian 5.6.
-//   - Untuk pengguna pegawai (terbatas), rekap ditampilkan per unit pencatat;
+//   - Untuk pengguna pegawai (terbatas), rekap ditampilkan per bidang pencatat;
 //     sedangkan bagi pimpinan/admin, kegiatan seksi terhitung ke bidang induk.
 //
 // Dipakai oleh: frontend/src/features/rekap/components/rekap-view.tsx
@@ -72,9 +72,9 @@ export function TabelRekapUnit({
   return (
     <Panel className={className}>
       <PanelHeader
-        title="Rekap per unit kerja"
+        title="Rekap per bidang"
         action={aksi}
-        description={terbatas ? "Kegiatan dalam lingkup Anda per unit pencatat" : "Kegiatan seksi dan sub bagian ikut terhitung ke bidang atau Sekretariat-nya"}
+        description={terbatas ? "Kegiatan dalam lingkup Anda per bidang pencatat" : "Kegiatan sub bidang ikut terhitung ke bidangnya"}
       />
       {data.perUnit.length === 0 ? (
         <EmptyState icon={Building2} title="Tidak ada kegiatan yang cocok." description="Coba ubah filter." className="pb-6" />
@@ -82,7 +82,7 @@ export function TabelRekapUnit({
         <Table>
           <TableHeader>
             <TableRow className="border-y bg-background hover:bg-background">
-              <TableHead className="h-10 pl-4 text-xs font-bold tracking-wider text-muted-foreground uppercase md:pl-5">Unit kerja</TableHead>
+              <TableHead className="h-10 pl-4 text-xs font-bold tracking-wider text-muted-foreground uppercase md:pl-5">Bidang</TableHead>
               {KOLOM.map((k) => (
                 <TableHead key={k.kunci} className="h-10 text-right text-xs font-bold tracking-wider text-muted-foreground uppercase last:pr-4 md:last:pr-5">
                   {k.label}

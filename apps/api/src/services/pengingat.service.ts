@@ -2,12 +2,19 @@ import { env } from "@/config/env";
 import type { JenisPengingat } from "@/generated/prisma/enums";
 import { kirimEmail, type IsiEmail } from "@/lib/mailer";
 import { PengingatRepository, type KandidatPengingat } from "@/repositories/pengingat.repository";
-import { formatRentang, formatWaktu, tanggalWib } from "@/utils/format-waktu";
+import { formatJam, formatRentang, tanggalWib } from "@/utils/format-waktu";
 
 const JEDA_DOKUMENTASI_MS = 60 * 60 * 1000;
 const BATAS_DOKUMENTASI_MS = 3 * 24 * 60 * 60 * 1000;
 
 export type Pengirim = (kepada: string, subjek: string, isi: IsiEmail) => Promise<void>;
+
+// Rincian kegiatan yang sama untuk kedua jenis pengingat
+const rincianKegiatan = (k: KandidatPengingat) => [
+  { label: "Kegiatan", nilai: k.judul },
+  { label: "Waktu", nilai: formatRentang(k.tglMulai, k.tglSelesai) },
+  ...(k.lokasiNama ? [{ label: "Lokasi", nilai: k.lokasiNama }] : []),
+];
 
 // Isi email pengingat H-1 ("hari ini" bila kegiatannya mulai hari ini)
 function emailHMinus1(k: KandidatPengingat, sekarang: Date) {
@@ -16,14 +23,11 @@ function emailHMinus1(k: KandidatPengingat, sekarang: Date) {
     subjek: `Pengingat: ${k.judul} ${hari}`,
     isi: {
       judul: `Kegiatan Anda ${hari}`,
-      paragraf: [
-        `Halo ${k.nama},`,
-        `"${k.judul}" dijadwalkan ${formatRentang(k.tglMulai, k.tglSelesai)}, mulai ${formatWaktu(k.tglMulai)}.`,
-        ...(k.lokasiNama ? [`Lokasi: ${k.lokasiNama}.`] : []),
-        "Setelah kegiatan selesai, unggah foto atau notulen sebagai dokumentasi agar laporan dinas lengkap.",
-      ],
+      pratinjau: `${k.judul}, mulai ${formatJam(k.tglMulai)} WIB${k.lokasiNama ? ` di ${k.lokasiNama}` : ""}.`,
+      paragraf: [`Halo ${k.nama},`, `Anda tercatat sebagai penanggung jawab kegiatan berikut, yang berlangsung ${hari}.`],
+      rincian: rincianKegiatan(k),
       tombol: { label: "Lihat kegiatan", url: `${env.FRONTEND_URL}/kegiatan/${k.kegiatanId}` },
-      catatan: "Anda menerima email ini karena tercatat sebagai penanggung jawab kegiatan.",
+      catatan: "Setelah kegiatan selesai, unggah foto atau notulen sebagai dokumentasi agar laporan dinas lengkap.",
     },
   };
 }
@@ -33,14 +37,15 @@ function emailDokumentasi(k: KandidatPengingat) {
   return {
     subjek: `Lengkapi dokumentasi: ${k.judul}`,
     isi: {
-      judul: "Kegiatan selesai belum berdokumentasi",
+      judul: "Kegiatan selesai, dokumentasi belum ada",
+      pratinjau: `Unggah foto atau notulen untuk ${k.judul}.`,
       paragraf: [
         `Halo ${k.nama},`,
-        `"${k.judul}" telah selesai pada ${formatWaktu(k.tglSelesai)}, tetapi belum memiliki dokumentasi.`,
-        "Unggah foto kegiatan atau notulen (JPEG, PNG, WebP, atau PDF, maks. 20 MB per berkas). Hanya perlu satu menit dari ponsel.",
+        "Kegiatan berikut sudah selesai tetapi belum memiliki dokumentasi. Unggah foto kegiatan atau notulen (JPEG, PNG, WebP, atau PDF, maks. 20 MB per berkas).",
       ],
+      rincian: rincianKegiatan(k),
       tombol: { label: "Unggah dokumentasi", url: `${env.FRONTEND_URL}/kegiatan/${k.kegiatanId}#dokumentasi` },
-      catatan: "Pengingat ini hanya dikirim sekali untuk setiap kegiatan.",
+      catatan: "Pengingat ini hanya dikirim sekali untuk setiap kegiatan. Anda menerimanya karena tercatat sebagai penanggung jawab.",
     },
   };
 }

@@ -188,7 +188,7 @@ export const KegiatanService = {
       pengubahTerakhir,
       riwayat,
       catatanPemeriksaan,
-      bisaPeriksa: aktor.role === "PIMPINAN" || aktor.role === "ADMIN",
+      bisaPeriksa: aktor.role === "PIMPINAN",
       bisaUbah: bisaUbah(aktor, pemilik),
     };
   },
@@ -221,7 +221,7 @@ export const KegiatanService = {
     });
   },
 
-  // Pimpinan/admin memeriksa kegiatan: tandai "diperiksa" atau "perlu_perbaikan" (wajib catatan)
+  // Pimpinan memeriksa kegiatan: tandai "diperiksa" atau "perlu_perbaikan" (wajib catatan)
   async periksa(id: number, isi: PeriksaKegiatan, aktor: Aktor, meta: MetaRequest) {
     const catatan = isi.catatan?.trim() || null;
     if (isi.status === "perlu_perbaikan" && !catatan) {

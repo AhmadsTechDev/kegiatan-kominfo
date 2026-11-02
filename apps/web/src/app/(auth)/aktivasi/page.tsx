@@ -26,7 +26,7 @@ export const metadata: Metadata = { title: "Aktivasi akun" };
 export default function AktivasiPage() {
   return (
     <AuthShell>
-      <KartuPublik eyebrow="Aktivasi akun" judul="Buat kata sandi" deskripsi="Langkah terakhir sebelum Anda dapat masuk ke aplikasi.">
+      <KartuPublik>
         <Suspense fallback={<Skeleton className="h-72 w-full rounded-xl" />}>
           <AktivasiForm />
         </Suspense>

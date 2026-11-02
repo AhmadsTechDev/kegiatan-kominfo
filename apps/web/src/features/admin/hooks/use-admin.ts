@@ -9,7 +9,7 @@
 //   - useSegarkan : fungsi pembantu pembatalan cache query terkait secara paralel
 //   - useUnitKerjaAdmin, useSimpanUnitKerja : kueri dan mutasi master unit kerja
 //   - useJenisUnitAdmin, useSimpanJenisUnit : kueri dan mutasi hierarki jenis unit
-//   - usePegawaiAdmin, useSimpanPegawai, useImporPegawai : kueri dan mutasi pegawai
+//   - usePegawaiAdmin, useSimpanPegawai : kueri dan mutasi pegawai
 //   - useJenisAdmin, useSimpanJenis : kueri dan mutasi master kategori kegiatan
 //   - useAkunAdmin, useDetailAkun, useSimpanAkun, useStatusAkun, useHapusAkun : manajemen akun
 //   - useKirimUlangUndangan, useResetSandi, useCabutSesiAkun, useUndangPegawai : aksi akun lainnya
@@ -44,7 +44,6 @@ import {
   getJenisKegiatan,
   getJenisUnit,
   getPegawai,
-  imporPegawai,
   getPilihanAudit,
   getUnitKerja,
   hapusAkun,
@@ -117,14 +116,6 @@ export function useSimpanPegawai() {
     mutationFn: ({ id, isi }: { id?: number; isi: IsiPegawaiBaru }): Promise<{ id: number; undangan?: HasilPegawaiBaru["undangan"] }> =>
       id ? ubahPegawai(id, isi) : buatPegawai(isi),
     onSuccess: segarkan,
-  });
-}
-
-export function useImporPegawai() {
-  const segarkan = useSegarkan(adminKeys.pegawai, adminKeys.unitKerja);
-  return useMutation({
-    mutationFn: ({ berkas, simpan }: { berkas: File; simpan: boolean }) => imporPegawai(berkas, simpan),
-    onSuccess: (hasil) => (hasil.disimpan ? segarkan() : undefined),
   });
 }
 

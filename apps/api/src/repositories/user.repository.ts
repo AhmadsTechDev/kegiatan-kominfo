@@ -1,5 +1,5 @@
 import { prisma, type Db, type Prisma } from "@/lib/prisma";
-import type { Halaman, Role } from "@/types/umum.types";
+import type { Halaman, Role, StatusAkun } from "@/types/umum.types";
 import type { FilterAkun } from "@/types/user.types";
 import { kondisiStatus } from "@/utils/status-akun";
 import { AuditLogRepository } from "./audit-log.repository";
@@ -34,37 +34,54 @@ function kondisi(f: FilterAkun): Prisma.UserWhereInput {
     AND: [
       cari ? { OR: [{ name: cari }, { email: cari }, { pegawai: { nip: { contains: f.q } } }] } : {},
       f.status ? kondisiStatus(f.status) : {},
+      f.nonaktif === undefined ? {} : f.nonaktif ? kondisiStatus("NONAKTIF") : { NOT: kondisiStatus("NONAKTIF") },
     ],
     role: f.role,
   };
 }
 
 export const UserRepository = {
-  // Daftar akun dengan filter dan paginasi, beserta pegawai tertaut dan status kredensialnya
+  // Jumlah akun dengan status tertentu
+  hitungStatus(status: StatusAkun) {
+    return prisma.user.count({ where: kondisiStatus(status) });
+  },
+
+  // Daftar akun dengan filter dan paginasi, beserta pegawai tertaut dan status kredensialnya.
+  // Akun yang menunggu aktivasi selalu di atas (admin perlu memantaunya), lalu urut nama; keduanya dipaginasi sebagai satu daftar
   async daftar(f: FilterAkun, halaman: Halaman) {
     const where = kondisi(f);
-    const [baris, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
+    const menunggu = kondisiStatus("MENUNGGU_AKTIVASI");
+    const pilih = {
+      ...PILIH_AKUN,
+      image: true,
+      pegawai: {
         select: {
-          ...PILIH_AKUN,
-          image: true,
-          pegawai: {
-            select: {
-              id: true,
-              nama: true,
-              nip: true,
-              jabatan: true,
-              unitKerja: { select: { id: true, nama: true, parent: { select: { nama: true } } } },
-            },
-          },
+          id: true,
+          nama: true,
+          nip: true,
+          jabatan: true,
+          unitKerja: { select: { id: true, nama: true, parent: { select: { nama: true } } } },
         },
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-        take: halaman.pageSize,
-        skip: (halaman.page - 1) * halaman.pageSize,
-      }),
+      },
+    } satisfies Prisma.UserSelect;
+    const urut = [{ name: "asc" }, { id: "asc" }] satisfies Prisma.UserOrderByWithRelationInput[];
+
+    const [total, jumlahMenunggu] = await Promise.all([
       prisma.user.count({ where }),
+      prisma.user.count({ where: { AND: [where, menunggu] } }),
     ]);
+    const awal = (halaman.page - 1) * halaman.pageSize;
+    const akhir = awal + halaman.pageSize;
+    const diAtas =
+      awal < jumlahMenunggu
+        ? await prisma.user.findMany({ where: { AND: [where, menunggu] }, select: pilih, orderBy: urut, skip: awal, take: Math.min(jumlahMenunggu, akhir) - awal })
+        : [];
+    const sisaTake = halaman.pageSize - diAtas.length;
+    const lainnya =
+      sisaTake > 0
+        ? await prisma.user.findMany({ where: { AND: [where, { NOT: menunggu }] }, select: pilih, orderBy: urut, skip: Math.max(0, awal - jumlahMenunggu), take: sisaTake })
+        : [];
+    const baris = [...diAtas, ...lainnya];
     const items = baris.map(({ pegawai, ...a }) => ({
       ...ringkas(a),
       pegawai: pegawai

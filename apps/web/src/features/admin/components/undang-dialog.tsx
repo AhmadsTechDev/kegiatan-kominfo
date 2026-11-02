@@ -69,7 +69,7 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
   const kirim = handleSubmit((v) => {
     setGalat(null);
     // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa data pegawai wajib diberi unit kerja dan jabatan
-    if (pilihUnit && !v.unitKerjaId) setError("unitKerjaId", { message: "Unit kerja wajib dipilih" });
+    if (pilihUnit && !v.unitKerjaId) setError("unitKerjaId", { message: "Bidang wajib dipilih" });
     if (pilihUnit && !v.jabatan) setError("jabatan", { message: "Jabatan wajib diisi" });
     if (pilihUnit && (!v.unitKerjaId || !v.jabatan)) return;
     const isi: IsiUndangan = { email: v.email.trim().toLowerCase(), role: v.role };
@@ -148,7 +148,7 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
           </Field>
           <Field data-invalid={!!formState.errors.unitKerjaId}>
             <FieldLabel htmlFor="undang-unit">
-              Unit kerja <Wajib />
+              Bidang <Wajib />
             </FieldLabel>
             <Controller
               control={control}

@@ -6,22 +6,24 @@
 //
 // Isi berkas:
 //   - Selisih : Komponen label pembanding tren jumlah kegiatan dengan bulan lalu.
+//   - KeteranganSelesai : Keterangan kartu Selesai (jumlah tanpa dokumentasi).
 //   - KpiCards : Komponen baris penyusun empat kartu indikator utama dinas.
 //
 // Cara kerja:
 //   1. Menerima objek data KPI dan kode periode aktif dari properti dashboard.
 //   2. Menghitung selisih total kegiatan terhadap capaian bulan sebelumnya.
 //   3. Merender kartu metrik total kegiatan, kegiatan berlangsung, agenda akan
-//      datang, serta kegiatan selesai yang belum dilengkapi dokumen bukti.
+//      datang, serta kegiatan selesai beserta jumlah yang belum berdokumentasi.
 //
 // Catatan penting:
+//   - Kartu Selesai tidak menulis "semua berdokumentasi" bila belum ada kegiatan selesai.
 //   - Status tren kenaikan atau penurunan selalu dituliskan dalam bentuk teks
 //     eksplisit ("Naik", "Turun") agar aksesibel dan tidak bergantung warna semata.
 //
 // Dipakai oleh: features/dashboard/components/dashboard-view.tsx
 // =============================================================================
 
-import { CalendarClock, CalendarRange, FileWarning, Minus, PlayCircle, TrendingDown, TrendingUp } from "lucide-react";
+import { CalendarClock, CalendarRange, CheckCircle2, Minus, PlayCircle, TrendingDown, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/shared/stat-card";
 import { formatAngka, formatPeriode, periodeSebelumnya } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -48,13 +50,22 @@ function Selisih({ sekarang, sebelumnya, periode }: { sekarang: number; sebelumn
   );
 }
 
+// Keterangan kartu "Selesai": tidak mengklaim "semua berdokumentasi" bila belum ada yang selesai
+function KeteranganSelesai({ selesai, tanpaDokumentasi }: { selesai: number; tanpaDokumentasi: number }) {
+  if (selesai === 0) return "Belum ada yang selesai";
+  if (tanpaDokumentasi === 0) return "Semua sudah berdokumentasi";
+  return (
+    <span className="font-semibold text-status-berlangsung-foreground">{formatAngka(tanpaDokumentasi)} tanpa dokumentasi</span>
+  );
+}
+
 export function KpiCards({ data }: { data: DashboardData }) {
   const { kpi, periode } = data;
   return (
     <>
       <StatCard
         className="md:col-span-3"
-        label="Total kegiatan periode ini"
+        label="Total kegiatan"
         value={kpi.total}
         icon={CalendarRange}
         keterangan={<Selisih sekarang={kpi.total} sebelumnya={kpi.totalPeriodeSebelumnya} periode={periode} />}
@@ -65,11 +76,11 @@ export function KpiCards({ data }: { data: DashboardData }) {
         value={kpi.berlangsung}
         icon={PlayCircle}
         nada="berlangsung"
-        keterangan="Aktif di seluruh unit kerja"
+        keterangan="Aktif di seluruh bidang"
       />
       <StatCard
         className="md:col-span-3"
-        label="Kegiatan akan datang"
+        label="Akan datang"
         value={kpi.akanDatang}
         icon={CalendarClock}
         nada="akan-datang"
@@ -77,11 +88,11 @@ export function KpiCards({ data }: { data: DashboardData }) {
       />
       <StatCard
         className="md:col-span-3"
-        label="Selesai tanpa dokumentasi"
-        value={kpi.selesaiTanpaDokumentasi}
-        icon={FileWarning}
-        nada="dibatalkan"
-        keterangan={kpi.selesaiTanpaDokumentasi > 0 ? "Perlu perhatian pada kelengkapan data" : "Semua sudah berdokumentasi"}
+        label="Selesai"
+        value={kpi.selesai}
+        icon={CheckCircle2}
+        nada="selesai"
+        keterangan={<KeteranganSelesai selesai={kpi.selesai} tanpaDokumentasi={kpi.selesaiTanpaDokumentasi} />}
       />
     </>
   );

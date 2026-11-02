@@ -44,7 +44,8 @@ export function kondisiDaftar(f: FilterDaftar, sekarang: Date): Prisma.KegiatanW
   if (f.rentang) syarat.push(kondisiRentang(f.rentang));
   if (f.q) {
     const cari = { contains: f.q, mode: "insensitive" } as const;
-    syarat.push({ OR: [{ judul: cari }, { lokasiNama: cari }, { uraian: cari }] });
+    // Nama penanggung jawab ikut dicari agar pimpinan bisa mengetik nama pegawai di kolom cari
+    syarat.push({ OR: [{ judul: cari }, { lokasiNama: cari }, { uraian: cari }, { penanggungJawab: { nama: cari } }] });
   }
   if (f.milik) syarat.push(kondisiMilik(f.milik));
   if (f.lingkup) syarat.push(kondisiLingkup(f.lingkup));
@@ -213,7 +214,7 @@ export const KegiatanRepository = {
     await tx.kegiatan.updateMany({ where: { id, ...KEGIATAN_AKTIF }, data: { deletedAt: new Date() } });
   },
 
-  // Baris kegiatan lengkap untuk berkas ekspor Excel/PDF
+  // Baris kegiatan lengkap untuk berkas ekspor PDF
   async untukEkspor(f: FilterDaftar, sekarang: Date, batas: number) {
     const baris = await prisma.kegiatan.findMany({
       where: kondisiDaftar(f, sekarang),

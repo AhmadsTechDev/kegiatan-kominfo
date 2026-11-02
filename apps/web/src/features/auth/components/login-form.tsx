@@ -24,6 +24,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, Eye, EyeOff, Lock, LockKeyhole, Mail } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -33,6 +34,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { LoginError } from "../api/login";
 import { formatSisaWaktu, useCountdown } from "../hooks/use-countdown";
+import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { useLogin } from "../hooks/use-login";
 import { loginSchema, type LoginInput } from "../schemas/login.schema";
 
@@ -42,11 +44,14 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    setFocus,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  useFokusAwal(setFocus, "email");
 
   const error = loginMutation.error instanceof LoginError ? loginMutation.error : null;
   const sisaKunci = useCountdown(error?.kind === "terkunci" ? error.lockedUntil : undefined, error?.diterimaPada ?? 0);
@@ -96,7 +101,6 @@ export function LoginForm() {
               type="email"
               inputMode="email"
               autoComplete="username"
-              autoFocus
               placeholder="nama@contoh.com"
               className="h-11 pl-9"
               aria-required
@@ -108,12 +112,17 @@ export function LoginForm() {
         </Field>
 
         <Field data-invalid={!!errors.password}>
-          <FieldLabel htmlFor="password">
-            Kata sandi
-            <span aria-hidden className="text-destructive">
-              *
-            </span>
-          </FieldLabel>
+          <div className="flex items-center justify-between gap-2">
+            <FieldLabel htmlFor="password">
+              Kata sandi
+              <span aria-hidden className="text-destructive">
+                *
+              </span>
+            </FieldLabel>
+            <Link href="/lupa-sandi" className="inline-flex items-center rounded text-sm font-semibold text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11">
+              Lupa kata sandi?
+            </Link>
+          </div>
           <div className="relative">
             <Lock
               aria-hidden

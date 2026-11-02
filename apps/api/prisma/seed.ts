@@ -1,4 +1,5 @@
 // Mengisi data awal: jenis unit, unit kerja Diskominfo, jenis kegiatan, dan akun admin pertama.
+// Sekretariat dan sub bidang sengaja tidak dibuat; admin menambahkannya sendiri di Master data (jenis unitnya sudah tersedia).
 // Aman dijalankan berulang kali; data yang sudah ada dilewati. Jalankan: bun run db:seed
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -8,27 +9,24 @@ const DATA_JENIS_UNIT: { nama: string; induk?: string }[] = [
   { nama: "Bidang" },
   { nama: "Kelompok fungsional" },
   { nama: "Sub bagian", induk: "Sekretariat" },
-  { nama: "Seksi", induk: "Bidang" },
+  { nama: "Sub bidang", induk: "Bidang" },
 ];
 
 const DATA_UNIT: { kode: string; nama: string; jenis: string; induk?: string }[] = [
-  { kode: "SEKRETARIAT", nama: "Sekretariat", jenis: "Sekretariat" },
-  { kode: "SUBAG-UMPEG", nama: "Sub Bagian Umum dan Kepegawaian", jenis: "Sub bagian", induk: "SEKRETARIAT" },
-  { kode: "SUBAG-KEU", nama: "Sub Bagian Keuangan", jenis: "Sub bagian", induk: "SEKRETARIAT" },
-  { kode: "SUBAG-RENLAP", nama: "Sub Bagian Perencanaan dan Pelaporan", jenis: "Sub bagian", induk: "SEKRETARIAT" },
   { kode: "BID-OPINI", nama: "Bidang Pengelolaan Opini dan Pelayanan Informasi Publik", jenis: "Bidang" },
   { kode: "BID-KOMPUB", nama: "Bidang Pengelolaan Komunikasi Publik", jenis: "Bidang" },
   { kode: "BID-TIP", nama: "Bidang Teknologi Informasi dan Persandian", jenis: "Bidang" },
-  { kode: "SEKSI-DATA", nama: "Seksi Pengelolaan Data dan Persediaan", jenis: "Seksi", induk: "BID-TIP" },
-  { kode: "SEKSI-KAMINFO", nama: "Seksi Persediaan dan Keamanan Informasi", jenis: "Seksi", induk: "BID-TIP" },
   { kode: "BID-EGOV", nama: "Bidang Pengelolaan E-Government", jenis: "Bidang" },
-  { kode: "JAFUNG", nama: "Kelompok Jabatan Fungsional", jenis: "Kelompok fungsional" },
+  { kode: "BID-APTIKA", nama: "Bidang Aplikasi Informatika", jenis: "Bidang" },
 ];
 
 const DATA_JENIS_KEGIATAN = ["Rapat", "Sosialisasi", "Liputan", "Bimtek", "Pemeliharaan"];
 
 // Membuat jenis unit bawaan (induk dulu, baru turunannya)
 async function seedJenisUnit() {
+  // Jenis "Seksi" dulu bernama begitu; ganti namanya agar basis data lama tidak mendapat jenis ganda
+  const lama = await prisma.jenisUnit.findUnique({ where: { nama: "Seksi" } });
+  if (lama && !(await prisma.jenisUnit.findUnique({ where: { nama: "Sub bidang" } }))) await prisma.jenisUnit.update({ where: { id: lama.id }, data: { nama: "Sub bidang" } });
   for (const j of DATA_JENIS_UNIT) {
     if (await prisma.jenisUnit.findUnique({ where: { nama: j.nama } })) continue;
     const induk = j.induk ? await prisma.jenisUnit.findUnique({ where: { nama: j.induk } }) : null;
@@ -63,7 +61,10 @@ async function seedAdmin() {
     console.log(`Akun admin ${email} sudah ada`);
     return;
   }
-  await auth.api.createUser({ body: { email, password, name: "Administrator", role: "ADMIN" } });
+  const { user } = await auth.api.createUser({ body: { email, password, name: "Administrator", role: "ADMIN" } });
+  // Admin pertama tidak melewati tautan aktivasi; email-nya ditetapkan sendiri oleh pengelola server lewat .env,
+  // jadi dianggap terverifikasi agar tidak tampil "Belum terverifikasi" di Pengaturan
+  await prisma.user.update({ where: { id: user.id }, data: { emailVerified: true } });
   console.log(`Akun admin ${email} dibuat`);
 }
 

@@ -62,7 +62,7 @@ export function MasterView() {
 
   return (
     <>
-      <PageHeader eyebrow="Administrasi" title="Master data" description="Kelola pegawai, unit kerja, dan jenis kegiatan." />
+      <PageHeader eyebrow="Administrasi" title="Master data" description="Kelola pegawai, bidang, dan jenis kegiatan." />
       <AdminGuard>
         <Panel>
           <div className="border-b border-muted px-4 pt-4 pb-3 md:px-5">
@@ -71,8 +71,8 @@ export function MasterView() {
               value={tab}
               opsi={[
                 { nilai: "pegawai", label: "Pegawai", jumlah: pegawai.data?.total },
-                { nilai: "unit", label: "Unit kerja", jumlah: jumlahUtama },
-                { nilai: "sub", label: "Sub bagian & seksi", jumlah: jumlahSub },
+                { nilai: "unit", label: "Bidang", jumlah: jumlahUtama },
+                { nilai: "sub", label: "Sub bidang", jumlah: jumlahSub },
                 { nilai: "jenis", label: "Jenis kegiatan", jumlah: jenis.data?.length },
               ]}
               onChange={(t) => buka(t)}

@@ -56,7 +56,7 @@ export const KOLOM = [
   { judul: "No", lebar: "4%" },
   { judul: "Kegiatan", lebar: "27%" },
   { judul: "Jenis", lebar: "12%" },
-  { judul: "Unit kerja", lebar: "15%" },
+  { judul: "Bidang", lebar: "15%" },
   { judul: "Penanggung jawab", lebar: "13%" },
   { judul: "Waktu (WIB)", lebar: "15%" },
   { judul: "Peserta", lebar: "6%" },

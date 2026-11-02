@@ -9,6 +9,7 @@ function kondisiPegawai(f: FilterPegawai): Prisma.PegawaiWhereInput {
     OR: cari ? [{ nama: cari }, { nip: cari }, { jabatan: cari }] : undefined,
     unitKerjaId: f.unitIds ? { in: f.unitIds } : undefined,
     aktif: f.aktif,
+    users: f.tanpaAkun ? { none: {} } : undefined,
   };
 }
 
@@ -124,28 +125,39 @@ export const MasterRepository = {
   // Daftar pegawai dengan filter dan paginasi, beserta unit kerja dan akun loginnya (bila ada)
   async daftarPegawai(f: FilterPegawai, halaman: Halaman) {
     const where = kondisiPegawai(f);
-    const [baris, total] = await Promise.all([
-      prisma.pegawai.findMany({
-        where,
-        select: {
-          id: true,
-          nip: true,
-          nama: true,
-          jabatan: true,
-          unitKerja: { select: { id: true, nama: true } },
-          aktif: true,
-          users: { select: { id: true, email: true, accounts: { where: { providerId: "credential" }, select: { id: true } } }, take: 1 },
-          updatedAt: true,
-        },
-        orderBy: [{ nama: "asc" }, { id: "asc" }],
-        take: halaman.pageSize,
-        skip: (halaman.page - 1) * halaman.pageSize,
-      }),
-      prisma.pegawai.count({ where }),
-    ]);
+    const pilih = {
+      id: true,
+      nip: true,
+      nama: true,
+      jabatan: true,
+      unitKerja: { select: { id: true, nama: true } },
+      aktif: true,
+      users: { select: { id: true, email: true, kontak: true, accounts: { where: { providerId: "credential" }, select: { id: true } } }, take: 1 },
+      updatedAt: true,
+    } satisfies Prisma.PegawaiSelect;
+    const urut = [{ nama: "asc" }, { id: "asc" }] satisfies Prisma.PegawaiOrderByWithRelationInput[];
+
+    // Pegawai yang punya nomor telepon (kontak akun) tampil lebih dulu, tiap kelompok urut nama.
+    // Kedua kelompok dipaginasi sebagai satu daftar
+    const adaTelp: Prisma.PegawaiWhereInput = { users: { some: { kontak: { not: null } } } };
+    const kelompok: Prisma.PegawaiWhereInput[] = [adaTelp, { NOT: adaTelp }];
+    const jumlah = await Promise.all(kelompok.map((k) => prisma.pegawai.count({ where: { AND: [where, k] } })));
+    const total = jumlah[0]! + jumlah[1]!;
+    const awal = (halaman.page - 1) * halaman.pageSize;
+    const akhir = awal + halaman.pageSize;
+
+    const baris: Prisma.PegawaiGetPayload<{ select: typeof pilih }>[] = [];
+    let mulai = 0;
+    for (const [n, k] of kelompok.entries()) {
+      const batas = mulai + jumlah[n]!;
+      const dari = Math.max(awal, mulai);
+      const sampai = Math.min(akhir, batas);
+      if (sampai > dari) baris.push(...(await prisma.pegawai.findMany({ where: { AND: [where, k] }, select: pilih, orderBy: urut, skip: dari - mulai, take: sampai - dari })));
+      mulai = batas;
+    }
     const items = baris.map(({ users, ...p }) => {
       const akun = users[0];
-      return { ...p, akun: akun ? { id: akun.id, email: akun.email, aktif: akun.accounts.length > 0 } : null };
+      return { ...p, kontak: akun?.kontak ?? null, akun: akun ? { id: akun.id, email: akun.email, aktif: akun.accounts.length > 0 } : null };
     });
     return { items, total };
   },
@@ -165,12 +177,6 @@ export const MasterRepository = {
     await tx.pegawai.update({ where: { id }, data: nilai });
   },
 
-  // Pegawai yang NIP-nya ada di daftar (untuk impor Excel)
-  pegawaiByNips(nips: string[]) {
-    if (!nips.length) return Promise.resolve([]);
-    return prisma.pegawai.findMany({ where: { nip: { in: nips } } });
-  },
-
   // Pegawai pemilik NIP tertentu
   async pegawaiDenganNip(nip: string) {
     return (await prisma.pegawai.findUnique({ where: { nip }, select: { id: true, nama: true } })) ?? undefined;
@@ -179,11 +185,6 @@ export const MasterRepository = {
   // Akun yang memakai email tertentu
   async akunDenganEmail(email: string) {
     return (await prisma.user.findUnique({ where: { email }, select: { id: true, name: true } })) ?? undefined;
-  },
-
-  // Semua pegawai tanpa NIP (dicocokkan lewat nama saat impor)
-  pegawaiTanpaNip() {
-    return prisma.pegawai.findMany({ where: { nip: null } });
   },
 
   // Menyamakan nama akun dengan nama pegawai yang baru diubah

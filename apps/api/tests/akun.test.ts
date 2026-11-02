@@ -187,7 +187,7 @@ describe("undangan, reset sandi, dan sesi oleh admin", () => {
     expect(res.status).toBe(200);
     expect(res.data).toMatchObject({ email: u.email, sesiDicabut: 1 });
     expect(kotakSurat.slice(sebelum).map((s) => s.kepada)).toEqual([u.email]);
-    expect(suratTerakhir(u.email)!.subjek).toBe("Atur ulang kata sandi Aplikasi Pendataan Kegiatan");
+    expect(suratTerakhir(u.email)!.subjek).toBe("Atur ulang kata sandi");
     expect((await panggil("/me", { cookie: u.cookie })).status).toBe(401);
     // Kata sandi lama tetap berlaku sampai pemiliknya membuat yang baru
     expect((await login(u.email, SANDI)).status).toBe(200);

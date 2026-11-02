@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatTanggalJam } from "@/lib/format";
 import { aktifkanAkun, getInfoAktivasi, tautanRusak, tokenTidakBerlaku } from "../api/akun-publik";
+import { KepalaKartu } from "./kartu-publik";
 import { FormSandiBaru, Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
 
 const PESAN_TIDAK_BERLAKU = "Tautan aktivasi sudah kedaluwarsa, sudah pernah dipakai, atau tidak lengkap. Minta administrator mengirim ulang undangan.";
@@ -57,6 +58,7 @@ export function AktivasiForm() {
 
   return (
     <div className="flex flex-col gap-5">
+      <KepalaKartu judul="Buat kata sandi" deskripsi="Langkah terakhir sebelum Anda dapat masuk ke aplikasi." />
       <div className="rounded-xl bg-muted/70 p-3 text-sm">
         <p>
           Halo, <span className="font-semibold">{info.data.nama}</span>

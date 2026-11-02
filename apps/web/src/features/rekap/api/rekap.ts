@@ -2,7 +2,7 @@
 // API REKAPITULASI DAN EKSPOR KEGIATAN
 // =============================================================================
 // Gunanya: Memanggil endpoint API backend untuk mengambil ringkasan statistik
-// rekapitulasi kegiatan serta mengunduh berkas ekspor laporan (Excel atau PDF).
+// rekapitulasi kegiatan serta mengunduh berkas ekspor laporan (PDF).
 //
 // Isi berkas:
 //   - getRekap    : memanggil GET /rekap dengan parameter filter terisi (FR-10)

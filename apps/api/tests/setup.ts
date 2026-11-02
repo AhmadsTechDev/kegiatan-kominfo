@@ -34,3 +34,4 @@ await kosongkanBasisData();
 await rm(process.env.STORAGE_DIR ?? "./storage-test", { recursive: true, force: true });
 jalankan(["x", "prisma", "migrate", "deploy"]);
 jalankan(["prisma/seed.ts"]);
+jalankan(["tests/fixture-unit.ts"]);

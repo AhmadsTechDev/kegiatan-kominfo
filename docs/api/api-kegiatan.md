@@ -6,7 +6,7 @@ Semua endpoint di sini butuh header `Cookie` (sudah login).
 
 **Aturan hak akses kegiatan**
 
-- `PEGAWAI` hanya melihat kegiatan di unit kerjanya (termasuk sub-unit) dan kegiatan miliknya. Kegiatan di luar itu dijawab 404.
+- `PEGAWAI` hanya melihat kegiatan di bidangnya (termasuk sub-unit) dan kegiatan miliknya. Kegiatan di luar itu dijawab 404.
 - `PEGAWAI` hanya bisa mengubah kegiatan yang dibuatnya atau yang dia tanggung jawabi, dan hanya bisa mencatat kegiatan dengan dirinya sebagai penanggung jawab.
 - `ADMIN` bisa mengubah semua kegiatan. `PIMPINAN` hanya membaca dan memeriksa.
 
@@ -60,7 +60,7 @@ Daftar kegiatan, terbaru (tanggal mulai) di atas.
 
 | Field | Tipe | Keterangan |
 | --- | --- | --- |
-| `unit` | angka | Id unit kerja; sub-unitnya ikut tercakup |
+| `unit` | angka | Id bidang; sub-unitnya ikut tercakup |
 | `jenis` | angka | Id jenis kegiatan |
 | `pegawai` | angka | Id pegawai penanggung jawab |
 | `status` | `akan_datang` \| `berlangsung` \| `selesai` \| `dibatalkan` | Status pelaksanaan |
@@ -154,14 +154,14 @@ Detail kegiatan.
 
 | Field | Keterangan |
 | --- | --- |
-| `unitInduk` | Unit di atas `unitKerja`; `null` bila unit kerjanya sudah unit tertinggi |
+| `unitInduk` | Unit di atas `unitKerja`; `null` bila bidangnya sudah unit tertinggi |
 | `pengubahTerakhir` | Terakhir diubah/dibatalkan; `null` bila belum pernah |
 | `riwayat` | 20 aksi terakhir pada kegiatan dan dokumentasinya |
 | `updatedAt` | **Versi data.** Kirim kembali sebagai `expectedUpdatedAt` saat mengubah atau membatalkan |
 
 ### `POST /api/kegiatan`
 
-Mencatat kegiatan baru. Unit kerja kegiatan otomatis mengikuti unit kerja penanggung jawab.
+Mencatat kegiatan baru. Bidang kegiatan otomatis mengikuti bidang penanggung jawab.
 
 **Akses**: PEGAWAI, ADMIN
 
@@ -256,7 +256,7 @@ Mengubah kegiatan. Body sama dengan `POST /api/kegiatan` (tanpa `drafId`), ditam
 
 Pimpinan/admin menandai kegiatan sudah diperiksa atau perlu perbaikan. Versi data (`updatedAt`) tidak berubah.
 
-**Akses**: PIMPINAN, ADMIN
+**Akses**: PIMPINAN (admin ditolak 403; pemeriksaan isi kegiatan adalah tugas pimpinan)
 
 **Body**
 

@@ -6,7 +6,7 @@ Dokumentasi endpoint backend (`apps/api/`). Semua contoh diambil dari respons se
 | --- | --- |
 | [api-auth.md](api-auth.md) | Login, logout, sesi, aktivasi akun, profil saya (`/me`), permintaan akun publik |
 | [api-kegiatan.md](api-kegiatan.md) | Referensi, kegiatan, draf, dokumentasi (unggah berkas) |
-| [api-laporan.md](api-laporan.md) | Dashboard, kalender, rekap, pantau, ekspor Excel/PDF |
+| [api-laporan.md](api-laporan.md) | Dashboard, kalender, rekap, pantau, ekspor PDF |
 | [api-admin.md](api-admin.md) | Data master, manajemen akun, undangan, permintaan akun, audit log |
 
 ---
@@ -39,7 +39,7 @@ const res = await fetch("/api/kegiatan", { credentials: "include" });
 
 | Role | Keterangan |
 | --- | --- |
-| `PEGAWAI` | Mencatat kegiatan. Hanya melihat kegiatan di unit kerjanya (beserta sub-unit) dan kegiatan miliknya. |
+| `PEGAWAI` | Mencatat kegiatan. Hanya melihat kegiatan di bidangnya (beserta sub-unit) dan kegiatan miliknya. |
 | `PIMPINAN` | Melihat semua kegiatan, dashboard, dan memeriksa kegiatan. Tidak bisa mencatat kegiatan. |
 | `ADMIN` | Semua hak, termasuk data master, akun, dan audit log. |
 
@@ -96,10 +96,10 @@ Galat dari endpoint login Better Auth (`/api/auth/*`) bentuknya sedikit berbeda:
 
 | Endpoint | Batas |
 | --- | --- |
-| Login (`/api/auth/sign-in/*`) | 10 kali per menit per IP |
+| Login (`/api/auth/sign-in/*`) | 30 kali per menit per IP |
 | Endpoint `/api/auth/*` lain | 100 kali per menit per IP |
 | Login salah 5 kali berturut-turut | Akun dikunci 15 menit |
-| Ekspor Excel/PDF | 10 kali per menit per akun |
+| Ekspor PDF | 10 kali per menit per akun |
 | Permintaan akun publik | 3 kali per jam per IP |
 
 ## Cek kesehatan server

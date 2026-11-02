@@ -1,6 +1,6 @@
 import { MasterService } from "@/services/master.service";
 import { UndanganService } from "@/services/undangan.service";
-import type { DaftarPegawaiQuery, ImporPegawai, IsiJenis, IsiJenisUnit, IsiPegawai, IsiPegawaiBaru, IsiUnit } from "@/types/master.types";
+import type { DaftarPegawaiQuery, IsiJenis, IsiJenisUnit, IsiPegawai, IsiPegawaiBaru, IsiUnit } from "@/types/master.types";
 import type { Konteks } from "@/types/umum.types";
 import { adminDari, aktorDari, requestMeta } from "@/utils/konteks";
 
@@ -54,20 +54,6 @@ export const MasterController = {
   // PATCH /api/admin/pegawai/:id
   ubahPegawai: ({ params, body, user, request }: Konteks<IsiPegawai, Id>) =>
     MasterService.ubahPegawai(params.id, body, aktorDari(user), requestMeta(request.headers)),
-
-  // GET /api/admin/pegawai/impor/templat — mengirim berkas Excel templat
-  templatImporPegawai: async () =>
-    new Response(await MasterService.templatImporPegawai(), {
-      headers: {
-        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": 'attachment; filename="templat-impor-pegawai.xlsx"',
-        "Cache-Control": "no-store",
-      },
-    }),
-
-  // POST /api/admin/pegawai/impor — simpan=1 menyimpan, selain itu hanya pratinjau
-  imporPegawai: ({ body, user, request }: Konteks<ImporPegawai>) =>
-    MasterService.imporPegawai(body.berkas, body.simpan === "1", aktorDari(user), requestMeta(request.headers)),
 
   // GET /api/admin/jenis-kegiatan
   daftarJenis: () => MasterService.daftarJenis(),

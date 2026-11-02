@@ -5,13 +5,12 @@ import type { Konteks } from "@/types/umum.types";
 import { aktorDari, requestMeta } from "@/utils/konteks";
 
 const MIME: Record<FormatEkspor, string> = {
-  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   pdf: "application/pdf",
 };
 
 type KonteksEkspor = Konteks<unknown, unknown, RekapQuery>;
 
-// Membuat handler unduh berkas untuk format tertentu (xlsx atau pdf)
+// Membuat handler unduh berkas untuk format tertentu (saat ini hanya PDF)
 const unduh = (format: FormatEkspor) => async ({ query, user, request }: KonteksEkspor) => {
   const hasil = await EksporService.buat(format, query, { ...aktorDari(user), nama: user.name }, requestMeta(request.headers));
   return new Response(hasil.isi, {
@@ -26,9 +25,6 @@ const unduh = (format: FormatEkspor) => async ({ query, user, request }: Konteks
 };
 
 export const EksporController = {
-  // GET /api/ekspor/kegiatan.xlsx
-  excel: unduh("xlsx"),
-
   // GET /api/ekspor/kegiatan.pdf
   pdf: unduh("pdf"),
 

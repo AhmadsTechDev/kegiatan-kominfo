@@ -29,14 +29,14 @@ export function PageHeader({ title, eyebrow, description, actions, className }: 
       <div className="flex min-w-0 flex-col gap-1.5">
         {eyebrow && (
           <p className="flex items-center gap-2 text-xs font-bold tracking-widest text-primary uppercase">
-            <span aria-hidden className="h-0.5 w-4 rounded-full bg-primary" />
+            <span aria-hidden className="h-0.5 w-4 rounded-full bg-aksen-peran" />
             {eyebrow}
           </p>
         )}
         <h1 className="font-heading text-2xl font-extrabold tracking-tight md:text-3xl">{title}</h1>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 lg:shrink-0 lg:justify-end">{actions}</div>}
     </div>
   );
 }

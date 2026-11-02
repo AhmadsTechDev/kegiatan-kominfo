@@ -1,6 +1,5 @@
-// Uji data master: unit kerja (aturan induk, kode otomatis, nonaktif), jenis unit, jenis kegiatan, pegawai, impor Excel
+// Uji data master: unit kerja (aturan induk, kode otomatis, nonaktif), jenis unit, jenis kegiatan, pegawai
 import { describe, expect, test } from "bun:test";
-import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { buatBidang, buatPengguna, formBerkas, idUnit, login, loginAdmin, nipAcak, panggil, SANDI } from "./helpers";
 
@@ -23,8 +22,8 @@ describe("unit kerja", () => {
     const tanpaInduk = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: "Seksi X", jenisUnitId: 5, parentId: null } });
     expect(tanpaInduk.status).toBe(422);
     expect(tanpaInduk.data.details[0].field).toBe("parentId");
-    const indukSalah = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: "Seksi X", jenisUnitId: 5, parentId: await idUnit("SEKRETARIAT") } });
-    expect(indukSalah.data.details[0].message).toBe("Induk seksi harus bidang");
+    const indukSalah = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: "Seksi X", jenisUnitId: 5, parentId: await idUnit("SEKSI-DATA") } });
+    expect(indukSalah.data.details[0].message).toBe("Induk sub bidang harus bidang");
     const bidangBerinduk = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: "Bidang X", jenisUnitId: 2, parentId: await idUnit("BID-TIP") } });
     expect(bidangBerinduk.status).toBe(422);
     const sah = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: `Seksi Uji ${kodeAcak()}`, jenisUnitId: 5, parentId: await idUnit("BID-TIP") } });
@@ -100,6 +99,35 @@ describe("pegawai", () => {
     expect(kembar.data.details[0].message).toBe("NIP sudah terdaftar atas nama Pemilik NIP");
   });
 
+  test("filter akun=tanpa hanya menampilkan pegawai yang belum punya akun", async () => {
+    const admin = await loginAdmin();
+    const bidang = await buatBidang();
+    await buatPengguna({ unitId: bidang.id });
+    await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Belum Punya Akun", unitKerjaId: bidang.id } });
+    const daftar = await panggil(`/admin/pegawai?unit=${bidang.id}&akun=tanpa`, { cookie: admin });
+    expect(daftar.data.items.map((p: { nama: string }) => p.nama)).toEqual(["Belum Punya Akun"]);
+  });
+
+  test("daftar akun: nonaktif=1 hanya akun nonaktif, nonaktif=0 menyembunyikannya", async () => {
+    const admin = await loginAdmin();
+    const u = await buatPengguna();
+    expect((await panggil(`/admin/akun/${u.userId}/nonaktifkan`, { cookie: admin, json: { alasan: "uji" } })).status).toBe(200);
+    expect((await panggil(`/admin/akun?q=${u.email}&nonaktif=1`, { cookie: admin })).data.total).toBe(1);
+    expect((await panggil(`/admin/akun?q=${u.email}&nonaktif=0`, { cookie: admin })).data.total).toBe(0);
+  });
+
+  test("daftar pegawai: yang punya nomor telepon tampil lebih dulu", async () => {
+    const admin = await loginAdmin();
+    const bidang = await buatBidang();
+    const tanpaTelp = await buatPengguna({ unitId: bidang.id });
+    const denganTelp = await buatPengguna({ unitId: bidang.id });
+    expect((await panggil("/me", { method: "PATCH", cookie: denganTelp.cookie, json: { kontak: "0812-1111-2222" } })).status).toBe(200);
+    const daftar = await panggil(`/admin/pegawai?unit=${bidang.id}`, { cookie: admin });
+    expect(daftar.data.items.map((p: { id: number }) => p.id)).toEqual([denganTelp.pegawaiId, tanpaTelp.pegawaiId]);
+    const hal2 = await panggil(`/admin/pegawai?unit=${bidang.id}&page=2&pageSize=1`, { cookie: admin });
+    expect(hal2.data.items.map((p: { id: number }) => p.id)).toEqual([tanpaTelp.pegawaiId]);
+  });
+
   test("pegawai tanpa NIP (non-ASN) boleh", async () => {
     const admin = await loginAdmin();
     const res = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Honorer", unitKerjaId: await idUnit("SEKSI-DATA") } });
@@ -123,70 +151,7 @@ describe("pegawai", () => {
     const lewatInduk = await panggil(`/admin/pegawai?unit=${await idUnit("BID-TIP")}&q=${u.nip}`, { cookie: admin });
     expect(lewatInduk.data.total).toBe(1);
     expect(lewatInduk.data.items[0].akun).toMatchObject({ email: u.email, aktif: true });
-    const unitLain = await panggil(`/admin/pegawai?unit=${await idUnit("SEKRETARIAT")}&q=${u.nip}`, { cookie: admin });
+    const unitLain = await panggil(`/admin/pegawai?unit=${await idUnit("BID-APTIKA")}&q=${u.nip}`, { cookie: admin });
     expect(unitLain.data.total).toBe(0);
-  });
-});
-
-describe("impor pegawai dari Excel", () => {
-  // Membuat berkas Excel impor dengan kolom NIP, Nama, Jabatan, Unit kerja
-  async function berkasExcel(baris: (string | number)[][]) {
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet("Pegawai");
-    ws.addRow(["NIP", "Nama", "Jabatan", "Unit kerja"]);
-    for (const b of baris) ws.addRow(b);
-    return new Uint8Array(await wb.xlsx.writeBuffer());
-  }
-
-  test("templat bisa diunduh", async () => {
-    const admin = await loginAdmin();
-    const res = await panggil("/admin/pegawai/impor/templat", { cookie: admin });
-    expect(res.status).toBe(200);
-    expect(String.fromCharCode(res.data[0], res.data[1])).toBe("PK");
-  });
-
-  test("pratinjau menandai baris baru, perbarui, dan galat; simpan hanya baris yang sah", async () => {
-    const admin = await loginAdmin();
-    const lama = await buatPengguna();
-    const nipBaru = nipAcak();
-    const isi = await berkasExcel([
-      [nipBaru, "Pegawai Impor Baru", "Staf", "SEKSI-DATA"],
-      [lama.nip!, "Nama Diperbarui", "Analis", "Seksi Pengelolaan Data dan Persediaan"],
-      [nipAcak(), "Unit Salah", "", "Bidang Teknologi"],
-      [nipBaru, "NIP Kembar", "", "SEKSI-DATA"],
-      [198702152011012002, "NIP Angka", "", "SEKSI-DATA"],
-    ]);
-
-    const pratinjau = await panggil("/admin/pegawai/impor", { cookie: admin, form: formBerkas(isi, "pegawai.xlsx") });
-    expect(pratinjau.status).toBe(200);
-    expect(pratinjau.data.disimpan).toBe(false);
-    expect(pratinjau.data.ringkasan).toEqual({ total: 5, baru: 1, perbarui: 1, sama: 0, galat: 3 });
-    expect(pratinjau.data.baris.map((b: { baris: number; status: string }) => [b.baris, b.status])).toEqual([
-      [2, "baru"],
-      [3, "perbarui"],
-      [4, "galat"],
-      [5, "galat"],
-      [6, "galat"],
-    ]);
-    expect(pratinjau.data.baris[2].pesan[0]).toContain('Maksud Anda "Bidang Teknologi Informasi dan Persandian"?');
-    expect(pratinjau.data.baris[3].pesan[0]).toBe("NIP sama dengan baris 2");
-    expect(pratinjau.data.baris[4].pesan[0]).toContain("tersimpan sebagai angka");
-    expect(await prisma.pegawai.findUnique({ where: { nip: nipBaru } })).toBeNull();
-
-    const fd = formBerkas(isi, "pegawai.xlsx");
-    fd.append("simpan", "1");
-    const simpan = await panggil("/admin/pegawai/impor", { cookie: admin, form: fd });
-    expect(simpan.data.disimpan).toBe(true);
-    expect(await prisma.pegawai.findUnique({ where: { nip: nipBaru } })).toMatchObject({ nama: "Pegawai Impor Baru", jabatan: "Staf" });
-    expect(await prisma.pegawai.findUnique({ where: { nip: lama.nip! } })).toMatchObject({ nama: "Nama Diperbarui", jabatan: "Analis" });
-
-    const ulang = await panggil("/admin/pegawai/impor", { cookie: admin, form: formBerkas(isi, "pegawai.xlsx") });
-    expect(ulang.data.ringkasan).toMatchObject({ baru: 0, perbarui: 0, sama: 2 });
-  });
-
-  test("berkas bukan Excel ditolak 415", async () => {
-    const admin = await loginAdmin();
-    const res = await panggil("/admin/pegawai/impor", { cookie: admin, form: formBerkas(new TextEncoder().encode("nip,nama"), "pegawai.csv") });
-    expect(res.status).toBe(415);
   });
 });

@@ -77,7 +77,7 @@ describe("ganti email", () => {
     const minta = await panggil("/me/email", { method: "PATCH", cookie: u.cookie, json: { email: baru.toUpperCase(), password: SANDI } });
     expect(minta.status).toBe(200);
     expect(minta.data.emailBaru).toBe(baru);
-    expect(suratTerakhir(baru)!.subjek).toBe("Verifikasi email baru Aplikasi Pendataan Kegiatan");
+    expect(suratTerakhir(baru)!.subjek).toBe("Verifikasi email baru Anda");
     expect(suratTerakhir(u.email)!.subjek).toBe("Permintaan ganti email akun Anda");
 
     // Sebelum verifikasi: email lama tetap berlaku, email baru belum bisa dipakai login
@@ -95,7 +95,7 @@ describe("ganti email", () => {
     const masuk = await login(baru, SANDI);
     expect(masuk.status).toBe(200);
     expect((await panggil("/me", { cookie: masuk.cookie })).data).toMatchObject({ email: baru, emailBaru: null, emailVerified: true });
-    expect(suratTerakhir(u.email)!.subjek).toBe("Email akun Anda telah diganti");
+    expect(suratTerakhir(u.email)!.subjek).toBe("Email akun Anda diganti");
     expect((await auditUntuk("user", u.userId)).map((a) => a.aksi)).toEqual(expect.arrayContaining(["minta_ganti_email", "ganti_email"]));
   });
 
@@ -143,7 +143,7 @@ describe("ganti kata sandi", () => {
     expect((await panggil("/me", { cookie: lain.cookie })).status).toBe(401);
     expect((await login(u.email, SANDI)).status).toBe(401);
     expect((await login(u.email, "sandibaru12345")).status).toBe(200);
-    expect(suratTerakhir(u.email)!.subjek).toBe("Kata sandi akun Anda telah diubah");
+    expect(suratTerakhir(u.email)!.subjek).toBe("Kata sandi Anda diubah");
   });
 
   test("maksimal 5 percobaan per 15 menit per akun", async () => {

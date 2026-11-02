@@ -112,6 +112,10 @@ export function keKegiatanPayload(v: KegiatanFormValues): KegiatanPayload {
 
 export function nilaiAwalForm(k?: KegiatanDetail, penanggungJawabId?: number | null): KegiatanFormValues {
   if (!k) {
+    // Kegiatan baru dimulai sekarang (WIB) dan berakhir satu jam kemudian, supaya pengisi tinggal mengubah bila perlu
+    const sekarang = Date.now();
+    const mulai = bagianWib(new Date(sekarang).toISOString());
+    const selesai = bagianWib(new Date(sekarang + 3600_000).toISOString());
     return {
       judul: "",
       jenisId: "",
@@ -119,10 +123,10 @@ export function nilaiAwalForm(k?: KegiatanDetail, penanggungJawabId?: number | n
       uraian: "",
       hasil: "",
       jumlahPeserta: "",
-      tanggalMulai: "",
-      jamMulai: "08:00",
-      tanggalSelesai: "",
-      jamSelesai: "12:00",
+      tanggalMulai: mulai.tanggal,
+      jamMulai: mulai.jam,
+      tanggalSelesai: selesai.tanggal,
+      jamSelesai: selesai.jam,
       lokasiNama: "",
       lat: "",
       lng: "",

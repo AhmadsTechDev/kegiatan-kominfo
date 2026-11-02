@@ -65,7 +65,9 @@ export const auth = betterAuth({
     enabled: true,
     window: 60,
     max: 100,
-    customRules: { [PATH_LOGIN]: { window: 60, max: 10 } },
+    // Percobaan dengan email berbeda dari satu IP ikut dihitung; pegawai satu kantor sering berbagi satu IP publik.
+    // Perlindungan per akun ada di AuthService (5 salah = kunci 15 menit), jadi batas IP cukup longgar
+    customRules: { [PATH_LOGIN]: { window: 60, max: 30 } },
   },
 
   plugins: [admin({ ac, roles: rolesAuth, defaultRole: "PEGAWAI", adminRoles: ["ADMIN"] })],

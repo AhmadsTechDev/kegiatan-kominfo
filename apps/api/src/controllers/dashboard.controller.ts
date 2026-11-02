@@ -6,7 +6,8 @@ import { parsePeriode } from "@/utils/periode";
 
 export const DashboardController = {
   // GET /api/dashboard
-  ringkasan: ({ query }: Konteks<unknown, unknown, DashboardQuery>) => DashboardService.ringkasan(parsePeriode(query.periode)),
+  ringkasan: ({ query, user }: Konteks<unknown, unknown, DashboardQuery>) =>
+    DashboardService.ringkasan(parsePeriode(query.periode), aktorDari(user)),
 
   // GET /api/dashboard/saya
   saya: ({ user }: Konteks) => DashboardService.saya(aktorDari(user)),

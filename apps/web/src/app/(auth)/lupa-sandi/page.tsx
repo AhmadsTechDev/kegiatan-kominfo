@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: "Lupa kata sandi" };
 export default function LupaSandiPage() {
   return (
     <AuthShell>
-      <KartuPublik eyebrow="Pemulihan akun" judul="Lupa kata sandi" deskripsi="Masukkan email akun Anda. Bila terdaftar, kami kirim tautan untuk membuat kata sandi baru.">
+      <KartuPublik>
         <LupaSandiForm />
       </KartuPublik>
     </AuthShell>

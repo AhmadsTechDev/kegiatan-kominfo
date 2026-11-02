@@ -72,16 +72,19 @@ export const PermintaanAkunService = {
 
     const admin = await PermintaanAkunRepository.emailAdmin();
     if (admin.length) {
-      await kirimTanpaGagal(() =>
-        kirimEmail(admin.join(","), `Permintaan akun baru: ${nama}`, {
-          judul: "Ada permintaan akun baru",
-          paragraf: [
-            `${nama} (${pegawai ? `NIP ${pegawai.nip}` : "tanpa NIP"}) meminta akun dengan email ${email}.`,
-            "Tinjau dan setujui atau tolak permintaan ini di halaman Manajemen akun.",
-          ],
-          tombol: { label: "Buka permintaan akun", url: `${env.FRONTEND_URL}/admin/akun?tab=permintaan` },
-        }),
-      );
+      // Satu email per admin agar alamat admin lain tidak saling terlihat
+      const surat = {
+        judul: "Ada permintaan akun baru",
+        pratinjau: `${nama} meminta akun dengan email ${email}.`,
+        paragraf: ["Seseorang meminta akun Aplikasi Pendataan Kegiatan. Tinjau lalu setujui atau tolak di halaman Manajemen akun."],
+        rincian: [
+          { label: "Nama", nilai: nama },
+          { label: "NIP", nilai: pegawai?.nip ?? "Tanpa NIP" },
+          { label: "Email", nilai: email },
+        ],
+        tombol: { label: "Tinjau permintaan", url: `${env.FRONTEND_URL}/admin/akun?tab=permintaan` },
+      };
+      await Promise.all(admin.map((alamat) => kirimTanpaGagal(() => kirimEmail(alamat, `Permintaan akun baru: ${nama}`, surat))));
     }
     return { id };
   },
@@ -108,7 +111,7 @@ export const PermintaanAkunService = {
       if (!pegawaiId) {
         // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa NIP terdaftar wajib diberi unit kerja dan jabatan
         const galat = [
-          ...(isi.unitKerjaId ? [] : [{ field: "unitKerjaId", message: "Unit kerja wajib dipilih" }]),
+          ...(isi.unitKerjaId ? [] : [{ field: "unitKerjaId", message: "Bidang wajib dipilih" }]),
           ...(isi.jabatan?.trim() ? [] : [{ field: "jabatan", message: "Jabatan wajib diisi" }]),
         ];
         if (galat.length) throw Unprocessable("Lengkapi data pegawai pemohon", galat);
@@ -139,8 +142,9 @@ export const PermintaanAkunService = {
       return p;
     });
     await kirimTanpaGagal(() =>
-      kirimEmail(permintaan.email, "Permintaan akun Aplikasi Pendataan Kegiatan", {
+      kirimEmail(permintaan.email, "Permintaan akun Anda belum disetujui", {
         judul: "Permintaan akun belum dapat disetujui",
+        pratinjau: "Permintaan akun Anda di Aplikasi Pendataan Kegiatan belum dapat disetujui.",
         paragraf: [`Halo ${permintaan.nama},`, "Permintaan akun Anda di Aplikasi Pendataan Kegiatan belum dapat disetujui.", `Alasan: ${bersih}`],
         catatan: "Bila ada pertanyaan, hubungi administrator aplikasi Diskominfo Kota Palembang.",
       }),

@@ -70,13 +70,13 @@ describe("login dan sesi", () => {
     expect((await login(u.email, "sandibaru12345")).status).toBe(200);
   });
 
-  test("lebih dari 10 percobaan login per menit dari satu IP ditolak 429", async () => {
+  test("lebih dari 30 percobaan login per menit dari satu IP ditolak 429", async () => {
     const ip = ipAcak();
     const status: number[] = [];
-    for (let i = 0; i < 11; i++) status.push((await login(emailAcak("tidakada"), "salah-sandi-123", ip)).status);
-    expect(status.slice(0, 10).every((s) => s === 401)).toBe(true);
-    expect(status[10]).toBe(429);
-  });
+    for (let i = 0; i < 31; i++) status.push((await login(emailAcak("tidakada"), "salah-sandi-123", ip)).status);
+    expect(status.slice(0, 30).every((s) => s === 401)).toBe(true);
+    expect(status[30]).toBe(429);
+  }, 30_000);
 
   test("logout mengakhiri sesi dan tercatat di audit", async () => {
     const u = await buatPengguna();
@@ -147,7 +147,7 @@ describe("CSRF dan hash kata sandi", () => {
 });
 
 describe("hak akses role", () => {
-  test("PEGAWAI (Operator) dan PIMPINAN ditolak 403 di semua endpoint admin", async () => {
+  test("PEGAWAI dan PIMPINAN ditolak 403 di semua endpoint admin", async () => {
     const pegawai = await buatPengguna();
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
     const dapat = ["/admin/akun", `/admin/akun/${pegawai.userId}`, "/admin/pegawai", "/admin/unit-kerja", "/audit-log", "/admin/permintaan-akun"];
@@ -161,13 +161,17 @@ describe("hak akses role", () => {
     expect((await panggil("/me", { cookie: pegawai.cookie })).data.role).toBe("PEGAWAI");
   });
 
-  test("dashboard dinas dan pantau hanya untuk PIMPINAN dan ADMIN", async () => {
+  test("dashboard dinas untuk PIMPINAN dan ADMIN; pantau hanya untuk PIMPINAN", async () => {
     const pegawai = await buatPengguna();
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
     expect((await panggil("/dashboard", { cookie: pegawai.cookie })).status).toBe(403);
     expect((await panggil("/pantau/ringkasan", { cookie: pegawai.cookie })).status).toBe(403);
-    expect((await panggil("/dashboard", { cookie: pimpinan.cookie })).status).toBe(200);
+    const dashPimpinan = await panggil("/dashboard", { cookie: pimpinan.cookie });
+    expect(dashPimpinan.status).toBe(200);
+    // Hitungan akun hanya dikirim ke admin
+    expect(dashPimpinan.data.admin).toBeNull();
     expect((await panggil("/pantau/ringkasan", { cookie: pimpinan.cookie })).status).toBe(200);
+    expect((await panggil("/pantau/ringkasan", { cookie: await loginAdmin() })).status).toBe(403);
   });
 });
 
@@ -176,7 +180,7 @@ describe("aktivasi akun dari email undangan", () => {
     const { id, email, res } = await akunMenunggu();
     expect(res.data.undangan).toEqual({ email, galat: null });
     const surel = suratTerakhir(email)!;
-    expect(surel.subjek).toBe("Aktivasi akun Aplikasi Pendataan Kegiatan");
+    expect(surel.subjek).toBe("Aktifkan akun Anda");
     const token = tokenTerakhir(email);
 
     // Basis data hanya menyimpan hash token
@@ -265,7 +269,7 @@ describe("lupa dan atur ulang kata sandi", () => {
 
     const baru = kotakSurat.slice(sebelum);
     expect(baru.map((s) => s.kepada)).toEqual([u.email]);
-    expect(baru[0]!.subjek).toBe("Atur ulang kata sandi Aplikasi Pendataan Kegiatan");
+    expect(baru[0]!.subjek).toBe("Atur ulang kata sandi");
     const v = await prisma.verification.findFirstOrThrow({ where: { value: u.userId, identifier: { startsWith: "reset-sandi:" } } });
     expect(v.expiresAt.getTime() - Date.now()).toBeLessThanOrEqual(3600_000);
   });
@@ -285,7 +289,7 @@ describe("lupa dan atur ulang kata sandi", () => {
     expect((await panggil("/reset-sandi", { json: { token, password: "sandireset67890" } })).status).toBe(410);
     expect((await login(u.email, SANDI)).status).toBe(401);
     expect((await login(u.email, "sandireset12345")).status).toBe(200);
-    expect(suratTerakhir(u.email)?.subjek).toBe("Kata sandi akun Anda telah diubah");
+    expect(suratTerakhir(u.email)?.subjek).toBe("Kata sandi Anda diubah");
     expect((await auditUntuk("user", u.userId)).some((a) => a.aksi === "reset_sandi")).toBe(true);
   });
 

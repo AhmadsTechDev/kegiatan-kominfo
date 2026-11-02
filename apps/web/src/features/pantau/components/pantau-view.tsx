@@ -14,7 +14,9 @@
 //   1. Memeriksa peran pengguna; jika peran PEGAWAI, tampilkan pesan tanpa akses.
 //   2. Mengambil ringkasan statistik (total, belum diperiksa, perlu perbaikan,
 //      sudah diperiksa, dan draf) serta daftar kegiatan terbaru via TanStack Query.
-//   3. Menyaring daftar pilihan pegawai secara dinamis berdasarkan bidang terpilih.
+//   3. Menyaring daftar pilihan pegawai berdasarkan bidang; pegawai dipilih lewat PilihCari
+//      (ketik nama) agar tetap bisa dipakai saat pegawai berjumlah ratusan.
+//   3b. Kolom Cari mencari judul, lokasi, uraian, dan nama pegawai; kartu ringkasan ikut tersaring.
 //   4. Memungkinkan pimpinan menyaring status langsung dari kartu statistik.
 //   5. Menyediakan aksi cepat untuk menandai kegiatan langsung pada baris tabel.
 //
@@ -38,8 +40,10 @@ import { useId, useMemo, useState } from "react";
 import { AvatarInisial } from "@/components/shared/avatar-inisial";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { ErrorState } from "@/components/shared/error-state";
+import { KolomCari } from "@/components/shared/kolom-cari";
 import { PageHeader } from "@/components/shared/page-header";
 import { PaginationBar } from "@/components/shared/pagination-bar";
+import { PilihCari, type OpsiCari } from "@/components/shared/pilih-cari";
 import { Panel, PanelFooter } from "@/components/shared/panel";
 import { RentangTanggalPicker } from "@/components/shared/rentang-tanggal-picker";
 import { StatusPemeriksaanBadge } from "@/components/shared/status-badge";
@@ -58,10 +62,10 @@ import { formatAngka, formatRentangTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Ringkasan = { total: number; draf: number; terkirim: number; diperiksa: number; perluPerbaikan: number };
-type Penyaring = { unit: string | null; pegawai: string | null; dari: string | null; sampai: string | null };
+type Penyaring = { q: string; unit: string | null; pegawai: string | null; dari: string | null; sampai: string | null };
 
 const SEMUA = "semua";
-const KOSONG: Penyaring = { unit: null, pegawai: null, dari: null, sampai: null };
+const KOSONG: Penyaring = { q: "", unit: null, pegawai: null, dari: null, sampai: null };
 
 async function getRingkasan(p: Penyaring) {
   const params = Object.fromEntries(Object.entries(p).filter(([, v]) => v));
@@ -137,7 +141,7 @@ function KartuStatus({
         {label}
       </span>
       {nilai == null ? <Skeleton className="h-8 w-16" /> : <span className="font-heading text-2xl font-extrabold tabular-nums">{formatAngka(nilai)}</span>}
-      {keterangan && <span className="text-[11px] text-muted-foreground">{keterangan}</span>}
+      {keterangan && <span className="text-xs text-muted-foreground">{keterangan}</span>}
     </>
   );
   const kelas = "flex flex-col items-start gap-1 rounded-xl border bg-card p-4 text-left shadow-sm";
@@ -180,7 +184,7 @@ export function PantauView() {
 
   const ringkasan = useQuery({ queryKey: ["pantau", "ringkasan", penyaring], queryFn: () => getRingkasan(penyaring), placeholderData: keepPreviousData });
   const filter = useMemo<FilterKegiatan>(
-    () => ({ q: "", jenis: null, status: null, milik: null, ...penyaring, pemeriksaan: status, page }),
+    () => ({ jenis: null, status: null, milik: null, ...penyaring, pemeriksaan: status, page }),
     [penyaring, status, page],
   );
   const daftar = useQuery({ queryKey: ["kegiatan", "pantau", filter], queryFn: () => getDaftarKegiatan(filter), placeholderData: keepPreviousData });
@@ -200,12 +204,17 @@ export function PantauView() {
     }
     return (referensi.data?.pegawai ?? []).filter((p) => ids.has(p.unitKerjaId));
   }, [penyaring.unit, referensi.data, unitKerja]);
+  // Jabatan dan bidang ikut ditampilkan dan dicari: membedakan pegawai bernama sama dan memudahkan mencari per bidang
+  const opsiPegawai = useMemo<OpsiCari[]>(() => {
+    const namaUnit = new Map(unitKerja.map((u) => [u.id, u.nama]));
+    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.unitKerjaId)].filter(Boolean).join(" · ") }));
+  }, [pegawaiPilihan, unitKerja]);
 
-  if (user && user.role === "PEGAWAI") {
+  if (user && user.role !== "PIMPINAN") {
     return (
       <>
         <PageHeader eyebrow="Pemantauan" title="Pantau pimpinan" />
-        <KegiatanTanpaAkses pesan="Halaman ini khusus pimpinan dan admin." />
+        <KegiatanTanpaAkses pesan="Halaman ini khusus pimpinan. Ringkasan seluruh kegiatan tersedia di Dashboard dan daftar Kegiatan." />
       </>
     );
   }
@@ -219,6 +228,18 @@ export function PantauView() {
 
       <Panel>
         <div role="search" aria-label="Penyaring pantau" className="grid items-end gap-3 p-4 sm:grid-cols-2 md:p-5 lg:grid-cols-[1fr_1fr_minmax(14rem,1.2fr)_auto]">
+          <div className="flex min-w-0 flex-col gap-1.5 sm:col-span-2 lg:col-span-4">
+            <label htmlFor={`${id}-cari`} className={label}>
+              Cari
+            </label>
+            <KolomCari
+              id={`${id}-cari`}
+              value={penyaring.q}
+              onChange={(q) => ubah({ q })}
+              placeholder="Judul kegiatan, lokasi, atau nama pegawai..."
+              label="Cari kegiatan atau pegawai"
+            />
+          </div>
           <div className="flex min-w-0 flex-col gap-1.5">
             <label htmlFor={`${id}-unit`} className={label}>
               Bidang
@@ -241,19 +262,14 @@ export function PantauView() {
             <label htmlFor={`${id}-pegawai`} className={label}>
               Pegawai
             </label>
-            <Select value={penyaring.pegawai ?? SEMUA} onValueChange={(v) => ubah({ pegawai: v === SEMUA ? null : v })}>
-              <SelectTrigger id={`${id}-pegawai`} className="h-10 w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={SEMUA}>Semua pegawai</SelectItem>
-                {pegawaiPilihan.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>
-                    {p.nama}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <PilihCari
+              id={`${id}-pegawai`}
+              value={penyaring.pegawai}
+              onChange={(v) => ubah({ pegawai: v })}
+              opsi={opsiPegawai}
+              labelSemua={penyaring.unit ? "Semua pegawai di bidang ini" : "Semua pegawai"}
+              placeholderCari="Ketik nama, jabatan, atau bidang..."
+            />
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">
             <label htmlFor={`${id}-tanggal`} className={label}>
@@ -261,7 +277,7 @@ export function PantauView() {
             </label>
             <RentangTanggalPicker id={`${id}-tanggal`} value={penyaring} onChange={ubah} />
           </div>
-          <Button variant="outline" className="h-10" onClick={reset} disabled={!adaPenyaring}>
+          <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={reset} disabled={!adaPenyaring}>
             <RotateCcw aria-hidden />
             Tampilkan semua
           </Button>
@@ -276,7 +292,7 @@ export function PantauView() {
           <KartuStatus label="Belum diperiksa" nilai={r?.terkirim} ikon={Send} aktif={status === "terkirim"} onPilih={() => pilihStatus("terkirim")} />
           <KartuStatus label="Perlu perbaikan" nilai={r?.perluPerbaikan} ikon={MessageSquareWarning} aktif={status === "perlu_perbaikan"} onPilih={() => pilihStatus("perlu_perbaikan")} />
           <KartuStatus label="Sudah diperiksa" nilai={r?.diperiksa} ikon={CheckCheck} aktif={status === "diperiksa"} onPilih={() => pilihStatus("diperiksa")} />
-          <KartuStatus label="Draf" nilai={r?.draf} ikon={FilePen} keterangan="Belum dikirim pegawai" />
+          <KartuStatus label="Draf" nilai={r?.draf} ikon={FilePen} keterangan={penyaring.q ? "Belum dikirim; tidak ikut kata kunci" : "Belum dikirim pegawai"} />
         </div>
       )}
 

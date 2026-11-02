@@ -84,7 +84,7 @@ function KartuRingkasan({ data, cakupan }: { data: RekapData; cakupan: string })
         label="Bidang terlibat"
         value={perUnit.filter((u) => u.total > 0).length}
         icon={Building2}
-        keterangan={`dari ${formatAngka(perUnit.length)} unit kerja pada rekap ini`}
+        keterangan={`dari ${formatAngka(perUnit.length)} bidang pada rekap ini`}
       />
       <StatCard label="Pegawai terlibat" value={perPegawai.length} icon={Users} keterangan={`${formatAngka(total.peserta)} peserta tercatat`} />
       <StatCard
@@ -160,7 +160,7 @@ export function RekapView() {
         title="Rekap kegiatan"
         description={
           terbatas
-            ? `Jumlah kegiatan ${unitSaya?.nama ?? "unit kerja Anda"} dan kegiatan yang Anda catat, dihitung otomatis dari data terkini.`
+            ? `Jumlah kegiatan ${unitSaya?.nama ?? "bidang Anda"} dan kegiatan yang Anda catat, dihitung otomatis dari data terkini.`
             : "Jumlah dan sebaran kegiatan per periode, bidang, dan pegawai, dihitung otomatis dari data terkini."
         }
         actions={

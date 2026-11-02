@@ -17,10 +17,8 @@ export const masterRoutes = new Elysia({ prefix: "/admin" })
   .get("/jenis-unit", MasterController.daftarJenisUnit, ADMIN)
   .post("/jenis-unit", MasterController.buatJenisUnit, { ...ADMIN, body: MasterValidator.buatJenisUnit })
   .patch("/jenis-unit/:id", MasterController.ubahJenisUnit, { ...ADMIN, params, body: MasterValidator.ubahJenisUnit })
-  // Pegawai (termasuk impor Excel)
+  // Pegawai
   .get("/pegawai", MasterController.daftarPegawai, { ...ADMIN, query: MasterValidator.daftarPegawaiQuery })
-  .get("/pegawai/impor/templat", MasterController.templatImporPegawai, ADMIN)
-  .post("/pegawai/impor", MasterController.imporPegawai, { ...ADMIN, body: MasterValidator.imporPegawai })
   .post("/pegawai", MasterController.buatPegawai, { ...ADMIN, body: MasterValidator.buatPegawai })
   .patch("/pegawai/:id", MasterController.ubahPegawai, { ...ADMIN, params, body: MasterValidator.ubahPegawai })
   // Jenis kegiatan

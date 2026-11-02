@@ -10,22 +10,24 @@ export const LABEL_STATUS: Record<StatusPelaksanaan, string> = {
   dibatalkan: "Dibatalkan",
 };
 
-// Contoh hasil: "05 Mei 2026"
+// Contoh hasil: "5 Mei 2026" (sama dengan format tanggal di antarmuka web)
 export const formatTanggal = (d: Date) =>
-  new Intl.DateTimeFormat("id-ID", { timeZone: ZONA, day: "2-digit", month: "short", year: "numeric" }).format(d);
+  new Intl.DateTimeFormat("id-ID", { timeZone: ZONA, day: "numeric", month: "short", year: "numeric" }).format(d);
 
 // Contoh hasil: "14.30"
 export const formatJam = (d: Date) =>
   new Intl.DateTimeFormat("id-ID", { timeZone: ZONA, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d);
 
-// Contoh hasil: "05 Mei 2026 14.30 WIB"
+// Contoh hasil: "5 Mei 2026 14.30 WIB"
 export const formatWaktu = (d: Date) => `${formatTanggal(d)} ${formatJam(d)} WIB`;
 
-// Rentang waktu kegiatan; bila di hari yang sama cukup tampilkan jamnya
+// Rentang waktu kegiatan, mis. "3 Nov 2026, 08.00–12.00 WIB" atau "3 Nov 2026 08.00 – 5 Nov 2026 12.00 WIB"
 export function formatRentang(mulai: Date, selesai: Date) {
   const a = formatTanggal(mulai);
   const b = formatTanggal(selesai);
-  return a === b ? `${a}, ${formatJam(mulai)}–${formatJam(selesai)}` : `${a} – ${b}`;
+  return a === b
+    ? `${a}, ${formatJam(mulai)}–${formatJam(selesai)} WIB`
+    : `${a} ${formatJam(mulai)} – ${b} ${formatJam(selesai)} WIB`;
 }
 
 // Mengubah "2026-05" menjadi "Mei 2026"

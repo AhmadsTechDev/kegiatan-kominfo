@@ -20,7 +20,7 @@ routes  ->  controllers  ->  services  ->  repositories  ->  Prisma (basis data)
 | `src/types/` | Tipe TypeScript per modul | `kegiatan.types.ts` |
 | `src/plugins/` | Plugin Elysia: login (`auth`), galat, koneksi DB, log permintaan | `auth.plugin.ts` |
 | `src/lib/` | Koneksi ke layanan luar: Prisma, Better Auth, email, penyimpanan berkas | `prisma.ts` |
-| `src/utils/` | Fungsi bantu murni: tanggal WIB, NIP, olah berkas, Excel/PDF | `periode.ts` |
+| `src/utils/` | Fungsi bantu murni: tanggal WIB, NIP, olah berkas, PDF | `periode.ts` |
 | `src/jobs/` | Tugas latar belakang (email pengingat tiap 15 menit) | `pengingat.job.ts` |
 | `prisma/` | Skema basis data, migrasi, dan seed data awal | `schema.prisma` |
 

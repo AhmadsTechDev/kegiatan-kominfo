@@ -1,6 +1,6 @@
 import type { StatusPelaksanaan } from "./umum.types";
 
-export type FormatEkspor = "xlsx" | "pdf";
+export type FormatEkspor = "pdf";
 
 // Satu baris kegiatan di berkas ekspor
 export type BarisEkspor = {

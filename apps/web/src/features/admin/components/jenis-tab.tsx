@@ -39,7 +39,7 @@ import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useJenisAdmin, useSimpanJenis } from "../hooks/use-admin";
 import type { JenisKegiatanAdmin } from "../types";
-import { AksiBaris, BadgeAktif, terapkanGalatServer } from "./admin-shared";
+import { AksiBaris, BadgeAktif, KartuMaster, terapkanGalatServer } from "./admin-shared";
 
 const schema = z.object({ nama: z.string().trim().min(1, "Nama jenis wajib diisi").max(100, "Nama maksimal 100 karakter") });
 type Nilai = z.infer<typeof schema>;
@@ -142,7 +142,7 @@ export function JenisTab() {
         <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground tabular-nums">
           {daftar.data ? `${formatAngka(daftar.data.length)} jenis kegiatan` : "Memuat..."}
         </span>
-        <Button className="h-10" onClick={() => setDialog("baru")}>
+        <Button className="h-10 pointer-coarse:min-h-11" onClick={() => setDialog("baru")}>
           <Plus aria-hidden />
           Tambah jenis
         </Button>
@@ -154,6 +154,17 @@ export function JenisTab() {
         bleed
         caption="Daftar jenis kegiatan"
         getRowKey={(j) => String(j.id)}
+        renderMobileCard={(j) => (
+          <KartuMaster
+            judul={<span className={cn(!j.aktif && "text-muted-foreground")}>{j.nama}</span>}
+            aksi={<AksiBaris nama={j.nama} aktif={j.aktif} onUbah={() => setDialog(j)} onUbahStatus={() => (j.aktif ? setKonfirmasi(j) : ubahStatus(j, true))} />}
+          >
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              <BadgeAktif aktif={j.aktif} />
+              <span className="text-xs text-muted-foreground tabular-nums">Dipakai {formatAngka(j.jumlahKegiatan)} kegiatan</span>
+            </div>
+          </KartuMaster>
+        )}
         empty={{ icon: Tags, title: "Belum ada jenis kegiatan." }}
       />
       {dialog && <JenisDialog jenis={dialog} onClose={() => setDialog(null)} />}

@@ -31,5 +31,5 @@ export type RekapData = {
   perJenis: { id: number; nama: string; jumlah: number }[];
 };
 
-export type FormatEkspor = "xlsx" | "pdf";
+export type FormatEkspor = "pdf";
 

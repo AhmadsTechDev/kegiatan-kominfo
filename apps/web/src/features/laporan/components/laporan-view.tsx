@@ -12,7 +12,7 @@
 //   1. Membaca parameter tanggal, unit, dan pegawai dari URL query peramban.
 //   2. Menghitung estimasi jumlah kegiatan dan mengambil data pratinjau backend.
 //   3. Menyaring daftar pilihan pegawai mengikuti hierarki bidang yang dipilih.
-//   4. Memfasilitasi ekspor berkas Excel/PDF dan pencetakan via window.print().
+//   4. Memfasilitasi ekspor berkas PDF dan pencetakan via window.print().
 //
 // Catatan penting:
 //   - Sesuai features/05-cetak-unduh-laporan.md; filter tetap tersimpan di URL.
@@ -24,13 +24,14 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { FileSpreadsheet, FileText, Loader2, Printer } from "lucide-react";
+import { FileText, Loader2, Printer } from "lucide-react";
 import { useId, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { ErrorState } from "@/components/shared/error-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
+import { PilihCari, type OpsiCari } from "@/components/shared/pilih-cari";
 import { RentangTanggalPicker } from "@/components/shared/rentang-tanggal-picker";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -90,6 +91,10 @@ export function LaporanView() {
     const dalamUnit = cakupan.unit ? unitDanTurunan(referensi.data?.unitKerja ?? [], Number(cakupan.unit)) : null;
     return semua.filter((p) => (dalamUnit ? dalamUnit.has(p.unitKerjaId) : !terbatas || unitBoleh.has(p.unitKerjaId)));
   }, [referensi.data, cakupan.unit, terbatas, unitBoleh]);
+  const opsiPegawai = useMemo<OpsiCari[]>(() => {
+    const namaUnit = new Map((referensi.data?.unitKerja ?? []).map((u) => [u.id, u.nama]));
+    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.unitKerjaId)].filter(Boolean).join(" · ") }));
+  }, [pegawaiPilihan, referensi.data]);
 
   const kosong = pratinjau.data?.baris.length === 0;
   const formatAktif = ekspor.isPending ? ekspor.variables?.format : undefined;
@@ -99,7 +104,7 @@ export function LaporanView() {
     ekspor.mutate(
       { format, filter: { q: "", jenis: null, status: null, ...cakupan } },
       {
-        onSuccess: ({ jumlah }) => toast.success(`Laporan ${format === "xlsx" ? "Excel" : "PDF"} berisi ${formatAngka(jumlah)} kegiatan diunduh`),
+        onSuccess: ({ jumlah }) => toast.success(`Laporan PDF berisi ${formatAngka(jumlah)} kegiatan diunduh`),
         onError: (e) => toast.error(e.message),
       },
     );
@@ -116,16 +121,12 @@ export function LaporanView() {
       <PageHeader
         eyebrow="Pelaporan"
         title="Cetak & unduh laporan"
-        description="Pilih periode dan cakupan, periksa pratinjaunya, lalu unduh sebagai PDF atau Excel, atau cetak langsung."
+        description="Pilih periode dan cakupan, periksa pratinjaunya, lalu unduh sebagai PDF, atau cetak langsung."
         actions={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" className="h-10" onClick={cetak} disabled={!pratinjau.data || pratinjau.isPlaceholderData}>
               <Printer aria-hidden />
               Cetak
-            </Button>
-            <Button variant="outline" className="h-10" onClick={() => unduh("xlsx")} disabled={ekspor.isPending || !pratinjau.data || kosong}>
-              {formatAktif === "xlsx" ? <Loader2 aria-hidden className="animate-spin" /> : <FileSpreadsheet aria-hidden />}
-              {formatAktif === "xlsx" ? "Menyiapkan..." : "Unduh Excel"}
             </Button>
             <Button className="h-10" onClick={() => unduh("pdf")} disabled={ekspor.isPending || !pratinjau.data || kosong}>
               {formatAktif === "pdf" ? <Loader2 aria-hidden className="animate-spin" /> : <FileText aria-hidden />}
@@ -146,14 +147,14 @@ export function LaporanView() {
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">
             <label htmlFor={`${id}-unit`} className={label}>
-              Bidang / unit kerja
+              Bidang
             </label>
             <Select value={cakupan.unit ?? SEMUA} onValueChange={(v) => setFilter({ unit: v === SEMUA ? null : v, pegawai: null })}>
               <SelectTrigger id={`${id}-unit`} className="h-10 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={SEMUA}>{terbatas ? "Semua dalam lingkup saya" : "Semua unit kerja"}</SelectItem>
+                <SelectItem value={SEMUA}>{terbatas ? "Semua dalam lingkup saya" : "Semua bidang"}</SelectItem>
                 {unitPilihan.map((u) => (
                   <SelectItem key={u.id} value={String(u.id)} className={cn(u.parentId != null && "pl-6 text-muted-foreground")}>
                     {u.nama}
@@ -166,19 +167,14 @@ export function LaporanView() {
             <label htmlFor={`${id}-pegawai`} className={label}>
               Pegawai
             </label>
-            <Select value={cakupan.pegawai ?? SEMUA} onValueChange={(v) => setFilter({ pegawai: v === SEMUA ? null : v })}>
-              <SelectTrigger id={`${id}-pegawai`} className="h-10 w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={SEMUA}>Semua pegawai</SelectItem>
-                {pegawaiPilihan.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>
-                    {p.nama}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <PilihCari
+              id={`${id}-pegawai`}
+              value={cakupan.pegawai}
+              onChange={(v) => setFilter({ pegawai: v })}
+              opsi={opsiPegawai}
+              labelSemua="Semua pegawai"
+              placeholderCari="Ketik nama, jabatan, atau bidang..."
+            />
           </div>
           <p className="text-sm sm:col-span-2 lg:col-span-1 lg:pb-2.5" aria-live="polite">
             {estimasi.data == null ? (

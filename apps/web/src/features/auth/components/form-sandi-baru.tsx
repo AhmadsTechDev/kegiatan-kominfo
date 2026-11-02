@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/api-client";
 import { skemaSandiBaru, SYARAT_SANDI, type NilaiSandiBaru } from "@/lib/sandi";
+import { useFokusAwal } from "../hooks/use-fokus-awal";
 
 export function Keadaan({ ikon: Ikon, nada, judul, children }: { ikon: typeof CircleCheck; nada: string; judul: string; children: React.ReactNode }) {
   return (
@@ -39,7 +40,7 @@ export function Keadaan({ ikon: Ikon, nada, judul, children }: { ikon: typeof Ci
         <Ikon className="size-7" />
       </span>
       <div className="flex flex-col gap-1.5">
-        <h2 className="font-heading text-xl font-extrabold">{judul}</h2>
+        <h1 className="font-heading text-2xl font-extrabold tracking-tight">{judul}</h1>
         {children}
       </div>
     </div>
@@ -75,10 +76,12 @@ export function FormSandiBaru({
   onSubmit: (password: string, gagal: (e: unknown) => void) => void;
 }) {
   const [tampil, setTampil] = useState(false);
-  const { register, handleSubmit, setError, formState } = useForm<NilaiSandiBaru>({
+  const { register, handleSubmit, setError, setFocus, formState } = useForm<NilaiSandiBaru>({
     resolver: zodResolver(skemaSandiBaru(email)),
     defaultValues: { password: "", ulang: "" },
   });
+
+  useFokusAwal(setFocus, "password");
 
   const kirim = handleSubmit((v) =>
     onSubmit(v.password, (e) => {
@@ -109,7 +112,6 @@ export function FormSandiBaru({
               type={tampil ? "text" : "password"}
               autoComplete="new-password"
               className="h-11 pr-12"
-              autoFocus
               aria-required
               aria-invalid={!!formState.errors.password}
               {...register("password")}

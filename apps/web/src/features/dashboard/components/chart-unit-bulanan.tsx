@@ -57,10 +57,13 @@ type Baris = { kode: string; bulan: string; total: number; puncak: string | null
 
 function Ringkasan({ label, nilai, keterangan }: { label: string; nilai: string; keterangan?: string }) {
   return (
-    <div className="flex min-w-0 flex-col gap-0.5 rounded-xl bg-muted/60 px-3.5 py-2.5">
+    // HP: satu baris label–nilai agar angka tidak terpotong; mulai sm: tiga kotak sejajar
+    <div className="flex min-w-0 items-baseline justify-between gap-3 rounded-xl bg-muted/60 px-3.5 py-2 sm:flex-col sm:items-start sm:justify-start sm:gap-0.5 sm:py-2.5">
       <span className="text-[11px] font-semibold text-muted-foreground">{label}</span>
-      <span className="truncate font-heading text-lg leading-tight font-extrabold tabular-nums">{nilai}</span>
-      {keterangan && <span className="truncate text-[11px] text-muted-foreground">{keterangan}</span>}
+      <span className="flex min-w-0 items-baseline gap-1.5 sm:flex-col sm:items-start sm:gap-0.5">
+        <span className="font-heading text-lg leading-tight font-extrabold tabular-nums sm:truncate">{nilai}</span>
+        {keterangan && <span className="text-[11px] text-muted-foreground sm:truncate">{keterangan}</span>}
+      </span>
     </div>
   );
 }
@@ -134,8 +137,8 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
   return (
     <Panel className={className}>
       <PanelHeader
-        title="Kegiatan per unit kerja per bulan"
-        description="Enam bulan terakhir; kegiatan seksi dan sub bagian dihitung ke unit induknya"
+        title="Kegiatan per bidang per bulan"
+        description="Enam bulan terakhir; kegiatan sub bidang dihitung ke bidangnya"
         action={
           <Button asChild variant="outline" size="sm" className="h-9 border-border/60 text-xs">
             <Link href="/kegiatan">
@@ -145,12 +148,12 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
           </Button>
         }
       />
-      <PanelBody className="flex flex-col gap-4">
+      <PanelBody className="flex flex-1 flex-col gap-4">
         {totalSemua === 0 ? (
           <EmptyState icon={BarChart3} title="Belum ada kegiatan dalam enam bulan ini." />
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Ringkasan label="Total 6 bulan" nilai={formatAngka(totalTampil)} keterangan={sembunyi.size ? "unit terpilih" : "seluruh unit"} />
               <Ringkasan label="Rata-rata" nilai={formatAngka(Math.round((totalTampil / Math.max(1, baris.length)) * 10) / 10)} keterangan="kegiatan per bulan" />
               <Ringkasan
@@ -162,9 +165,10 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
 
             <ChartContainer
               config={config}
-              className="aspect-auto h-72 w-full"
+              // lg: grafik mengisi sisa tinggi kartu bila kolom sebelahnya lebih tinggi
+              className="aspect-auto h-72 w-full lg:h-auto lg:min-h-72 lg:flex-1"
               role="img"
-              aria-label={`Grafik batang bertumpuk jumlah kegiatan per unit kerja, total ${totalTampil} kegiatan dalam enam bulan`}
+              aria-label={`Grafik batang bertumpuk jumlah kegiatan per bidang, total ${totalTampil} kegiatan dalam enam bulan`}
             >
               <BarChart data={baris} accessibilityLayer barCategoryGap="28%" margin={{ top: 22, right: 4, left: 0, bottom: 0 }} onMouseLeave={() => setFokus(null)}>
                 <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="4 4" />
@@ -246,7 +250,7 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
               </BarChart>
             </ChartContainer>
 
-            <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2" aria-label="Legenda unit kerja">
+            <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2" aria-label="Legenda bidang">
               {data.unitInduk.map((u) => {
                 const disembunyikan = sembunyi.has(u.kode);
                 return (

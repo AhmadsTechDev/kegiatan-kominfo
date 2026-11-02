@@ -150,14 +150,14 @@ export function FilterBar({ value, onChange, onReset, adaFilter, unitKerja, jeni
         {adaUnit && (
           <div className="flex min-w-0 flex-col gap-1.5">
             <label htmlFor={`${id}-unit`} className={label}>
-              Unit kerja
+              Bidang
             </label>
             <Select value={value.unit ?? SEMUA} onValueChange={(v) => onChange({ unit: v === SEMUA ? null : v })}>
               <SelectTrigger id={`${id}-unit`} className="h-10 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={SEMUA}>Semua unit kerja</SelectItem>
+                <SelectItem value={SEMUA}>Semua bidang</SelectItem>
                 {urutPohon(unitKerja).map((u) => (
                   <SelectItem key={u.id} value={String(u.id)} className={cn(u.turunan && "pl-6 text-muted-foreground")}>
                     {u.nama}

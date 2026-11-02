@@ -1,6 +1,7 @@
 // Uji kegiatan: validasi isian, hak akses per role dan unit, konflik ubah bersamaan (409),
 // batal, periksa, hapus, filter daftar, audit log, dan draf kegiatan
 import { describe, expect, test } from "bun:test";
+import { prisma } from "@/lib/prisma";
 import { auditUntuk, buatKegiatan, buatPengguna, idJenis, idUnit, isiKegiatan, jamLagi, loginAdmin, panggil } from "./helpers";
 
 describe("mencatat kegiatan", () => {
@@ -22,6 +23,14 @@ describe("mencatat kegiatan", () => {
       bisaPeriksa: false,
     });
     expect(detail.data.riwayat[0].aksi).toBe("buat");
+  });
+
+  test("lokasi opsional: kegiatan tanpa nama lokasi dan titik peta tersimpan", async () => {
+    const u = await buatPengguna();
+    const baru = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!, { lokasiNama: null, lat: null, lng: null }));
+    const detail = await panggil(`/kegiatan/${baru.id}`, { cookie: u.cookie });
+    expect(detail.status).toBe(200);
+    expect(detail.data).toMatchObject({ lokasiNama: null, lat: null, lng: null });
   });
 
   test("tanggal selesai sebelum tanggal mulai ditolak 422", async () => {
@@ -86,7 +95,7 @@ describe("lingkup baca dan hak ubah", () => {
 
   test("pegawai unit lain tidak bisa melihat (404, bukan 403)", async () => {
     const pemilik = await buatPengguna();
-    const luar = await buatPengguna({ unitId: await idUnit("SUBAG-KEU") });
+    const luar = await buatPengguna({ unitId: await idUnit("BID-OPINI") });
     const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!));
     expect((await panggil(`/kegiatan/${k.id}`, { cookie: luar.cookie })).status).toBe(404);
     const daftar = await panggil("/kegiatan?pageSize=100", { cookie: luar.cookie });
@@ -101,13 +110,21 @@ describe("lingkup baca dan hak ubah", () => {
   });
 
   test("PIMPINAN melihat semua kegiatan dan boleh memeriksa, tetapi tidak boleh mengubah", async () => {
-    const pemilik = await buatPengguna({ unitId: await idUnit("SUBAG-UMPEG") });
+    const pemilik = await buatPengguna({ unitId: await idUnit("BID-EGOV") });
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
     const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!));
     const detail = await panggil(`/kegiatan/${k.id}`, { cookie: pimpinan.cookie });
     expect(detail.data).toMatchObject({ bisaPeriksa: true, bisaUbah: false });
     const ubah = await panggil(`/kegiatan/${k.id}`, { method: "PATCH", cookie: pimpinan.cookie, json: { ...(await isiKegiatan(pemilik.pegawaiId!)), expectedUpdatedAt: k.updatedAt } });
     expect(ubah.status).toBe(403);
+  });
+
+  test("ADMIN tidak memeriksa kegiatan: tombol tidak ditawarkan dan endpoint menolak 403", async () => {
+    const pemilik = await buatPengguna();
+    const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!));
+    const admin = await loginAdmin();
+    expect((await panggil(`/kegiatan/${k.id}`, { cookie: admin })).data.bisaPeriksa).toBe(false);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "diperiksa" } })).status).toBe(403);
   });
 });
 
@@ -205,6 +222,20 @@ describe("daftar kegiatan", () => {
     expect((await panggil("/kegiatan?pageSize=500", { cookie: u.cookie })).status).toBe(422);
     expect((await panggil("/kegiatan?periode=2026-13", { cookie: u.cookie })).status).toBe(422);
     expect((await panggil("/kegiatan?dari=2026-05-10&sampai=2026-05-01", { cookie: u.cookie })).status).toBe(422);
+  });
+});
+
+describe("pencarian nama pegawai", () => {
+  test("kata kunci mencocokkan nama penanggung jawab, di daftar kegiatan dan ringkasan pantau", async () => {
+    const pemilik = await buatPengguna();
+    const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!));
+    const { nama } = await prisma.pegawai.findUniqueOrThrow({ where: { id: pemilik.pegawaiId }, select: { nama: true } });
+    const pimpinan = await buatPengguna({ role: "PIMPINAN" });
+    const daftar = await panggil(`/kegiatan?q=${encodeURIComponent(nama)}&pageSize=100`, { cookie: pimpinan.cookie });
+    expect(daftar.data.items.map((x: { id: number }) => x.id)).toContain(k.id);
+    const ringkasan = await panggil(`/pantau/ringkasan?q=${encodeURIComponent(nama)}`, { cookie: pimpinan.cookie });
+    expect(ringkasan.status).toBe(200);
+    expect(ringkasan.data.total).toBe(1);
   });
 });
 

@@ -31,15 +31,14 @@ function KartuSkeleton({ className, tinggi = "h-72" }: { className?: string; tin
 
 export function DashboardSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-6 lg:grid-cols-12 lg:gap-5" aria-busy aria-label="Memuat dashboard">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-6 lg:grid-cols-12 lg:gap-5" aria-busy aria-label="Memuat dashboard">
       {Array.from({ length: 4 }, (_, i) => (
         <StatCardSkeleton key={i} className="md:col-span-3" />
       ))}
-      <KartuSkeleton className="md:col-span-6 lg:col-span-7" />
-      <KartuSkeleton className="md:col-span-6 lg:col-span-5" />
-      <KartuSkeleton className="md:col-span-6 lg:col-span-7" tinggi="h-90" />
-      <KartuSkeleton className="md:col-span-6 lg:col-span-5" />
-      <KartuSkeleton className="md:col-span-6 lg:col-span-12" tinggi="h-48" />
+      <KartuSkeleton className="col-span-2 md:col-span-6 lg:col-span-7" />
+      <KartuSkeleton className="col-span-2 md:col-span-6 lg:col-span-5" />
+      <KartuSkeleton className="col-span-2 md:col-span-6 lg:col-span-12" tinggi="h-90" />
+      <KartuSkeleton className="col-span-2 md:col-span-6 lg:col-span-12" tinggi="h-48" />
     </div>
   );
 }

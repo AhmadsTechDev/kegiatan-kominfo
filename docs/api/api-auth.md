@@ -38,7 +38,7 @@ Token 256-bit acak; basis data hanya menyimpan hash SHA-256-nya. Menerbitkan tok
 
 ### `POST /api/auth/sign-in/email`
 
-**Akses**: Publik (maks. 10 percobaan per menit per IP)
+**Akses**: Publik (maks. 30 percobaan per menit per IP)
 
 **Body**
 
@@ -68,7 +68,7 @@ Token 256-bit acak; basis data hanya menyimpan hash SHA-256-nya. Menerbitkan tok
 | 401 | `INVALID_EMAIL_OR_PASSWORD` | Email tidak terdaftar, kata sandi salah, atau akun belum diaktivasi (pesan sengaja sama) |
 | 403 | `BANNED_USER` | Akun dinonaktifkan (hanya bila kata sandi benar) |
 | 429 | `ACCOUNT_LOCKED` | Salah 5 kali; terkunci 15 menit. Ada field `lockedUntil` |
-| 429 | | Lebih dari 10 percobaan per menit dari IP yang sama |
+| 429 | | Lebih dari 30 percobaan per menit dari IP yang sama |
 
 Hash kata sandi lama (scrypt) tetap diterima dan otomatis diganti ke Argon2id saat login berhasil.
 
@@ -184,7 +184,7 @@ Semua endpoint di bawah butuh login (semua role).
 
 ### `PATCH /api/me`
 
-Hanya nomor kontak yang bisa diubah. Nama, NIP, jabatan, unit kerja, dan role dikelola admin; field lain di body diabaikan.
+Hanya nomor kontak yang bisa diubah. Nama, NIP, jabatan, bidang, dan role dikelola admin; field lain di body diabaikan.
 
 **Body**: `{ "kontak": "0812-3456" }` (`null` untuk mengosongkan; angka, `+`, `(`, `)`, `-`, spasi; maks. 50)
 

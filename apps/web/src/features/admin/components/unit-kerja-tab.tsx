@@ -26,9 +26,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, ChevronRight, CornerDownRight, Layers, Plus, SearchX, Users } from "lucide-react";
+import { Building2, ChevronRight, CornerDownRight, Plus, SearchX, Users } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -38,16 +38,12 @@ import { FormDialog, Wajib } from "@/components/shared/form-dialog";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useJenisUnitAdmin, useSimpanUnitKerja, useUnitKerjaAdmin } from "../hooks/use-admin";
-import type { JenisUnitAdmin, UnitKerjaAdmin } from "../types";
-import { AksiBaris, BadgeAktif, KolomCari, terapkanGalatServer } from "./admin-shared";
-import { JenisUnitDialog, JenisUnitTab } from "./jenis-unit-tab";
-
-const TAMBAH_BARU = "__baru__";
+import type { UnitKerjaAdmin } from "../types";
+import { AksiBaris, BadgeAktif, KartuMaster, KolomCari, terapkanGalatServer } from "./admin-shared";
 
 const schema = z.object({
   kode: z
@@ -56,7 +52,6 @@ const schema = z.object({
     .max(30, "Kode maksimal 30 karakter")
     .regex(/^[A-Za-z0-9-]*$/, "Hanya huruf, angka, atau tanda hubung"),
   nama: z.string().trim().min(1, "Nama unit wajib diisi").max(150, "Nama maksimal 150 karakter"),
-  jenisUnitId: z.string().min(1, "Jenis unit wajib dipilih"),
   parentId: z.string(),
 });
 type Nilai = z.infer<typeof schema>;
@@ -84,195 +79,97 @@ function SelNamaUnit({ u, turunan }: { u: UnitKerjaAdmin; turunan: boolean }) {
   );
 }
 
-function UnitDialog({
-  unit,
-  semua,
-  jenisAwal,
-  onClose,
-  onDibuat,
-}: {
-  unit: UnitKerjaAdmin | "baru";
-  semua: UnitKerjaAdmin[];
-  jenisAwal?: number;
-  onClose: () => void;
-  onDibuat?: (id: number) => void;
-}) {
+// Jenis dipilih otomatis dari tab: tab Bidang membuat jenis "Bidang", tab Sub bidang membuat "Sub bidang" di bawah satu bidang
+function UnitDialog({ unit, semua, tingkat, onClose }: { unit: UnitKerjaAdmin | "baru"; semua: UnitKerjaAdmin[]; tingkat: TingkatUnit; onClose: () => void }) {
   const simpan = useSimpanUnitKerja();
   const daftarJenis = useJenisUnitAdmin();
   const [galat, setGalat] = useState<string | null>(null);
-  const [tambahJenis, setTambahJenis] = useState(false);
-  const [tambahInduk, setTambahInduk] = useState(false);
   const awal = unit === "baru" ? null : unit;
-  const { register, control, handleSubmit, setError, setValue, formState } = useForm<Nilai>({
+  const turunan = awal ? awal.parentId !== null : tingkat === "turunan";
+  const { register, control, handleSubmit, setError, formState } = useForm<Nilai>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      kode: awal?.kode ?? "",
-      nama: awal?.nama ?? "",
-      jenisUnitId: awal ? String(awal.jenisUnitId) : jenisAwal ? String(jenisAwal) : "",
-      parentId: awal?.parentId ? String(awal.parentId) : "",
-    },
+    defaultValues: { kode: awal?.kode ?? "", nama: awal?.nama ?? "", parentId: awal?.parentId ? String(awal.parentId) : "" },
   });
   const semuaJenis = daftarJenis.data ?? [];
-  const jenisId = Number(useWatch({ control, name: "jenisUnitId" }));
-  const jenis = semuaJenis.find((j) => j.id === jenisId);
-  const jenisInduk = semuaJenis.find((j) => j.id === jenis?.indukJenisId);
-  const pilihanJenis = semuaJenis.filter((j) => j.aktif || j.id === awal?.jenisUnitId);
-  const calonInduk = semua.filter((u) => jenisInduk && u.jenisUnitId === jenisInduk.id && u.id !== awal?.id && (u.aktif || u.id === awal?.parentId));
+  const jenisBidang = semuaJenis.find((j) => j.nama.toLowerCase() === "bidang");
+  const jenisSub = semuaJenis.find((j) => j.nama.toLowerCase() === "sub bidang");
+  const jenisId = awal?.jenisUnitId ?? (turunan ? jenisSub?.id : jenisBidang?.id);
+  const calonInduk = semua.filter((u) => u.parentId === null && u.id !== awal?.id && (u.aktif || u.id === awal?.parentId));
+  const noun = turunan ? "sub bidang" : "bidang";
 
   const kirim = handleSubmit((v) => {
     setGalat(null);
-    if (jenisInduk && !v.parentId) return setError("parentId", { message: "Unit induk wajib dipilih" });
+    if (!jenisId) return setGalat(`Jenis "${turunan ? "Sub bidang" : "Bidang"}" belum tersedia. Hubungi pengembang aplikasi.`);
+    if (turunan && !v.parentId) return setError("parentId", { message: "Bidang induk wajib dipilih" });
     simpan.mutate(
       {
         id: awal?.id,
-        isi: {
-          kode: v.kode.toUpperCase() || undefined,
-          nama: v.nama,
-          jenisUnitId: Number(v.jenisUnitId),
-          parentId: jenisInduk ? Number(v.parentId) : null,
-          aktif: awal?.aktif,
-        },
+        isi: { kode: v.kode.toUpperCase() || undefined, nama: v.nama, jenisUnitId: jenisId, parentId: turunan ? Number(v.parentId) : null, aktif: awal?.aktif },
       },
       {
-        onSuccess: (hasil) => {
-          toast.success(awal ? "Unit kerja diperbarui" : "Unit kerja ditambahkan");
-          if (!awal) onDibuat?.(hasil.id);
+        onSuccess: () => {
+          toast.success(awal ? `${turunan ? "Sub bidang" : "Bidang"} diperbarui` : `${turunan ? "Sub bidang" : "Bidang"} ditambahkan`);
           onClose();
         },
-        onError: (e) => setGalat(terapkanGalatServer(e, setError, { kode: "kode", nama: "nama", jenisUnitId: "jenisUnitId", parentId: "parentId" }) || null),
+        onError: (e) => setGalat(terapkanGalatServer(e, setError, { kode: "kode", nama: "nama", jenisUnitId: "nama", parentId: "parentId" }) || null),
       },
     );
   });
 
   return (
-    <>
-      <FormDialog
-        open
-        onOpenChange={(v) => !v && onClose()}
-        title={awal ? `Ubah unit "${awal.nama}"` : jenisAwal ? "Tambah unit induk" : "Tambah unit kerja"}
-        description="Jenis unit menentukan unit induknya, mis. seksi berada di bawah bidang. Kegiatan unit turunan ikut terhitung ke unit induknya."
-        onSubmit={kirim}
-        pending={simpan.isPending}
-        submitLabel={awal ? "Simpan perubahan" : "Tambah unit"}
-        galat={galat}
-      >
-        <div className="grid gap-4">
-          <Field data-invalid={!!formState.errors.nama}>
-            <FieldLabel htmlFor="unit-nama">
-              Nama unit <Wajib />
-            </FieldLabel>
-            <Input
-              id="unit-nama"
-              className="h-10"
-              maxLength={150}
-              placeholder={awal ? undefined : "Contoh: Seksi Pengelolaan Data"}
-              autoFocus={!awal}
-              aria-invalid={!!formState.errors.nama}
-              {...register("nama")}
-            />
-            <FieldError errors={[formState.errors.nama]} />
-          </Field>
-        </div>
-        <Field data-invalid={!!formState.errors.jenisUnitId}>
-          <FieldLabel htmlFor="unit-jenis">
-            Jenis unit <Wajib />
+    <FormDialog
+      open
+      onOpenChange={(v) => !v && onClose()}
+      title={awal ? `Ubah "${awal.nama}"` : `Tambah ${noun}`}
+      description={turunan ? "Sub bidang berada di bawah satu bidang. Kegiatannya ikut terhitung ke bidang itu." : "Bidang adalah tingkat tertinggi di struktur organisasi."}
+      onSubmit={kirim}
+      pending={simpan.isPending || daftarJenis.isPending}
+      submitLabel={awal ? "Simpan perubahan" : `Tambah ${noun}`}
+      galat={galat}
+    >
+      <Field data-invalid={!!formState.errors.nama}>
+        <FieldLabel htmlFor="unit-nama">
+          Nama {noun} <Wajib />
+        </FieldLabel>
+        <Input
+          id="unit-nama"
+          className="h-10"
+          maxLength={150}
+          placeholder={awal ? undefined : turunan ? "Contoh: Sub Bidang Pengelolaan Data" : "Contoh: Bidang Teknologi Informasi dan Persandian"}
+          autoFocus={!awal}
+          aria-invalid={!!formState.errors.nama}
+          {...register("nama")}
+        />
+        <FieldError errors={[formState.errors.nama]} />
+      </Field>
+      {turunan && (
+        <Field data-invalid={!!formState.errors.parentId}>
+          <FieldLabel htmlFor="unit-induk">
+            Bidang induk <Wajib />
           </FieldLabel>
           <Controller
             control={control}
-            name="jenisUnitId"
+            name="parentId"
             render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={(v) => {
-                  if (v === TAMBAH_BARU) return setTambahJenis(true);
-                  field.onChange(v);
-                  setValue("parentId", "");
-                }}
-              >
-                <SelectTrigger id="unit-jenis" className="h-10 w-full" aria-invalid={!!formState.errors.jenisUnitId}>
-                  <SelectValue placeholder={daftarJenis.isPending ? "Memuat..." : "Pilih jenis unit"} />
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="unit-induk" className="h-10 w-full" aria-invalid={!!formState.errors.parentId}>
+                  <SelectValue placeholder="Pilih bidang" />
                 </SelectTrigger>
                 <SelectContent>
-                  {pilihanJenis.map((j) => (
-                    <SelectItem key={j.id} value={String(j.id)}>
-                      {j.nama}
+                  {calonInduk.map((u) => (
+                    <SelectItem key={u.id} value={String(u.id)}>
+                      {u.nama}
                     </SelectItem>
                   ))}
-                  <SelectSeparator />
-                  <SelectItem value={TAMBAH_BARU} className="font-medium text-primary">
-                    <Plus aria-hidden className="text-primary" />
-                    Tambah jenis baru
-                  </SelectItem>
                 </SelectContent>
               </Select>
             )}
           />
-          {jenis && !jenisInduk && <FieldDescription>{jenis.nama} adalah unit tertinggi, tanpa unit induk.</FieldDescription>}
-          <FieldError errors={[formState.errors.jenisUnitId]} />
+          {calonInduk.length === 0 && <FieldDescription>Belum ada bidang. Tambahkan dulu di tab Bidang.</FieldDescription>}
+          <FieldError errors={[formState.errors.parentId]} />
         </Field>
-        {jenisInduk && (
-          <Field data-invalid={!!formState.errors.parentId}>
-            <FieldLabel htmlFor="unit-induk">
-              Unit induk <Wajib />
-            </FieldLabel>
-            <Controller
-              control={control}
-              name="parentId"
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  onValueChange={(v) => {
-                    if (v === TAMBAH_BARU) return setTambahInduk(true);
-                    field.onChange(v);
-                  }}
-                >
-                  <SelectTrigger id="unit-induk" className="h-10 w-full" aria-invalid={!!formState.errors.parentId}>
-                    <SelectValue placeholder={`Pilih ${jenisInduk.nama.toLowerCase()}`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {calonInduk.map((u) => (
-                      <SelectItem key={u.id} value={String(u.id)}>
-                        {u.nama}
-                      </SelectItem>
-                    ))}
-                    {calonInduk.length > 0 && <SelectSeparator />}
-                    <SelectItem value={TAMBAH_BARU} className="font-medium text-primary">
-                      <Plus aria-hidden className="text-primary" />
-                      Tambah {jenisInduk.nama.toLowerCase()} baru
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <FieldDescription>
-              Induk {jenis!.nama.toLowerCase()} harus {jenisInduk.nama.toLowerCase()}. Nama unit induk bisa diubah dari tombol pensil di tabel.
-            </FieldDescription>
-            <FieldError errors={[formState.errors.parentId]} />
-          </Field>
-        )}
-      </FormDialog>
-
-      {tambahJenis && (
-        <JenisUnitDialog
-          jenis="baru"
-          semua={semuaJenis}
-          onClose={() => setTambahJenis(false)}
-          onDibuat={(id) => {
-            setValue("jenisUnitId", String(id), { shouldValidate: true });
-            setValue("parentId", "");
-          }}
-        />
       )}
-      {tambahInduk && jenisInduk && (
-        <UnitDialog
-          unit="baru"
-          semua={semua}
-          jenisAwal={jenisInduk.id}
-          onClose={() => setTambahInduk(false)}
-          onDibuat={(id) => setValue("parentId", String(id), { shouldValidate: true })}
-        />
-      )}
-    </>
+    </FormDialog>
   );
 }
 
@@ -286,17 +183,14 @@ export function UnitKerjaTab({
   onLihatTurunan?: (indukId: number) => void;
 }) {
   const daftar = useUnitKerjaAdmin();
-  const daftarJenis = useJenisUnitAdmin();
   const simpan = useSimpanUnitKerja();
   const [dialog, setDialog] = useState<UnitKerjaAdmin | "baru" | null>(null);
   const [konfirmasi, setKonfirmasi] = useState<UnitKerjaAdmin | null>(null);
   const [kata, setKata] = useState("");
   const [induk, setInduk] = useState(indukAwal ? String(indukAwal) : SEMUA);
-  const [kelolaJenis, setKelolaJenis] = useState(false);
   const turunan = tingkat === "turunan";
 
   const { mutate } = simpan;
-  const jenisTertinggi = useMemo(() => new Set((daftarJenis.data ?? []).filter((j: JenisUnitAdmin) => j.indukJenisId === null).map((j) => j.id)), [daftarJenis.data]);
 
   const semua = useMemo(() => daftar.data ?? [], [daftar.data]);
   const perId = useMemo(() => new Map(semua.map((u) => [u.id, u])), [semua]);
@@ -333,7 +227,7 @@ export function UnitKerjaTab({
 
   const kolom = useMemo<DataTableColumn<UnitKerjaAdmin>[]>(
     () => [
-      { id: "nama", header: turunan ? "Sub bagian / seksi" : "Unit kerja", cell: ({ row }) => <SelNamaUnit u={row.original} turunan={turunan} /> },
+      { id: "nama", header: turunan ? "Sub bidang" : "Bidang", cell: ({ row }) => <SelNamaUnit u={row.original} turunan={turunan} /> },
       ...(turunan
         ? [
             {
@@ -347,25 +241,11 @@ export function UnitKerjaTab({
             },
           ]
         : []),
-      {
-        id: "jenis",
-        header: "Jenis",
-        cell: ({ row }) => (
-          <span
-            className={cn(
-              "rounded-md px-2 py-0.5 text-xs font-semibold whitespace-nowrap",
-              jenisTertinggi.has(row.original.jenisUnitId) ? "bg-secondary text-primary" : "bg-muted text-muted-foreground",
-            )}
-          >
-            {row.original.jenis}
-          </span>
-        ),
-      },
       ...(!turunan
         ? [
             {
               id: "turunan",
-              header: "Sub unit",
+              header: "Sub bidang",
               cell: ({ row }: { row: { original: UnitKerjaAdmin } }) => {
                 const n = jumlahTurunan.get(row.original.id) ?? 0;
                 if (!n) return <span className="text-sm text-muted-foreground">-</span>;
@@ -375,7 +255,7 @@ export function UnitKerjaTab({
                     onClick={() => onLihatTurunan?.(row.original.id)}
                     className="inline-flex items-center gap-1 rounded text-sm font-medium whitespace-nowrap text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
-                    {n} sub unit
+                    {n} sub bidang
                     <ChevronRight aria-hidden className="size-3.5" />
                   </button>
                 );
@@ -403,7 +283,7 @@ export function UnitKerjaTab({
         },
       },
     ],
-    [turunan, perId, jenisTertinggi, jumlahTurunan, onLihatTurunan, ubahStatus],
+    [turunan, perId, jumlahTurunan, onLihatTurunan, ubahStatus],
   );
 
   if (daftar.isError) return <ErrorState message={daftar.error.message} onRetry={() => daftar.refetch()} retrying={daftar.isRefetching} />;
@@ -415,17 +295,17 @@ export function UnitKerjaTab({
         <KolomCari
           value={kata}
           onChange={setKata}
-          placeholder={turunan ? "Cari sub bagian atau seksi..." : "Cari unit kerja..."}
-          label={turunan ? "Cari sub bagian atau seksi" : "Cari unit kerja"}
+          placeholder={turunan ? "Cari sub bidang..." : "Cari bidang..."}
+          label={turunan ? "Cari sub bidang" : "Cari bidang"}
           className="sm:max-w-xs sm:flex-1"
         />
         {turunan && (
           <Select value={induk} onValueChange={setInduk}>
-            <SelectTrigger className="h-10 w-full sm:w-64" aria-label="Filter unit induk">
+            <SelectTrigger className="h-10 w-full sm:w-64" aria-label="Filter bidang induk">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={SEMUA}>Semua unit induk</SelectItem>
+              <SelectItem value={SEMUA}>Semua bidang induk</SelectItem>
               {pilihanInduk.map((u) => (
                 <SelectItem key={u.id} value={String(u.id)}>
                   {u.nama}
@@ -435,13 +315,9 @@ export function UnitKerjaTab({
           </Select>
         )}
         <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-          <Button variant="outline" className="h-10" onClick={() => setKelolaJenis(true)}>
-            <Layers aria-hidden />
-            Jenis unit
-          </Button>
-          <Button className="h-10" onClick={() => setDialog("baru")}>
+          <Button className="h-10 pointer-coarse:min-h-11" onClick={() => setDialog("baru")}>
             <Plus aria-hidden />
-            {turunan ? "Tambah sub unit" : "Tambah unit"}
+            {turunan ? "Tambah sub bidang" : "Tambah bidang"}
           </Button>
         </div>
       </div>
@@ -450,20 +326,45 @@ export function UnitKerjaTab({
         data={baris}
         isLoading={daftar.isPending}
         bleed
-        caption={turunan ? "Daftar sub bagian dan seksi" : "Daftar unit kerja utama"}
+        caption={turunan ? "Daftar sub bidang" : "Daftar bidang utama"}
         getRowKey={(u) => String(u.id)}
+        renderMobileCard={(u) => (
+          <KartuMaster
+            judul={<span className={cn(!u.aktif && "text-muted-foreground")}>{u.nama}</span>}
+            aksi={<AksiBaris nama={u.nama} aktif={u.aktif} onUbah={() => setDialog(u)} onUbahStatus={() => (u.aktif ? setKonfirmasi(u) : ubahStatus(u, true))} />}
+          >
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
+              <BadgeAktif aktif={u.aktif} />
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
+                <Users aria-hidden className="size-3.5" />
+                {formatAngka(u.jumlahPegawaiAktif)} pegawai aktif
+              </span>
+            </div>
+            {turunan && u.parentId !== null && <p className="text-xs text-muted-foreground">Di bawah {perId.get(u.parentId)?.nama}</p>}
+            {!turunan && (jumlahTurunan.get(u.id) ?? 0) > 0 && (
+              <button
+                type="button"
+                onClick={() => onLihatTurunan?.(u.id)}
+                className="inline-flex items-center gap-1 self-start rounded text-sm font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11"
+              >
+                {jumlahTurunan.get(u.id)} sub bidang
+                <ChevronRight aria-hidden className="size-3.5" />
+              </button>
+            )}
+          </KartuMaster>
+        )}
         empty={
           adaFilter
             ? { icon: SearchX, title: "Tidak ada unit yang cocok dengan pencarian atau filter." }
-            : { icon: Building2, title: turunan ? "Belum ada sub bagian atau seksi." : "Belum ada unit kerja." }
+            : { icon: Building2, title: turunan ? "Belum ada sub bidang." : "Belum ada bidang." }
         }
       />
       {daftar.data && (
         <p className="border-t border-muted px-4 py-3 text-xs text-muted-foreground md:px-5">
-          Menampilkan {formatAngka(baris.length)} dari {formatAngka(sesuaiTingkat.length)} {turunan ? "sub bagian dan seksi" : "unit kerja utama"}
+          Menampilkan {formatAngka(baris.length)} dari {formatAngka(sesuaiTingkat.length)} {turunan ? "sub bidang" : "bidang utama"}
         </p>
       )}
-      {dialog && daftar.data && <UnitDialog unit={dialog} semua={daftar.data} onClose={() => setDialog(null)} />}
+      {dialog && daftar.data && <UnitDialog unit={dialog} semua={daftar.data} tingkat={tingkat} onClose={() => setDialog(null)} />}
       {konfirmasi && (
         <ConfirmDialog
           open
@@ -476,15 +377,6 @@ export function UnitKerjaTab({
           onConfirm={() => ubahStatus(konfirmasi, false)}
         />
       )}
-      <Sheet open={kelolaJenis} onOpenChange={setKelolaJenis}>
-        <SheetContent side="right" className="gap-0 overflow-y-auto p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-2xl">
-          <SheetHeader className="border-b">
-            <SheetTitle>Jenis unit</SheetTitle>
-            <SheetDescription>Tingkatan struktur organisasi, mis. Bidang membawahi Seksi.</SheetDescription>
-          </SheetHeader>
-          <JenisUnitTab />
-        </SheetContent>
-      </Sheet>
     </>
   );
 }

@@ -91,7 +91,7 @@ export function KegiatanBaruView({ drafId = null }: { drafId?: number | null }) 
         <KegiatanTanpaAkses
           pesan={
             user?.role === "ADMIN"
-              ? "Akun Anda belum terhubung ke data pegawai. Atur unit kerja Anda di Manajemen akun agar bisa mencatat kegiatan."
+              ? "Akun Anda belum terhubung ke data pegawai. Atur bidang Anda di Manajemen akun agar bisa mencatat kegiatan."
               : "Akun Anda belum terhubung ke data pegawai, jadi belum dapat mencatat kegiatan. Hubungi administrator."
           }
         />

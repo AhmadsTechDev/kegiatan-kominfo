@@ -41,7 +41,7 @@ import { ErrorState } from "@/components/shared/error-state";
 import { MapPicker } from "@/components/shared/map-picker";
 import { PageHeader } from "@/components/shared/page-header";
 import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
-import { labelPemeriksaan, StatusBadge, StatusPemeriksaanBadge } from "@/components/shared/status-badge";
+import { StatusBadge, StatusPemeriksaanBadge } from "@/components/shared/status-badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api-client";
@@ -240,6 +240,8 @@ export function KegiatanDetailView({ id }: { id: number }) {
           <span className="text-xs text-muted-foreground">
             Dicatat {formatTanggal(k.createdAt)} oleh {k.pembuat.nama}
           </span>
+          {/* Tombol pemeriksaan (hanya pimpinan) di samping lencana statusnya, bukan kartu tersendiri */}
+          {k.bisaPeriksa && <PeriksaAksi kegiatan={k} className="w-full sm:ml-auto sm:w-auto" />}
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Fakta ikon={CalendarDays} label="Waktu">
@@ -253,7 +255,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
           <Fakta ikon={MapPin} label="Lokasi">
             {k.lokasiNama ?? <span className="font-normal text-muted-foreground">Belum diisi</span>}
           </Fakta>
-          <Fakta ikon={Building2} label="Unit kerja">
+          <Fakta ikon={Building2} label="Bidang">
             {k.unitKerja.nama}
             {k.unitInduk && <span className="block text-xs font-normal text-muted-foreground">{k.unitInduk.nama}</span>}
           </Fakta>
@@ -274,16 +276,6 @@ export function KegiatanDetailView({ id }: { id: number }) {
             {k.bisaUbah && " Ubah kegiatan ini setelah diperbaiki agar diperiksa ulang."}
           </AlertDescription>
         </Alert>
-      )}
-
-      {k.bisaPeriksa && (
-        <Panel className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center md:p-5">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">Pemeriksaan</p>
-            <p className="text-xs text-muted-foreground">Status saat ini: {labelPemeriksaan(k.statusPemeriksaan).toLowerCase()}</p>
-          </div>
-          <PeriksaAksi kegiatan={k} />
-        </Panel>
       )}
 
       {k.dibatalkanAt && (

@@ -9,7 +9,7 @@ Memungkinkan pengguna mengubah data kegiatan yang sudah tercatat menjadi laporan
 
 ### Selesai bila
 - Pengguna dapat menentukan sendiri periode dan cakupan kegiatan yang ingin dilaporkan, lalu melihat hasilnya sebelum diunduh atau dicetak.
-- Laporan tersedia dalam dua format unduhan (PDF untuk siap kirim, Excel untuk siap olah) dan bisa dicetak langsung dari aplikasi.
+- Laporan tersedia dalam satu format unduhan (PDF siap kirim) dan bisa dicetak langsung dari aplikasi.
 - Susunan laporan yang tampil di pratinjau sama persis dengan hasil unduhan maupun cetak.
 - Pengguna mendapat konfirmasi jelas saat laporan berhasil dibuat, diunduh, atau dikirim ke pencetakan.
 
@@ -37,7 +37,7 @@ Memastikan pengguna sudah melihat susunan dan isi laporan dengan benar sebelum b
 - Pratinjau tersusun rapi per halaman seperti hasil cetak, dengan nomor halaman yang terlihat.
 - Bila tidak ada kegiatan pada pilihan tersebut, pratinjau menampilkan pesan kosong yang jelas dan bukan halaman kosong.
 
-## Sub-fitur: Unduh PDF & Excel
+## Sub-fitur: Unduh PDF
 
 Simpan laporan dalam format siap kirim atau siap olah.
 
@@ -45,7 +45,7 @@ Simpan laporan dalam format siap kirim atau siap olah.
 Menyediakan laporan dalam bentuk berkas yang bisa langsung dikirim ke pihak lain atau diolah kembali.
 
 ### Selesai bila
-- Tersedia tombol unduh PDF dan unduh Excel yang menghasilkan berkas sesuai pilihan periode dan cakupan pada pratinjau.
+- Tersedia tombol unduh PDF yang menghasilkan berkas sesuai pilihan periode dan cakupan pada pratinjau.
 - Berkas yang diunduh memiliki nama file yang menyebutkan jenis dan periode laporan agar mudah dikenali.
 - Format angka dan tanggal pada berkas konsisten dengan yang tampil di pratinjau, dan pengguna melihat indikator proses saat unduhan berlangsung.
 
@@ -71,7 +71,7 @@ Memungkinkan pengguna mencetak laporan langsung dari aplikasi tanpa mengatur ula
 
 ### 4. Buat komponen pratinjau laporan berhalaman
 
-### 5. Buat tombol unduh PDF dan Excel dengan indikator proses
+### 5. Buat tombol unduh PDF dengan indikator proses
 
 ### 6. Buat tombol cetak langsung dengan gaya khusus cetak
 
@@ -83,6 +83,5 @@ Memungkinkan pengguna mencetak laporan langsung dari aplikasi tanpa mengatur ula
 
 ### 10. Buat layanan pembuatan berkas PDF laporan
 
-### 11. Buat layanan pembuatan berkas Excel laporan
 
-### 12. Buat endpoint unduh berkas laporan PDF dan Excel
+### 12. Buat endpoint unduh berkas laporan PDF

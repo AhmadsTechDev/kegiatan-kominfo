@@ -72,7 +72,7 @@ function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanI
     },
     {
       id: "unitKerja",
-      header: "Unit kerja",
+      header: "Bidang",
       cell: ({ row }) => <UnitChip className="max-w-48 min-w-32 whitespace-normal">{row.original.unitKerja.nama}</UnitChip>,
     },
     {
@@ -212,7 +212,7 @@ export function KegiatanListView() {
   const lingkup: Lingkup = !pegawai ? "semua" : filter.milik === "saya" ? "saya" : "unit";
   const judul: Record<Lingkup, { title: string; description: string }> = {
     semua: { title: "Kegiatan", description: "Cari, filter, dan telusuri seluruh kegiatan dinas dalam satu daftar." },
-    unit: { title: "Kegiatan unit saya", description: `Kegiatan ${unitSaya?.nama ?? "unit kerja Anda"}, termasuk kegiatan yang Anda catat.` },
+    unit: { title: "Kegiatan bidang saya", description: `Kegiatan ${unitSaya?.nama ?? "bidang Anda"}, termasuk kegiatan yang Anda catat.` },
     saya: { title: "Kegiatan saya", description: "Kegiatan yang Anda catat atau menjadi penanggung jawabnya." },
   };
   const referensi = useReferensi();

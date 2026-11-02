@@ -66,7 +66,10 @@ export function UserMenu() {
             <AvatarInisial nama={user.name} src={foto} />
             <span className="hidden flex-col items-start leading-tight md:flex">
               <span className="text-sm font-semibold">{user.name}</span>
-              <span className="text-xs font-normal text-muted-foreground">{KETERANGAN_ROLE[user.role] ?? user.role}</span>
+              <span className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground">
+                {user.role === "PIMPINAN" && <span aria-hidden className="size-1.5 rounded-full bg-aksen-peran" />}
+                {KETERANGAN_ROLE[user.role] ?? user.role}
+              </span>
             </span>
             <ChevronDown aria-hidden className="hidden size-4 text-muted-foreground md:block" />
           </Button>
@@ -77,7 +80,7 @@ export function UserMenu() {
             <span className="truncate text-xs font-normal text-muted-foreground">{user.email}</span>
             {unitSaya && (
               <span className="mt-1.5 flex flex-col gap-0.5 rounded-md bg-muted px-2 py-1.5 text-xs font-normal">
-                <span className="text-muted-foreground">Unit kerja</span>
+                <span className="text-muted-foreground">Bidang</span>
                 <span className="font-semibold text-foreground">{unitSaya.unit}</span>
                 {unitSaya.nip && <span className="text-muted-foreground tabular-nums">NIP {unitSaya.nip}</span>}
               </span>

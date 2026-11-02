@@ -49,7 +49,7 @@ const kolom: DataTableColumn<KegiatanRingkas>[] = [
   },
   {
     id: "unitKerja",
-    header: "Unit kerja",
+    header: "Bidang",
     cell: ({ row }) => <UnitChip className="max-w-52 min-w-32 whitespace-normal">{row.original.unitKerja}</UnitChip>,
   },
   {

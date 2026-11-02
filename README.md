@@ -1,6 +1,6 @@
 # Aplikasi Pendataan Kegiatan Diskominfo Kota Palembang
 
-Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai mencatat kegiatan dan dokumentasinya, pimpinan memantau lewat dashboard, kalender, dan rekap, dan admin mengelola pegawai, unit kerja, akun, serta audit log.
+Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai mencatat kegiatan dan dokumentasinya, pimpinan memantau lewat dashboard, kalender, dan rekap, dan admin mengelola pegawai, bidang, akun, serta audit log.
 
 | Folder | Isi |
 | --- | --- |
@@ -17,18 +17,18 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | Kebutuhan | Fitur |
 | --- | --- |
 | FR-01 | Login hanya dengan email pribadi, penguncian 15 menit setelah 5 kali salah. Tanpa pendaftaran mandiri: akun dibuat admin lalu diaktivasi pemiliknya lewat tautan email. Lupa/atur ulang sandi, ganti email terverifikasi, sesi aktif, dan preferensi di Pengaturan |
-| FR-02 | Master pegawai (NIP opsional untuk non-ASN, impor Excel dengan templat dan pratinjau), unit kerja dan sub bagian/seksi, jenis unit, jenis kegiatan, dan akun beserta unit kerjanya. Akun yang belum pernah dipakai (mis. salah email) bisa dihapus; yang sudah dipakai dinonaktifkan |
+| FR-02 | Master pegawai (NIP opsional untuk non-ASN), bidang dan sub bagian/seksi, jenis unit, jenis kegiatan, dan akun beserta bidangnya. Akun yang belum pernah dipakai (mis. salah email) bisa dihapus; yang sudah dipakai dinonaktifkan |
 | FR-03 | Audit log append-only (dijaga sampai hak basis data) dengan filter dan nilai sebelum/sesudah |
 | FR-04, FR-05 | Catat kegiatan dalam 2 langkah, ubah, isi hasil, batalkan (alasan wajib), dan hapus; status pelaksanaan dihitung otomatis; pengubahan bersamaan dijawab 409 |
 | FR-06 | Unggah foto/PDF maks. 20 MB (dicek lewat magic bytes, foto dikompres dan EXIF/GPS dibuang), maks. 10 berkas per kegiatan, unduhan hanya untuk yang login |
 | FR-07 | Peta 2D/3D (MapLibre GL + OpenFreeMap), pencarian tempat, nama lokasi terisi otomatis dari titik peta, atau koordinat manual |
-| FR-08, FR-10 | Rekap per unit induk dan jenis, ekspor Excel dan PDF berkop dinas |
+| FR-08, FR-10 | Rekap per unit induk dan jenis, ekspor PDF berkop dinas |
 | FR-09 | Dashboard dinas untuk pimpinan dan admin, dashboard tugas untuk pegawai |
 | Tambahan | Kalender, pencarian cepat Ctrl+K, mode gelap, foto profil dan halaman Pengaturan, pengingat email otomatis (H-1 dan dokumentasi) |
 
-**Hak akses.** Operator (role `PEGAWAI` di basis data) melihat kegiatan unit kerjanya dan mengubah kegiatan miliknya. Pimpinan melihat seluruh dinas tanpa mengubah data. Admin mengelola semuanya. Aturan ditegakkan di backend pada setiap permintaan; kegiatan di luar lingkup dijawab 404.
+**Hak akses.** Pegawai (role `PEGAWAI`) melihat kegiatan bidangnya dan mengubah kegiatan miliknya. Pimpinan melihat seluruh dinas tanpa mengubah data. Admin mengelola semuanya. Aturan ditegakkan di backend pada setiap permintaan; kegiatan di luar lingkup dijawab 404.
 
-**Akun.** Tidak ada pendaftaran mandiri. Admin membuat akun (nama, email pribadi, NIP opsional, jabatan, unit kerja, role), lalu sistem mengirim tautan aktivasi ke email pribadi pemiliknya. Pemilik akun membuat kata sandi sendiri; admin tidak pernah menentukan atau melihat kata sandi. Karena itu **pengiriman email wajib berfungsi** sebelum aplikasi dipakai.
+**Akun.** Tidak ada pendaftaran mandiri. Admin membuat akun (nama, email pribadi, NIP opsional, jabatan, bidang, role), lalu sistem mengirim tautan aktivasi ke email pribadi pemiliknya. Pemilik akun membuat kata sandi sendiri; admin tidak pernah menentukan atau melihat kata sandi. Karena itu **pengiriman email wajib berfungsi** sebelum aplikasi dipakai.
 
 ## Menjalankan untuk pengembangan
 
@@ -40,7 +40,8 @@ cd apps/api
 bun install
 cp .env.example .env            # isi BETTER_AUTH_SECRET dan SEED_ADMIN_PASSWORD
 bun run db:migrate:prod         # menerapkan migrasi Prisma
-bun run db:seed                 # unit kerja, jenis kegiatan, akun admin
+bun run db:seed                 # bidang, jenis kegiatan, akun admin
+bun run db:seed:demo            # opsional: pegawai, akun, dan kegiatan fiktif untuk mencoba tampilan (ditolak di produksi)
 bun run dev                     # http://localhost:3001/api
 
 # 2. Frontend (terminal kedua)
@@ -177,7 +178,7 @@ Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel 
 | Email tidak sampai | `BREVO_API_KEY` dan `SMTP_FROM` (harus sender yang sudah diverifikasi). Periksa juga folder spam |
 | Tautan di email mengarah ke alamat yang salah | `FRONTEND_URL` di Railway harus alamat publik frontend |
 | Simpan data atau login dijawab 403 `ASAL_DITOLAK` | `FRONTEND_URL`/`BETTER_AUTH_URL` tidak sama dengan alamat yang dibuka di peramban |
-| Banyak pegawai mendapat "Terlalu banyak permintaan" saat login bersamaan | Login dibatasi 10 percobaan per menit per alamat IP (`apps/api/src/lib/auth.ts`, `customRules`). Pegawai di satu kantor biasanya keluar lewat satu IP publik, jadi naikkan batas ini bila perlu |
+| Banyak pegawai mendapat "Terlalu banyak permintaan" saat login bersamaan | Login dibatasi 30 percobaan per menit per alamat IP (semua email dihitung) (`apps/api/src/lib/auth.ts`, `customRules`). Pegawai di satu kantor biasanya keluar lewat satu IP publik, jadi naikkan batas ini bila perlu |
 | Unggah foto gagal | `CLOUDINARY_URL` di Railway (harus diawali `cloudinary://`). Pesan galatnya ada di log backend |
 | Dokumen PDF tidak bisa dibuka | Cloudinary **Settings → Security → Allow delivery of PDF and ZIP files** belum dicentang |
 | Berkas di atas 10 MB ditolak | Batas paket gratis Cloudinary untuk berkas non-gambar. Perkecil PDF-nya, atau naikkan paket Cloudinary |

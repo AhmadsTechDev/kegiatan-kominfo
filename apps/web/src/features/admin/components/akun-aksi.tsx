@@ -95,7 +95,7 @@ const schemaAkun = z.object({
     .trim()
     .refine((v) => v === "" || /^\d{18}$/.test(v), "NIP harus 18 digit angka"),
   jabatan: z.string().trim().min(1, "Jabatan wajib diisi").max(150, "Jabatan maksimal 150 karakter"),
-  unitKerjaId: z.string().min(1, "Unit kerja wajib dipilih"),
+  unitKerjaId: z.string().min(1, "Bidang wajib dipilih"),
   role: z.enum(["PEGAWAI", "PIMPINAN", "ADMIN"]),
 });
 type NilaiAkun = z.infer<typeof schemaAkun>;
@@ -236,7 +236,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
 
       <Field data-invalid={!!formState.errors.unitKerjaId}>
         <FieldLabel htmlFor="akun-unit">
-          Unit kerja <Wajib />
+          Bidang <Wajib />
         </FieldLabel>
         <Controller
           control={control}

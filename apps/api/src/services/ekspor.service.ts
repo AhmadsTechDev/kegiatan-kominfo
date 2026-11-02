@@ -5,7 +5,6 @@ import type { FormatEkspor, InfoEkspor } from "@/types/ekspor.types";
 import type { RekapQuery } from "@/types/rekap.types";
 import type { Aktor, MetaRequest } from "@/types/umum.types";
 import { formatTanggal, LABEL_STATUS, namaBulan, tanggalWib } from "@/utils/format-waktu";
-import { buatExcel } from "@/utils/laporan-excel";
 import { buatPdf, isiSel, JUDUL_LAPORAN, KOLOM, KOP, ringkasanStatus, subjudul, teksKaki } from "@/utils/laporan-pdf";
 import { buatPembatasLaju } from "@/utils/rate-limit";
 import { AuditLogService } from "./audit-log.service";
@@ -46,7 +45,7 @@ async function uraianFilter(query: RekapQuery, terbatas: boolean) {
     query.unit
       ? (unit?.find((u) => u.id === query.unit)?.nama ?? "Unit tidak dikenal")
       : terbatas
-        ? "Unit kerja sendiri dan kegiatan milik sendiri"
+        ? "Bidang sendiri dan kegiatan milik sendiri"
         : "Semua unit kerja",
     query.jenis ? (jenis?.find((j) => j.id === query.jenis)?.nama ?? "Jenis tidak dikenal") : "Semua jenis",
     query.status ? LABEL_STATUS[query.status] : "Semua status",
@@ -81,13 +80,13 @@ export const EksporService = {
     };
   },
 
-  // Membuat berkas Excel atau PDF dan mencatatnya ke audit log
+  // Membuat berkas PDF dan mencatatnya ke audit log
   async buat(format: FormatEkspor, query: RekapQuery, aktor: Pembuat, meta: MetaRequest, sekarang = new Date()) {
     periksaLaju(aktor.id);
 
     const { baris, terbatas } = await barisLaporan(query, aktor, sekarang);
     const info: InfoEkspor = { filter: await uraianFilter(query, terbatas), dibuatOleh: aktor.nama, dibuatPada: sekarang };
-    const isi = format === "xlsx" ? await buatExcel(baris, info) : await buatPdf(baris, info);
+    const isi = await buatPdf(baris, info);
 
     await AuditLogService.catat({ aktorId: aktor.id, aksi: "ekspor", entitas: "kegiatan", sesudah: { format, filter: query, jumlah: baris.length }, ...meta });
 

@@ -47,7 +47,7 @@ function petakanError(error: AuthClientError): LoginError {
     return new LoginError("terkunci", "Terlalu banyak percobaan. Coba lagi dalam 15 menit.", sampai);
   }
   if (error.status === 429) {
-    return new LoginError("terlalu_sering", "Terlalu banyak permintaan. Coba lagi sebentar lagi.");
+    return new LoginError("terlalu_sering", "Terlalu banyak percobaan dari jaringan ini. Tunggu satu menit, lalu coba lagi.");
   }
   if (error.code === "BANNED_USER" || error.status === 403) {
     return new LoginError("nonaktif", "Akun Anda dinonaktifkan. Hubungi admin untuk mengaktifkannya kembali.");

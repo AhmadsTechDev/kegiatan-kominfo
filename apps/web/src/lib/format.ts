@@ -108,3 +108,10 @@ export function formatHari(tanggal: string, pendek = false): string {
 export function tanggalWib(nilai: string | Date): string {
   return new Date(new Date(nilai).getTime() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
+
+// Nomor telepon dalam satu bentuk: awalan 62 atau +62 menjadi 0, lalu dikelompokkan 4-4-sisanya (0812-3456-7890)
+export function formatTelp(nilai: string): string {
+  let angka = nilai.replace(/\D/g, "");
+  if (angka.startsWith("62")) angka = `0${angka.slice(2)}`;
+  return [angka.slice(0, 4), angka.slice(4, 8), angka.slice(8)].filter(Boolean).join("-");
+}

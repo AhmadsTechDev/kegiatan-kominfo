@@ -77,7 +77,7 @@ export function PermintaanTab() {
             return (
               <span className="flex max-w-72 min-w-56 flex-col items-start gap-1 whitespace-normal">
                 <span className="font-semibold">{p.nama}</span>
-                <span className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">Tanpa NIP</span>
+                <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">Tanpa NIP</span>
               </span>
             );
           }
@@ -112,9 +112,9 @@ export function PermintaanTab() {
           return (
             <span className="flex max-w-56 flex-col items-start gap-1 whitespace-normal">
               <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold", NADA_STATUS[p.status])}>{LABEL_STATUS[p.status]}</span>
-              <span className="text-[11px] whitespace-nowrap text-muted-foreground tabular-nums">Diajukan {formatTanggalJam(p.createdAt)}</span>
-              {p.status !== "MENUNGGU" && p.diprosesOleh && <span className="text-[11px] text-muted-foreground">oleh {p.diprosesOleh}</span>}
-              {p.alasanTolak && <span className="text-[11px] text-muted-foreground">Alasan: {p.alasanTolak}</span>}
+              <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">Diajukan {formatTanggalJam(p.createdAt)}</span>
+              {p.status !== "MENUNGGU" && p.diprosesOleh && <span className="text-xs text-muted-foreground">oleh {p.diprosesOleh}</span>}
+              {p.alasanTolak && <span className="text-xs text-muted-foreground">Alasan: {p.alasanTolak}</span>}
             </span>
           );
         },
@@ -125,11 +125,11 @@ export function PermintaanTab() {
         cell: ({ row }) =>
           row.original.status === "MENUNGGU" ? (
             <div className="flex justify-end gap-1.5">
-              <Button variant="outline" size="sm" className="h-8 gap-1 text-xs" onClick={() => setTolak(row.original)}>
+              <Button variant="outline" size="sm" className="h-8 gap-1 text-xs pointer-coarse:h-11" onClick={() => setTolak(row.original)}>
                 <X aria-hidden className="size-3.5" />
                 Tolak
               </Button>
-              <Button size="sm" className="h-8 gap-1 text-xs" onClick={() => setSetujui(row.original)}>
+              <Button size="sm" className="h-8 gap-1 text-xs pointer-coarse:h-11" onClick={() => setSetujui(row.original)}>
                 <Check aria-hidden className="size-3.5" />
                 Setujui
               </Button>
@@ -195,7 +195,7 @@ export function PermintaanTab() {
               <p className="text-xs text-muted-foreground">
                 {setujui.pegawai
                   ? `NIP ${setujui.pegawai.nip} · ${setujui.unitKerja}`
-                  : "Tanpa NIP terdaftar. Isi jabatan dan unit kerjanya; data pegawainya dibuat bersamaan dengan akun."}
+                  : "Tanpa NIP terdaftar. Isi jabatan dan bidangnya; data pegawainya dibuat bersamaan dengan akun."}
               </p>
             </>
           }

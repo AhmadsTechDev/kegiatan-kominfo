@@ -8,3 +8,4 @@ app.listen(env.PORT);
 if (env.PENGINGAT_AKTIF) mulaiPengingat();
 
 console.log(`API berjalan di http://localhost:${env.PORT}/api`);
+console.log('Email Mailpit dijalankan di http://localhost:8025');

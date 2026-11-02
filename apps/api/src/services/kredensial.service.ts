@@ -8,6 +8,7 @@ import { SesiRepository } from "@/repositories/sesi.repository";
 import { TokenAkunRepository } from "@/repositories/token-akun.repository";
 import type { AturSandi, GantiEmail } from "@/types/auth.types";
 import type { MetaRequest } from "@/types/umum.types";
+import { formatWaktu } from "@/utils/format-waktu";
 import { periksaSandi } from "@/utils/kebijakan-sandi";
 import { buatPembatasLaju } from "@/utils/rate-limit";
 import { buatToken, MASA_TOKEN_MS, type TujuanToken } from "@/utils/token";
@@ -27,61 +28,80 @@ const PESAN_TOKEN: Record<TujuanToken, string> = {
 const jam = (tujuan: TujuanToken) => MASA_TOKEN_MS[tujuan] / 3_600_000;
 const tautan = (halaman: string, token: string) => `${env.FRONTEND_URL}/${halaman}?token=${encodeURIComponent(token)}`;
 
-// Isi email untuk setiap alur
+// Isi email untuk setiap alur. Email keamanan mencantumkan waktu kejadian dan jalan mengamankan akun.
+const amankan = { label: "Atur ulang kata sandi", url: `${env.FRONTEND_URL}/lupa-sandi` };
+
 const SURAT = {
   aktivasi: (nama: string, token: string) => ({
-    subjek: "Aktivasi akun Aplikasi Pendataan Kegiatan",
+    subjek: "Aktifkan akun Anda",
     isi: {
       judul: "Aktifkan akun Anda",
+      pratinjau: `Buat kata sandi untuk mulai memakai aplikasi. Tautan berlaku ${jam("aktivasi")} jam.`,
       paragraf: [
         `Halo ${nama},`,
         "Administrator Diskominfo Kota Palembang telah membuatkan akun untuk Anda di Aplikasi Pendataan Kegiatan.",
-        "Klik tombol di bawah untuk memverifikasi email dan membuat kata sandi. Setelah itu Anda dapat masuk dengan email ini.",
+        "Tekan tombol di bawah untuk memverifikasi email dan membuat kata sandi. Setelah itu Anda masuk dengan email ini.",
       ],
       tombol: { label: "Aktifkan akun", url: tautan("aktivasi", token) },
       catatan: `Tautan berlaku ${jam("aktivasi")} jam dan hanya dapat dipakai sekali. Bila Anda tidak merasa meminta akun, abaikan email ini.`,
     },
   }),
   reset: (nama: string, token: string) => ({
-    subjek: "Atur ulang kata sandi Aplikasi Pendataan Kegiatan",
+    subjek: "Atur ulang kata sandi",
     isi: {
       judul: "Atur ulang kata sandi",
-      paragraf: [`Halo ${nama},`, "Ada permintaan untuk mengatur ulang kata sandi akun Anda. Klik tombol di bawah untuk membuat kata sandi baru."],
-      tombol: { label: "Atur ulang kata sandi", url: tautan("reset-sandi", token) },
+      pratinjau: `Buat kata sandi baru lewat tautan yang berlaku ${jam("reset-sandi")} jam.`,
+      paragraf: [`Halo ${nama},`, "Ada permintaan untuk mengatur ulang kata sandi akun Anda. Tekan tombol di bawah untuk membuat kata sandi baru."],
+      tombol: { label: "Buat kata sandi baru", url: tautan("reset-sandi", token) },
       catatan: `Tautan berlaku ${jam("reset-sandi")} jam dan hanya dapat dipakai sekali. Bila Anda tidak memintanya, abaikan email ini; kata sandi Anda tidak berubah.`,
     },
   }),
-  sandiDiubah: (nama: string) => ({
-    subjek: "Kata sandi akun Anda telah diubah",
+  sandiDiubah: (nama: string, waktu = new Date()) => ({
+    subjek: "Kata sandi Anda diubah",
     isi: {
-      judul: "Kata sandi diubah",
+      judul: "Kata sandi Anda diubah",
+      pratinjau: `Kata sandi akun Anda diubah pada ${formatWaktu(waktu)}.`,
       paragraf: [`Halo ${nama},`, "Kata sandi akun Aplikasi Pendataan Kegiatan Anda baru saja diubah."],
-      catatan: "Bila bukan Anda yang mengubahnya, segera hubungi administrator aplikasi.",
+      rincian: [{ label: "Waktu", nilai: formatWaktu(waktu) }],
+      tombol: amankan,
+      catatan: "Bila bukan Anda yang mengubahnya, segera atur ulang kata sandi lewat tombol di atas lalu hubungi administrator aplikasi.",
     },
   }),
   verifikasiEmail: (nama: string, token: string) => ({
-    subjek: "Verifikasi email baru Aplikasi Pendataan Kegiatan",
+    subjek: "Verifikasi email baru Anda",
     isi: {
       judul: "Verifikasi email baru",
-      paragraf: [`Halo ${nama},`, "Klik tombol di bawah untuk memastikan email ini milik Anda. Setelah diverifikasi, Anda masuk dengan email ini."],
+      pratinjau: "Pastikan email ini milik Anda agar bisa dipakai untuk masuk.",
+      paragraf: [`Halo ${nama},`, "Tekan tombol di bawah untuk memastikan email ini milik Anda. Setelah diverifikasi, Anda masuk dengan email ini."],
       tombol: { label: "Verifikasi email", url: tautan("konfirmasi-email", token) },
       catatan: `Tautan berlaku ${jam("ganti-email")} jam. Sampai diverifikasi, Anda tetap masuk dengan email lama.`,
     },
   }),
-  permintaanGantiEmail: (nama: string, emailBaru: string) => ({
+  permintaanGantiEmail: (nama: string, emailBaru: string, waktu = new Date()) => ({
     subjek: "Permintaan ganti email akun Anda",
     isi: {
       judul: "Ada permintaan ganti email",
-      paragraf: [`Halo ${nama},`, `Ada permintaan untuk mengganti email akun Anda menjadi ${emailBaru}. Email ini tetap berlaku sampai email baru diverifikasi.`],
-      catatan: "Bila bukan Anda yang memintanya, segera ganti kata sandi dan hubungi administrator aplikasi.",
+      pratinjau: `Email akun Anda diminta diganti menjadi ${emailBaru}.`,
+      paragraf: [`Halo ${nama},`, "Ada permintaan untuk mengganti email akun Anda. Email ini tetap berlaku sampai email baru diverifikasi."],
+      rincian: [
+        { label: "Email baru", nilai: emailBaru },
+        { label: "Waktu", nilai: formatWaktu(waktu) },
+      ],
+      tombol: amankan,
+      catatan: "Bila bukan Anda yang memintanya, segera atur ulang kata sandi lewat tombol di atas lalu hubungi administrator aplikasi.",
     },
   }),
-  emailDiganti: (nama: string, emailBaru: string) => ({
-    subjek: "Email akun Anda telah diganti",
+  emailDiganti: (nama: string, emailBaru: string, waktu = new Date()) => ({
+    subjek: "Email akun Anda diganti",
     isi: {
-      judul: "Email akun diganti",
-      paragraf: [`Halo ${nama},`, `Email akun Aplikasi Pendataan Kegiatan Anda telah diganti menjadi ${emailBaru}. Email ini tidak lagi dapat dipakai untuk masuk.`],
-      catatan: "Bila bukan Anda yang menggantinya, segera hubungi administrator aplikasi.",
+      judul: "Email akun Anda diganti",
+      pratinjau: `Mulai sekarang Anda masuk dengan ${emailBaru}.`,
+      paragraf: [`Halo ${nama},`, "Email akun Aplikasi Pendataan Kegiatan Anda telah diganti. Email ini tidak lagi dapat dipakai untuk masuk."],
+      rincian: [
+        { label: "Email baru", nilai: emailBaru },
+        { label: "Waktu", nilai: formatWaktu(waktu) },
+      ],
+      catatan: "Bila bukan Anda yang menggantinya, segera hubungi administrator aplikasi agar email akun dikembalikan.",
     },
   }),
 } satisfies Record<string, (...a: never[]) => { subjek: string; isi: IsiEmail }>;

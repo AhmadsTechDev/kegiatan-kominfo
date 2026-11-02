@@ -64,7 +64,7 @@ describe("unggah dokumentasi", () => {
   test("rekan satu unit tidak boleh mengunggah ke kegiatan orang lain (403); unit lain 404", async () => {
     const { k } = await siapkan();
     const rekan = await buatPengguna();
-    const luar = await buatPengguna({ unitId: await idUnit("SUBAG-KEU") });
+    const luar = await buatPengguna({ unitId: await idUnit("BID-OPINI") });
     expect((await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie: rekan.cookie, form: formBerkas(PNG) })).status).toBe(403);
     expect((await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie: luar.cookie, form: formBerkas(PNG) })).status).toBe(404);
   });
@@ -76,7 +76,7 @@ describe("unduh, ganti, hapus dokumentasi", () => {
     const d = await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie: u.cookie, form: formBerkas(PNG) });
 
     expect((await panggil(`/dokumentasi/${d.data.id}`)).status).toBe(401);
-    const luar = await buatPengguna({ unitId: await idUnit("SUBAG-KEU") });
+    const luar = await buatPengguna({ unitId: await idUnit("BID-OPINI") });
     expect((await panggil(`/dokumentasi/${d.data.id}`, { cookie: luar.cookie })).status).toBe(404);
 
     const unduh = await panggil(`/dokumentasi/${d.data.id}?unduh=1`, { cookie: u.cookie });

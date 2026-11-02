@@ -130,6 +130,25 @@
   color-scheme: dark;
 }
 
+/* Pimpinan: aksen emas lambang kota menggantikan biru pada penanda menu aktif, avatar sidebar,
+ * dan garis eyebrow, supaya tampilan pimpinan langsung terasa beda. Atribut data-peran dipasang
+ * AppShell di <html> agar laci menu ponsel (portal) ikut terpengaruh.
+ * Emas tua #8a6d1f: 4,9:1 di putih (teks hover) dan teks putih di atasnya 4,9:1. Mode gelap memakai
+ * emas terang #e2c46f dengan teks gelap (10:1). */
+:root {
+  --aksen-peran: var(--primary);
+}
+:root[data-peran="pimpinan"] {
+  --sidebar-primary: #8a6d1f;
+  --sidebar-primary-foreground: #ffffff;
+  --aksen-peran: #8a6d1f;
+}
+:root.dark[data-peran="pimpinan"] {
+  --sidebar-primary: #e2c46f;
+  --sidebar-primary-foreground: #241a00;
+  --aksen-peran: #e2c46f;
+}
+
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-jakarta), var(--font-inter), sans-serif;
@@ -160,6 +179,7 @@
   --color-sidebar-group: var(--sidebar-group);
   --color-sidebar-hover: var(--sidebar-hover);
   --color-sidebar-primary: var(--sidebar-primary);
+  --color-aksen-peran: var(--aksen-peran);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-border: var(--sidebar-border);
 
@@ -279,11 +299,12 @@
   }
 }
 
-/* Kontrol dan popup MapLibre mengikuti token tema (terang dan gelap) */
+/* Kontrol dan popup MapLibre mengikuti token tema (terang dan gelap).
+ * Selector popup diawali .maplibregl-map agar menang atas CSS bawaan MapLibre yang dimuat belakangan (latar putih) */
 .maplibregl-map {
   font-family: inherit;
 }
-.maplibregl-popup-content {
+.maplibregl-map .maplibregl-popup-content {
   background: var(--popover);
   color: var(--popover-foreground);
   border: 1px solid var(--border);
@@ -291,7 +312,7 @@
   padding: 0.75rem 2rem 0.75rem 0.875rem;
   box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.35);
 }
-.maplibregl-popup-close-button {
+.maplibregl-map .maplibregl-popup-close-button {
   top: 0.375rem;
   right: 0.375rem;
   width: 1.5rem;
@@ -300,19 +321,19 @@
   color: var(--muted-foreground);
   font-size: 1.125rem;
 }
-.maplibregl-popup-close-button:hover {
+.maplibregl-map .maplibregl-popup-close-button:hover {
   background: var(--muted);
 }
-.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+.maplibregl-map .maplibregl-popup-anchor-top .maplibregl-popup-tip {
   border-bottom-color: var(--popover);
 }
-.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+.maplibregl-map .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
   border-top-color: var(--popover);
 }
-.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+.maplibregl-map .maplibregl-popup-anchor-left .maplibregl-popup-tip {
   border-right-color: var(--popover);
 }
-.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+.maplibregl-map .maplibregl-popup-anchor-right .maplibregl-popup-tip {
   border-left-color: var(--popover);
 }
 .maplibregl-ctrl-group {

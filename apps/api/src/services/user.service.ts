@@ -94,7 +94,7 @@ export const UserService = {
   async daftar(query: DaftarAkunQuery) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
-    const { items, total } = await UserRepository.daftar({ q: query.q?.trim() || undefined, role: query.role, status: query.status }, { page, pageSize });
+    const { items, total } = await UserRepository.daftar({ q: query.q?.trim() || undefined, role: query.role, status: query.status, nonaktif: query.nonaktif === undefined ? undefined : query.nonaktif === "1" }, { page, pageSize });
     const sekarang = new Date();
     const terpakai = await UserRepository.terpakai(items.map((a) => a.id));
     return {

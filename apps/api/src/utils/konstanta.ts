@@ -1,6 +1,6 @@
 // Daftar nilai tetap yang dipakai di validator, service, dan repository
 
-// PEGAWAI adalah role operator (pencatat kegiatan); di antarmuka ditampilkan sebagai "Operator"
+// PEGAWAI adalah role pencatat kegiatan; di antarmuka ditampilkan sebagai "Pegawai"
 export const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const;
 
 // Status akun, diturunkan dari kolom banned dan ada-tidaknya kredensial (lihat utils/status-akun.ts)

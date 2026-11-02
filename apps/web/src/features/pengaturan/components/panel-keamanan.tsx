@@ -38,7 +38,7 @@ export function PanelSandi() {
     <Panel>
       <PanelHeader title="Kata sandi" />
       <PanelBody className="flex items-start gap-3 border-t border-muted pt-4 md:pt-5">
-        <span className="flex size-10 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
           <ShieldCheck aria-hidden className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -126,7 +126,8 @@ export function PanelKeluar() {
   const { logout, pending } = useLogout();
   return (
     <Panel>
-      <PanelBody className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      {/* Panel tanpa PanelHeader, jadi PanelBody perlu padding atas sendiri */}
+      <PanelBody className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center md:pt-5">
         <div className="min-w-0 flex-1 text-sm">
           <p className="font-medium">Keluar dari perangkat ini</p>
           <p className="text-muted-foreground">Sesi di perangkat lain tidak terpengaruh.</p>

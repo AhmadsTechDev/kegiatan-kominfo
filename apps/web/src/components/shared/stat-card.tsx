@@ -45,10 +45,11 @@ export function StatCard({ label, value, icon: Icon, nada = "primary", keteranga
   const tampil = useCountUp(value);
 
   return (
-    <div className={cn("flex min-w-0 flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm md:p-5", className)}>
+    <div className={cn("@container flex min-w-0 flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm md:p-5", className)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-        <span aria-hidden className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", NADA[nada])}>
+        {/* Di kartu sempit (grid 2 kolom di HP) ikon disembunyikan agar label tidak terjepit */}
+        <span aria-hidden className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg @max-3xs:hidden", NADA[nada])}>
           <Icon className="size-5" />
         </span>
       </div>

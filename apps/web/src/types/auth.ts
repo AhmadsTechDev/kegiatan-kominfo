@@ -10,7 +10,7 @@
 //   - StatusAkun, LABEL_STATUS_AKUN : status akun dari backend dan labelnya.
 //
 // Catatan penting:
-//   - Nilai PEGAWAI di backend adalah role operator; di antarmuka selalu ditampilkan "Operator".
+//   - Nilai PEGAWAI di backend ditampilkan "Pegawai" (pencatat kegiatan unit kerjanya).
 //
 // Dipakai oleh: Komponen navigasi, menu profil, dan kendali tampilan berbasis peran
 // =============================================================================
@@ -18,13 +18,13 @@
 export type Role = "PEGAWAI" | "PIMPINAN" | "ADMIN";
 
 export const LABEL_ROLE: Record<Role, string> = {
-  PEGAWAI: "Operator",
+  PEGAWAI: "Pegawai",
   PIMPINAN: "Pimpinan",
   ADMIN: "Admin",
 };
 
 export const KETERANGAN_ROLE: Record<Role, string> = {
-  PEGAWAI: "Operator pencatat kegiatan",
+  PEGAWAI: "Pegawai pencatat kegiatan",
   PIMPINAN: "Pimpinan",
   ADMIN: "Administrator aplikasi",
 };

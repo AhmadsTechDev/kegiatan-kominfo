@@ -2,7 +2,7 @@
 // DEFINISI TIPE DATA FITUR ADMINISTRASI
 // =============================================================================
 // Gunanya: mendefinisikan seluruh tipe data TypeScript yang digunakan pada fitur
-// administrasi: master data, pengelolaan akun, audit log, dan impor lembar kerja.
+// administrasi: master data, pengelolaan akun, audit log.
 //
 // Isi berkas:
 //   - JenisUnitAdmin, IsiJenisUnit : tipe hierarki dan formulir jenis unit
@@ -13,7 +13,6 @@
 //   - AkunAdmin, AkunDetail, IsiAkun, FilterAkun : tipe akun pengguna, detail, form, dan filternya
 //   - AuditItem, AuditDetail, FilterAudit, PilihanAudit : tipe riwayat jejak audit
 //   - PermintaanAkun, StatusPermintaan, IsiUndangan : tipe permintaan akun dan undangan
-//   - StatusImpor, BarisImpor, HasilImpor : tipe hasil impor pegawai dari Excel
 //
 // Catatan penting:
 //   - Menjadi kontrak data bersama antara klien API, hooks query, dan komponen UI.
@@ -58,6 +57,7 @@ export type PegawaiAdmin = {
   jabatan: string | null;
   unitKerja: { id: number; nama: string };
   aktif: boolean;
+  kontak: string | null;
   akun: { id: string; email: string; aktif: boolean } | null;
   updatedAt: string;
 };
@@ -66,7 +66,7 @@ export type IsiPegawai = { nip: string | null; nama: string; jabatan: string | n
 export type IsiPegawaiBaru = IsiPegawai & { email?: string | null; role?: "PEGAWAI" | "PIMPINAN" };
 export type HasilPegawaiBaru = { id: number; undangan: { email: string; galat: string | null } | null };
 
-export type FilterPegawai = { q: string; unit: string | null; aktif: "1" | "0" | null; page: number };
+export type FilterPegawai = { q: string; unit: string | null; aktif: "1" | "0" | null; akun?: "tanpa" | null; page: number };
 
 export type JenisKegiatanAdmin = { id: number; nama: string; aktif: boolean; jumlahKegiatan: number; updatedAt: string };
 
@@ -121,7 +121,8 @@ export type IsiAkun = { name: string; email: string; nip: string | null; jabatan
 
 export type HasilSimpanAkun = { id: string; undangan: { email: string; galat: string | null } | null };
 
-export type FilterAkun = { q: string; role: Role | null; status: StatusAkun | null; page: number };
+// nonaktif: "1" hanya akun nonaktif, "0" menyembunyikannya
+export type FilterAkun = { q: string; role: Role | null; status: StatusAkun | null; nonaktif: "1" | "0" | null; page: number };
 
 export type AuditItem = {
   id: number;
@@ -164,19 +165,3 @@ export type PermintaanAkun = {
 
 export type IsiUndangan = { email: string; role: Role; unitKerjaId?: number; jabatan?: string | null };
 
-export type StatusImpor = "baru" | "perbarui" | "sama" | "galat";
-export type BarisImpor = {
-  baris: number;
-  nip: string;
-  nama: string;
-  jabatan: string | null;
-  unit: { id: number; nama: string } | null;
-  unitTeks: string;
-  status: StatusImpor;
-  pesan: string[];
-};
-export type HasilImpor = {
-  ringkasan: { total: number } & Record<StatusImpor, number>;
-  baris: BarisImpor[];
-  disimpan: boolean;
-};

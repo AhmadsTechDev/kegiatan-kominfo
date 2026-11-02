@@ -34,7 +34,7 @@ export const KegiatanValidator = {
   params: t.Object({ id: t.Numeric({ minimum: 1, error: "ID kegiatan tidak valid" }) }),
 
   daftarQuery: t.Object({
-    unit: t.Optional(t.Numeric({ minimum: 1, error: "Unit kerja tidak valid" })),
+    unit: t.Optional(t.Numeric({ minimum: 1, error: "Bidang tidak valid" })),
     jenis: t.Optional(t.Numeric({ minimum: 1, error: "Jenis kegiatan tidak valid" })),
     status: t.Optional(t.Union(STATUS_PELAKSANAAN.map((s) => t.Literal(s)), { error: "Status tidak valid" })),
     periode: t.Optional(t.String({ pattern: "^\\d{4}-(0[1-9]|1[0-2])$", error: "Periode harus berformat YYYY-MM" })),

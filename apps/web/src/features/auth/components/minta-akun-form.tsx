@@ -32,13 +32,15 @@ import { z } from "zod";
 import { Wajib } from "@/components/shared/form-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/api-client";
 import { zNip } from "@/lib/nip";
 import { ajukanPermintaanAkun } from "../api/akun-publik";
+import { useFokusAwal } from "../hooks/use-fokus-awal";
+import { KepalaKartu } from "./kartu-publik";
 
 const schema = z.object({
   nama: z.string().trim().min(1, "Nama wajib diisi").max(150, "Nama maksimal 150 karakter"),
@@ -52,10 +54,12 @@ const KOLOM: Record<string, keyof Nilai> = { nama: "nama", nip: "nip", email: "e
 
 export function MintaAkunForm() {
   const ajukan = useMutation({ mutationFn: ajukanPermintaanAkun });
-  const { register, handleSubmit, setError, formState, getValues } = useForm<Nilai>({
+  const { register, handleSubmit, setError, setFocus, formState, getValues } = useForm<Nilai>({
     resolver: zodResolver(schema),
     defaultValues: { nama: "", nip: "", email: "", catatan: "" },
   });
+
+  useFokusAwal(setFocus, "nama");
 
   const galatUmum =
     ajukan.error instanceof ApiError && !(ajukan.error.details ?? []).some((d) => d.field && KOLOM[d.field]) ? ajukan.error.message : null;
@@ -78,10 +82,11 @@ export function MintaAkunForm() {
           <MailCheck className="size-7" />
         </span>
         <div className="flex flex-col gap-1.5">
-          <h2 className="font-heading text-xl font-extrabold">Permintaan terkirim</h2>
+          <h1 className="font-heading text-2xl font-extrabold tracking-tight">Permintaan terkirim</h1>
           <p className="text-sm text-muted-foreground">
             Administrator akan meninjau permintaan Anda. Bila disetujui, tautan aktivasi dikirim ke <span className="font-semibold text-foreground">{getValues("email")}</span>.
           </p>
+          <p className="text-sm text-muted-foreground">Periksa juga folder spam. Bila setelah beberapa hari kerja belum ada email, tanyakan ke administrator di unit Anda.</p>
         </div>
         <Button asChild variant="outline" className="h-10 pointer-coarse:min-h-11">
           <Link href="/login">
@@ -94,49 +99,55 @@ export function MintaAkunForm() {
   }
 
   return (
-    <form onSubmit={kirim} noValidate className="flex flex-col gap-5">
-      {galatUmum && (
-        <Alert variant="destructive" aria-live="polite">
-          <CircleAlert />
-          <AlertDescription>{galatUmum}</AlertDescription>
-        </Alert>
-      )}
-      <FieldGroup className="gap-4">
-        <Field data-invalid={!!formState.errors.nama}>
-          <FieldLabel htmlFor="minta-nama">
-            Nama lengkap <Wajib />
-          </FieldLabel>
-          <Input id="minta-nama" autoComplete="name" maxLength={150} className="h-11" autoFocus aria-invalid={!!formState.errors.nama} {...register("nama")} />
-          <FieldError errors={[formState.errors.nama]} />
-        </Field>
-        <Field data-invalid={!!formState.errors.nip}>
-          <FieldLabel htmlFor="minta-nip">
-            NIP <span className="font-normal text-muted-foreground">(opsional)</span>
-          </FieldLabel>
-          <Input id="minta-nip" inputMode="numeric" maxLength={18} placeholder="18 digit" className="h-11 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
-          <FieldError errors={[formState.errors.nip]} />
-        </Field>
-        <Field data-invalid={!!formState.errors.email}>
-          <FieldLabel htmlFor="minta-email">
-            Email pribadi <Wajib />
-          </FieldLabel>
-          <Input id="minta-email" type="email" autoComplete="email" maxLength={255} className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
-          <FieldError errors={[formState.errors.email]} />
-        </Field>
-        <Field data-invalid={!!formState.errors.catatan}>
-          <FieldLabel htmlFor="minta-catatan">Catatan untuk administrator</FieldLabel>
-          <Textarea id="minta-catatan" rows={2} maxLength={500} {...register("catatan")} />
-          <FieldError errors={[formState.errors.catatan]} />
-        </Field>
-      </FieldGroup>
-      <Button type="submit" className="h-11 w-full" disabled={ajukan.isPending}>
-        {ajukan.isPending && <Spinner />}
-        {ajukan.isPending ? "Mengirim..." : "Kirim ke administrator"}
-      </Button>
-      <Link href="/login" className="mx-auto inline-flex items-center gap-1.5 rounded text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11">
-        <ArrowLeft aria-hidden className="size-4" />
-        Kembali ke halaman masuk
-      </Link>
-    </form>
+    <>
+      <KepalaKartu judul="Minta akun" deskripsi="Administrator memeriksa data Anda, lalu mengirim tautan aktivasi ke email pribadi Anda." />
+      <form onSubmit={kirim} noValidate className="flex flex-col gap-5">
+        {galatUmum && (
+          <Alert variant="destructive" aria-live="polite">
+            <CircleAlert />
+            <AlertDescription>{galatUmum}</AlertDescription>
+          </Alert>
+        )}
+        <FieldGroup className="gap-4">
+          <Field data-invalid={!!formState.errors.nama}>
+            <FieldLabel htmlFor="minta-nama">
+              Nama lengkap <Wajib />
+            </FieldLabel>
+            <Input id="minta-nama" autoComplete="name" maxLength={150} className="h-11" aria-invalid={!!formState.errors.nama} {...register("nama")} />
+            <FieldError errors={[formState.errors.nama]} />
+          </Field>
+          <Field data-invalid={!!formState.errors.nip}>
+            <FieldLabel htmlFor="minta-nip">
+              NIP <span className="font-normal text-muted-foreground">(opsional)</span>
+            </FieldLabel>
+            <Input id="minta-nip" inputMode="numeric" maxLength={18} placeholder="18 digit" className="h-11 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
+            <FieldDescription>Kosongkan bila Anda non-ASN.</FieldDescription>
+            <FieldError errors={[formState.errors.nip]} />
+          </Field>
+          <Field data-invalid={!!formState.errors.email}>
+            <FieldLabel htmlFor="minta-email">
+              Email pribadi <Wajib />
+            </FieldLabel>
+            <Input id="minta-email" type="email" autoComplete="email" maxLength={255} className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
+            <FieldDescription>Email ini menjadi email untuk masuk. Pakai yang Anda baca sehari-hari.</FieldDescription>
+            <FieldError errors={[formState.errors.email]} />
+          </Field>
+          <Field data-invalid={!!formState.errors.catatan}>
+            <FieldLabel htmlFor="minta-catatan">Catatan untuk administrator</FieldLabel>
+            <Textarea id="minta-catatan" rows={3} maxLength={500} {...register("catatan")} />
+            <FieldDescription>Tulis bidang dan jabatan Anda agar mudah diperiksa.</FieldDescription>
+            <FieldError errors={[formState.errors.catatan]} />
+          </Field>
+        </FieldGroup>
+        <Button type="submit" className="h-11 w-full" disabled={ajukan.isPending}>
+          {ajukan.isPending && <Spinner />}
+          {ajukan.isPending ? "Mengirim..." : "Kirim ke administrator"}
+        </Button>
+        <Link href="/login" className="mx-auto inline-flex items-center gap-1.5 rounded text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11">
+          <ArrowLeft aria-hidden className="size-4" />
+          Kembali ke halaman masuk
+        </Link>
+      </form>
+    </>
   );
 }

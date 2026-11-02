@@ -10,7 +10,7 @@ Menyediakan akun pegawai yang aman dan terkelola agar setiap orang masuk dengan 
 ### Selesai bila
 - Pengguna tidak bisa membuka data kegiatan sebelum berhasil masuk dengan akun kantor.
 - Setelah masuk, nama pengguna dan perannya terlihat jelas di aplikasi.
-- Admin dapat mengatur peran pengguna sebagai operator, pimpinan, atau admin, dan akses menu menyesuaikan peran tersebut.
+- Admin dapat mengatur peran pengguna sebagai pegawai, pimpinan, atau admin, dan akses menu menyesuaikan peran tersebut.
 - Setiap pengguna dapat memperbarui nama, jabatan, dan info kontaknya sendiri.
 - Perubahan profil langsung tampil pada identitas pengguna di aplikasi.
 
@@ -37,7 +37,7 @@ Memungkinkan admin mengatur pengguna dan perannya agar setiap pegawai hanya bisa
 ### Selesai bila
 - Admin melihat daftar pengguna beserta nama, akun, peran, dan bidangnya.
 - Admin dapat menambah pengguna baru serta mengubah peran pengguna yang sudah ada.
-- Hak akses menu berbeda sesuai peran: operator dapat mencatat kegiatan, pimpinan dapat memantau, dan admin dapat mengelola akun.
+- Hak akses menu berbeda sesuai peran: pegawai dapat mencatat kegiatan, pimpinan dapat memantau, dan admin dapat mengelola akun.
 - Pengguna tanpa peran admin tidak dapat membuka pengaturan pengguna dan peran.
 
 ## Sub-fitur: Atur Profil

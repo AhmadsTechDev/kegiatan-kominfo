@@ -25,7 +25,7 @@ export const metadata: Metadata = { title: "Verifikasi email" };
 export default function KonfirmasiEmailPage() {
   return (
     <AuthShell>
-      <KartuPublik eyebrow="Pengaturan akun" judul="Verifikasi email baru">
+      <KartuPublik>
         <Suspense fallback={<Skeleton className="h-32 w-full rounded-xl" />}>
           <KonfirmasiEmailView />
         </Suspense>

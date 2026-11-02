@@ -1,7 +1,6 @@
-// Uji laporan: rekap, ekspor Excel/PDF, pratinjau, dashboard, kalender, dan pantau harus menghitung angka yang sama.
+// Uji laporan: rekap, ekspor PDF, pratinjau, dashboard, kalender, dan pantau harus menghitung angka yang sama.
 // Setiap uji memakai bidang baru dan periode khusus (tahun 2031 / 2020) agar angkanya tidak tercampur data uji lain.
 import { describe, expect, test } from "bun:test";
-import ExcelJS from "exceljs";
 import { buatBidang, buatKegiatan, buatPengguna, formBerkas, idJenis, isiKegiatan, loginAdmin, panggil, PNG } from "./helpers";
 
 // Waktu WIB pada tanggal tertentu, contoh wib("2031-03-05", 9)
@@ -42,16 +41,9 @@ describe("angka laporan konsisten", () => {
     expect(harian.data.tren).toHaveLength(31);
     expect(harian.data.tren.filter((t: { jumlah: number }) => t.jumlah > 0).map((t: { periode: string }) => t.periode)).toEqual(["2031-03-05", "2031-03-20", "2031-03-28"]);
 
-    const xlsx = await panggil(`/ekspor/kegiatan.xlsx?${filter}`, { cookie: admin });
-    expect(xlsx.status).toBe(200);
-    expect(xlsx.headers.get("x-jumlah-kegiatan")).toBe("3");
-    expect(xlsx.headers.get("content-disposition")).toBe(`attachment; filename="rekap-kegiatan-2031-03-${new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10)}.xlsx"`);
-    const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(xlsx.data.buffer);
-    expect(wb.getWorksheet("Kegiatan")!.rowCount).toBe(4);
-
     const pdf = await panggil(`/ekspor/kegiatan.pdf?${filter}`, { cookie: admin });
     expect(pdf.headers.get("x-jumlah-kegiatan")).toBe("3");
+    expect(pdf.headers.get("content-disposition")).toBe(`attachment; filename="rekap-kegiatan-2031-03-${new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10)}.pdf"`);
     expect(new TextDecoder().decode(pdf.data.slice(0, 5))).toBe("%PDF-");
 
     const pratinjau = await panggil(`/ekspor/pratinjau?${filter}`, { cookie: admin });
@@ -63,25 +55,29 @@ describe("angka laporan konsisten", () => {
     const dashboard = await panggil("/dashboard?periode=2031-03", { cookie: admin });
     expect(dashboard.data.kpi).toMatchObject({ total: 3, akanDatang: 2, berlangsung: 0, totalPeriodeSebelumnya: 0 });
     expect(dashboard.data.trenUnitBulanan.data.at(-1)).toMatchObject({ bulan: "2031-03", jumlah: { [bidang.kode]: 3 } });
-    expect(dashboard.data.sebaranJenis).toEqual(rekap.data.perJenis);
+    // Jenis aktif tanpa kegiatan ikut tampil dengan jumlah 0 di belakang
+    expect(dashboard.data.sebaranJenis.filter((j: { jumlah: number }) => j.jumlah > 0)).toEqual(rekap.data.perJenis);
+    expect(dashboard.data.sebaranJenis.slice(rekap.data.perJenis.length).every((j: { jumlah: number }) => j.jumlah === 0)).toBe(true);
+    expect(dashboard.data.admin).toEqual({ menungguAktivasi: expect.any(Number) });
 
     const kalender = await panggil("/kalender?bulan=2031-03", { cookie: u.cookie });
     expect(kalender.data.items).toHaveLength(3);
     expect(kalender.data.items.every((k: { unitIndukId: number }) => k.unitIndukId === bidang.id)).toBe(true);
 
-    const pantau = await panggil(`/pantau/ringkasan?unit=${bidang.id}&dari=2031-03-01&sampai=2031-03-31`, { cookie: admin });
+    const pimpinan = await buatPengguna({ role: "PIMPINAN" });
+    const pantau = await panggil(`/pantau/ringkasan?unit=${bidang.id}&dari=2031-03-01&sampai=2031-03-31`, { cookie: pimpinan.cookie });
     expect(pantau.data).toEqual({ total: 3, draf: 0, terkirim: 3, diperiksa: 0, perluPerbaikan: 0 });
   });
 
   test("ekspor tercatat di audit log beserta filter dan jumlahnya", async () => {
     const { bidang } = await siapkanMaret2031();
     const u = await buatPengguna({ unitId: bidang.id });
-    await panggil(`/ekspor/kegiatan.xlsx?unit=${bidang.id}`, { cookie: u.cookie });
+    await panggil(`/ekspor/kegiatan.pdf?unit=${bidang.id}`, { cookie: u.cookie });
     const admin = await loginAdmin();
     const audit = await panggil(`/audit-log?aktor=${u.userId}&aksi=ekspor`, { cookie: admin });
     expect(audit.data.total).toBe(1);
     const detail = await panggil(`/audit-log/${audit.data.items[0].id}`, { cookie: admin });
-    expect(detail.data.dataSesudah).toMatchObject({ format: "xlsx", jumlah: 3, filter: { unit: bidang.id } });
+    expect(detail.data.dataSesudah).toMatchObject({ format: "pdf", jumlah: 3, filter: { unit: bidang.id } });
   });
 
   test("PEGAWAI hanya melihat rekap unit kerjanya sendiri", async () => {
@@ -90,7 +86,7 @@ describe("angka laporan konsisten", () => {
     expect(rekap.data.total.total).toBe(3);
     expect(rekap.data.perUnit.map((p: { unit: { id: number } }) => p.unit.id)).toEqual([bidang.id]);
     const pratinjau = await panggil("/ekspor/pratinjau?periode=2031-04", { cookie: u.cookie });
-    expect(pratinjau.data.subjudul).toContain("Unit kerja sendiri");
+    expect(pratinjau.data.subjudul).toContain("Bidang sendiri");
   });
 
   test("kegiatan selesai tanpa dokumentasi muncul di dashboard sampai dokumentasinya diunggah", async () => {
@@ -100,14 +96,14 @@ describe("angka laporan konsisten", () => {
     const admin = await loginAdmin();
 
     const sebelum = await panggil("/dashboard?periode=2020-05", { cookie: admin });
-    expect(sebelum.data.kpi.selesaiTanpaDokumentasi).toBe(1);
+    expect(sebelum.data.kpi).toMatchObject({ selesai: 1, selesaiTanpaDokumentasi: 1 });
     expect(sebelum.data.perluPerhatian.items[0]).toMatchObject({ id: k.id, unitKerja: bidang.nama, statusPelaksanaan: "selesai" });
     const saya = await panggil("/dashboard/saya", { cookie: u.cookie });
     expect(saya.data.perluDokumentasi.total).toBe(1);
     expect(saya.data.unit).toEqual({ id: bidang.id, jumlahBulanIni: 0 });
 
     await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie: u.cookie, form: formBerkas(PNG) });
-    expect((await panggil("/dashboard?periode=2020-05", { cookie: admin })).data.kpi.selesaiTanpaDokumentasi).toBe(0);
+    expect((await panggil("/dashboard?periode=2020-05", { cookie: admin })).data.kpi).toMatchObject({ selesai: 1, selesaiTanpaDokumentasi: 0 });
     expect((await panggil("/dashboard/saya", { cookie: u.cookie })).data.perluDokumentasi.total).toBe(0);
   });
 
@@ -130,7 +126,7 @@ describe("batas laporan", () => {
 
   test("ekspor dibatasi 10 kali per menit per akun; pratinjau tidak dibatasi", async () => {
     const u = await buatPengguna({ unitId: (await buatBidang()).id });
-    for (let i = 0; i < 10; i++) expect((await panggil("/ekspor/kegiatan.xlsx", { cookie: u.cookie })).status).toBe(200);
+    for (let i = 0; i < 10; i++) expect((await panggil("/ekspor/kegiatan.pdf", { cookie: u.cookie })).status).toBe(200);
     const ke11 = await panggil("/ekspor/kegiatan.pdf", { cookie: u.cookie });
     expect(ke11.status).toBe(429);
     expect((await panggil("/ekspor/pratinjau", { cookie: u.cookie })).status).toBe(200);

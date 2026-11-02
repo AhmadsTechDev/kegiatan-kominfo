@@ -2,13 +2,13 @@
 
 Kembali ke [ringkasan](README.md).
 
-Semua endpoint di sini hanya untuk **ADMIN** dan butuh header `Cookie`. Endpoint dengan body memakai `Content-Type: application/json`, kecuali impor Excel (`multipart/form-data`).
+Semua endpoint di sini hanya untuk **ADMIN** dan butuh header `Cookie`. Endpoint dengan body memakai `Content-Type: application/json`.
 
 Data master tidak pernah dihapus; nonaktifkan dengan `"aktif": false` agar data lama tetap utuh. Setiap perubahan dicatat di audit log.
 
 ---
 
-## Unit kerja
+## Bidang
 
 ### `GET /api/admin/unit-kerja`
 
@@ -18,12 +18,12 @@ Data master tidak pernah dihapus; nonaktifkan dengan `"aktif": false` agar data 
 [
   {
     "id": 7,
-    "kode": "SUBAG-UMPEG",
-    "nama": "Sub Bagian Umum dan Kepegawaian",
-    "jenisUnitId": 4,
-    "jenis": "Sub bagian",
-    "parentId": 1,
-    "induk": "Sekretariat",
+    "kode": "SEKSI-DATA",
+    "nama": "Seksi Pengelolaan Data dan Persediaan",
+    "jenisUnitId": 5,
+    "jenis": "Seksi",
+    "parentId": 3,
+    "induk": "Bidang Teknologi Informasi dan Persandian",
     "aktif": true,
     "updatedAt": "2026-11-01T22:10:39.076Z",
     "jumlahPegawaiAktif": 0
@@ -137,7 +137,7 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 | Field | Tipe | Wajib | Keterangan |
 | --- | --- | --- | --- |
 | `nama` | string | ya | 1–150 karakter |
-| `unitKerjaId` | angka | ya | Unit kerja aktif |
+| `unitKerjaId` | angka | ya | Bidang aktif |
 | `nip` | string \| null | tidak | 18 digit, sah, dan belum terdaftar. Kosongkan untuk non-ASN |
 | `jabatan` | string \| null | tidak | Maks. 150 karakter |
 | `email` | string \| null | tidak | Bila diisi, langsung dikirimi undangan akun |
@@ -161,58 +161,6 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 **Body**: `nip`, `nama`, `jabatan`, `unitKerjaId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
 
 **Respons 200**: `{ "id": 1 }`
-
-### `GET /api/admin/pegawai/impor/templat`
-
-Mengunduh templat Excel impor pegawai (berisi petunjuk dan daftar unit kerja).
-
-**Respons 200**: berkas `.xlsx` (`Content-Disposition: attachment; filename="templat-impor-pegawai.xlsx"`).
-
-### `POST /api/admin/pegawai/impor`
-
-Impor pegawai dari Excel. Kirim dulu tanpa `simpan` untuk pratinjau, lalu kirim ulang dengan `simpan=1`.
-
-**Header**: `Content-Type: multipart/form-data`
-
-**Body (form-data)**
-
-| Field | Tipe | Wajib | Keterangan |
-| --- | --- | --- | --- |
-| `berkas` | file | ya | `.xlsx`, maks. 2 MB dan 1.000 baris. Kolom wajib: Nama dan Unit kerja; NIP dan Jabatan opsional |
-| `simpan` | `1` | tidak | `1` = simpan; selain itu hanya pratinjau |
-
-**Respons 200**
-
-```json
-{
-  "ringkasan": { "total": 3, "baru": 1, "perbarui": 1, "sama": 0, "galat": 1 },
-  "baris": [
-    {
-      "baris": 6,
-      "nip": "198702152011012002",
-      "nama": "Andi Saputra",
-      "jabatan": "Analis",
-      "unit": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
-      "unitTeks": "Seksi Pengelolaan Data dan Persediaan",
-      "status": "perbarui",
-      "pesan": ["NIP sudah terdaftar; nama, jabatan, atau unit akan diperbarui"],
-      "pegawaiId": 1
-    }
-  ],
-  "disimpan": false
-}
-```
-
-| `status` | Arti |
-| --- | --- |
-| `baru` | Akan ditambahkan |
-| `perbarui` | Pegawai sudah ada (dicocokkan lewat NIP, atau lewat nama bila tanpa NIP) dan datanya berubah |
-| `sama` | Sudah ada dan tidak berubah; dilewati |
-| `galat` | Tidak disimpan; alasannya ada di `pesan` |
-
-`baris` adalah nomor baris di Excel. Saat `simpan=1`, hanya baris `baru` dan `perbarui` yang disimpan (dalam satu transaksi).
-
-**Galat**: 415 bila bukan `.xlsx`, 422 bila kolom wajib tidak ditemukan, lebih dari 1.000 baris, atau tidak ada yang bisa disimpan.
 
 ---
 
@@ -242,7 +190,7 @@ Impor pegawai dari Excel. Kirim dulu tanpa `simpan` untuk pratinjau, lalu kirim 
 
 ## Manajemen akun
 
-Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi pemilik akun; pemiliknya membuat kata sandi sendiri. Admin tidak pernah menentukan, melihat, atau mengirim kata sandi. Setiap akun tertaut ke data pegawai (jabatan dan unit kerja wajib, NIP opsional). Status akun dijelaskan di [api-auth.md](api-auth.md#status-akun).
+Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi pemilik akun; pemiliknya membuat kata sandi sendiri. Admin tidak pernah menentukan, melihat, atau mengirim kata sandi. Setiap akun tertaut ke data pegawai (jabatan dan bidang wajib, NIP opsional). Status akun dijelaskan di [api-auth.md](api-auth.md#status-akun).
 
 ### `GET /api/admin/akun`
 
@@ -251,7 +199,7 @@ Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi p
 | Field | Tipe | Keterangan |
 | --- | --- | --- |
 | `q` | string | Cari nama, email, atau NIP |
-| `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | `PEGAWAI` = Operator di antarmuka |
+| `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | Ditampilkan sebagai Pegawai, Pimpinan, Admin |
 | `status` | `MENUNGGU_AKTIVASI` \| `AKTIF` \| `NONAKTIF` | |
 | `page`, `pageSize` | angka | Bawaan 1 dan 20 (maks. 100) |
 
@@ -316,7 +264,7 @@ Membuat akun beserta data pegawainya dalam satu transaksi, lalu mengirim email a
 | `email` | string | ya | Email pribadi, unik. Menjadi identitas login |
 | `nip` | string \| null | tidak | 18 digit. Bila milik pegawai terdaftar yang belum punya akun, data pegawai itu dipakai (tidak diduplikasi) |
 | `jabatan` | string | ya | 1–150 karakter |
-| `unitKerjaId` | angka | ya | Unit kerja aktif |
+| `unitKerjaId` | angka | ya | Bidang aktif |
 | `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | ya | |
 | `pegawaiId` | angka \| null | tidak | Pakai pegawai tertentu dari Master data |
 
@@ -471,7 +419,7 @@ Menyetujui permintaan setelah identitas pemohon diverifikasi: akun dibuat dan em
 | --- | --- | --- | --- |
 | `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | ya | |
 | `email` | string | tidak | Ganti email pemohon bila perlu |
-| `unitKerjaId` | angka | bila tanpa data pegawai | Unit kerja pegawai baru |
+| `unitKerjaId` | angka | bila tanpa data pegawai | Bidang pegawai baru |
 | `jabatan` | string | bila tanpa data pegawai | Jabatan pegawai baru |
 
 **Respons 200**: sama dengan undangan, `{ "userId": "...", "email": "...", "kirimUlang": false }`

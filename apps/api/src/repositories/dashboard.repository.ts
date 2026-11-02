@@ -25,16 +25,17 @@ async function daftarDenganTotal(where: Prisma.KegiatanWhereInput, orderBy: Pris
 }
 
 export const DashboardRepository = {
-  // Angka KPI bulan terpilih: total, berlangsung, akan datang, selesai tanpa dokumentasi
+  // Angka KPI bulan terpilih: total, berlangsung, akan datang, selesai, dan selesai tanpa dokumentasi
   async hitungKpi(rentang: Rentang, sekarang: Date) {
     const dasar = dalamRentang(rentang);
-    const [total, berlangsung, akanDatang, selesaiTanpaDokumentasi] = await Promise.all([
+    const [total, berlangsung, akanDatang, selesai, selesaiTanpaDokumentasi] = await Promise.all([
       prisma.kegiatan.count({ where: dasar }),
       prisma.kegiatan.count({ where: { AND: [dasar, kondisiStatus("berlangsung", sekarang)] } }),
       prisma.kegiatan.count({ where: { AND: [dasar, kondisiStatus("akan_datang", sekarang)] } }),
+      prisma.kegiatan.count({ where: { AND: [dasar, kondisiStatus("selesai", sekarang)] } }),
       prisma.kegiatan.count({ where: { AND: [dasar, kondisiStatus("selesai", sekarang), TANPA_DOKUMENTASI] } }),
     ]);
-    return { total, berlangsung, akanDatang, selesaiTanpaDokumentasi };
+    return { total, berlangsung, akanDatang, selesai, selesaiTanpaDokumentasi };
   },
 
   // Jumlah kegiatan aktif dalam rentang waktu
@@ -69,6 +70,11 @@ export const DashboardRepository = {
     return kelompok
       .map((g) => ({ id: g.jenisId, nama: jenis.find((j) => j.id === g.jenisId)?.nama ?? "-", jumlah: g._count._all }))
       .sort((a, b) => b.jumlah - a.jumlah);
+  },
+
+  // Jenis kegiatan aktif (untuk menampilkan jenis yang belum punya kegiatan)
+  jenisAktif() {
+    return prisma.jenisKegiatan.findMany({ where: { aktif: true }, select: { id: true, nama: true }, orderBy: { nama: "asc" } });
   },
 
   // Kegiatan berkoordinat dalam rentang waktu (untuk peta)

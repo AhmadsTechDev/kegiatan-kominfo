@@ -48,7 +48,7 @@ export function TabelRekapPegawai({ data, filter }: { data: RekapData; filter: N
         <TableRow>
           <TableHead className="w-10 pl-4 md:pl-5">No</TableHead>
           <TableHead>Pegawai</TableHead>
-          <TableHead>Unit kerja</TableHead>
+          <TableHead>Bidang</TableHead>
           <TableHead className="pr-4 text-right md:pr-5">Kegiatan</TableHead>
         </TableRow>
       </TableHeader>

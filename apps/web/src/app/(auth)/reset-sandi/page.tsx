@@ -25,7 +25,7 @@ export const metadata: Metadata = { title: "Atur ulang kata sandi" };
 export default function ResetSandiPage() {
   return (
     <AuthShell>
-      <KartuPublik eyebrow="Pemulihan akun" judul="Buat kata sandi baru">
+      <KartuPublik>
         <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
           <ResetSandiForm />
         </Suspense>

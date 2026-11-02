@@ -37,13 +37,17 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { getInfoReset, mintaResetSandi, resetSandi, tautanRusak, tokenTidakBerlaku } from "../api/akun-publik";
+import { useFokusAwal } from "../hooks/use-fokus-awal";
+import { KepalaKartu } from "./kartu-publik";
 import { FormSandiBaru, Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
 
 const schemaEmail = z.object({ email: z.string().trim().min(1, "Email wajib diisi").pipe(z.email("Format email tidak valid")) });
 
 export function LupaSandiForm() {
   const minta = useMutation({ mutationFn: mintaResetSandi });
-  const { register, handleSubmit, formState } = useForm<{ email: string }>({ resolver: zodResolver(schemaEmail), defaultValues: { email: "" } });
+  const { register, handleSubmit, setFocus, formState } = useForm<{ email: string }>({ resolver: zodResolver(schemaEmail), defaultValues: { email: "" } });
+
+  useFokusAwal(setFocus, "email");
 
   if (minta.isSuccess) {
     return (
@@ -58,28 +62,31 @@ export function LupaSandiForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit((v) => minta.mutate(v.email))} noValidate className="flex flex-col gap-5">
-      {minta.isError && (
-        <Alert variant="destructive" aria-live="polite">
-          <CircleAlert />
-          <AlertDescription>{minta.error.message}</AlertDescription>
-        </Alert>
-      )}
-      <Field data-invalid={!!formState.errors.email}>
-        <FieldLabel htmlFor="lupa-email">
-          Email akun <Wajib />
-        </FieldLabel>
-        <Input id="lupa-email" type="email" aria-required inputMode="email" autoComplete="email" autoFocus className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
-        <FieldError errors={[formState.errors.email]} />
-      </Field>
-      <Button type="submit" className="h-11 w-full" disabled={minta.isPending}>
-        {minta.isPending && <Spinner />}
-        {minta.isPending ? "Mengirim..." : "Kirim tautan atur ulang"}
-      </Button>
-      <Link href="/login" className="inline-flex items-center self-center rounded text-sm font-semibold text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11">
-        Kembali ke halaman masuk
-      </Link>
-    </form>
+    <>
+      <KepalaKartu judul="Lupa kata sandi" deskripsi="Masukkan email akun Anda. Bila terdaftar, kami kirim tautan untuk membuat kata sandi baru." />
+      <form onSubmit={handleSubmit((v) => minta.mutate(v.email))} noValidate className="flex flex-col gap-5">
+        {minta.isError && (
+          <Alert variant="destructive" aria-live="polite">
+            <CircleAlert />
+            <AlertDescription>{minta.error.message}</AlertDescription>
+          </Alert>
+        )}
+        <Field data-invalid={!!formState.errors.email}>
+          <FieldLabel htmlFor="lupa-email">
+            Email akun <Wajib />
+          </FieldLabel>
+          <Input id="lupa-email" type="email" aria-required inputMode="email" autoComplete="email" className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
+          <FieldError errors={[formState.errors.email]} />
+        </Field>
+        <Button type="submit" className="h-11 w-full" disabled={minta.isPending}>
+          {minta.isPending && <Spinner />}
+          {minta.isPending ? "Mengirim..." : "Kirim tautan atur ulang"}
+        </Button>
+        <Link href="/login" className="inline-flex items-center self-center rounded text-sm font-semibold text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11">
+          Kembali ke halaman masuk
+        </Link>
+      </form>
+    </>
   );
 }
 
@@ -109,6 +116,7 @@ export function ResetSandiForm() {
 
   return (
     <div className="flex flex-col gap-5">
+      <KepalaKartu judul="Buat kata sandi baru" />
       <p className="rounded-xl bg-muted/70 p-3 text-sm">
         Kata sandi baru untuk <span className="font-semibold">{info.data.email}</span>
       </p>

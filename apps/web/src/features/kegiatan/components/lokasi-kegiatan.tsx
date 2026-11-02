@@ -204,7 +204,9 @@ export function LokasiKegiatan({ form }: { form: UseFormReturn<KegiatanFormValue
       </div>
 
       <Field data-invalid={!!errors.lokasiNama}>
-        <FieldLabel htmlFor="lokasiNama">Nama lokasi</FieldLabel>
+        <FieldLabel htmlFor="lokasiNama">
+          Nama lokasi <span className="font-normal text-muted-foreground">(opsional)</span>
+        </FieldLabel>
         <Input
           id="lokasiNama"
           className="h-10"

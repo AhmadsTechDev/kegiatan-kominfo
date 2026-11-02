@@ -18,7 +18,8 @@
 
 "use client";
 
-import { Check, IdCard } from "lucide-react";
+import { Check, IdCard, Pencil } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
@@ -43,27 +44,44 @@ export const Kosong = ({ teks = "-" }: { teks?: string }) => <span className="fo
 
 export function PanelKepegawaian({ p }: { p: Profil }) {
   const unit = p.pegawai?.unitKerja;
+  // Admin mengelola datanya sendiri lewat Manajemen akun; role lain harus meminta admin
+  const admin = p.role === "ADMIN";
   return (
     <Panel className="h-fit">
-      <PanelHeader title="Data kepegawaian" description="Dikelola administrator. Hubungi admin bila ada data yang keliru." />
+      <PanelHeader
+        title="Data kepegawaian"
+        description={admin ? "Diubah lewat Manajemen akun, sama seperti akun lain." : "Dikelola administrator. Hubungi admin bila ada data yang keliru."}
+        action={
+          admin && (
+            <Button asChild variant="outline" size="sm" className="h-9 pointer-coarse:min-h-11">
+              <Link href={`/admin/akun/${p.id}`}>
+                <Pencil aria-hidden />
+                Kelola
+              </Link>
+            </Button>
+          )
+        }
+      />
       {p.pegawai ? (
         <dl className="divide-y divide-muted border-t border-muted">
           <Baris label="Nama lengkap">{p.pegawai.nama}</Baris>
           <Baris label="NIP">{p.pegawai.nip ? <span className="tabular-nums">{p.pegawai.nip}</span> : <Kosong teks="Tanpa NIP" />}</Baris>
           <Baris label="Jabatan">{p.pegawai.jabatan ?? <Kosong />}</Baris>
-          <Baris label="Unit kerja">
+          <Baris label="Bidang">
             {unit?.nama}
             {unit?.parent && <span className="block text-xs font-normal text-muted-foreground">di bawah {unit.parent.nama}</span>}
           </Baris>
         </dl>
       ) : (
         <PanelBody className="flex items-start gap-3 border-t border-muted pt-4 md:pt-5">
-          <span className="flex size-10 pointer-coarse:size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
             <IdCard aria-hidden className="size-5" />
           </span>
           <div className="text-sm">
-            <p className="font-medium">Belum terhubung ke data pegawai</p>
-            <p className="mt-0.5 text-muted-foreground">Minta administrator melengkapi jabatan dan unit kerja akun Anda.</p>
+            <p className="font-medium">Jabatan dan bidang belum diisi</p>
+            <p className="mt-0.5 text-muted-foreground">
+              {admin ? "Lengkapi lewat tombol Kelola di atas." : "Minta administrator melengkapi jabatan dan bidang akun Anda."}
+            </p>
           </div>
         </PanelBody>
       )}
@@ -91,7 +109,7 @@ export function PanelKontak({ p }: { p: Profil }) {
 
   return (
     <Panel className="h-fit">
-      <PanelHeader title="Kontak" description="Hanya terlihat oleh Anda dan administrator." />
+      <PanelHeader title="Kontak" description={p.role === "ADMIN" ? "Hanya terlihat oleh Anda dan administrator lain." : "Hanya terlihat oleh Anda dan administrator."} />
       <PanelBody className="border-t border-muted pt-4 md:pt-5">
         <form onSubmit={kirim} noValidate className="flex flex-col gap-4">
           <Field data-invalid={!!galat}>
@@ -102,14 +120,14 @@ export function PanelKontak({ p }: { p: Profil }) {
               inputMode="tel"
               autoComplete="tel"
               maxLength={50}
-              placeholder="0812-3456-7890"
               value={kontak}
               onChange={(e) => setKontak(e.target.value)}
               aria-invalid={!!galat}
             />
-            {galat ? <FieldError>{galat}</FieldError> : <FieldDescription>Boleh dikosongkan.</FieldDescription>}
+            {galat ? <FieldError>{galat}</FieldError> : <FieldDescription>Contoh: 0812-3456-7890. Boleh dikosongkan.</FieldDescription>}
           </Field>
-          <Button type="submit" className="h-10 pointer-coarse:min-h-11 w-fit" disabled={kontak === awal || simpan.isPending}>
+          {/* Tombol utama baru muncul saat ada perubahan; tombol utama yang dipudarkan tampak kusam di tema gelap */}
+          <Button type="submit" variant={kontak === awal ? "outline" : "default"} className="h-10 pointer-coarse:min-h-11 w-fit" disabled={kontak === awal || simpan.isPending}>
             {simpan.isPending ? <Spinner /> : <Check aria-hidden />}
             Simpan kontak
           </Button>

@@ -19,7 +19,7 @@ const isiAkun = {
   email: t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }),
   nip: t.Optional(t.Nullable(t.String({ pattern: "^(\\d{18})?$", error: "NIP harus 18 digit angka" }))),
   jabatan: t.String({ minLength: 1, maxLength: 150, error: "Jabatan wajib diisi, maksimal 150 karakter" }),
-  unitKerjaId: t.Integer({ minimum: 1, error: "Unit kerja wajib dipilih" }),
+  unitKerjaId: t.Integer({ minimum: 1, error: "Bidang wajib dipilih" }),
   role,
   pegawaiId: t.Optional(t.Nullable(t.Integer({ minimum: 1, error: "Pegawai tidak valid" }))),
 };
@@ -32,6 +32,7 @@ export const UserValidator = {
     q: t.Optional(t.String({ maxLength: 100, error: "Kata kunci maksimal 100 karakter" })),
     role: t.Optional(roleFilter),
     status: t.Optional(statusFilter),
+    nonaktif: t.Optional(t.Union([t.Literal("1"), t.Literal("0")], { error: "Filter nonaktif tidak valid" })),
     page: t.Optional(t.Numeric({ minimum: 1, default: 1, error: "Halaman tidak valid" })),
     pageSize: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20, error: "Ukuran halaman 1 sampai 100" })),
   }),

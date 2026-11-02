@@ -34,7 +34,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { Baris, Kosong } from "@/features/pengaturan/components/panel-profil";
 import { ApiError } from "@/lib/api-client";
-import { formatTanggalJam } from "@/lib/format";
+import { formatTanggalJam, formatTelp } from "@/lib/format";
 import { LABEL_ROLE } from "@/types/auth";
 import { useDetailAkun } from "../hooks/use-admin";
 import type { AkunDetail } from "../types";
@@ -221,7 +221,7 @@ function IsiDetail({ id }: { id: string }) {
                 <span className="block text-xs font-normal text-muted-foreground">Menunggu verifikasi oleh pemilik akun</span>
               </Baris>
             )}
-            <Baris label="Kontak">{a.kontak ?? <Kosong />}</Baris>
+            <Baris label="Kontak">{a.kontak ? formatTelp(a.kontak) : <Kosong />}</Baris>
             <Baris label="Dibuat">{formatTanggalJam(a.createdAt)}</Baris>
             <Baris label="Terakhir diubah">{formatTanggalJam(a.updatedAt)}</Baris>
           </dl>
@@ -233,14 +233,14 @@ function IsiDetail({ id }: { id: string }) {
               <Baris label="Nama pegawai">{a.pegawai.nama}</Baris>
               <Baris label="NIP">{a.pegawai.nip ? <span className="tabular-nums">{a.pegawai.nip}</span> : <Kosong teks="Tanpa NIP" />}</Baris>
               <Baris label="Jabatan">{a.pegawai.jabatan ?? <Kosong />}</Baris>
-              <Baris label="Unit kerja">
+              <Baris label="Bidang">
                 {unit?.nama}
                 {unit?.parent && <span className="block text-xs font-normal text-muted-foreground">di bawah {unit.parent.nama}</span>}
               </Baris>
             </dl>
           ) : (
             <PanelBody className="flex flex-col items-start gap-3 border-t border-muted pt-4 text-sm md:pt-5">
-              <p className="text-muted-foreground">Akun ini belum punya jabatan dan unit kerja.</p>
+              <p className="text-muted-foreground">Akun ini belum punya jabatan dan bidang.</p>
               <Button variant="outline" size="sm" className="h-9 pointer-coarse:min-h-11" onClick={() => buka("ubah", dariDetail(a))}>
                 Lengkapi data kepegawaian
               </Button>

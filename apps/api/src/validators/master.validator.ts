@@ -18,7 +18,7 @@ const pegawai = {
   nip: t.Optional(t.Nullable(t.String({ pattern: "^\\d{18}$", error: "NIP harus 18 digit angka" }))),
   nama: t.String({ minLength: 1, maxLength: 150, error: "Nama wajib diisi, maksimal 150 karakter" }),
   jabatan: t.Optional(t.Nullable(t.String({ maxLength: 150, error: "Jabatan maksimal 150 karakter" }))),
-  unitKerjaId: t.Integer({ minimum: 1, error: "Unit kerja wajib dipilih" }),
+  unitKerjaId: t.Integer({ minimum: 1, error: "Bidang wajib dipilih" }),
 };
 
 const jenisKegiatan = {
@@ -36,8 +36,9 @@ export const MasterValidator = {
 
   daftarPegawaiQuery: t.Object({
     q: t.Optional(t.String({ maxLength: 100, error: "Kata kunci maksimal 100 karakter" })),
-    unit: t.Optional(t.Numeric({ minimum: 1, error: "Unit kerja tidak valid" })),
+    unit: t.Optional(t.Numeric({ minimum: 1, error: "Bidang tidak valid" })),
     aktif: t.Optional(t.Union([t.Literal("1"), t.Literal("0")], { error: "Filter aktif tidak valid" })),
+    akun: t.Optional(t.Literal("tanpa", { error: "Filter akun tidak valid" })),
     page: t.Optional(t.Numeric({ minimum: 1, default: 1, error: "Halaman tidak valid" })),
     pageSize: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20, error: "Ukuran halaman 1 sampai 100" })),
   }),
@@ -45,10 +46,6 @@ export const MasterValidator = {
     ...pegawai,
     email: t.Optional(t.Nullable(t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }))),
     role: t.Optional(t.Union([t.Literal("PEGAWAI"), t.Literal("PIMPINAN")], { error: "Role tidak valid" })),
-  }),
-  imporPegawai: t.Object({
-    berkas: t.File({ error: "Pilih berkas Excel (.xlsx)" }),
-    simpan: t.Optional(t.String({ maxLength: 1 })),
   }),
   ubahPegawai: t.Object({ ...pegawai, ...aktif }),
 

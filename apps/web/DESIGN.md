@@ -141,6 +141,10 @@ Aturan pemakaian warna:
 | Status | `status-*` | Hanya lewat `StatusBadge` |
 | Grafik | `chart-1` sampai `chart-6` | Hanya lewat komponen `ChartContainer` shadcn |
 
+**Aksen peran pimpinan.** Akun pimpinan memakai emas lambang kota sebagai aksen (`--aksen-peran`, `--sidebar-primary` di bawah `:root[data-peran="pimpinan"]`): penanda menu aktif, avatar sidebar, garis eyebrow, dan titik di label peran. Terang `#8a6d1f` (4,9:1 di putih), gelap `#e2c46f` dengan teks `#241a00`. Pegawai dan admin tetap biru.
+
+**Daftar panjang.** Pilihan yang bisa berisi ratusan baris (pegawai, aktor audit) memakai `PilihCari` (`components/shared/pilih-cari.tsx`), bukan `Select`: ketik untuk menyaring, maksimal 50 hasil dirender.
+
 Mode gelap tidak termasuk versi pertama. Token sudah dipisah, jadi menambahkannya nanti cukup dengan blok `.dark`.
 
 ### 2.2 Tipografi
@@ -339,7 +343,7 @@ Setiap halaman memakai `AppShell` dan `PageHeader`. Kotak ASCII di bawah menunju
 
 ### 5.1 Login
 
-Kartu di tengah layar di atas latar `muted`: nama sistem, logo dinas, kolom email (email pribadi adalah satu-satunya identitas login; NIP tidak dipakai untuk masuk), kata sandi (dengan tombol tampilkan), tombol "Masuk", tautan "Lupa kata sandi?", dan kalimat "Belum memiliki akun? Hubungi Administrator untuk mendapatkan akses." dengan "Hubungi Administrator" sebagai tautan ke formulir permintaan akses. Setelah penguncian akun (NFR-01), tampilkan pesan "Terlalu banyak percobaan. Coba lagi dalam 15 menit." beserta hitung mundur. Tidak ada tautan pendaftaran (akun dibuat admin).
+Kartu di tengah layar dengan garis emas lambang kota di tepi atas (`border-t-chart-3`), diulang di semua kartu publik. Lambang dinas dan nama sistem tampil satu kali di dalam kartu; kaki halaman hanya nama instansi. Judul "Masuk", kolom email (email pribadi adalah satu-satunya identitas login; NIP tidak dipakai untuk masuk), kata sandi (dengan tombol tampilkan dan tautan "Lupa kata sandi?" sejajar kanan pada labelnya), tombol "Masuk ke aplikasi", dan kalimat "Belum punya akun? Minta akun" dengan "Minta akun" sebagai tautan ke formulir permintaan akun. Setiap keadaan halaman publik (formulir, berhasil, tautan tidak berlaku) menulis satu judul `h1`-nya sendiri; fokus otomatis ke kolom pertama hanya pada perangkat dengan mouse. Setelah penguncian akun (NFR-01), tampilkan pesan "Terlalu banyak percobaan. Coba lagi dalam 15 menit." beserta hitung mundur. Tidak ada tautan pendaftaran (akun dibuat admin).
 
 ### 5.2 Dashboard pimpinan (FR-09)
 
@@ -364,7 +368,7 @@ Inilah halaman yang paling perlu terasa hidup. Ia dibangun dari lima jenis visua
 | Blok | Isi | Catatan |
 | --- | --- | --- |
 | 4 `StatCard` | Total kegiatan periode, sedang berlangsung, akan datang, selesai tanpa dokumentasi | Ikon dalam lingkaran berwarna lembut (`bg-secondary`), angka `tabular-nums`, selisih dibanding periode sebelumnya bila ada |
-| Batang bertumpuk | Jumlah kegiatan per unit kerja per bulan | Satu warna per unit induk (Sekretariat, empat bidang, dan kelompok jabatan fungsional) dari `chart-1..6`; legenda terlihat; tooltip menampilkan angka pasti |
+| Batang bertumpuk | Jumlah kegiatan per unit kerja per bulan | Satu warna per unit induk (bidang dan kelompok jabatan fungsional, serta Sekretariat bila admin menambahkannya) dari `chart-1..6`; legenda terlihat; tooltip menampilkan angka pasti |
 | Batang horizontal | Sebaran jenis kegiatan | Diurutkan dari terbanyak, label di sisi kiri. Hindari donut: sulit dibandingkan |
 | `MapOverview` | Titik semua kegiatan yang punya koordinat | Klik marker membuka kartu mini: judul, tanggal, status, tautan detail |
 | Perlu perhatian | Daftar kegiatan selesai tanpa dokumentasi | Ini penanda utama kualitas data karena tidak ada persetujuan (PRD bagian 12). Tiap baris punya tautan ke detail |
@@ -414,7 +418,7 @@ Galeri berupa grid thumbnail 3 kolom; klik membuka dialog pratinjau. PDF tampil 
 
 ### 5.6 Rekap dan ekspor (FR-08, FR-10)
 
-`FilterBar` yang sama dengan daftar kegiatan, lalu tabel rekap dengan baris total. Dua tombol di `PageHeader`: "Ekspor Excel" dan "Ekspor PDF". Selama berkas dibuat, tombol menampilkan spinner dan teks "Menyiapkan berkas...". Ekspor memakai filter yang sedang aktif, dan ringkasannya ditampilkan di atas tombol ("Ekspor 134 kegiatan, Okt 2026, semua bidang").
+`FilterBar` yang sama dengan daftar kegiatan, lalu tabel rekap dengan baris total. Tombol di `PageHeader`: "Ekspor PDF". Selama berkas dibuat, tombol menampilkan spinner dan teks "Menyiapkan berkas...". Ekspor memakai filter yang sedang aktif, dan ringkasannya ditampilkan di atas tombol ("Ekspor 134 kegiatan, Okt 2026, semua bidang").
 
 ### 5.7 Admin
 
@@ -660,8 +664,8 @@ Uji wajib di lebar 375 px untuk alur login, tambah kegiatan, dan unggah dokument
 
 ## 11. Bahasa dan format
 
-- Seluruh teks UI dalam Bahasa Indonesia, nada sopan dan lugas. Kalimat tombol berupa kata kerja: "Simpan kegiatan", "Ekspor Excel".
-- Istilah baku di UI: "Kegiatan", "Unit kerja" (mencakup Sekretariat, sub bagian, bidang, seksi, dan kelompok jabatan fungsional), "Penanggung jawab", "Dokumentasi", "Rekap". Jangan memakai "Bidang" untuk semua unit, karena Sekretariat dan kelompok jabatan fungsional bukan bidang.
+- Seluruh teks UI dalam Bahasa Indonesia, nada sopan dan lugas. Kalimat tombol berupa kata kerja: "Simpan kegiatan", "Ekspor PDF".
+- Istilah baku di UI: "Kegiatan", "Bidang" (struktur tertinggi, dulu disebut "Unit kerja") dan "Sub bidang" (di bawah bidang), "Penanggung jawab", "Dokumentasi", "Rekap". Sekretariat dan jenis lain ditambahkan admin sendiri lewat Jenis unit.
 - Tanggal "14 Okt 2026", rentang "14–16 Okt 2026", waktu 24 jam dengan "WIB". Angka memakai pemisah ribuan titik (`id-ID`).
 - Semua format lewat satu berkas agar konsisten:
 

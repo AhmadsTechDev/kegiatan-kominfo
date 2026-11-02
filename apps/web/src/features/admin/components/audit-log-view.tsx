@@ -33,6 +33,7 @@ import { DatePicker } from "@/components/shared/date-picker";
 import { ErrorState } from "@/components/shared/error-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { PaginationBar } from "@/components/shared/pagination-bar";
+import { PilihCari } from "@/components/shared/pilih-cari";
 import { Panel, PanelFooter } from "@/components/shared/panel";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -83,7 +84,7 @@ const LABEL_ENTITAS: Record<string, string> = {
   kegiatan: "Kegiatan",
   dokumentasi: "Dokumentasi",
   user: "Akun",
-  unit_kerja: "Unit kerja",
+  unit_kerja: "Bidang",
   jenis_unit: "Jenis unit",
   pegawai: "Pegawai",
   jenis_kegiatan: "Jenis kegiatan",
@@ -234,19 +235,14 @@ function DaftarAudit() {
           <label htmlFor="audit-aktor" className={label}>
             Aktor
           </label>
-          <Select value={filter.aktor ?? SEMUA} onValueChange={(v) => setFilter({ aktor: v === SEMUA ? null : v })}>
-            <SelectTrigger id="audit-aktor" className="h-10 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={SEMUA}>Semua aktor</SelectItem>
-              {(pilihan.data?.aktor ?? []).map((a) => (
-                <SelectItem key={a.id} value={a.id}>
-                  {a.nama}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <PilihCari
+            id="audit-aktor"
+            value={filter.aktor}
+            onChange={(v) => setFilter({ aktor: v })}
+            opsi={(pilihan.data?.aktor ?? []).map((a) => ({ nilai: a.id, label: a.nama, keterangan: a.email }))}
+            labelSemua="Semua aktor"
+            placeholderCari="Ketik nama atau email..."
+          />
         </div>
         <div className="flex min-w-0 flex-col gap-1.5">
           <label htmlFor="audit-aksi" className={label}>

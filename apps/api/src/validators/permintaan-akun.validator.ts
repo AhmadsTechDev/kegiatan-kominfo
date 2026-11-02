@@ -17,7 +17,7 @@ export const PermintaanAkunValidator = {
   setujui: t.Object({
     role: t.UnionEnum(ROLES, { error: "Role tidak valid" }),
     email: t.Optional(t.String({ format: "email", maxLength: 255, error: "Email tidak valid" })),
-    unitKerjaId: t.Optional(t.Integer({ minimum: 1, error: "Unit kerja tidak valid" })),
+    unitKerjaId: t.Optional(t.Integer({ minimum: 1, error: "Bidang tidak valid" })),
     jabatan: t.Optional(t.Nullable(t.String({ maxLength: 150, error: "Jabatan maksimal 150 karakter" }))),
   }),
   tolak: t.Object({ alasan: t.String({ minLength: 1, maxLength: 500, error: "Alasan penolakan wajib diisi" }) }),

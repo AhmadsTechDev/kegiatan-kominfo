@@ -32,6 +32,19 @@ const isian = {
   jamSelesai: "12:00",
 };
 
+describe("nilai awal kegiatan baru", () => {
+  test("mulai sekarang (WIB) dan selesai satu jam kemudian", () => {
+    const sebelum = Date.now();
+    const v = nilaiAwalForm(undefined, 7);
+    const mulai = new Date(keIsoWib(v.tanggalMulai, v.jamMulai)).getTime();
+    const selesai = new Date(keIsoWib(v.tanggalSelesai, v.jamSelesai)).getTime();
+    // jam dibulatkan ke menit, jadi mulai paling lama satu menit sebelum sekarang
+    expect(sebelum - mulai).toBeLessThan(60_000 + 1000);
+    expect(mulai).toBeLessThanOrEqual(Date.now());
+    expect(selesai - mulai).toBe(3600_000);
+  });
+});
+
 describe("konversi waktu WIB", () => {
   test("tanggal dan jam form menjadi ISO berzona +07:00 dan kembali utuh", () => {
     const iso = keIsoWib("2026-10-20", "09:00");

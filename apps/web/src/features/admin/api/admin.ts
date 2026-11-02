@@ -8,7 +8,6 @@
 //   - getUnitKerja, buatUnitKerja, ubahUnitKerja : API master unit kerja
 //   - getJenisUnit, buatJenisUnit, ubahJenisUnit : API tingkatan jenis unit
 //   - getPegawai, buatPegawai, ubahPegawai : API master pegawai
-//   - imporPegawai, unduhTemplatPegawai : impor massal dan templat Excel pegawai
 //   - getJenisKegiatan, buatJenisKegiatan, ubahJenisKegiatan : API jenis kegiatan
 //   - getAkun, getDetailAkun, buatAkun, ubahAkun, nonaktifkanAkun, aktifkanAkun, hapusAkun : API akun
 //   - kirimUlangUndangan, resetSandiAkun, cabutSesiAkun, undangPegawai : aksi akun lainnya
@@ -17,7 +16,6 @@
 //
 // Catatan penting:
 //   - Mendukung kebutuhan master data (FR-02) dan jejak audit aktivitas (FR-03).
-//   - Menggunakan FormData untuk unggah Excel dan Blob URL untuk unduh templat.
 //
 // Dipakai oleh: use-admin.ts, komponen-komponen fitur admin
 // =============================================================================
@@ -33,7 +31,6 @@ import type {
   FilterAudit,
   FilterPegawai,
   Halaman,
-  HasilImpor,
   IsiAkun,
   IsiUndangan,
   IsiPegawai,
@@ -72,25 +69,6 @@ export const getPegawai = (f: FilterPegawai) =>
     .then((r) => r.data);
 export const buatPegawai = (isi: IsiPegawaiBaru) => apiClient.post<HasilPegawaiBaru>("/admin/pegawai", isi).then((r) => r.data);
 export const ubahPegawai = (id: number, isi: IsiPegawai) => apiClient.patch<Hasil>(`/admin/pegawai/${id}`, isi).then((r) => r.data);
-
-export const imporPegawai = (berkas: File, simpan: boolean) => {
-  const form = new FormData();
-  form.append("berkas", berkas);
-  if (simpan) form.append("simpan", "1");
-  return apiClient.post<HasilImpor>("/admin/pegawai/impor", form).then((r) => r.data);
-};
-
-export async function unduhTemplatPegawai() {
-  const res = await apiClient.get<Blob>("/admin/pegawai/impor/templat", { responseType: "blob" });
-  const url = URL.createObjectURL(res.data);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "templat-impor-pegawai.xlsx";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 export const getJenisKegiatan = () => apiClient.get<JenisKegiatanAdmin[]>("/admin/jenis-kegiatan").then((r) => r.data);
 export const buatJenisKegiatan = (isi: { nama: string }) => apiClient.post<Hasil>("/admin/jenis-kegiatan", isi).then((r) => r.data);

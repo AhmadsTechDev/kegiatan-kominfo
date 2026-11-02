@@ -2,7 +2,7 @@
 
 Kembali ke [ringkasan](README.md).
 
-Semua endpoint di sini butuh header `Cookie`. Data `PEGAWAI` otomatis dibatasi ke unit kerjanya dan kegiatan miliknya; kegiatan yang dihapus tidak pernah dihitung.
+Semua endpoint di sini butuh header `Cookie`. Data `PEGAWAI` otomatis dibatasi ke bidangnya dan kegiatan miliknya; kegiatan yang dihapus tidak pernah dihitung.
 
 Beberapa endpoint memakai **kegiatan ringkas** dengan bentuk:
 
@@ -46,6 +46,7 @@ Dashboard bulanan untuk pimpinan dan admin (semua unit).
     "total": 14,
     "berlangsung": 1,
     "akanDatang": 5,
+    "selesai": 8,
     "selesaiTanpaDokumentasi": 2,
     "totalPeriodeSebelumnya": 11
   },
@@ -56,20 +57,23 @@ Dashboard bulanan untuk pimpinan dan admin (semua unit).
       { "bulan": "2026-11", "jumlah": { "BID-TIP": 4 } }
     ]
   },
-  "sebaranJenis": [{ "id": 1, "nama": "Rapat", "jumlah": 8 }],
+  "sebaranJenis": [{ "id": 1, "nama": "Rapat", "jumlah": 8 }, { "id": 5, "nama": "Bimtek", "jumlah": 0 }],
   "peta": [{ "...kegiatan ringkas": "", "lat": -2.976074, "lng": 104.775431 }],
   "perluPerhatian": { "total": 2, "items": ["...kegiatan ringkas (maks. 5)"] },
-  "akanDatang": ["...kegiatan ringkas (maks. 5)"]
+  "akanDatang": ["...kegiatan ringkas (maks. 5)"],
+  "admin": { "menungguAktivasi": 1 }
 }
 ```
 
 | Field | Keterangan |
 | --- | --- |
-| `kpi` | Angka bulan terpilih. `selesaiTanpaDokumentasi` = sudah selesai tetapi belum ada berkas dokumentasi |
+| `kpi` | Angka bulan terpilih. `selesai` = sudah selesai (tidak dibatalkan); `selesaiTanpaDokumentasi` = bagian dari `selesai` yang belum ada berkas dokumentasi |
 | `trenUnitBulanan` | 6 bulan terakhir sampai `periode`. Kunci di `jumlah` adalah `kode` unit induk; unit turunan digabung ke induknya |
+| `sebaranJenis` | Jumlah per jenis, terbanyak di atas; jenis aktif tanpa kegiatan ikut di belakang dengan `jumlah` 0 |
 | `peta` | Kegiatan bulan ini yang punya koordinat |
 | `perluPerhatian` | Kegiatan bulan ini yang selesai tanpa dokumentasi (terbaru di atas) |
 | `akanDatang` | 5 kegiatan terdekat yang akan datang (tidak terbatas bulan) |
+| `admin` | Hanya untuk ADMIN: jumlah akun yang menunggu aktivasi. `null` untuk PIMPINAN |
 
 ### `GET /api/dashboard/saya`
 
@@ -94,7 +98,7 @@ Beranda pribadi.
 | `perluDokumentasi` | Kegiatan saya yang sudah selesai tetapi belum berdokumentasi (maks. 5 item) |
 | `agenda` | Kegiatan saya yang sedang berlangsung atau akan datang (maks. 5 item) |
 | `pekanIni` | Kegiatan dalam 7 hari ke depan yang boleh saya lihat, tanpa yang dibatalkan |
-| `unit` | Unit kerja saya dan jumlah kegiatannya bulan ini; `null` bila akun belum tertaut ke pegawai |
+| `unit` | Bidang saya dan jumlah kegiatannya bulan ini; `null` bila akun belum tertaut ke pegawai |
 
 ---
 
@@ -182,7 +186,7 @@ Jumlah kegiatan menurut periode, pegawai, unit, dan jenis.
 | Field | Keterangan |
 | --- | --- |
 | `tren` | Jumlah per hari/bulan/tahun. Periode tanpa kegiatan tetap muncul dengan `jumlah: 0` |
-| `perUnit` | PIMPINAN/ADMIN: digabung per unit induk tertinggi, semua unit induk aktif tetap tampil. PEGAWAI: per unit kerja apa adanya |
+| `perUnit` | PIMPINAN/ADMIN: digabung per unit induk tertinggi, semua unit induk aktif tetap tampil. PEGAWAI: per bidang apa adanya |
 | `peserta` | Jumlah total `jumlahPeserta` |
 
 **Galat**: 422 bila rentang terlalu panjang untuk satuannya (lebih dari 400 titik tren, misalnya per hari selama 2 tahun).
@@ -195,7 +199,7 @@ Jumlah kegiatan menurut periode, pegawai, unit, dan jenis.
 
 Jumlah kegiatan per status pemeriksaan, untuk pimpinan.
 
-**Akses**: PIMPINAN, ADMIN
+**Akses**: PIMPINAN (admin ditolak 403)
 
 **Query** (opsional): `unit`, `pegawai`, `dari`, `sampai` (lihat filter `GET /api/kegiatan`)
 
@@ -211,24 +215,19 @@ Jumlah kegiatan per status pemeriksaan, untuk pimpinan.
 
 ## Ekspor laporan
 
-**Query ketiga endpoint ekspor**: sama dengan filter `GET /api/rekap` tanpa `satuan`. Maksimal 5.000 kegiatan per laporan (lebih dari itu dijawab 422; persempit filternya).
-
-### `GET /api/ekspor/kegiatan.xlsx`
-
-**Akses**: Login (maks. 10 ekspor per menit per akun)
-
-**Respons 200**: berkas Excel. Lembar "Kegiatan" berisi semua kolom kegiatan; lembar "Keterangan" berisi filter dan pembuat laporan.
-
-| Header respons | Nilai |
-| --- | --- |
-| `Content-Type` | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
-| `Content-Disposition` | `attachment; filename="rekap-kegiatan-2026-11-2026-11-02.xlsx"` |
-| `X-Jumlah-Kegiatan` | Jumlah kegiatan di berkas |
-| `Cache-Control` | `no-store` |
+**Query kedua endpoint ekspor**: sama dengan filter `GET /api/rekap` tanpa `satuan`. Maksimal 5.000 kegiatan per laporan (lebih dari itu dijawab 422; persempit filternya).
 
 ### `GET /api/ekspor/kegiatan.pdf`
 
-Sama dengan Excel, tetapi berkas PDF A4 mendatar berkop dinas (`Content-Type: application/pdf`).
+**Akses**: Login (maks. 10 ekspor per menit per akun)
+
+**Respons 200**: berkas PDF A4 mendatar berkop dinas (`Content-Type: application/pdf`).
+
+| Header respons | Nilai |
+| --- | --- |
+| `Content-Disposition` | `attachment; filename="rekap-kegiatan-2026-11-2026-11-02.pdf"` |
+| `X-Jumlah-Kegiatan` | Jumlah kegiatan di berkas |
+| `Cache-Control` | `no-store` |
 
 ### `GET /api/ekspor/pratinjau`
 
@@ -240,7 +239,7 @@ Isi laporan PDF dalam bentuk JSON, untuk ditampilkan sebelum diunduh. Tidak dihi
 {
   "kop": { "pemerintah": "PEMERINTAH KOTA PALEMBANG", "dinas": "DINAS KOMUNIKASI DAN INFORMATIKA", "alamat": null },
   "judul": "REKAP KEGIATAN",
-  "subjudul": "Semua periode  ·  Semua unit kerja  ·  Semua jenis  ·  Semua status",
+  "subjudul": "Semua periode  ·  Semua bidang  ·  Semua jenis  ·  Semua status",
   "ringkasan": [
     { "label": "Total kegiatan", "nilai": 1 },
     { "label": "Akan datang", "nilai": 0 },

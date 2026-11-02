@@ -50,12 +50,13 @@ import { useAkunAdmin, useJumlahPermintaan } from "../hooks/use-admin";
 import type { AkunAdmin, FilterAkun } from "../types";
 import { AdminGuard, idTab, KolomCari, PilihanTab } from "./admin-shared";
 import { AkunFormDialog, dariAdmin, ItemAksiAkun, useAksiAkun, type AkunRingkas, type JenisAksi } from "./akun-aksi";
+import { BelumPunyaAkun } from "./akun-belum-tab";
 import { PermintaanTab } from "./permintaan-tab";
 
 const SEMUA = "semua";
 const ROLE: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
 const STATUS: StatusAkun[] = ["MENUNGGU_AKTIVASI", "AKTIF", "NONAKTIF"];
-const FILTER_AWAL: FilterAkun = { q: "", role: null, status: null, page: 1 };
+const FILTER_AWAL: FilterAkun = { q: "", role: null, status: null, nonaktif: "0", page: 1 };
 
 type Buka = (j: JenisAksi, a: AkunRingkas) => void;
 
@@ -111,15 +112,23 @@ function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: B
   );
 }
 
-function DaftarAkun() {
+// nonaktif: tab Nonaktif memuat khusus akun nonaktif; tab Akun menyembunyikannya agar tidak mengganggu tabel utama
+function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
   const { user } = useCurrentUser();
   const idSaya = user?.id;
-  const [filter, setFilterState] = useState<FilterAkun>(FILTER_AWAL);
+  // ?status=... dipakai tautan dari dashboard (mis. akun menunggu aktivasi)
+  const statusAwal = useSearchParams().get("status");
+  const [filter, setFilterState] = useState<FilterAkun>(() => ({
+    ...FILTER_AWAL,
+    nonaktif: nonaktif ? "1" : "0",
+    status: STATUS.find((s) => s === statusAwal) ?? null,
+  }));
   const setFilter = useCallback((ubah: Partial<FilterAkun>) => setFilterState((f) => ({ ...f, page: 1, ...ubah })), []);
   const daftar = useAkunAdmin(filter);
   const [baru, setBaru] = useState(false);
   const { buka, dialog } = useAksiAkun({ idSaya });
   const adaFilter = filter.q !== "" || filter.role !== null || filter.status !== null;
+  const filterAwal: FilterAkun = { ...FILTER_AWAL, nonaktif: nonaktif ? "1" : "0" };
 
   const kolom = useMemo<DataTableColumn<AkunAdmin>[]>(
     () => [
@@ -230,23 +239,27 @@ function DaftarAkun() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={filter.status ?? SEMUA} onValueChange={(v) => setFilter({ status: v === SEMUA ? null : (v as StatusAkun) })}>
-          <SelectTrigger className="h-10 pointer-coarse:min-h-11 w-full" aria-label="Filter status akun">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={SEMUA}>Semua status</SelectItem>
-            {STATUS.map((s) => (
-              <SelectItem key={s} value={s}>
-                {LABEL_STATUS_AKUN[s]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button className="h-10 pointer-coarse:min-h-11 sm:col-span-2 lg:col-span-1" onClick={() => setBaru(true)}>
-          <Plus aria-hidden />
-          Buat akun
-        </Button>
+        {!nonaktif && (
+          <Select value={filter.status ?? SEMUA} onValueChange={(v) => setFilter({ status: v === SEMUA ? null : (v as StatusAkun) })}>
+            <SelectTrigger className="h-10 pointer-coarse:min-h-11 w-full" aria-label="Filter status akun">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={SEMUA}>Semua status</SelectItem>
+              {STATUS.filter((s) => s !== "NONAKTIF").map((s) => (
+                <SelectItem key={s} value={s}>
+                  {LABEL_STATUS_AKUN[s]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {!nonaktif && (
+          <Button className="h-10 pointer-coarse:min-h-11 sm:col-span-2 lg:col-span-1" onClick={() => setBaru(true)}>
+            <Plus aria-hidden />
+            Buat akun
+          </Button>
+        )}
       </div>
 
       {daftar.isError ? (
@@ -270,14 +283,14 @@ function DaftarAkun() {
                     icon: SearchX,
                     title: "Tidak ada akun yang cocok.",
                     action: (
-                      <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={() => setFilterState(FILTER_AWAL)}>
+                      <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={() => setFilterState(filterAwal)}>
                         Atur ulang filter
                       </Button>
                     ),
                   }
                 : {
                     icon: UserCog,
-                    title: "Belum ada akun.",
+                    title: nonaktif ? "Tidak ada akun nonaktif." : "Belum ada akun.",
                     action: (
                       <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={() => setBaru(true)}>
                         <Plus aria-hidden />
@@ -308,14 +321,15 @@ function DaftarAkun() {
   );
 }
 
-type TabAkun = "akun" | "permintaan";
+type TabAkun = "akun" | "belum" | "nonaktif" | "permintaan";
+const TAB_SAH: TabAkun[] = ["akun", "belum", "nonaktif", "permintaan"];
 const ID_PANEL = "panel-manajemen-akun";
 
 function IsiAkun() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const tab: TabAkun = searchParams.get("tab") === "permintaan" ? "permintaan" : "akun";
+  const tab: TabAkun = TAB_SAH.find((t) => t === searchParams.get("tab")) ?? "akun";
   const jumlah = useJumlahPermintaan();
   const menunggu = jumlah.data?.menunggu ?? 0;
 
@@ -329,12 +343,14 @@ function IsiAkun() {
           onChange={(t) => router.replace(t === "akun" ? pathname : `${pathname}?tab=${t}`, { scroll: false })}
           opsi={[
             { nilai: "akun", label: "Akun" },
-            { nilai: "permintaan", label: menunggu > 0 ? `Permintaan akses (${menunggu})` : "Permintaan akses" },
+            { nilai: "belum", label: "Belum punya akun" },
+            { nilai: "nonaktif", label: "Nonaktif" },
+            { nilai: "permintaan", label: "Permintaan akses", lencana: menunggu },
           ]}
         />
       </div>
       <div role="tabpanel" id={ID_PANEL} aria-labelledby={idTab(ID_PANEL, tab)}>
-        {tab === "permintaan" ? <PermintaanTab /> : <DaftarAkun />}
+        {tab === "permintaan" ? <PermintaanTab /> : tab === "belum" ? <BelumPunyaAkun /> : <DaftarAkun key={tab} nonaktif={tab === "nonaktif"} />}
       </div>
     </Panel>
   );
@@ -346,7 +362,7 @@ export function AkunView() {
       <PageHeader
         eyebrow="Administrasi"
         title="Manajemen akun"
-        description="Buat akun untuk pegawai yang sudah diverifikasi, atur role dan status, serta tinjau permintaan akses."
+        description="Buat akun atau undang pegawai, atur role dan status, nonaktifkan atau hapus akun, serta tinjau permintaan akses."
       />
       <AdminGuard>
         <IsiAkun />

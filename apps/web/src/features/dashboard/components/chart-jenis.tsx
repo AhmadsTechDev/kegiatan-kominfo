@@ -11,7 +11,8 @@
 //   1. Menghitung nilai maksimum dan total akumulasi seluruh jenis kegiatan.
 //   2. Menghitung persentase pangsa tiap jenis terhadap total dan nilai teratas.
 //   3. Merender daftar bilah progres beranimasi beserta angka dan persentase.
-//   4. Menampilkan kalimat ringkasan jenis kegiatan yang paling sering diadakan.
+//   4. Menampilkan kalimat ringkasan jenis kegiatan yang paling sering diadakan
+//      langsung di bawah daftar. Jenis aktif tanpa kegiatan tampil dengan angka 0.
 //
 // Catatan penting:
 //   - Format batang horizontal dipilih dibanding donat agar perbandingan kuantitas
@@ -56,8 +57,8 @@ export function ChartJenis({
   return (
     <Panel className={cn("@container", className)}>
       <PanelHeader title="Sebaran jenis kegiatan" description="Komposisi periode terpilih, dari yang terbanyak" />
-      <PanelBody className="flex flex-1 flex-col gap-5">
-        {data.length === 0 ? (
+      <PanelBody className="flex flex-col gap-5">
+        {total === 0 ? (
           <EmptyState icon={PieChart} title="Belum ada kegiatan pada periode ini." />
         ) : (
           <ul className="grid gap-3.5 pt-1 @3xl:grid-cols-2 @3xl:gap-x-10" aria-label="Jumlah kegiatan per jenis">
@@ -93,7 +94,7 @@ export function ChartJenis({
           </ul>
         )}
         {teratas.length > 0 && (
-          <p className="mt-auto flex gap-2 rounded-lg bg-secondary/70 p-3 text-xs text-secondary-foreground">
+          <p className="flex gap-2 rounded-lg bg-secondary/70 p-3 text-xs text-secondary-foreground">
             <Lightbulb aria-hidden className="mt-px size-4 shrink-0" />
             <span>
               <span className="font-semibold">{teratas.map((d) => d.nama).join(" dan ")}</span>{" "}
@@ -103,7 +104,7 @@ export function ChartJenis({
           </p>
         )}
       </PanelBody>
-      {data.length > 0 && (
+      {total > 0 && (
         <PanelFooter>
           <span>Total seluruh jenis</span>
           <span className="font-semibold text-foreground tabular-nums">{formatAngka(total)} kegiatan</span>

@@ -1,6 +1,7 @@
 import { DashboardRepository } from "@/repositories/dashboard.repository";
 import { KegiatanRepository } from "@/repositories/kegiatan.repository";
 import { ReferensiRepository } from "@/repositories/referensi.repository";
+import { UserRepository } from "@/repositories/user.repository";
 import type { Aktor } from "@/types/umum.types";
 import { awalHariJakarta, geserPeriode, kodePeriode, periodeSekarang, rentangPeriode, tanggalJakarta, type Periode } from "@/utils/periode";
 import { lingkupBaca } from "./kegiatan.service";
@@ -27,28 +28,33 @@ async function trenUnitBulanan(periode: Periode) {
 }
 
 export const DashboardService = {
-  // Dashboard pimpinan/admin untuk satu bulan: KPI, tren, sebaran jenis, peta, dan daftar perhatian
-  async ringkasan(periode: Periode, sekarang = new Date()) {
+  // Dashboard pimpinan/admin untuk satu bulan: KPI, tren, sebaran jenis, peta, dan daftar perhatian.
+  // Admin juga menerima jumlah akun yang menunggu aktivasi.
+  async ringkasan(periode: Periode, aktor: Aktor, sekarang = new Date()) {
     const rentang = rentangPeriode(periode);
-    const [kpi, totalSebelumnya, tren, jenis, peta, perhatian, mendatang] = await Promise.all([
+    const [kpi, totalSebelumnya, tren, jenis, jenisAktif, peta, perhatian, mendatang, menungguAktivasi] = await Promise.all([
       DashboardRepository.hitungKpi(rentang, sekarang),
       DashboardRepository.hitungTotal(rentangPeriode(geserPeriode(periode, -1))),
       trenUnitBulanan(periode),
       DashboardRepository.jumlahPerJenis(rentang),
+      DashboardRepository.jenisAktif(),
       DashboardRepository.titikPeta(rentang, sekarang),
       DashboardRepository.selesaiTanpaDokumentasi(rentang, sekarang, BATAS_DAFTAR),
       DashboardRepository.akanDatang(sekarang, BATAS_DAFTAR),
+      aktor.role === "ADMIN" ? UserRepository.hitungStatus("MENUNGGU_AKTIVASI") : null,
     ]);
+    const tanpaKegiatan = jenisAktif.filter((j) => !jenis.some((g) => g.id === j.id)).map((j) => ({ ...j, jumlah: 0 }));
 
     return {
       periode: kodePeriode(periode),
       periodeSekarang: kodePeriode(periodeSekarang(sekarang)),
       kpi: { ...kpi, totalPeriodeSebelumnya: totalSebelumnya },
       trenUnitBulanan: tren,
-      sebaranJenis: jenis,
+      sebaranJenis: [...jenis, ...tanpaKegiatan],
       peta,
       perluPerhatian: perhatian,
       akanDatang: mendatang,
+      admin: menungguAktivasi == null ? null : { menungguAktivasi },
     };
   },
 

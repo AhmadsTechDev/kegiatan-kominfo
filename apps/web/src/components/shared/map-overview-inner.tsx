@@ -20,7 +20,7 @@
 // Catatan penting:
 //   - Popup informasi kegiatan dibangun melalui manipulasi DOM textContent (bukan
 //     HTML mentah) untuk mencegah celah keamanan injeksi skrip (XSS) pada judul.
-//   - Mendukung peralihan perspektif miring 3D dan tampak atas 2D secara mulus.
+//   - Dibuka dalam tampak atas 2D; perspektif miring 3D bisa dipilih lewat tombol.
 //   - Menggunakan koordinat format MapLibre GL [bujur, lintang] (lng, lat).
 //
 // Dipakai oleh: map-overview.tsx (dimuat secara dinamis tanpa SSR di peramban)
@@ -123,7 +123,8 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
   const wadah = useRef<HTMLDivElement>(null);
   const peta = useRef<PetaGL | null>(null);
   const gelap = usePetaGelap();
-  const [tigaD, setTigaD] = useState(true);
+  // Tampak atas lebih mudah dibaca untuk sebaran titik; 3D tetap bisa dipilih
+  const [tigaD, setTigaD] = useState(false);
   const [sembunyi, setSembunyi] = useState<StatusPelaksanaan[]>([]);
   const [siap, setSiap] = useState(false);
 

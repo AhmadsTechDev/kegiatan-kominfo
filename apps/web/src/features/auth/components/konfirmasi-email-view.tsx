@@ -24,6 +24,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { konfirmasiEmail, tokenTidakBerlaku } from "../api/akun-publik";
+import { useCurrentUser } from "../hooks/use-current-user";
+import { KepalaKartu } from "./kartu-publik";
 import { Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
 
 const PESAN_TIDAK_BERLAKU = "Tautan verifikasi sudah kedaluwarsa, sudah pernah dipakai, atau dibatalkan. Ajukan ulang perubahan email dari halaman Pengaturan.";
@@ -31,6 +33,7 @@ const PESAN_TIDAK_BERLAKU = "Tautan verifikasi sudah kedaluwarsa, sudah pernah d
 export function KonfirmasiEmailView() {
   const token = useSearchParams().get("token") ?? "";
   const konfirmasi = useMutation({ mutationFn: () => konfirmasiEmail(token) });
+  const { user } = useCurrentUser();
 
   if (!token || tokenTidakBerlaku(konfirmasi.error)) return <TautanTidakBerlaku pesan={PESAN_TIDAK_BERLAKU} />;
 
@@ -38,8 +41,9 @@ export function KonfirmasiEmailView() {
     return (
       <Keadaan ikon={CircleCheck} nada={NADA_SUKSES} judul="Email terverifikasi">
         <p className="text-sm text-muted-foreground">Mulai sekarang masuk dengan {konfirmasi.data.email}. Email lama tidak dapat dipakai lagi.</p>
-        <Button asChild className="mx-auto mt-3 h-10">
-          <Link href="/pengaturan?tab=akun">Ke pengaturan akun</Link>
+        {/* Tautan email sering dibuka di peramban lain; tanpa sesi, Pengaturan hanya memantul ke login */}
+        <Button asChild className="mx-auto mt-3 h-10 pointer-coarse:min-h-11">
+          {user ? <Link href="/pengaturan?tab=akun">Ke pengaturan akun</Link> : <Link href="/login">Masuk dengan email baru</Link>}
         </Button>
       </Keadaan>
     );
@@ -47,6 +51,7 @@ export function KonfirmasiEmailView() {
 
   return (
     <div className="flex flex-col gap-5">
+      <KepalaKartu judul="Verifikasi email baru" />
       {konfirmasi.isError && (
         <Alert variant="destructive" aria-live="polite">
           <CircleAlert />
