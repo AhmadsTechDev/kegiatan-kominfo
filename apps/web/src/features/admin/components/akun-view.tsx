@@ -343,7 +343,7 @@ function IsiAkun() {
           onChange={(t) => router.replace(t === "akun" ? pathname : `${pathname}?tab=${t}`, { scroll: false })}
           opsi={[
             { nilai: "akun", label: "Akun" },
-            { nilai: "belum", label: "Belum punya akun" },
+            { nilai: "belum", label: "Perlu diundang" },
             { nilai: "nonaktif", label: "Nonaktif" },
             { nilai: "permintaan", label: "Permintaan akses", lencana: menunggu },
           ]}

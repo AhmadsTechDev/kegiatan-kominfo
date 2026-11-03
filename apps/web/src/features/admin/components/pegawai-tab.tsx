@@ -19,7 +19,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, SearchX, Users } from "lucide-react";
+import { Plus, SearchX, Send, Users } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -166,6 +167,24 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
 
 const FILTER_AWAL: FilterPegawai = { q: "", unit: null, aktif: null, page: 1 };
 
+// Pegawai aktif tanpa akun login: data pegawai tetap dipakai (mis. penanggung jawab),
+// tetapi belum bisa masuk. Label membawa admin ke tab undangan di Manajemen akun.
+function LabelTanpaAkun({ p, className }: { p: PegawaiAdmin; className?: string }) {
+  if (p.akun || !p.aktif) return null;
+  return (
+    <Link
+      href="/admin/akun?tab=belum"
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md bg-status-berlangsung px-1.5 py-0.5 text-[11px] font-semibold text-status-berlangsung-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        className,
+      )}
+    >
+      <Send aria-hidden className="size-3" />
+      Belum punya akun
+    </Link>
+  );
+}
+
 export function PegawaiTab() {
   const [filter, setFilterState] = useState<FilterPegawai>(FILTER_AWAL);
   const setFilter = useCallback((ubah: Partial<FilterPegawai>) => setFilterState((f) => ({ ...f, page: 1, ...ubah })), []);
@@ -179,7 +198,12 @@ export function PegawaiTab() {
       {
         id: "nama",
         header: "Pegawai",
-        cell: ({ row }) => <span className={cn("block max-w-64 min-w-40 font-semibold whitespace-normal", !row.original.aktif && "text-muted-foreground")}>{row.original.nama}</span>,
+        cell: ({ row }) => (
+          <span className="flex max-w-64 min-w-40 flex-col items-start gap-1">
+            <span className={cn("font-semibold whitespace-normal", !row.original.aktif && "text-muted-foreground")}>{row.original.nama}</span>
+            <LabelTanpaAkun p={row.original} />
+          </span>
+        ),
       },
       {
         id: "jabatan",
@@ -261,6 +285,7 @@ export function PegawaiTab() {
                   <>
                     <span className={cn(!p.aktif && "text-muted-foreground")}>{p.nama}</span>
                     <span className="block text-xs font-normal text-muted-foreground">{p.jabatan ?? "Jabatan belum diisi"}</span>
+                    <LabelTanpaAkun p={p} className="mt-1" />
                   </>
                 }
                 aksi={<TombolUbah nama={p.nama} onClick={() => setDialog(p)} />}
