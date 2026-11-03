@@ -31,7 +31,7 @@
 
 "use client";
 
-import { ArrowLeft, Ban, Building2, CalendarDays, CircleAlert, CircleCheck, ImageOff, MapPin, MapPinOff, MessageSquareWarning, Pencil, Upload, Users } from "lucide-react";
+import { ArrowLeft, Ban, Building2, CalendarDays, CircleAlert, CircleCheck, ImageOff, MapPin, MapPinOff, MessageSquareWarning, Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -208,7 +208,6 @@ export function KegiatanDetailView({ id }: { id: number }) {
   const kurangDok = k.dokumentasi.length === 0;
   const kurangHasil = !k.hasil?.trim();
   const perluLengkapi = k.bisaUbah && k.statusPelaksanaan === "selesai" && (kurangDok || kurangHasil);
-  const keDokumentasi = () => document.getElementById("dokumentasi")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
     <>
@@ -300,20 +299,12 @@ export function KegiatanDetailView({ id }: { id: number }) {
             <p>Lengkapi {[kurangDok && "dokumentasi", kurangHasil && "hasil kegiatan"].filter(Boolean).join(" dan ")}.</p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
-            {kurangDok && (
-              <Button size="sm" className="h-9" onClick={keDokumentasi}>
-                <Upload aria-hidden />
-                Unggah dokumentasi
-              </Button>
-            )}
-            {kurangHasil && (
-              <Button asChild size="sm" variant="outline" className="h-9 bg-card">
-                <Link href={`/kegiatan/${k.id}/ubah`}>
-                  <Pencil aria-hidden />
-                  Isi hasil
-                </Link>
-              </Button>
-            )}
+            <Button asChild size="sm" className="h-9 pointer-coarse:min-h-11">
+              <Link href={`/kegiatan/${k.id}/ubah`}>
+                <Pencil aria-hidden />
+                Lengkapi
+              </Link>
+            </Button>
           </div>
         </div>
       )}
@@ -343,10 +334,10 @@ export function KegiatanDetailView({ id }: { id: number }) {
               }
             />
             <PanelBody>
-              {k.dokumentasi.length === 0 && !k.bisaUbah ? (
+              {k.dokumentasi.length === 0 ? (
                 <EmptyState icon={ImageOff} title="Belum ada dokumentasi." />
               ) : (
-                <DokumentasiGaleri kegiatan={k} />
+                <DokumentasiGaleri kegiatan={k} bacaSaja />
               )}
             </PanelBody>
           </Panel>

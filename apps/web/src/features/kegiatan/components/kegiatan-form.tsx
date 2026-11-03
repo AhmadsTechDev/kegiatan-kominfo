@@ -21,6 +21,7 @@
 //   - Sesuai alur pencatatan kegiatan dinas dan ringkasan awal (features/01-catat-kegiatan.md).
 //   - Penanggung jawab ditentukan otomatis dari akun pegawai yang sedang aktif login.
 //   - Dokumentasi dan hasil diisi setelah kegiatan selesai melalui halaman detail.
+//   - Mode ubah: informasi, hasil, dokumentasi, lalu waktu dan lokasi paling bawah.
 //   - Kegiatan yang sudah selesai hanya menampilkan hasil dan dokumentasi; data
 //     lainnya dibuka lewat tombol "Ubah data kegiatan" atau otomatis bila ada galat.
 //   - Konflik pembaruan (409) diselesaikan dengan memuat ulang data terbaru ke form.
@@ -155,7 +156,8 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
   const [memuatUlang, setMemuatUlang] = useState(false);
   const bertahap = !kegiatan;
   const [langkah, setLangkah] = useState(0);
-  const [semuaKolom, setSemuaKolom] = useState(kegiatan?.statusPelaksanaan !== "selesai");
+  const awalSelesai = kegiatan?.statusPelaksanaan === "selesai";
+  const [semuaKolom, setSemuaKolom] = useState(!awalSelesai);
 
   const form = useForm<KegiatanFormValues>({
     resolver: zodResolver(kegiatanSchema),
@@ -440,10 +442,10 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
             </div>
           </div>
         )}
-        {kegiatan && !semuaKolom && bagianHasil}
-        {tampilInfo && bagianInfo}
-        {tampilWaktu && bagianWaktu}
-        {kegiatan && semuaKolom && bagianHasil}
+        {/* Ubah: waktu dan lokasi paling bawah; kegiatan selesai mendahulukan hasil dan dokumentasi */}
+        {tampilInfo && !awalSelesai && bagianInfo}
+        {bertahap && tampilWaktu && bagianWaktu}
+        {kegiatan && bagianHasil}
         {bertahap && langkah === LANGKAH.length - 1 && (
           <section className="p-4 md:p-6" aria-labelledby="judul-ringkasan">
             <h2 id="judul-ringkasan" className="mb-2 font-heading text-base font-bold">
@@ -466,6 +468,8 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
             <DokumentasiGaleri kegiatan={kegiatan} />
           </section>
         )}
+        {kegiatan && awalSelesai && semuaKolom && bagianInfo}
+        {kegiatan && semuaKolom && bagianWaktu}
         {kegiatan && !semuaKolom && (
           <div className="p-2 md:px-4">
             <Button type="button" variant="ghost" className="h-10 w-full justify-between text-muted-foreground pointer-coarse:min-h-11" onClick={() => setSemuaKolom(true)}>

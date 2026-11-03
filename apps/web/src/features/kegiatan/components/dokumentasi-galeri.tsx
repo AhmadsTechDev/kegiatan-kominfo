@@ -90,7 +90,15 @@ function AksiBerkas({
   );
 }
 
-export function DokumentasiGaleri({ kegiatan }: { kegiatan: Pick<KegiatanDetail, "id" | "dokumentasi" | "bisaUbah" | "statusPelaksanaan"> }) {
+// bacaSaja: hanya tampilan dan pratinjau (halaman detail); unggah, ganti, dan hapus ada di halaman ubah
+export function DokumentasiGaleri({
+  kegiatan,
+  bacaSaja = false,
+}: {
+  kegiatan: Pick<KegiatanDetail, "id" | "dokumentasi" | "bisaUbah" | "statusPelaksanaan">;
+  bacaSaja?: boolean;
+}) {
+  const bisaUbah = kegiatan.bisaUbah && !bacaSaja;
   const antrean = useAntreanUnggah(kegiatan.dokumentasi.length);
   const hapus = useHapusDokumentasi(kegiatan.id);
   const ganti = useGantiDokumentasi(kegiatan.id);
@@ -168,7 +176,7 @@ export function DokumentasiGaleri({ kegiatan }: { kegiatan: Pick<KegiatanDetail,
                 </button>
                 <AksiBerkas
                   d={d}
-                  bisaUbah={kegiatan.bisaUbah}
+                  bisaUbah={bisaUbah}
                   sedangDiganti={sedangDiganti(d)}
                   onGanti={() => pilihGanti(d)}
                   onHapus={() => setAkanDihapus(d)}
@@ -191,7 +199,7 @@ export function DokumentasiGaleri({ kegiatan }: { kegiatan: Pick<KegiatanDetail,
                 </a>
                 <AksiBerkas
                   d={d}
-                  bisaUbah={kegiatan.bisaUbah}
+                  bisaUbah={bisaUbah}
                   sedangDiganti={sedangDiganti(d)}
                   onGanti={() => pilihGanti(d)}
                   onHapus={() => setAkanDihapus(d)}
@@ -202,7 +210,7 @@ export function DokumentasiGaleri({ kegiatan }: { kegiatan: Pick<KegiatanDetail,
         </ul>
       )}
 
-      {kegiatan.bisaUbah ? (
+      {bisaUbah ? (
         <FileDropzone items={antrean.items} onTambah={tambah} onHapus={antrean.hapus} sisa={antrean.sisa} disabled={antrean.berjalan} />
       ) : (
         kegiatan.dokumentasi.length === 0 && (
@@ -256,7 +264,7 @@ export function DokumentasiGaleri({ kegiatan }: { kegiatan: Pick<KegiatanDetail,
                     Unduh
                   </a>
                 </Button>
-                {kegiatan.bisaUbah && (
+                {bisaUbah && (
                   <>
                     <Button variant="outline" className="h-10" onClick={() => pilihGanti(dipratinjau)} disabled={sedangDiganti(dipratinjau)}>
                       {sedangDiganti(dipratinjau) ? <Spinner /> : <RefreshCw aria-hidden />}
