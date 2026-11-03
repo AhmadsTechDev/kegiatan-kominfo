@@ -10,7 +10,7 @@
 //   - navAktif            : mencocokkan URL dan query parameter dengan item menu aktif.
 //
 // Cara kerja:
-//   1. navUntukRole memilih struktur menu sesuai role. Pegawai: Kegiatan saya, Dashboard,
+//   1. navUntukRole memilih struktur menu sesuai role. Pegawai: Dashboard, lalu Kegiatan saya,
 //      Semua kegiatan, Kalender, Perlu perbaikan. Pimpinan: Monitoring dan Pengawasan.
 //   2. navAktif membandingkan pathname dan parameter query, memilih rute yang paling
 //      spesifik (skor kecocokan tertinggi) untuk menandai status navigasi aktif.
@@ -88,13 +88,13 @@ const NAV_PIMPINAN: NavGroup[] = [
   { label: "Pengawasan", tampilkanLabel: true, items: [{ label: "Pemeriksaan kegiatan", href: "/pantau", icon: ClipboardCheck }] },
 ];
 
-// Pegawai: kegiatan miliknya lebih dulu; tanpa Rekap dan Laporan (ditolak juga oleh backend)
+// Pegawai: Dashboard di paling atas seperti role lain; tanpa Rekap dan Laporan (ditolak juga oleh backend)
 const NAV_PEGAWAI: NavGroup[] = [
+  { label: "Ringkasan", items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }] },
   {
     label: "Kegiatan",
     items: [
       { label: "Kegiatan saya", href: "/kegiatan?milik=saya", icon: UserRound },
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { label: "Semua kegiatan", href: "/kegiatan", icon: Building2 },
       { label: "Kalender", href: "/kalender", icon: CalendarDays },
       { label: "Perlu perbaikan", href: "/kegiatan?milik=saya&pemeriksaan=perlu_perbaikan", icon: MessageSquareWarning },
