@@ -90,7 +90,7 @@ describe("daftar dan detail akun", () => {
     expect((await cari(pimpinan.nip)).data.items[0].email).toBe(pimpinan.email);
     const perRole = await cari(pimpinan.email, "&role=PIMPINAN&status=AKTIF");
     expect(perRole.data.items).toHaveLength(1);
-    expect(perRole.data.items[0]).toMatchObject({ role: "PIMPINAN", status: "AKTIF", terkunci: false, bisaDihapus: false });
+    expect(perRole.data.items[0]).toMatchObject({ role: "PIMPINAN", status: "AKTIF", terkunci: false, bisaDihapus: true });
     expect((await cari(pimpinan.email, "&status=MENUNGGU_AKTIVASI")).data.total).toBe(0);
     expect((await panggil("/admin/akun?role=ADMIN", { cookie: admin })).data.items.map((a: { role: string }) => a.role)).toContain("ADMIN");
 
@@ -112,7 +112,7 @@ describe("daftar dan detail akun", () => {
     const admin = await loginAdmin();
     const u = await buatPengguna();
     const detail = await panggil(`/admin/akun/${u.userId}`, { cookie: admin });
-    expect(detail.data).toMatchObject({ status: "AKTIF", emailVerified: true, undangan: null, bisaDihapus: false });
+    expect(detail.data).toMatchObject({ status: "AKTIF", emailVerified: true, undangan: null, bisaDihapus: true });
     expect(detail.data.sesi).toHaveLength(1);
     expect(Object.keys(detail.data.sesi[0]).sort()).toEqual(["createdAt", "expiresAt", "id", "ipAddress", "updatedAt", "userAgent"]);
     expect(detail.data.riwayat.map((r: { aksi: string }) => r.aksi)).toEqual(expect.arrayContaining(["login", "aktivasi", "buat"]));
@@ -153,7 +153,7 @@ describe("mengubah akun", () => {
     expect((await panggil(`/admin/akun/${id}`, { method: "DELETE", cookie: admin })).status).toBe(422);
   });
 
-  test("akun yang belum pernah dipakai bisa dihapus (token ikut terhapus); yang sudah dipakai tidak", async () => {
+  test("akun tanpa data kegiatan bisa dihapus (token ikut terhapus), walau pernah login; yang membuat kegiatan tidak", async () => {
     const admin = await loginAdmin();
     const isi = await isiAkun();
     const akun = await panggil("/admin/akun", { cookie: admin, json: isi });
@@ -161,6 +161,10 @@ describe("mengubah akun", () => {
     expect((await panggil(`/admin/akun/${akun.data.id}`, { method: "DELETE", cookie: admin })).status).toBe(200);
     expect(await prisma.user.findUnique({ where: { email: isi.email as string } })).toBeNull();
     expect(await prisma.verification.count({ where: { value: akun.data.id } })).toBe(0);
+
+    const pernahLogin = await buatPengguna();
+    expect((await panggil(`/admin/akun/${pernahLogin.userId}`, { method: "DELETE", cookie: admin })).status).toBe(200);
+    expect(await prisma.user.findUnique({ where: { id: pernahLogin.userId } })).toBeNull();
 
     const terpakai = await buatPengguna();
     await buatKegiatan(terpakai.cookie, await isiKegiatan(terpakai.pegawaiId));

@@ -201,12 +201,13 @@ export const UserService = {
     return { id, status };
   },
 
-  // Menghapus akun yang belum pernah dipakai (yang sudah dipakai cukup dinonaktifkan). Data pegawainya tetap ada
+  // Menghapus akun yang belum meninggalkan data kegiatan (membuat kegiatan, mengunggah dokumentasi, atau memeriksa);
+  // selebihnya cukup dinonaktifkan. Data pegawainya tetap ada
   async hapus(id: string, admin: Admin) {
     const sebelum = await muat(id);
     tolakDiriSendiri(id, admin, "Anda tidak dapat menghapus akun Anda sendiri");
     if ((await UserRepository.terpakai([id])).size) {
-      throw Unprocessable("Akun ini sudah pernah dipakai sehingga tidak dapat dihapus. Nonaktifkan saja agar jejak kegiatannya tetap utuh.");
+      throw Unprocessable("Akun ini tercatat sebagai pembuat, pengunggah, atau pemeriksa kegiatan sehingga tidak dapat dihapus. Nonaktifkan saja agar jejak kegiatannya tetap utuh.");
     }
     await prisma.$transaction(async (tx) => {
       await TokenAkunRepository.hapusMilik(id, undefined, tx);

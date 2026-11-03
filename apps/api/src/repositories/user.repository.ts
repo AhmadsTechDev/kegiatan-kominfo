@@ -2,7 +2,6 @@ import { prisma, type Db, type Prisma } from "@/lib/prisma";
 import type { Halaman, Role, StatusAkun } from "@/types/umum.types";
 import type { FilterAkun } from "@/types/user.types";
 import { kondisiStatus } from "@/utils/status-akun";
-import { AuditLogRepository } from "./audit-log.repository";
 
 const KREDENSIAL = { where: { providerId: "credential" }, select: { id: true } } as const;
 
@@ -167,14 +166,15 @@ export const UserRepository = {
     return (await prisma.pegawai.findUnique({ where: { id }, select: { id: true, nip: true, unitKerjaId: true, aktif: true } })) ?? undefined;
   },
 
-  // Id akun yang sudah pernah dipakai (beraksi, membuat kegiatan, atau mengunggah) sehingga tidak boleh dihapus
+  // Id akun yang meninggalkan data kegiatan (membuat kegiatan, mengunggah dokumentasi, atau memeriksa) sehingga tidak boleh dihapus.
+  // Riwayat audit tidak ikut dihitung: audit_log menyimpan id aktor sebagai teks, jadi tetap utuh setelah akun dihapus
   async terpakai(ids: string[]) {
     if (!ids.length) return new Set<string>();
-    const [aksi, pembuat, pengunggah] = await Promise.all([
-      AuditLogRepository.aktorPernahBeraksi(ids),
+    const [pembuat, pengunggah, pemeriksa] = await Promise.all([
       prisma.kegiatan.findMany({ where: { dibuatOleh: { in: ids } }, distinct: ["dibuatOleh"], select: { dibuatOleh: true } }),
       prisma.dokumentasi.findMany({ where: { diunggahOleh: { in: ids } }, distinct: ["diunggahOleh"], select: { diunggahOleh: true } }),
+      prisma.catatanPemeriksaan.findMany({ where: { pemeriksaId: { in: ids } }, distinct: ["pemeriksaId"], select: { pemeriksaId: true } }),
     ]);
-    return new Set([...aksi, ...pembuat.map((b) => b.dibuatOleh), ...pengunggah.map((b) => b.diunggahOleh)]);
+    return new Set([...pembuat.map((b) => b.dibuatOleh), ...pengunggah.map((b) => b.diunggahOleh), ...pemeriksa.map((b) => b.pemeriksaId)]);
   },
 };

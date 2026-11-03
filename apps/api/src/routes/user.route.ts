@@ -21,7 +21,7 @@ export const userRoutes = new Elysia({ prefix: "/admin/akun" })
   .post("/:id/nonaktifkan", UserController.nonaktifkan, { ...ADMIN, params, body: UserValidator.nonaktifkan })
   // Aktifkan kembali akun
   .post("/:id/aktifkan", UserController.aktifkan, { ...ADMIN, params })
-  // Hapus akun yang belum pernah dipakai
+  // Hapus akun yang belum meninggalkan data kegiatan
   .delete("/:id", UserController.hapus, { ...ADMIN, params })
   // Kirim ulang undangan aktivasi
   .post("/:id/kirim-ulang-undangan", UserController.kirimUlangUndangan, { ...ADMIN, params })

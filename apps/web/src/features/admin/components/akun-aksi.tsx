@@ -367,7 +367,7 @@ export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelah
         <ConfirmDialog
           {...konfirmasi}
           title={`Hapus akun ${a.name}?`}
-          description="Akun ini belum pernah dipakai dan akan dihapus permanen. Data pegawainya tetap ada di Master data."
+          description="Akun akan dihapus permanen. Data pegawainya tetap ada di Master data."
           confirmLabel="Hapus akun"
           pendingLabel="Menghapus..."
           pending={hapus.isPending}

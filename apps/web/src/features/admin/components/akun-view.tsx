@@ -21,7 +21,7 @@
 //
 // Catatan penting:
 //   - Tidak ada pendaftaran mandiri; semua akun dibuat di sini atau lewat Undang di Master data.
-//   - Penghapusan permanen hanya diizinkan bagi akun yang belum pernah dipakai.
+//   - Penghapusan permanen hanya diizinkan bagi akun yang belum membuat kegiatan, mengunggah dokumentasi, atau memeriksa.
 //
 // Dipakai oleh: frontend/src/app/(app)/admin/akun/page.tsx
 // =============================================================================

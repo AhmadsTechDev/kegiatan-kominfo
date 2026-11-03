@@ -147,14 +147,4 @@ export const AuditLogRepository = {
     const u = await prisma.user.findUnique({ where: { id: b.aktorId! }, select: { name: true } });
     return u ? { nama: u.name, waktu: b.createdAt } : null;
   },
-
-  // Id user (dari daftar) yang pernah melakukan aksi selain gagal login
-  async aktorPernahBeraksi(ids: string[]) {
-    const baris = await prisma.auditLog.findMany({
-      where: { aktorId: { in: ids }, aksi: { notIn: ["login_gagal", "akun_terkunci"] } },
-      distinct: ["aktorId"],
-      select: { aktorId: true },
-    });
-    return baris.map((b) => b.aktorId!);
-  },
 };
