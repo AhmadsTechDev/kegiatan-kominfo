@@ -33,7 +33,6 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { navAktif, navUntukRole, type NavGroup } from "@/config/navigation";
-import { site } from "@/config/site";
 import { useJumlahPermintaan } from "@/features/admin/hooks/use-admin";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { LoncengNotifikasi } from "@/features/notifikasi/components/lonceng-notifikasi";
@@ -223,11 +222,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-6 md:px-6 md:py-8 lg:px-8">
           {children}
-          <footer className="mt-auto flex flex-wrap justify-between gap-2 pt-4 text-xs text-muted-foreground">
-            <p>
-              <span className="font-semibold">{site.namaSistem}</span> · Diskominfo {site.wilayah}
-            </p>
-          </footer>
         </main>
       </div>
     </div>

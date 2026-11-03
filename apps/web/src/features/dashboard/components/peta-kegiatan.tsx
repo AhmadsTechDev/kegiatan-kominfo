@@ -26,7 +26,6 @@ export function PetaKegiatan({ data, periode, className }: { data: DashboardData
     <Panel className={className}>
       <PanelHeader
         title="Sebaran lokasi kegiatan"
-        description="Kegiatan periode ini yang memiliki titik koordinat"
         action={<span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">{site.wilayah}</span>}
       />
       {data.length === 0 ? (

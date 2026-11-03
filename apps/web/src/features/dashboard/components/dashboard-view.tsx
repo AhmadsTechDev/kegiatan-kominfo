@@ -91,7 +91,6 @@ function DashboardDinas({ namaDepan }: { namaDepan: string }) {
       <PageHeader
         eyebrow="Ringkasan dinas"
         title={`${sapaan}, ${namaDepan}`}
-        description="Kegiatan seluruh bidang dan agenda terdekat dalam satu tempat."
         actions={
           // HP: periode + muat ulang sebaris, Tambah selebar layar, waktu pembaruan di bawah
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">

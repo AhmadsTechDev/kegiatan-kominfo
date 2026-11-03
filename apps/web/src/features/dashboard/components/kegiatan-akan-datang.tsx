@@ -113,7 +113,6 @@ export function KegiatanAkanDatang({
     <Panel className={className}>
       <PanelHeader
         title="Kegiatan akan datang"
-        description="Agenda terdekat yang tercatat"
         action={
           <Button asChild variant="outline" size="sm" className="h-9">
             <Link href="/kegiatan?status=akan_datang">
