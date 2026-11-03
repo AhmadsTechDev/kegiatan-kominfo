@@ -86,7 +86,8 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto overscroll-contain px-4 pb-4">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={k.statusPelaksanaan} />
-          <StatusPemeriksaanBadge status={k.statusPemeriksaan} />
+          {/* Sama dengan daftar dan detail: "belum diperiksa" tidak perlu ditandai */}
+          {k.statusPemeriksaan !== "terkirim" && <StatusPemeriksaanBadge status={k.statusPemeriksaan} />}
         </div>
 
         {catatanTerakhir?.status === "perlu_perbaikan" && k.statusPemeriksaan === "perlu_perbaikan" && (

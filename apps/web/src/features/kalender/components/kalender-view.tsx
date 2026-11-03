@@ -46,6 +46,7 @@ import { Panel, PanelHeader } from "@/components/shared/panel";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGrupNav } from "@/hooks/use-grup-nav";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
 import { formatAngka, formatJam, formatPeriode, formatRentangTanggal, formatTanggal } from "@/lib/format";
@@ -263,8 +264,8 @@ type ButirLegenda = { kunci: number; nama: string; warna: string };
 function Legenda({ butir, dipilih, onPilih }: { butir: ButirLegenda[]; dipilih: number | null; onPilih: (kunci: number | null) => void }) {
   return (
     <Panel className="px-4 py-3 md:px-5">
-      <p className="mb-1.5 text-xs text-muted-foreground">Ketuk unit untuk menampilkan kegiatannya saja.</p>
-      <ul aria-label="Keterangan warna unit" className="flex flex-col gap-x-3 gap-y-0.5 sm:flex-row sm:flex-wrap">
+      <p className="mb-1.5 text-xs text-muted-foreground">Ketuk bidang untuk menampilkan kegiatannya saja.</p>
+      <ul aria-label="Keterangan warna bidang" className="flex flex-col gap-x-3 gap-y-0.5 sm:flex-row sm:flex-wrap">
         {butir.map((b) => (
           <li key={b.kunci} className="min-w-0">
             <button
@@ -289,6 +290,7 @@ function Legenda({ butir, dipilih, onPilih }: { butir: ButirLegenda[]; dipilih: 
 
 export function KalenderView() {
   const { user } = useCurrentUser();
+  const grupNav = useGrupNav("Operasional");
   const { terbatas, unit: unitSaya } = useLingkupPegawai();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -337,7 +339,7 @@ export function KalenderView() {
   return (
     <>
       <PageHeader
-        eyebrow="Operasional"
+        eyebrow={grupNav}
         title="Kalender kegiatan"
         description={
           terbatas

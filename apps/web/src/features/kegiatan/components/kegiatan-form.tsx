@@ -84,8 +84,8 @@ type Props = {
 };
 
 const LANGKAH = [
-  { judul: "Informasi kegiatan", keterangan: "Judul, jenis, dan uraian singkat" },
-  { judul: "Waktu dan lokasi", keterangan: "Jadwal (WIB) dan tempat kegiatan" },
+  { judul: "Informasi kegiatan", pendek: "Informasi", keterangan: "Judul, jenis, dan uraian singkat" },
+  { judul: "Waktu dan lokasi", pendek: "Jadwal", keterangan: "Jadwal (WIB) dan tempat kegiatan" },
 ] as const;
 const KOLOM_LANGKAH_1: FieldPath<KegiatanFormValues>[] = ["judul", "jenisId", "jumlahPeserta", "uraian"];
 
@@ -134,7 +134,11 @@ function PenunjukLangkah({ aktif, onPilih }: { aktif: number; onPilih: (i: numbe
                 {selesai ? <Check className="size-4" /> : i + 1}
               </span>
               <span className="min-w-0">
-                <span className={cn("block truncate text-sm font-semibold", sekarang && "text-primary")}>{l.judul}</span>
+                {/* Di HP judul pendek agar tidak terpotong */}
+                <span className={cn("block truncate text-sm font-semibold", sekarang && "text-primary")}>
+                  <span className="sm:hidden">{l.pendek}</span>
+                  <span className="hidden sm:inline">{l.judul}</span>
+                </span>
                 <span className="hidden truncate text-xs text-muted-foreground sm:block">{l.keterangan}</span>
               </span>
             </button>

@@ -113,6 +113,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
   const kurangDok = k.dokumentasi.length === 0;
   const kurangHasil = !k.hasil?.trim();
   const perluLengkapi = k.bisaUbah && k.statusPelaksanaan === "selesai" && (kurangDok || kurangHasil);
+  const adaPerbaikan = k.statusPemeriksaan === "perlu_perbaikan" && !!k.catatanPemeriksaan[0]?.isi;
 
   return (
     <>
@@ -175,17 +176,26 @@ export function KegiatanDetailView({ id }: { id: number }) {
         </div>
       </Panel>
 
-      {k.statusPemeriksaan === "perlu_perbaikan" && k.catatanPemeriksaan[0]?.isi && (
-        <Alert className="border-status-dibatalkan-foreground/20 bg-status-dibatalkan text-status-dibatalkan-foreground">
-          <MessageSquareWarning />
-          <AlertTitle>
-            Perlu perbaikan, dari {k.catatanPemeriksaan[0].pemeriksa} ({formatTanggalJam(k.catatanPemeriksaan[0].waktu)})
-          </AlertTitle>
-          <AlertDescription className="whitespace-pre-line text-status-dibatalkan-foreground">
-            {k.catatanPemeriksaan[0].isi}
-            {k.bisaUbah && " Ubah kegiatan ini setelah diperbaiki agar diperiksa ulang."}
-          </AlertDescription>
-        </Alert>
+      {/* Catatan perbaikan menggantikan pengingat "Kegiatan sudah selesai": satu kotak, satu tindakan */}
+      {adaPerbaikan && (
+        <div className="flex flex-col gap-3 rounded-xl border border-status-dibatalkan-foreground/20 bg-status-dibatalkan p-4 text-status-dibatalkan-foreground sm:flex-row sm:items-center">
+          <MessageSquareWarning aria-hidden className="size-5 shrink-0" />
+          <div className="min-w-0 flex-1 text-sm [overflow-wrap:anywhere]">
+            <p className="font-semibold">Perlu perbaikan</p>
+            <p className="whitespace-pre-line">{k.catatanPemeriksaan[0]!.isi}</p>
+            <p className="mt-1 text-xs opacity-90">
+              {k.catatanPemeriksaan[0]!.pemeriksa}, {formatTanggalJam(k.catatanPemeriksaan[0]!.waktu)}
+            </p>
+          </div>
+          {k.bisaUbah && (
+            <Button asChild size="sm" className="h-9 shrink-0 pointer-coarse:min-h-11">
+              <Link href={`/kegiatan/${k.id}/ubah`}>
+                <Pencil aria-hidden />
+                Perbaiki
+              </Link>
+            </Button>
+          )}
+        </div>
       )}
 
       {k.dibatalkanAt && (
@@ -196,7 +206,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
         </Alert>
       )}
 
-      {perluLengkapi && (
+      {perluLengkapi && !adaPerbaikan && (
         <div className="flex flex-col gap-3 rounded-xl border border-status-berlangsung-foreground/20 bg-status-berlangsung p-4 sm:flex-row sm:items-center">
           <CircleAlert aria-hidden className="size-5 shrink-0 text-status-berlangsung-foreground" />
           <div className="min-w-0 flex-1 text-sm text-status-berlangsung-foreground">

@@ -56,7 +56,7 @@ export function KegiatanBaruView({ drafId = null }: { drafId?: number | null }) 
 
   const header = (
     <PageHeader
-      eyebrow="Operasional / Kegiatan"
+      eyebrow="Kegiatan"
       title={drafId ? "Lanjutkan draf" : "Tambah kegiatan"}
       description="Dua langkah singkat."
       actions={<TombolKembali href="/kegiatan" />}
@@ -105,7 +105,7 @@ export function KegiatanUbahView({ id }: { id: number }) {
 
   const header = (
     <PageHeader
-      eyebrow="Operasional / Kegiatan"
+      eyebrow="Kegiatan"
       title={kegiatan.data?.statusPelaksanaan === "selesai" ? "Hasil dan dokumentasi" : "Ubah kegiatan"}
       description={kegiatan.data?.judul}
       actions={<TombolKembali href={`/kegiatan/${id}`} />}

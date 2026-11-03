@@ -14,8 +14,8 @@
 // =============================================================================
 
 export const site = {
-  namaSistem: "Aplikasi Pendataan Kegiatan",
-  namaSingkat: "Aplikasi Pendataan Kegiatan",
+  namaSistem: "Pendataan Kegiatan",
+  namaSingkat: "Pendataan Kegiatan",
   instansi: "Dinas Komunikasi dan Informatika",
   wilayah: "Kota Palembang",
   logo: "/images/logo.png",

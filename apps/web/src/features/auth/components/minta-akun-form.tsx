@@ -86,7 +86,7 @@ export function MintaAkunForm() {
           <p className="text-sm text-muted-foreground">
             Administrator akan meninjau permintaan Anda. Bila disetujui, tautan aktivasi dikirim ke <span className="font-semibold text-foreground">{getValues("email")}</span>.
           </p>
-          <p className="text-sm text-muted-foreground">Periksa juga folder spam. Bila setelah beberapa hari kerja belum ada email, tanyakan ke administrator di unit Anda.</p>
+          <p className="text-sm text-muted-foreground">Periksa juga folder spam. Bila setelah beberapa hari kerja belum ada email, tanyakan ke administrator di bidang Anda.</p>
         </div>
         <Button asChild variant="outline" className="h-10 pointer-coarse:min-h-11">
           <Link href="/login">

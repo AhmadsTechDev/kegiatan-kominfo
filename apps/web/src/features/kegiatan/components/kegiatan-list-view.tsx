@@ -54,6 +54,7 @@ import {
 } from "@/components/shared/status-badge";
 import { UnitChip } from "@/components/shared/unit-chip";
 import { Button } from "@/components/ui/button";
+import { useGrupNav } from "@/hooks/use-grup-nav";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
 import { formatJam, formatRentangTanggal } from "@/lib/format";
@@ -305,6 +306,7 @@ function TabelKegiatan({
 
 export function KegiatanListView() {
   const { user } = useCurrentUser();
+  const grupNav = useGrupNav("Operasional");
   const { filter, setFilter, resetFilter, adaFilter } = useKegiatanFilter();
   const { terbatas: pegawai, unit: unitSaya, saringUnit } = useLingkupPegawai();
   const lingkup: Lingkup = !pegawai
@@ -407,7 +409,7 @@ export function KegiatanListView() {
   return (
     <>
       <PageHeader
-        eyebrow="Operasional"
+        eyebrow={grupNav}
         title={judul[lingkup].title}
         description={judul[lingkup].description}
         actions={tombolTambah}

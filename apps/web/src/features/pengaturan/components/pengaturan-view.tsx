@@ -70,7 +70,7 @@ function KartuProfil({ p }: { p: Profil }) {
 
   return (
     <Panel className="overflow-hidden">
-      <div aria-hidden className="h-24 bg-linear-to-r from-[#1a2a6e] via-[#26418f] to-[#0d9488] md:h-28 dark:opacity-85" />
+      <div aria-hidden className="h-24 bg-primary md:h-28 dark:bg-secondary" />
       <div className="flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end md:px-6">
         <div className="relative -mt-12 w-fit shrink-0">
           <AvatarInisial nama={p.name} src={p.foto} className="size-24 rounded-3xl text-2xl ring-4 ring-card" />

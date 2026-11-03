@@ -27,7 +27,7 @@
 
 "use client";
 
-import { ArrowRight, CalendarDays, ChevronRight, CalendarRange, ClipboardList, FileWarning, MapPin, Plus, Sparkles, type LucideIcon } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronRight, CalendarRange, ClipboardList, FileWarning, MapPin, Plus, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/shared/panel";
@@ -52,22 +52,17 @@ function Sambutan({ hariIni }: { hariIni?: string }) {
 
   return (
     <section className="relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm md:p-6">
-      <span aria-hidden className="pointer-events-none absolute -top-24 -right-16 size-64 rounded-full bg-secondary/80 blur-2xl" />
-      <span aria-hidden className="pointer-events-none absolute -bottom-28 right-40 size-56 rounded-full bg-status-akan-datang/60 blur-2xl" />
       <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div className="flex flex-col gap-1.5">
           <p className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-primary uppercase">
-            <Sparkles aria-hidden className="size-3.5" />
+            <CalendarDays aria-hidden className="size-3.5" />
             {hariIni ? formatHari(hariIni) : "Ringkasan"}
           </p>
           <h1 className="font-heading text-2xl font-extrabold tracking-tight md:text-3xl">
             {sapaan}
             {namaDepan ? `, ${namaDepan}` : ""}
           </h1>
-          <p className="max-w-xl text-sm text-muted-foreground">
-            {unit ? `${unit.nama}. ` : ""}
-            Catat kegiatan, lengkapi dokumentasi, dan pantau agenda unit Anda dari sini.
-          </p>
+          {unit && <p className="max-w-xl text-sm text-muted-foreground">{unit.nama}</p>}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild className="h-10">
@@ -135,7 +130,7 @@ function labelHari(tanggal: string, hariIni: string) {
 function AgendaPekanPanel({ items, hariIni, className }: { items?: AgendaPekan[]; hariIni?: string; className?: string }) {
   return (
     <Panel className={className}>
-      <PanelHeader title="Agenda 7 hari ke depan" description="Kegiatan unit Anda dan kegiatan Anda, mulai hari ini" />
+      <PanelHeader title="Agenda 7 hari ke depan" description="Kegiatan bidang Anda dan kegiatan Anda, mulai hari ini" />
       <PanelBody className="flex-1">
         {!items || !hariIni ? (
           <Skeleton className="h-48 w-full rounded-lg" />
@@ -191,7 +186,7 @@ function AgendaPekanPanel({ items, hariIni, className }: { items?: AgendaPekan[]
 const ANGKA: { kunci: "dok" | "agenda" | "unit"; label: string; icon: LucideIcon; nada: "dibatalkan" | "akan-datang" | "primary" }[] = [
   { kunci: "dok", label: "Perlu dokumentasi", icon: FileWarning, nada: "dibatalkan" },
   { kunci: "agenda", label: "Agenda saya", icon: CalendarRange, nada: "akan-datang" },
-  { kunci: "unit", label: "Kegiatan unit bulan ini", icon: ClipboardList, nada: "primary" },
+  { kunci: "unit", label: "Kegiatan bidang bulan ini", icon: ClipboardList, nada: "primary" },
 ];
 
 export function DashboardPegawai() {
@@ -201,7 +196,7 @@ export function DashboardPegawai() {
   const nilai = {
     dok: { value: data?.perluDokumentasi.total ?? 0, href: "/kegiatan?milik=saya&status=selesai", ket: "Kegiatan selesai Anda tanpa foto atau PDF" },
     agenda: { value: data?.agenda.total ?? 0, href: "/kegiatan?milik=saya", ket: "Berlangsung atau akan datang" },
-    unit: { value: data?.unit?.jumlahBulanIni ?? 0, href: periodeIni ? `/kegiatan?periode=${periodeIni}` : "/kegiatan", ket: "Seluruh kegiatan unit Anda" },
+    unit: { value: data?.unit?.jumlahBulanIni ?? 0, href: periodeIni ? `/kegiatan?periode=${periodeIni}` : "/kegiatan", ket: "Seluruh kegiatan bidang Anda" },
   };
 
   return (

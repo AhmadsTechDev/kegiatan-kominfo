@@ -71,7 +71,7 @@ export function LaporanView() {
   if (user?.role === "PEGAWAI") {
     return (
       <>
-        <PageHeader eyebrow="Operasional" title="Laporan" />
+        <PageHeader eyebrow="Kegiatan" title="Laporan" />
         <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin." />
       </>
     );

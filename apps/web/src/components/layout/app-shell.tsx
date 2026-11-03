@@ -58,7 +58,7 @@ function Breadcrumb({ groups }: { groups: NavGroup[] }) {
   const sub = subHalaman(pathname);
   if (!aktif) return null;
   return (
-    <nav aria-label="Breadcrumb" className="min-w-0">
+    <nav aria-label="Breadcrumb" className="hidden min-w-0 sm:block">
       <ol className="flex items-center gap-2 text-sm text-muted-foreground">
         <li className="hidden sm:block">{aktif.group.label}</li>
         <ChevronRight aria-hidden className="hidden size-4 shrink-0 sm:block" />

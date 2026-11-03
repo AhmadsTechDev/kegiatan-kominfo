@@ -126,7 +126,7 @@ export function RekapView() {
   if (user?.role === "PEGAWAI") {
     return (
       <>
-        <PageHeader eyebrow="Operasional" title="Rekap kegiatan" />
+        <PageHeader eyebrow="Kegiatan" title="Rekap kegiatan" />
         <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin." />
       </>
     );

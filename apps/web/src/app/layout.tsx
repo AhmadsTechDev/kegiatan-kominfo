@@ -27,10 +27,10 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Aplikasi Pendataan Kegiatan",
-    template: "%s · Aplikasi Pendataan Kegiatan",
+    default: "Pendataan Kegiatan",
+    template: "%s · Pendataan Kegiatan",
   },
-  description: "Aplikasi Pendataan Kegiatan Dinas Komunikasi dan Informatika Kota Palembang",
+  description: "Pendataan Kegiatan Dinas Komunikasi dan Informatika Kota Palembang",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

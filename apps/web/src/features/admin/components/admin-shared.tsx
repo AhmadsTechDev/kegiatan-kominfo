@@ -166,9 +166,10 @@ export function PilihanTab<T extends string>({
   idPanel?: string;
 }) {
   const nilai = opsi.map((o) => o.nilai);
-  // relative: teks sr-only di lencana (position absolute) tetap di dalam area gulir, bukan melebarkan halaman di HP
+  // Tab turun ke baris berikutnya bila tidak muat (bukan digulir), agar tab terakhir tidak terpotong tanpa tanda.
+  // relative: teks sr-only di lencana (position absolute) tidak melebarkan halaman
   return (
-    <div role="tablist" aria-label={label} className="relative -mx-1 flex gap-1 overflow-x-auto px-1 py-0.5 sm:flex-wrap sm:overflow-visible" onKeyDown={(e) => tanganiPanah(e, nilai, value, onChange)}>
+    <div role="tablist" aria-label={label} className="relative flex flex-wrap gap-1 py-0.5" onKeyDown={(e) => tanganiPanah(e, nilai, value, onChange)}>
       {opsi.map((o) => (
         <Button
           key={o.nilai}
