@@ -16,6 +16,7 @@
 // Catatan penting:
 //   - Mengikuti panduan DESIGN.md bagian 5.7 untuk form data master dan akun.
 //   - Form menggunakan noValidate agar validasi sepenuhnya dikendalikan Zod di klien.
+//   - Tidak ada autofocus ke kolom pertama; fokus diletakkan pada dialog itu sendiri.
 //
 // Dipakai oleh: Dialog master data unit/jenis, modal akun pengguna, dan sandi
 // =============================================================================
@@ -41,7 +42,15 @@ type FormDialogProps = {
 export function FormDialog({ open, onOpenChange, title, description, onSubmit, pending, submitLabel, galat, children }: FormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(v) => !pending && onOpenChange(v)}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent
+        className="sm:max-w-lg"
+        // Tanpa autofocus ke kolom pertama: di HP keyboard tidak langsung muncul menutupi dialog.
+        // Fokus tetap dipindah ke dialog agar pembaca layar dan Tab mulai dari dalam dialog
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          (e.currentTarget as HTMLElement).focus();
+        }}
+      >
         <form onSubmit={onSubmit} noValidate className="flex min-w-0 flex-col gap-5">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>

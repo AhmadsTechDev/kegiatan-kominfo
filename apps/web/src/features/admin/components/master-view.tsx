@@ -43,7 +43,7 @@ export function MasterView() {
   const indukParam = Number(searchParams.get("induk"));
   const induk = Number.isInteger(indukParam) && indukParam > 0 ? indukParam : null;
 
-  const pegawai = usePegawaiAdmin({ q: "", unit: null, aktif: null, page: 1 });
+  const pegawai = usePegawaiAdmin({ q: "", unit: null, aktif: null, akun: "ada", page: 1 });
   const unit = useBidangAdmin();
   const jenis = useJenisAdmin();
   const jumlahUtama = unit.data?.filter((u) => u.parentId === null).length;

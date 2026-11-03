@@ -80,6 +80,7 @@ Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai
 | `q` | string | Cari nama, NIP, atau jabatan |
 | `unit` | angka | Id unit; sub-unit ikut tercakup |
 | `aktif` | `1` \| `0` | |
+| `akun` | `tanpa` \| `ada` | `tanpa`: belum punya akun (tab Perlu diundang); `ada`: sudah punya akun (Master data > Pegawai) |
 | `page`, `pageSize` | angka | Bawaan 1 dan 20 (maks. 100) |
 
 **Respons 200**
@@ -105,7 +106,7 @@ Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai
 }
 ```
 
-`akun` bernilai `null` bila pegawai belum punya akun. `akun.aktif: false` berarti undangan sudah dikirim tetapi belum diaktivasi. `roleUndangan` (`PEGAWAI` atau `PIMPINAN`) adalah role bawaan saat pegawai diundang; role sebenarnya ada di akun.
+`akun` bernilai `null` bila pegawai belum punya akun. `akun.aktif: false` berarti undangan sudah dikirim tetapi belum diaktivasi. `roleUndangan` (`PEGAWAI`, `PIMPINAN`, atau `ADMIN`) adalah role bawaan saat pegawai diundang; role sebenarnya ada di akun.
 
 ### `POST /api/admin/pegawai`
 
@@ -137,7 +138,7 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 
 ### `PATCH /api/admin/pegawai/:id`
 
-**Body**: `nip`, `nama`, `jabatan`, `bidangId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional), `roleUndangan` (opsional, `PEGAWAI` atau `PIMPINAN`, bawaan untuk dialog Undang), dan `kontak` (opsional, nomor telepon; disimpan di akun sehingga hanya bisa diisi bila pegawai sudah punya akun, selain itu 422). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
+**Body**: `nip`, `nama`, `jabatan`, `bidangId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional), `roleUndangan` (opsional, `PEGAWAI`, `PIMPINAN`, atau `ADMIN`, bawaan untuk dialog Undang), dan `kontak` (opsional, nomor telepon; disimpan di akun sehingga hanya bisa diisi bila pegawai sudah punya akun, selain itu 422). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
 
 **Respons 200**: `{ "id": 1 }`
 

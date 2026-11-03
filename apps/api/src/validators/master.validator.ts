@@ -1,4 +1,5 @@
 import { t } from "elysia";
+import { ROLES } from "@/utils/konstanta";
 
 const aktif = { aktif: t.Optional(t.Boolean({ error: "Status aktif tidak valid" })) };
 
@@ -29,7 +30,7 @@ export const MasterValidator = {
     q: t.Optional(t.String({ maxLength: 100, error: "Kata kunci maksimal 100 karakter" })),
     unit: t.Optional(t.Numeric({ minimum: 1, error: "Bidang tidak valid" })),
     aktif: t.Optional(t.Union([t.Literal("1"), t.Literal("0")], { error: "Filter aktif tidak valid" })),
-    akun: t.Optional(t.Literal("tanpa", { error: "Filter akun tidak valid" })),
+    akun: t.Optional(t.Union([t.Literal("tanpa"), t.Literal("ada")], { error: "Filter akun tidak valid" })),
     page: t.Optional(t.Numeric({ minimum: 1, default: 1, error: "Halaman tidak valid" })),
     pageSize: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20, error: "Ukuran halaman 1 sampai 100" })),
   }),
@@ -42,7 +43,8 @@ export const MasterValidator = {
     ...pegawai,
     ...aktif,
     // Role bawaan saat diundang; tidak berpengaruh bila pegawai sudah punya akun
-    roleUndangan: t.Optional(t.Union([t.Literal("PEGAWAI"), t.Literal("PIMPINAN")], { error: "Role tidak valid" })),
+    // Union literal, bukan UnionEnum: UnionEnum opsional terisi nilai pertama (PEGAWAI) bila field tidak dikirim
+    roleUndangan: t.Optional(t.Union(ROLES.map((r) => t.Literal(r)), { error: "Role tidak valid" })),
     // Nomor telepon disimpan di akun; hanya bisa diisi bila pegawai sudah punya akun
     kontak: t.Optional(t.Nullable(t.String({ maxLength: 50, pattern: "^[0-9+()\\-\\s]*$", error: "Nomor telepon hanya angka, spasi, +, -, atau tanda kurung, maksimal 50 karakter" }))),
   }),

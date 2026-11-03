@@ -288,8 +288,8 @@ export function DokumentasiGaleri({
       <ConfirmDialog
         open={akanDihapus != null}
         onOpenChange={(v) => !v && setAkanDihapus(null)}
-        title={`Hapus dokumentasi "${akanDihapus?.namaAsli ?? ""}"?`}
-        description="Berkas dihapus permanen dari penyimpanan. Tindakan ini tercatat di audit log."
+        title="Hapus dokumentasi?"
+        description={<span className="font-medium text-foreground">{akanDihapus?.namaAsli}</span>}
         confirmLabel="Hapus berkas"
         pendingLabel="Menghapus..."
         pending={hapus.isPending}

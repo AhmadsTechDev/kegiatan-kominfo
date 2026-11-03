@@ -9,7 +9,7 @@ function kondisiPegawai(f: FilterPegawai): Prisma.PegawaiWhereInput {
     OR: cari ? [{ nama: cari }, { nip: cari }, { jabatan: cari }] : undefined,
     bidangId: f.unitIds ? { in: f.unitIds } : undefined,
     aktif: f.aktif,
-    users: f.tanpaAkun ? { none: {} } : undefined,
+    users: f.akun === "tanpa" ? { none: {} } : f.akun === "ada" ? { some: {} } : undefined,
   };
 }
 

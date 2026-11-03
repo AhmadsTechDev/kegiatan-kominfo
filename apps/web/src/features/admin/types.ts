@@ -47,7 +47,7 @@ export type PegawaiAdmin = {
   aktif: boolean;
   kontak: string | null;
   /** Role bawaan saat diundang; role sebenarnya ada di akun */
-  roleUndangan: "PEGAWAI" | "PIMPINAN";
+  roleUndangan: Role;
   akun: { id: string; email: string; aktif: boolean } | null;
   updatedAt: string;
 };
@@ -60,12 +60,12 @@ export type IsiPegawai = {
   bidangId: number;
   aktif?: boolean;
   kontak?: string | null;
-  roleUndangan?: "PEGAWAI" | "PIMPINAN";
+  roleUndangan?: Role;
 };
 export type IsiPegawaiBaru = IsiPegawai & { email?: string | null; role?: "PEGAWAI" | "PIMPINAN" };
 export type HasilPegawaiBaru = { id: number; undangan: { email: string; galat: string | null } | null };
 
-export type FilterPegawai = { q: string; unit: string | null; aktif: "1" | "0" | null; akun?: "tanpa" | null; page: number };
+export type FilterPegawai = { q: string; unit: string | null; aktif: "1" | "0" | null; akun?: "tanpa" | "ada" | null; page: number };
 
 export type JenisKegiatanAdmin = { id: number; nama: string; aktif: boolean; jumlahKegiatan: number; updatedAt: string };
 

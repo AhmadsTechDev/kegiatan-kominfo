@@ -187,7 +187,7 @@ export const MasterService = {
         q: query.q?.trim() || undefined,
         unitIds: query.unit ? await ReferensiService.unitDanTurunan(query.unit) : undefined,
         aktif: query.aktif === undefined ? undefined : query.aktif === "1",
-        tanpaAkun: query.akun === "tanpa",
+        akun: query.akun,
       },
       { page, pageSize },
     );

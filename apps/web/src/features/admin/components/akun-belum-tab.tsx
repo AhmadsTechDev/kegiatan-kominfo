@@ -36,10 +36,10 @@ import { UndangDialog } from "./undang-dialog";
 
 export const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun: "tanpa", page: 1 };
 
-// Role bawaan adalah Pegawai; hanya Pimpinan yang perlu ditandai
+// Role bawaan adalah Pegawai; hanya role lain yang perlu ditandai
 function LabelRole({ role }: { role: PegawaiAdmin["roleUndangan"] }) {
-  if (role !== "PIMPINAN") return null;
-  return <span className="mt-0.5 block text-xs font-normal text-muted-foreground">Akan diundang sebagai {LABEL_ROLE.PIMPINAN}</span>;
+  if (role === "PEGAWAI") return null;
+  return <span className="mt-0.5 block text-xs font-normal text-muted-foreground">Akan diundang sebagai {LABEL_ROLE[role]}</span>;
 }
 
 function TombolUndang({ p, onClick }: { p: PegawaiAdmin; onClick: () => void }) {

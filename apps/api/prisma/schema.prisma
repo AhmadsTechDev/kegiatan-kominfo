@@ -165,7 +165,7 @@ model Pegawai {
   jabatan      String?  @db.VarChar(150)
   bidangId     Int      @map("bidang_id")
   aktif        Boolean  @default(true)
-  // Role bawaan saat pegawai diundang (PEGAWAI atau PIMPINAN); role sebenarnya ada di akun
+  // Role bawaan saat pegawai diundang (PEGAWAI, PIMPINAN, atau ADMIN); role sebenarnya ada di akun
   roleUndangan String   @default("PEGAWAI") @map("role_undangan") @db.VarChar(20)
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)

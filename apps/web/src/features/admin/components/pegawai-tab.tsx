@@ -9,6 +9,7 @@
 //   - PegawaiTab : tabel data pegawai dengan filter, aksi Ubah, dan paginasi
 //
 // Catatan penting:
+//   - Hanya pegawai yang sudah punya akun yang tampil; yang belum ada di Manajemen akun > Perlu diundang.
 //   - NIP opsional untuk pegawai non-ASN atau tenaga honorer.
 //   - Nomor telepon diambil dari kontak akun pegawai dan hanya ditampilkan di sini.
 //   - Validasi satu pintu di server memastikan NIP tidak bentrok sebelum simpan.
@@ -19,8 +20,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, SearchX, Send, Users } from "lucide-react";
-import Link from "next/link";
+import { Plus, SearchX, Users } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -37,7 +37,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { formatTelp } from "@/lib/format";
-import { LABEL_ROLE } from "@/types/auth";
+import { LABEL_ROLE, type Role } from "@/types/auth";
+
+const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const satisfies readonly Role[];
 
 import { zNip } from "@/lib/nip";
 import { cn } from "@/lib/utils";
@@ -59,7 +61,7 @@ const schema = z.object({
     .max(50, "Nomor telepon maksimal 50 karakter")
     .regex(/^[0-9+()\-\s]*$/, "Nomor telepon hanya angka, spasi, +, -, atau tanda kurung"),
   status: z.enum(["aktif", "nonaktif"]),
-  role: z.enum(["PEGAWAI", "PIMPINAN"]),
+  role: z.enum(ROLES),
 });
 type Nilai = z.infer<typeof schema>;
 
@@ -98,7 +100,9 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
       },
       {
         onSuccess: () => {
-          toast.success(awal ? "Data pegawai diperbarui" : "Pegawai ditambahkan");
+          if (awal) toast.success("Data pegawai diperbarui");
+          // Pegawai baru belum punya akun, jadi tampil di Manajemen akun > Perlu diundang, bukan di daftar ini
+          else toast.success("Pegawai ditambahkan", { description: "Undang dari Manajemen akun, tab Perlu diundang." });
           onClose();
         },
         onError: (e) =>
@@ -121,7 +125,7 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
         <FieldLabel htmlFor="pegawai-nama">
           Nama lengkap <Wajib />
         </FieldLabel>
-        <Input id="pegawai-nama" maxLength={150} className="h-10" autoFocus aria-invalid={!!formState.errors.nama} {...register("nama")} />
+        <Input id="pegawai-nama" maxLength={150} className="h-10" aria-invalid={!!formState.errors.nama} {...register("nama")} />
         <FieldError errors={[formState.errors.nama]} />
       </Field>
       <div className={cn("grid gap-4", awal && "sm:grid-cols-2")}>
@@ -186,8 +190,11 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PEGAWAI">{LABEL_ROLE.PEGAWAI}</SelectItem>
-                  <SelectItem value="PIMPINAN">{LABEL_ROLE.PIMPINAN}</SelectItem>
+                  {ROLES.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {LABEL_ROLE[r]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
@@ -220,22 +227,8 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
   );
 }
 
-const FILTER_AWAL: FilterPegawai = { q: "", unit: null, aktif: null, page: 1 };
-
-// Pegawai aktif tanpa akun login: data pegawai tetap dipakai (mis. penanggung jawab),
-// tetapi belum bisa masuk, jadi statusnya bukan "Aktif". Label membawa admin ke tab undangan.
-function StatusPegawai({ p }: { p: PegawaiAdmin }) {
-  if (p.akun || !p.aktif) return <BadgeAktif aktif={p.aktif} />;
-  return (
-    <Link
-      href="/admin/akun?tab=belum"
-      className="inline-flex items-center gap-1 rounded-md bg-status-berlangsung px-1.5 py-0.5 text-[11px] font-semibold whitespace-nowrap text-status-berlangsung-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-    >
-      <Send aria-hidden className="size-3" />
-      Belum punya akun
-    </Link>
-  );
-}
+// Master data hanya menampilkan pegawai yang sudah punya akun; yang belum ada di Manajemen akun > Perlu diundang
+const FILTER_AWAL: FilterPegawai = { q: "", unit: null, aktif: null, akun: "ada", page: 1 };
 
 export function PegawaiTab() {
   const [filter, setFilterState] = useState<FilterPegawai>(FILTER_AWAL);
@@ -270,7 +263,7 @@ export function PegawaiTab() {
         header: "NIP",
         cell: ({ row }) => <span className="text-sm tabular-nums">{row.original.nip ?? <span className="text-muted-foreground">-</span>}</span>,
       },
-      { id: "status", header: "Status", cell: ({ row }) => <StatusPegawai p={row.original} /> },
+      { id: "status", header: "Status", cell: ({ row }) => <BadgeAktif aktif={row.original.aktif} /> },
       {
         id: "aksi",
         header: () => <span className="block text-right">Aksi</span>,
@@ -340,7 +333,7 @@ export function PegawaiTab() {
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground tabular-nums">
                   <span>NIP {p.nip ?? "-"}</span>
                   <span>Telp {p.kontak ? formatTelp(p.kontak) : "-"}</span>
-                  <StatusPegawai p={p} />
+                  <BadgeAktif aktif={p.aktif} />
                 </div>
               </KartuMaster>
             )}

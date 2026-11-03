@@ -201,7 +201,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
           <FieldLabel htmlFor="akun-nama">
             Nama lengkap <Wajib />
           </FieldLabel>
-          <Input id="akun-nama" maxLength={150} className="h-10" autoFocus={!awal} aria-required aria-invalid={!!formState.errors.name} {...register("name")} />
+          <Input id="akun-nama" maxLength={150} className="h-10" aria-required aria-invalid={!!formState.errors.name} {...register("name")} />
           <FieldError errors={[formState.errors.name]} />
         </Field>
         <Field data-invalid={!!formState.errors.email} className="sm:col-span-2">

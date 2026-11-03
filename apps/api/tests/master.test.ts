@@ -145,13 +145,15 @@ describe("pegawai", () => {
     expect(kembar.data.details[0].message).toBe("NIP sudah terdaftar atas nama Pemilik NIP");
   });
 
-  test("filter akun=tanpa hanya menampilkan pegawai yang belum punya akun", async () => {
+  test("filter akun=tanpa dan akun=ada memisahkan pegawai menurut kepemilikan akun", async () => {
     const admin = await loginAdmin();
     const bidang = await buatBidang();
-    await buatPengguna({ unitId: bidang.id });
+    const u = await buatPengguna({ unitId: bidang.id });
     await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Belum Punya Akun", bidangId: bidang.id } });
     const daftar = await panggil(`/admin/pegawai?unit=${bidang.id}&akun=tanpa`, { cookie: admin });
     expect(daftar.data.items.map((p: { nama: string }) => p.nama)).toEqual(["Belum Punya Akun"]);
+    const berakun = await panggil(`/admin/pegawai?unit=${bidang.id}&akun=ada`, { cookie: admin });
+    expect(berakun.data.items.map((p: { id: number }) => p.id)).toEqual([u.pegawaiId]);
   });
 
   test("daftar akun: nonaktif=1 hanya akun nonaktif, nonaktif=0 menyembunyikannya", async () => {
@@ -192,7 +194,7 @@ describe("pegawai", () => {
     expect(tolak.data.details[0].field).toBe("kontak");
   });
 
-  test("role bawaan undangan tersimpan di pegawai tanpa akun, dan hanya PEGAWAI atau PIMPINAN", async () => {
+  test("role bawaan undangan tersimpan di pegawai tanpa akun, termasuk ADMIN", async () => {
     const admin = await loginAdmin();
     const bidang = await buatBidang();
     const baru = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Calon Pimpinan", bidangId: bidang.id } });
@@ -201,7 +203,10 @@ describe("pegawai", () => {
     const isi = { nama: "Calon Pimpinan", bidangId: bidang.id };
     expect((await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, roleUndangan: "PIMPINAN" } })).status).toBe(200);
     expect((await ambil()).roleUndangan).toBe("PIMPINAN");
-    expect((await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, roleUndangan: "ADMIN" } })).status).toBe(422);
+    expect((await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, roleUndangan: "SUPER" } })).status).toBe(422);
+    expect((await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, roleUndangan: "ADMIN" } })).status).toBe(200);
+    expect((await ambil()).roleUndangan).toBe("ADMIN");
+    await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, roleUndangan: "PIMPINAN" } });
     // Tanpa field roleUndangan, pilihan lama tidak berubah
     await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, jabatan: "Kepala" } });
     expect((await ambil()).roleUndangan).toBe("PIMPINAN");

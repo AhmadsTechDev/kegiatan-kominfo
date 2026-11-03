@@ -14,7 +14,8 @@
 //
 // Catatan penting:
 //   - Tautan aktivasi akun yang dikirimkan ke surel berlaku selama 72 jam.
-//   - Role ADMIN tidak dapat dibuat via undangan, melainkan lewat pembuatan akun manual.
+//   - Semua role (Pegawai, Pimpinan, Admin) bisa diundang.
+//   - Tanpa autofocus: di HP keyboard tidak langsung muncul menutupi dialog.
 //   - Pegawai wajib memiliki bidang agar dapat melakukan pencatatan kegiatan dinas.
 //
 // Dipakai oleh: permintaan-tab.tsx, pegawai-tab.tsx, akun-view.tsx
@@ -36,7 +37,7 @@ import type { IsiUndangan } from "../types";
 import { useBidangAdmin } from "../hooks/use-admin";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
 
-const ROLE_UNDANGAN: Role[] = ["PEGAWAI", "PIMPINAN"];
+const ROLE_UNDANGAN: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
 
 const schema = z.object({
   email: z.email("Email tidak valid").max(255),
@@ -107,7 +108,6 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
           aria-required
           placeholder="nama@contoh.com"
           aria-invalid={!!formState.errors.email}
-          autoFocus
           {...register("email")}
         />
         <FieldDescription>Email ini menjadi identitas login. Pastikan sudah diverifikasi bersama pegawainya.</FieldDescription>

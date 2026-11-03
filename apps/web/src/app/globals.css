@@ -99,8 +99,11 @@
   --input: #61708f;
   --ring: #60a5fa;
 
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
+  /* Merah dipakai sebagai teks (galat, tombol/menu Hapus): #dc2626 hanya 3,5:1 di atas card gelap.
+     #f87171 = 6,3:1 terhadap card, 4,8:1 di atas latar tombol destructive saat hover.
+     Lencana merah solid memakai destructive-foreground gelap: 5,8:1 */
+  --destructive: #f87171;
+  --destructive-foreground: #450a0a;
 
   --sidebar: #131c2e;
   --sidebar-foreground: #8b97b0;

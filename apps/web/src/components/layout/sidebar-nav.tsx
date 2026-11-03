@@ -106,7 +106,7 @@ export function ItemSidebar({ label, icon: Icon, aktif, mode, collapsed, lencana
           <span
             className={cn(
               "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold tabular-nums",
-              aktif ? "bg-sidebar-primary-foreground text-sidebar-primary" : "bg-destructive text-white",
+              aktif ? "bg-sidebar-primary-foreground text-sidebar-primary" : "bg-destructive text-destructive-foreground",
             )}
           >
             {lencana > 99 ? "99+" : lencana}

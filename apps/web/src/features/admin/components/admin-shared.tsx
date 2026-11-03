@@ -186,7 +186,7 @@ export function PilihanTab<T extends string>({
         >
           {o.label}
           {!!o.lencana && (
-            <span className="min-w-5 rounded-full bg-destructive px-1.5 text-center text-xs font-semibold text-white tabular-nums">
+            <span className="min-w-5 rounded-full bg-destructive px-1.5 text-center text-xs font-semibold text-destructive-foreground tabular-nums">
               <span className="sr-only">, </span>
               {o.lencana}
               <span className="sr-only"> menunggu</span>
