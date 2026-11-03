@@ -25,7 +25,8 @@ Data master tidak pernah dihapus; nonaktifkan dengan `"aktif": false` agar data 
     "induk": "Bidang Teknologi Informasi dan Persandian",
     "aktif": true,
     "updatedAt": "2026-11-01T22:10:39.076Z",
-    "jumlahPegawaiAktif": 0
+    "jumlahPegawaiAktif": 0,
+    "bisaDihapus": true
   }
 ]
 ```
@@ -57,6 +58,14 @@ Body sama dengan `POST`, ditambah `aktif` (boolean, opsional). Kode yang dikoson
 **Galat**: 422 bila menonaktifkan bidang yang masih punya sub bidang atau pegawai aktif, atau menjadikan bidang yang masih punya sub bidang sebagai sub bidang.
 
 Tingkat (`jenis` pada respons) tidak disimpan: dihitung dari `parentId`, yaitu `Bidang` bila kosong dan `Sub bidang` bila terisi. Kode otomatis memakai awalan `BID` atau `SUBBID`.
+
+### `DELETE /api/admin/bidang/:id`
+
+Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai: tidak punya pegawai (aktif maupun tidak), kegiatan (termasuk yang sudah dihapus lunak), atau sub bidang. Yang sudah dipakai cukup dinonaktifkan lewat `PATCH`. Field `bisaDihapus` pada daftar menunjukkan apakah hapus diperbolehkan. Tercatat di audit log (`hapus`).
+
+**Respons 200**: `{ "id": 12 }`
+
+**Galat**: 404 bila tidak ada; 422 bila masih dipakai, mis. "Tidak dapat dihapus karena masih punya 3 pegawai, 2 kegiatan. Nonaktifkan saja agar riwayatnya tetap utuh".
 
 ---
 

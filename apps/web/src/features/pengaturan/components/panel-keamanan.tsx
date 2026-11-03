@@ -37,14 +37,12 @@ export function PanelSandi() {
   return (
     <Panel>
       <PanelHeader title="Kata sandi" />
-      <PanelBody className="flex items-start gap-3 border-t border-muted pt-4 md:pt-5">
+      <PanelBody className="flex items-center gap-3 border-t border-muted pt-4 md:pt-5">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
           <ShieldCheck aria-hidden className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-muted-foreground">Minimal 10 karakter berisi huruf dan angka. Akun terkunci 15 menit setelah 5 kali salah.</p>
-          <p className="mt-1 text-xs text-muted-foreground">Lupa kata sandi saat ini? Keluar, lalu pilih Lupa kata sandi di halaman masuk.</p>
-          <Button variant="outline" size="sm" className="mt-3 h-9 pointer-coarse:min-h-11" onClick={() => setBuka(true)}>
+          <Button variant="outline" size="sm" className="h-9 pointer-coarse:min-h-11" onClick={() => setBuka(true)}>
             <KeyRound aria-hidden />
             Ganti kata sandi
           </Button>

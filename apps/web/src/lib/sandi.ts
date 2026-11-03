@@ -17,7 +17,7 @@
 
 import { z } from "zod";
 
-export const SANDI_MIN = 10;
+export const SANDI_MIN = 8;
 export const SANDI_MAKS = 128;
 export const SYARAT_SANDI = `Minimal ${SANDI_MIN} karakter, berisi huruf dan angka, dan tidak memuat alamat email Anda.`;
 

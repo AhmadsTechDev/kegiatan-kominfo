@@ -20,7 +20,7 @@ Status diturunkan dari data (ada-tidaknya kredensial dan kolom `banned`), tidak 
 
 ## Kebijakan kata sandi
 
-10–128 karakter, berisi huruf dan angka, bukan satu karakter berulang, dan tidak memuat bagian depan email. Disimpan sebagai hash **Argon2id**. Galat kebijakan dijawab 422 dengan `details[].field` menunjuk input yang salah.
+8–128 karakter, berisi huruf dan angka, bukan satu karakter berulang, dan tidak memuat bagian depan email. Disimpan sebagai hash **Argon2id**. Galat kebijakan dijawab 422 dengan `details[].field` menunjuk input yang salah.
 
 ## Tautan email
 

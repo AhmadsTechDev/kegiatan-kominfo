@@ -8,7 +8,7 @@ describe("periksaSandi (sama dengan aturan backend)", () => {
   });
 
   test("menolak yang terlalu pendek, tanpa angka/huruf, berulang, atau memuat email", () => {
-    expect(periksaSandi("abc123")).toBe("Kata sandi minimal 10 karakter");
+    expect(periksaSandi("abc123")).toBe("Kata sandi minimal 8 karakter");
     expect(periksaSandi("hanyahurufsaja")).toBe("Kata sandi harus berisi huruf dan angka");
     expect(periksaSandi("12345678901")).toBe("Kata sandi harus berisi huruf dan angka");
     expect(periksaSandi("aaaaaaaaaaaa")).not.toBeNull();

@@ -53,6 +53,26 @@ export const MasterRepository = {
     return prisma.bidang.count({ where: { parentId: id, aktif: true } });
   },
 
+  // Pemakaian sebuah bidang: semua pegawai (aktif atau tidak), semua kegiatan (termasuk yang dihapus lunak, karena
+  // kunci asingnya tetap menahan), dan sub bidangnya. Bidang yang ketiganya nol boleh dihapus
+  async pemakaian(ids: number[]) {
+    const [pegawai, kegiatan, turunan] = await Promise.all([
+      prisma.pegawai.groupBy({ by: ["bidangId"], where: { bidangId: { in: ids } }, _count: { _all: true } }),
+      prisma.kegiatan.groupBy({ by: ["bidangId"], where: { bidangId: { in: ids } }, _count: { _all: true } }),
+      prisma.bidang.groupBy({ by: ["parentId"], where: { parentId: { in: ids } }, _count: { _all: true } }),
+    ]);
+    const peta = new Map<number, { pegawai: number; kegiatan: number; turunan: number }>(ids.map((id) => [id, { pegawai: 0, kegiatan: 0, turunan: 0 }]));
+    for (const b of pegawai) peta.get(b.bidangId)!.pegawai = b._count._all;
+    for (const b of kegiatan) peta.get(b.bidangId)!.kegiatan = b._count._all;
+    for (const b of turunan) if (b.parentId !== null) peta.get(b.parentId)!.turunan = b._count._all;
+    return peta;
+  },
+
+  // Menghapus bidang secara permanen (hanya dipanggil setelah dicek tidak dipakai)
+  async hapusUnit(id: number, tx: Db) {
+    await tx.bidang.delete({ where: { id } });
+  },
+
   // Jumlah pegawai aktif di sebuah unit
   jumlahPegawaiAktif(unitId: number) {
     return prisma.pegawai.count({ where: { bidangId: unitId, aktif: true } });

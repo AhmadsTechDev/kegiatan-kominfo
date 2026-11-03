@@ -28,11 +28,11 @@
 
 "use client";
 
-import { Ellipsis, Pencil, Power, PowerOff, ShieldAlert } from "lucide-react";
+import { Ellipsis, Pencil, Power, PowerOff, ShieldAlert, Trash2 } from "lucide-react";
 import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
@@ -76,12 +76,15 @@ export function AksiBaris({
   aktif,
   onUbah,
   onUbahStatus,
+  onHapus,
   children,
 }: {
   nama: string;
   aktif: boolean;
   onUbah: () => void;
   onUbahStatus: () => void;
+  /** Bila diisi, menu menampilkan "Hapus". Isi hanya untuk data yang memang boleh dihapus */
+  onHapus?: () => void;
   children?: React.ReactNode;
 }) {
   return (
@@ -108,6 +111,15 @@ export function AksiBaris({
               <Power aria-hidden />
               Aktifkan kembali
             </DropdownMenuItem>
+          )}
+          {onHapus && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onSelect={onHapus}>
+                <Trash2 aria-hidden />
+                Hapus
+              </DropdownMenuItem>
+            </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>

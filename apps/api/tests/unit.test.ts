@@ -181,10 +181,10 @@ describe("utilitas lain", () => {
 });
 
 describe("kebijakan kata sandi", () => {
-  test("panjang 10-128, berisi huruf dan angka", () => {
+  test("panjang 8-128, berisi huruf dan angka", () => {
     expect(periksaSandi("sandiuji12345")).toBeNull();
     expect(periksaSandi("Kata Sandi Aman 2026!")).toBeNull();
-    expect(periksaSandi("abc123")).toBe("Kata sandi minimal 10 karakter");
+    expect(periksaSandi("abc123")).toBe("Kata sandi minimal 8 karakter");
     expect(periksaSandi(`a1${"x".repeat(127)}`)).toBe("Kata sandi maksimal 128 karakter");
     expect(periksaSandi("hanyahurufsaja")).toBe("Kata sandi harus berisi huruf dan angka");
     expect(periksaSandi("12345678901")).toBe("Kata sandi harus berisi huruf dan angka");

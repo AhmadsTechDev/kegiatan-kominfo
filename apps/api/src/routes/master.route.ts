@@ -13,6 +13,7 @@ export const masterRoutes = new Elysia({ prefix: "/admin" })
   .get("/bidang", MasterController.daftarUnit, ADMIN)
   .post("/bidang", MasterController.buatUnit, { ...ADMIN, body: MasterValidator.buatUnit })
   .patch("/bidang/:id", MasterController.ubahUnit, { ...ADMIN, params, body: MasterValidator.ubahUnit })
+  .delete("/bidang/:id", MasterController.hapusUnit, { ...ADMIN, params })
   // Pegawai
   .get("/pegawai", MasterController.daftarPegawai, { ...ADMIN, query: MasterValidator.daftarPegawaiQuery })
   .post("/pegawai", MasterController.buatPegawai, { ...ADMIN, body: MasterValidator.buatPegawai })

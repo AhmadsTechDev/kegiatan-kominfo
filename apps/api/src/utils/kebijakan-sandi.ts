@@ -1,7 +1,7 @@
-export const SANDI_MIN = 10;
+export const SANDI_MIN = 8;
 export const SANDI_MAKS = 128;
 
-// Memeriksa kata sandi baru: 10–128 karakter, berisi huruf dan angka, tidak memuat bagian depan email,
+// Memeriksa kata sandi baru: 8–128 karakter, berisi huruf dan angka, tidak memuat bagian depan email,
 // dan tidak berupa satu karakter berulang. Mengembalikan pesan galat, atau null bila sah
 export function periksaSandi(sandi: string, konteks: { email?: string | null } = {}): string | null {
   if (sandi.length < SANDI_MIN) return `Kata sandi minimal ${SANDI_MIN} karakter`;

@@ -114,7 +114,11 @@ export const MasterService = {
   async daftarUnit() {
     const [unit, jumlah] = await Promise.all([MasterRepository.daftarUnit(), MasterRepository.jumlahPegawaiPerUnit()]);
     const peta = new Map(jumlah.map((j) => [j.bidangId, j.jumlah]));
-    return unit.map((u) => ({ ...u, jumlahPegawaiAktif: peta.get(u.id) ?? 0 }));
+    const pakai = await MasterRepository.pemakaian(unit.map((u) => u.id));
+    return unit.map((u) => {
+      const p = pakai.get(u.id)!;
+      return { ...u, jumlahPegawaiAktif: peta.get(u.id) ?? 0, bisaDihapus: p.pegawai + p.kegiatan + p.turunan === 0 };
+    });
   },
 
   // Membuat bidang; kode dibuat otomatis bila dikosongkan
@@ -153,6 +157,23 @@ export const MasterService = {
         return { id };
       }),
     );
+  },
+
+  // Menghapus bidang atau sub bidang secara permanen; ditolak bila masih punya pegawai, kegiatan, atau sub bidang
+  // (yang sudah dipakai cukup dinonaktifkan agar riwayat kegiatannya tetap utuh)
+  async hapusUnit(id: number, aktor: Aktor, meta: MetaRequest) {
+    const sebelum = await MasterRepository.unitById(id);
+    if (!sebelum) throw NotFound("Bidang tidak ditemukan");
+    const p = (await MasterRepository.pemakaian([id])).get(id)!;
+    if (p.pegawai + p.kegiatan + p.turunan > 0) {
+      const bagian = [p.pegawai && `${p.pegawai} pegawai`, p.kegiatan && `${p.kegiatan} kegiatan`, p.turunan && `${p.turunan} sub bidang`].filter(Boolean).join(", ");
+      throw Unprocessable(`Tidak dapat dihapus karena masih punya ${bagian}. Nonaktifkan saja agar riwayatnya tetap utuh`);
+    }
+    await prisma.$transaction(async (tx) => {
+      await MasterRepository.hapusUnit(id, tx);
+      await AuditLogService.catat({ aktorId: aktor.id, aksi: "hapus", entitas: "bidang", entitasId: id, sebelum, ...meta }, tx);
+    });
+    return { id };
   },
 
   // ---------- Pegawai ----------

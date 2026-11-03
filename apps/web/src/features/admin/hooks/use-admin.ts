@@ -7,7 +7,7 @@
 // Isi berkas:
 //   - adminKeys : definisi kunci kueri (query keys) terpusat untuk cache modul admin
 //   - useSegarkan : fungsi pembantu pembatalan cache query terkait secara paralel
-//   - useBidangAdmin, useSimpanBidang : kueri dan mutasi master bidang
+//   - useBidangAdmin, useSimpanBidang, useHapusBidang : kueri dan mutasi master bidang
 //   - usePegawaiAdmin, useSimpanPegawai : kueri dan mutasi pegawai
 //   - useJenisAdmin, useSimpanJenis : kueri dan mutasi master kategori kegiatan
 //   - useAkunAdmin, useDetailAkun, useSimpanAkun, useStatusAkun, useHapusAkun : manajemen akun
@@ -44,6 +44,7 @@ import {
   getPilihanAudit,
   getBidang,
   hapusAkun,
+  hapusBidang,
   kirimUlangUndangan,
   nonaktifkanAkun,
   resetSandiAkun,
@@ -90,6 +91,11 @@ export function useSimpanBidang() {
     mutationFn: ({ id, isi }: { id?: number; isi: IsiUnit }) => (id ? ubahBidang(id, isi) : buatBidang(isi)),
     onSuccess: segarkan,
   });
+}
+
+export function useHapusBidang() {
+  const segarkan = useSegarkan(adminKeys.bidang, adminKeys.pegawai);
+  return useMutation({ mutationFn: (id: number) => hapusBidang(id), onSuccess: segarkan });
 }
 
 export const usePegawaiAdmin = (f: FilterPegawai) =>

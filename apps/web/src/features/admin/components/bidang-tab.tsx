@@ -13,6 +13,8 @@
 //   1. Memuat daftar berdasarkan tingkatnya (bidang atau sub bidang).
 //   2. Formulir sub bidang mewajibkan memilih satu bidang sebagai induknya.
 //   3. Administrator dapat menyaring sub bidang berdasarkan bidang induknya.
+//   4. Yang nonaktif dipisah ke tab Nonaktif agar tidak mengotori daftar utama.
+//   5. Bidang yang belum dipakai pegawai, kegiatan, atau sub bidang bisa dihapus permanen.
 //
 // Catatan penting:
 //   - Kode unit bersifat opsional; jika dikosongkan, server mengisinya secara otomatis.
@@ -39,9 +41,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useSimpanBidang, useBidangAdmin } from "../hooks/use-admin";
+import { useBidangAdmin, useHapusBidang, useSimpanBidang } from "../hooks/use-admin";
 import type { BidangAdmin } from "../types";
-import { AksiBaris, BadgeAktif, KartuMaster, KolomCari, terapkanGalatServer } from "./admin-shared";
+import { AksiBaris, BadgeAktif, KartuMaster, KolomCari, PilihanTab, terapkanGalatServer } from "./admin-shared";
 
 const schema = z.object({
   kode: z
@@ -176,8 +178,11 @@ export function BidangTab({
 }) {
   const daftar = useBidangAdmin();
   const simpan = useSimpanBidang();
+  const hapus = useHapusBidang();
   const [dialog, setDialog] = useState<BidangAdmin | "baru" | null>(null);
   const [konfirmasi, setKonfirmasi] = useState<BidangAdmin | null>(null);
+  const [hapusTarget, setHapusTarget] = useState<BidangAdmin | null>(null);
+  const [lihat, setLihat] = useState<"aktif" | "nonaktif">("aktif");
   const [kata, setKata] = useState("");
   const [induk, setInduk] = useState(indukAwal ? String(indukAwal) : SEMUA);
   const turunan = tingkat === "turunan";
@@ -192,7 +197,14 @@ export function BidangTab({
     return n;
   }, [semua]);
   const pilihanInduk = useMemo(() => semua.filter((u) => jumlahTurunan.has(u.id)), [semua, jumlahTurunan]);
-  const sesuaiTingkat = useMemo(() => semua.filter((u) => (turunan ? u.parentId !== null : u.parentId === null)), [semua, turunan]);
+  const sesuaiTingkat = useMemo(
+    () => semua.filter((u) => (turunan ? u.parentId !== null : u.parentId === null) && u.aktif === (lihat === "aktif")),
+    [semua, turunan, lihat],
+  );
+  const jumlahStatus = useMemo(() => {
+    const tingkat = semua.filter((u) => (turunan ? u.parentId !== null : u.parentId === null));
+    return { aktif: tingkat.filter((u) => u.aktif).length, nonaktif: tingkat.filter((u) => !u.aktif).length };
+  }, [semua, turunan]);
   const baris = useMemo(() => {
     const q = kata.trim().toLowerCase();
     const namaInduk = (u: BidangAdmin) => (u.parentId !== null ? (perId.get(u.parentId)?.nama ?? "") : "");
@@ -271,7 +283,15 @@ export function BidangTab({
         header: () => <span className="block text-right">Aksi</span>,
         cell: ({ row }) => {
           const u = row.original;
-          return <AksiBaris nama={u.nama} aktif={u.aktif} onUbah={() => setDialog(u)} onUbahStatus={() => (u.aktif ? setKonfirmasi(u) : ubahStatus(u, true))} />;
+          return (
+            <AksiBaris
+              nama={u.nama}
+              aktif={u.aktif}
+              onUbah={() => setDialog(u)}
+              onUbahStatus={() => (u.aktif ? setKonfirmasi(u) : ubahStatus(u, true))}
+              onHapus={u.bisaDihapus ? () => setHapusTarget(u) : undefined}
+            />
+          );
         },
       },
     ],
@@ -283,6 +303,17 @@ export function BidangTab({
   const adaFilter = kata.trim() !== "" || (turunan && induk !== SEMUA);
   return (
     <>
+      <div className="px-4 pt-3 md:px-5">
+        <PilihanTab
+          label={`Status ${turunan ? "sub bidang" : "bidang"}`}
+          value={lihat}
+          onChange={setLihat}
+          opsi={[
+            { nilai: "aktif", label: "Aktif", jumlah: jumlahStatus.aktif },
+            { nilai: "nonaktif", label: "Nonaktif", jumlah: jumlahStatus.nonaktif },
+          ]}
+        />
+      </div>
       <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center md:px-5">
         <KolomCari
           value={kata}
@@ -323,7 +354,15 @@ export function BidangTab({
         renderMobileCard={(u) => (
           <KartuMaster
             judul={<span className={cn(!u.aktif && "text-muted-foreground")}>{u.nama}</span>}
-            aksi={<AksiBaris nama={u.nama} aktif={u.aktif} onUbah={() => setDialog(u)} onUbahStatus={() => (u.aktif ? setKonfirmasi(u) : ubahStatus(u, true))} />}
+            aksi={
+              <AksiBaris
+                nama={u.nama}
+                aktif={u.aktif}
+                onUbah={() => setDialog(u)}
+                onUbahStatus={() => (u.aktif ? setKonfirmasi(u) : ubahStatus(u, true))}
+                onHapus={u.bisaDihapus ? () => setHapusTarget(u) : undefined}
+              />
+            }
           >
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
               <BadgeAktif aktif={u.aktif} />
@@ -348,7 +387,7 @@ export function BidangTab({
         empty={
           adaFilter
             ? { icon: SearchX, title: "Tidak ada unit yang cocok dengan pencarian atau filter." }
-            : { icon: Building2, title: turunan ? "Belum ada sub bidang." : "Belum ada bidang." }
+            : { icon: Building2, title: `${lihat === "nonaktif" ? "Tidak ada" : "Belum ada"} ${turunan ? "sub bidang" : "bidang"}${lihat === "nonaktif" ? " nonaktif" : ""}.` }
         }
       />
       {daftar.data && (
@@ -357,6 +396,29 @@ export function BidangTab({
         </p>
       )}
       {dialog && daftar.data && <UnitDialog unit={dialog} semua={daftar.data} tingkat={tingkat} onClose={() => setDialog(null)} />}
+      {hapusTarget && (
+        <ConfirmDialog
+          open
+          onOpenChange={(v) => !v && setHapusTarget(null)}
+          title={`Hapus ${hapusTarget.parentId !== null ? "sub bidang" : "bidang"} "${hapusTarget.nama}"?`}
+          description="Dihapus permanen dan tidak bisa dikembalikan."
+          confirmLabel="Hapus"
+          pendingLabel="Menghapus..."
+          pending={hapus.isPending}
+          onConfirm={() =>
+            hapus.mutate(hapusTarget.id, {
+              onSuccess: () => {
+                toast.success(`${hapusTarget.nama} dihapus`);
+                setHapusTarget(null);
+              },
+              onError: (e) => {
+                toast.error(e.message);
+                setHapusTarget(null);
+              },
+            })
+          }
+        />
+      )}
       {konfirmasi && (
         <ConfirmDialog
           open

@@ -1,7 +1,7 @@
 // Uji data master: bidang dan sub bidang (aturan induk, kode otomatis, nonaktif), jenis kegiatan, pegawai
 import { describe, expect, test } from "bun:test";
 import { prisma } from "@/lib/prisma";
-import { buatBidang, buatPengguna, formBerkas, idUnit, login, loginAdmin, nipAcak, panggil, SANDI } from "./helpers";
+import { buatBidang, buatKegiatan, buatPengguna, formBerkas, idUnit, isiKegiatan, login, loginAdmin, nipAcak, panggil, SANDI } from "./helpers";
 
 const kodeAcak = () => crypto.randomUUID().slice(0, 6);
 
@@ -66,6 +66,42 @@ describe("bidang", () => {
     expect(audit.data.items.some((a: { entitasId: string }) => a.entitasId === String(bidang.id))).toBe(true);
     const pegawaiBaru = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Masuk Unit Nonaktif", bidangId: bidang.id } });
     expect(pegawaiBaru.status).toBe(422);
+  });
+
+  test("bidang yang belum dipakai bisa dihapus permanen dan tercatat di audit", async () => {
+    const admin = await loginAdmin();
+    const bidang = await buatBidang();
+    const daftar = await panggil("/admin/bidang", { cookie: admin });
+    expect(daftar.data.find((u: { id: number }) => u.id === bidang.id).bisaDihapus).toBe(true);
+
+    expect((await panggil(`/admin/bidang/${bidang.id}`, { method: "DELETE", cookie: admin })).status).toBe(200);
+    expect(await prisma.bidang.findUnique({ where: { id: bidang.id } })).toBeNull();
+    expect((await panggil(`/admin/bidang/${bidang.id}`, { method: "DELETE", cookie: admin })).status).toBe(404);
+    const audit = await panggil("/audit-log?entitas=bidang&aksi=hapus", { cookie: admin });
+    expect(audit.data.items.some((a: { entitasId: string }) => a.entitasId === String(bidang.id))).toBe(true);
+  });
+
+  test("bidang yang masih punya pegawai, kegiatan, atau sub bidang tidak bisa dihapus", async () => {
+    const admin = await loginAdmin();
+    const denganPegawai = await buatBidang();
+    const u = await buatPengguna({ unitId: denganPegawai.id });
+    const pegawai = await panggil(`/admin/bidang/${denganPegawai.id}`, { method: "DELETE", cookie: admin });
+    expect(pegawai.status).toBe(422);
+    expect(pegawai.data.message).toContain("pegawai");
+
+    await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId));
+    await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: { nama: "Pegawai Pindah", bidangId: await idUnit("BID-TIP"), aktif: false } });
+    const kegiatan = await panggil(`/admin/bidang/${denganPegawai.id}`, { method: "DELETE", cookie: admin });
+    expect(kegiatan.status).toBe(422);
+    expect(kegiatan.data.message).toContain("kegiatan");
+
+    const induk = await buatBidang();
+    await panggil("/admin/bidang", { cookie: admin, json: { nama: `Sub Hapus ${kodeAcak()}`, parentId: induk.id } });
+    const sub = await panggil(`/admin/bidang/${induk.id}`, { method: "DELETE", cookie: admin });
+    expect(sub.status).toBe(422);
+    expect(sub.data.message).toContain("sub bidang");
+    const daftar = await panggil("/admin/bidang", { cookie: admin });
+    expect(daftar.data.find((x: { id: number }) => x.id === induk.id).bisaDihapus).toBe(false);
   });
 
   test("daftar unit menghitung pegawai aktif", async () => {

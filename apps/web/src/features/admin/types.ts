@@ -31,6 +31,8 @@ export type BidangAdmin = {
   induk: string | null;
   aktif: boolean;
   jumlahPegawaiAktif: number;
+  /** true bila belum punya pegawai, kegiatan, atau sub bidang */
+  bisaDihapus: boolean;
   updatedAt: string;
 };
 

@@ -135,7 +135,7 @@ model Verification {
 }
 
 // ---------------------------------------------------------------------------
-// Data master. Tidak pernah dihapus, cukup dinonaktifkan (kolom aktif).
+// Data master. Dinonaktifkan lewat kolom aktif; bidang yang belum dipakai boleh dihapus.
 // ---------------------------------------------------------------------------
 
 // Bidang dan sub bidang dalam satu tabel. Tingkatnya ditentukan parent_id: tanpa induk berarti bidang,

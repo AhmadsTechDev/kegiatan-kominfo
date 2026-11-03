@@ -54,7 +54,7 @@ flowchart TD
     terkirim -- Ya --> klik[Pemilik membuka tautan aktivasi]
     klik --> berlaku{Token berlaku?}
     berlaku -- "Tidak (kedaluwarsa/dipakai)" --> ulang
-    berlaku -- Ya --> sandi["Pemilik membuat sandi<br/>(min. 10 karakter, huruf dan angka)"]
+    berlaku -- Ya --> sandi["Pemilik membuat sandi<br/>(min. 8 karakter, huruf dan angka)"]
     sandi --> aktif[(Akun AKTIF + audit log)]
     aktif --> login[Login dengan email dan sandi] --> akhir([Selesai])
 ```

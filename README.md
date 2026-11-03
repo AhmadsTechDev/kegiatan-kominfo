@@ -40,7 +40,7 @@ Alurnya digambar lengkap di [diagram activity](docs/uml/02-activity.md), dan per
 | --- | --- | --- | --- |
 | FR-01 | **Masuk dan keamanan akun.** Login hanya dengan email pribadi; akun terkunci 15 menit setelah 5 kali salah sandi. Lupa dan atur ulang sandi, ganti email dengan verifikasi, melihat dan mencabut sesi aktif, foto profil, dan preferensi (tema, notifikasi) | Semua peran | `/login`, `/pengaturan` |
 | FR-02 | **Akun dan permintaan akun.** Tanpa pendaftaran mandiri: akun dibuat admin atau dari permintaan akun, lalu diaktivasi pemiliknya lewat email. Akun bisa dinonaktifkan atau dihapus; akun yang sudah membuat kegiatan, mengunggah dokumentasi, atau memeriksa hanya bisa dinonaktifkan agar jejaknya utuh | Admin | `/admin/akun` |
-| FR-02 | **Master data.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, dan jenis kegiatan. Data master tidak dihapus, cukup dinonaktifkan | Admin | `/admin/master` |
+| FR-02 | **Master data.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, dan jenis kegiatan. Pegawai dan jenis kegiatan dinonaktifkan, tidak dihapus. Bidang dan sub bidang yang belum dipakai pegawai, kegiatan, atau sub bidang bisa dihapus; yang nonaktif dipisah ke tab Nonaktif | Admin | `/admin/master` |
 | FR-03 | **Audit log** append-only (dijaga sampai hak basis data) dengan filter serta nilai sebelum dan sesudah | Admin | `/admin/audit-log` |
 | FR-04, FR-05 | **Kegiatan.** Catat dalam dua langkah, simpan draf, ubah, isi hasil, selesaikan sekarang (saat berlangsung), batalkan (alasan wajib), dan hapus. Status pelaksanaan (akan datang, berlangsung, selesai, dibatalkan) dihitung otomatis dari waktu. Pengubahan bersamaan oleh dua orang dijawab 409 | Pegawai, Admin | `/kegiatan`, `/kegiatan/baru` |
 | FR-06 | **Dokumentasi.** Unggah foto atau PDF maksimal 20 MB (jenis berkas dicek lewat magic bytes, foto dikompres, EXIF dan GPS dibuang), maksimal 10 berkas per kegiatan. Unduhan hanya untuk yang login dan berhak membaca kegiatannya | Pegawai, Admin (lihat: semua peran) | Detail kegiatan |
@@ -150,7 +150,7 @@ Yang harus benar di produksi, apa pun caranya:
 
 - **Email** (`BREVO_API_KEY`, atau `SMTP_*`): tanpa email, akun baru tidak bisa diaktivasi dan lupa sandi tidak bisa dipakai.
 - **`FRONTEND_URL` dan `BETTER_AUTH_URL`** sama persis dengan alamat publik aplikasi (`https://`, tanpa garis miring di akhir). Tautan di email dibuat dari `FRONTEND_URL`, dan backend menolak permintaan pengubah data yang `Origin`-nya tidak cocok (403 `ASAL_DITOLAK`, perlindungan CSRF).
-- **`SEED_ADMIN_PASSWORD`** mengikuti kebijakan kata sandi: minimal 10 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin.
+- **`SEED_ADMIN_PASSWORD`** mengikuti kebijakan kata sandi: minimal 8 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin.
 
 ## Deploy (online lewat Railway dan Vercel)
 
@@ -212,7 +212,7 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
    | `FRONTEND_URL` | Sama dengan `BETTER_AUTH_URL` |
    | `CLOUDINARY_URL` | Nilai dari langkah 2b.2 (`cloudinary://...`) |
    | `SEED_ADMIN_EMAIL` | Email admin pertama |
-   | `SEED_ADMIN_PASSWORD` | Sandi admin pertama: minimal 10 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin |
+   | `SEED_ADMIN_PASSWORD` | Sandi admin pertama: minimal 8 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin |
    | `BREVO_API_KEY` | Kunci dari langkah 2 |
    | `SMTP_FROM` | `Aplikasi Pendataan Kegiatan <alamat-yang-diverifikasi-di-brevo@domain>` (harus sama persis dengan sender yang aktif di Brevo) |
 

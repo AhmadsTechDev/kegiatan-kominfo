@@ -19,6 +19,9 @@ export const MasterController = {
   // PATCH /api/admin/bidang/:id
   ubahUnit: ({ params, body, user, request }: Konteks<IsiUnit, Id>) => MasterService.ubahUnit(params.id, body, aktorDari(user), requestMeta(request.headers)),
 
+  // DELETE /api/admin/bidang/:id — hanya bila belum dipakai pegawai, kegiatan, atau sub bidang
+  hapusUnit: ({ params, user, request }: Konteks<unknown, Id>) => MasterService.hapusUnit(params.id, aktorDari(user), requestMeta(request.headers)),
+
   // GET /api/admin/pegawai
   daftarPegawai: ({ query }: Konteks<unknown, unknown, DaftarPegawaiQuery>) => MasterService.daftarPegawai(query),
 

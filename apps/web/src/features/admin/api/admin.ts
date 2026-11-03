@@ -5,7 +5,7 @@
 // master data, akun pengguna, jejak audit log, dan persetujuan permintaan akun.
 //
 // Isi berkas:
-//   - getBidang, buatBidang, ubahBidang : API master bidang
+//   - getBidang, buatBidang, ubahBidang, hapusBidang : API master bidang
 //   - getPegawai, buatPegawai, ubahPegawai : API master pegawai
 //   - getJenisKegiatan, buatJenisKegiatan, ubahJenisKegiatan : API jenis kegiatan
 //   - getAkun, getDetailAkun, buatAkun, ubahAkun, nonaktifkanAkun, aktifkanAkun, hapusAkun : API akun
@@ -55,6 +55,7 @@ type Hasil<T = number> = { id: T };
 export const getBidang = () => apiClient.get<BidangAdmin[]>("/admin/bidang").then((r) => r.data);
 export const buatBidang = (isi: IsiUnit) => apiClient.post<Hasil>("/admin/bidang", isi).then((r) => r.data);
 export const ubahBidang = (id: number, isi: IsiUnit) => apiClient.patch<Hasil>(`/admin/bidang/${id}`, isi).then((r) => r.data);
+export const hapusBidang = (id: number) => apiClient.delete<Hasil>(`/admin/bidang/${id}`).then((r) => r.data);
 
 export const getPegawai = (f: FilterPegawai) =>
   apiClient
