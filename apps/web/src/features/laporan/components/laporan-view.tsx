@@ -37,6 +37,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
+import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { KegiatanTanpaAkses } from "@/features/kegiatan/components/kegiatan-states";
 import { useReferensi } from "@/features/kegiatan/hooks/use-kegiatan";
 import { useKegiatanFilter } from "@/features/kegiatan/hooks/use-kegiatan-filter";
 import { useEkspor } from "@/features/rekap/hooks/use-rekap";
@@ -63,7 +65,21 @@ function unitDanTurunan(unit: { id: number; parentId: number | null }[], id: num
   return hasil;
 }
 
+// Rekap dan laporan hanya untuk pimpinan dan admin; backend juga menolak 403 untuk pegawai
 export function LaporanView() {
+  const { user } = useCurrentUser();
+  if (user?.role === "PEGAWAI") {
+    return (
+      <>
+        <PageHeader eyebrow="Operasional" title="Laporan" />
+        <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin." />
+      </>
+    );
+  }
+  return <LaporanIsi />;
+}
+
+function LaporanIsi() {
   const id = useId();
   const { filter, setFilter } = useKegiatanFilter();
   const { terbatas, saringUnit } = useLingkupPegawai();

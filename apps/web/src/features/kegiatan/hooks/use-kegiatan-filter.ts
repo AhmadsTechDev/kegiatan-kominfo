@@ -30,7 +30,8 @@ import type { StatusPelaksanaan } from "@/components/shared/status-badge";
 import type { FilterKegiatan } from "../types";
 
 const STATUS: StatusPelaksanaan[] = ["akan_datang", "berlangsung", "selesai", "dibatalkan"];
-const KUNCI = ["q", "dari", "sampai", "periode", "unit", "jenis", "status", "pegawai", "milik", "page"] as const;
+const KUNCI = ["q", "dari", "sampai", "periode", "unit", "jenis", "status", "pegawai", "milik", "pemeriksaan", "page"] as const;
+const RUTE_MENU = ["milik", "pemeriksaan"] as const;
 const TANGGAL = /^\d{4}-\d{2}-\d{2}$/;
 const PERIODE = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
@@ -65,6 +66,8 @@ export function useKegiatanFilter() {
       status: STATUS.includes(status as StatusPelaksanaan) ? (status as StatusPelaksanaan) : null,
       pegawai: /^\d+$/.test(searchParams.get("pegawai") ?? "") ? searchParams.get("pegawai") : null,
       milik: searchParams.get("milik") === "saya" ? "saya" : null,
+      // Menu "Perlu perbaikan": hanya nilai ini yang dipakai sebagai rute menu
+      pemeriksaan: searchParams.get("pemeriksaan") === "perlu_perbaikan" ? "perlu_perbaikan" : null,
       page: Number.isInteger(page) && page > 0 ? page : 1,
     };
   }, [searchParams]);
@@ -84,13 +87,19 @@ export function useKegiatanFilter() {
     [pathname, router, searchParams],
   );
 
-  const milik = searchParams.get("milik");
+  // milik dan pemeriksaan adalah rute menu (Kegiatan saya, Perlu perbaikan), bukan isian filter, jadi tetap dipertahankan
+  const rute = new URLSearchParams();
+  for (const k of RUTE_MENU) {
+    const v = searchParams.get(k);
+    if (v) rute.set(k, v);
+  }
+  const qsRute = rute.toString();
   const resetFilter = useCallback(
-    () => router.replace(milik === "saya" ? `${pathname}?milik=saya` : pathname, { scroll: false }),
-    [milik, pathname, router],
+    () => router.replace(qsRute ? `${pathname}?${qsRute}` : pathname, { scroll: false }),
+    [qsRute, pathname, router],
   );
 
-  const adaFilter = KUNCI.some((k) => k !== "page" && k !== "milik" && searchParams.get(k));
+  const adaFilter = KUNCI.some((k) => k !== "page" && !(RUTE_MENU as readonly string[]).includes(k) && searchParams.get(k));
 
   return { filter, setFilter, resetFilter, adaFilter };
 }

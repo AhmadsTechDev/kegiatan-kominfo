@@ -148,7 +148,7 @@ Beranda pribadi.
 
 Jumlah kegiatan menurut periode, pegawai, unit, dan jenis.
 
-**Akses**: Login
+**Akses**: PIMPINAN, ADMIN (PEGAWAI ditolak 403)
 
 **Query**: sama dengan filter `GET /api/kegiatan` (`unit`, `jenis`, `pegawai`, `status`, `pemeriksaan`, `periode`, `dari`, `sampai`, `q`), tanpa `milik`, `page`, `pageSize`. Ditambah:
 
@@ -216,7 +216,7 @@ Jumlah kegiatan per status pemeriksaan, untuk pimpinan.
 
 ### `GET /api/ekspor/kegiatan.pdf`
 
-**Akses**: Login (maks. 10 ekspor per menit per akun)
+**Akses**: PIMPINAN, ADMIN; PEGAWAI ditolak 403 (maks. 10 ekspor per menit per akun)
 
 **Respons 200**: berkas PDF A4 mendatar berkop dinas (`Content-Type: application/pdf`).
 

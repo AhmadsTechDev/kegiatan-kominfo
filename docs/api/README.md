@@ -80,9 +80,9 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 | `GET /api/dashboard` | Dashboard dinas | `PIMPINAN`, `ADMIN` |
 | `GET /api/dashboard/saya` | Dashboard tugas pribadi | Login |
 | `GET /api/kalender` | Kegiatan per bulan | Login (sesuai lingkup baca) |
-| `GET /api/rekap` | Rekap jumlah per unit induk dan jenis | Login (sesuai lingkup baca) |
+| `GET /api/rekap` | Rekap jumlah per unit induk dan jenis | `PIMPINAN`, `ADMIN` |
 | `GET /api/pantau/ringkasan` | Ringkasan status pemeriksaan | `PIMPINAN`, `ADMIN` |
-| `GET /api/ekspor/kegiatan.pdf`, `GET /api/ekspor/pratinjau` | Ekspor PDF berkop dinas dan jumlah barisnya | Login (sesuai lingkup baca) |
+| `GET /api/ekspor/kegiatan.pdf`, `GET /api/ekspor/pratinjau` | Ekspor PDF berkop dinas dan jumlah barisnya | `PIMPINAN`, `ADMIN` |
 
 ### Administrasi ([api-admin.md](api-admin.md)), semuanya `ADMIN`
 

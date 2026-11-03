@@ -173,7 +173,7 @@ function DaftarNav({
         const berkotak = group.items.length > 1;
         return (
           <div key={group.label} className="flex flex-col gap-1.5">
-            {berkotak && (
+            {(berkotak || group.tampilkanLabel) && (
               <p className={cn("px-4 text-[10px] font-bold tracking-[0.14em] text-sidebar-foreground/70 uppercase", kelasLabel(mode, collapsed))}>
                 {group.label}
               </p>

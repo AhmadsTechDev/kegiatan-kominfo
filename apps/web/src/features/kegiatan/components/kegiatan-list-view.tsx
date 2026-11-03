@@ -65,7 +65,7 @@ import type { FilterKegiatan, KegiatanItem } from "../types";
 import { DrafSaya } from "./draf-saya";
 import { KegiatanDokumentasiSheet } from "./kegiatan-dokumentasi-sheet";
 
-type Lingkup = "semua" | "unit" | "saya";
+type Lingkup = "semua" | "unit" | "saya" | "perbaikan";
 
 type BukaDokumentasi = (k: KegiatanItem) => void;
 
@@ -309,14 +309,21 @@ export function KegiatanListView() {
   const { terbatas: pegawai, unit: unitSaya, saringUnit } = useLingkupPegawai();
   const lingkup: Lingkup = !pegawai
     ? "semua"
-    : filter.milik === "saya"
-      ? "saya"
-      : "unit";
+    : filter.milik === "saya" && filter.pemeriksaan === "perlu_perbaikan"
+      ? "perbaikan"
+      : filter.milik === "saya"
+        ? "saya"
+        : "unit";
   const judul: Record<Lingkup, { title: string; description: string }> = {
-    semua: { title: "Kegiatan", description: "Seluruh kegiatan dinas." },
+    // Admin tetap "Kegiatan"; pimpinan memakai nama menu "Semua kegiatan"
+    semua: { title: user?.role === "PIMPINAN" ? "Semua kegiatan" : "Kegiatan", description: "Seluruh kegiatan dinas." },
     unit: {
-      title: "Kegiatan bidang saya",
-      description: unitSaya?.nama ?? "Kegiatan bidang Anda.",
+      title: "Semua kegiatan",
+      description: unitSaya ? `${unitSaya.nama} dan sub bidangnya` : "Kegiatan bidang Anda.",
+    },
+    perbaikan: {
+      title: "Perlu perbaikan",
+      description: "Kegiatan Anda yang mendapat catatan dari admin atau pimpinan.",
     },
     saya: {
       title: "Kegiatan saya",
@@ -324,7 +331,7 @@ export function KegiatanListView() {
     },
   };
   const referensi = useReferensi();
-  const tanpaPj = lingkup === "saya";
+  const tanpaPj = lingkup === "saya" || lingkup === "perbaikan";
   const [dokumentasi, setDokumentasi] = useState<{
     id: number;
     judul: string;
@@ -371,7 +378,7 @@ export function KegiatanListView() {
         onReset={resetFilter}
         adaFilter={adaFilter}
         bidang={
-          lingkup === "saya" ? [] : saringUnit(referensi.data?.bidang ?? [])
+          tanpaPj ? [] : saringUnit(referensi.data?.bidang ?? [])
         }
         jenisKegiatan={referensi.data?.jenisKegiatan ?? []}
       />
@@ -430,13 +437,15 @@ export function KegiatanListView() {
               : {
                   icon: ClipboardList,
                   title:
-                    lingkup === "saya"
-                      ? "Belum ada kegiatan Anda."
-                      : "Belum ada kegiatan.",
-                  description: bisaMenambah
+                    lingkup === "perbaikan"
+                      ? "Tidak ada kegiatan yang perlu diperbaiki."
+                      : lingkup === "saya"
+                        ? "Belum ada kegiatan Anda."
+                        : "Belum ada kegiatan.",
+                  description: bisaMenambah && lingkup !== "perbaikan"
                     ? "Tambahkan kegiatan pertama."
                     : undefined,
-                  action: tombolTambah || undefined,
+                  action: lingkup === "perbaikan" ? undefined : tombolTambah || undefined,
                 }
           }
         />

@@ -37,6 +37,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartJenis } from "@/features/dashboard/components/chart-jenis";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
+import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { KegiatanTanpaAkses } from "@/features/kegiatan/components/kegiatan-states";
 import { useReferensi } from "@/features/kegiatan/hooks/use-kegiatan";
 import { useKegiatanFilter } from "@/features/kegiatan/hooks/use-kegiatan-filter";
 import { useAnimasiPertama } from "@/hooks/use-animasi-pertama";
@@ -118,7 +120,21 @@ function hrefLaporan(filter: NilaiFilter) {
   return qs ? `/laporan?${qs}` : "/laporan";
 }
 
+// Rekap dan laporan hanya untuk pimpinan dan admin; backend juga menolak 403 untuk pegawai
 export function RekapView() {
+  const { user } = useCurrentUser();
+  if (user?.role === "PEGAWAI") {
+    return (
+      <>
+        <PageHeader eyebrow="Operasional" title="Rekap kegiatan" />
+        <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin." />
+      </>
+    );
+  }
+  return <RekapIsi />;
+}
+
+function RekapIsi() {
   const { filter: filterUrl, setFilter, resetFilter, adaFilter } = useKegiatanFilter();
   const { terbatas, unit: unitSaya, saringUnit } = useLingkupPegawai();
   const { q, dari, sampai, unit, jenis, status, pegawai } = filterUrl;

@@ -5,14 +5,13 @@
 // (role), serta menyediakan helper penentu menu aktif dan breadcrumb.
 //
 // Isi berkas:
-//   - NAV_GROUPS          : daftar kelompok menu navigasi dan batasan role aksesnya.
-//   - NAV_KEGIATAN_PEGAWAI: variasi menu khusus pegawai (unit saya dan milik saya).
-//   - navUntukRole        : menyaring kelompok dan menu yang diizinkan untuk suatu role.
+//   - NAV_ADMIN, NAV_PIMPINAN, NAV_PEGAWAI : struktur menu per role (urutan dan kelompoknya berbeda).
+//   - navUntukRole        : menu untuk suatu role, ditambah kelompok Akun (Pengaturan).
 //   - navAktif            : mencocokkan URL dan query parameter dengan item menu aktif.
 //
 // Cara kerja:
-//   1. navUntukRole memfilter menu sesuai role; khusus PEGAWAI disisipkan menu kegiatan
-//      khusus di awal kelompok Operasional.
+//   1. navUntukRole memilih struktur menu sesuai role. Pegawai: Kegiatan saya, Dashboard,
+//      Semua kegiatan, Kalender, Perlu perbaikan. Pimpinan: Monitoring dan Pengawasan.
 //   2. navAktif membandingkan pathname dan parameter query, memilih rute yang paling
 //      spesifik (skor kecocokan tertinggi) untuk menandai status navigasi aktif.
 //
@@ -24,58 +23,92 @@
 // Dipakai oleh: app-shell.tsx (breadcrumb dan judul) dan sidebar-nav.tsx (tampilan menu).
 // =============================================================================
 
-import { Building2, CalendarDays, ClipboardCheck, ClipboardList, Database, FileBarChart2, FileText, LayoutDashboard, Settings, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
+import {
+  Building2,
+  CalendarDays,
+  ClipboardCheck,
+  ClipboardList,
+  Database,
+  FileBarChart2,
+  FileText,
+  LayoutDashboard,
+  MessageSquareWarning,
+  Settings,
+  ShieldCheck,
+  UserRound,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import type { Role } from "@/types/auth";
 
 export type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
-  roles: Role[];
 };
 
-export type NavGroup = { label: string; items: NavItem[] };
+// tampilkanLabel: kelompok satu menu biasanya tanpa label; isi true agar labelnya tetap tampil
+export type NavGroup = { label: string; items: NavItem[]; tampilkanLabel?: boolean };
 
-const NAV_GROUPS: NavGroup[] = [
-  {
-    label: "Ringkasan",
-    items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["PEGAWAI", "PIMPINAN", "ADMIN"] }],
-  },
+// Admin: struktur lama dipertahankan
+const NAV_ADMIN: NavGroup[] = [
+  { label: "Ringkasan", items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }] },
   {
     label: "Operasional",
     items: [
-      { label: "Kegiatan", href: "/kegiatan", icon: ClipboardList, roles: ["PIMPINAN", "ADMIN"] },
-      { label: "Kalender", href: "/kalender", icon: CalendarDays, roles: ["PEGAWAI", "PIMPINAN", "ADMIN"] },
-      { label: "Rekap", href: "/rekap", icon: FileBarChart2, roles: ["PEGAWAI", "PIMPINAN", "ADMIN"] },
-      { label: "Laporan", href: "/laporan", icon: FileText, roles: ["PEGAWAI", "PIMPINAN", "ADMIN"] },
-      { label: "Pantau", href: "/pantau", icon: ClipboardCheck, roles: ["PIMPINAN", "ADMIN"] },
+      { label: "Kegiatan", href: "/kegiatan", icon: ClipboardList },
+      { label: "Kalender", href: "/kalender", icon: CalendarDays },
+      { label: "Rekap", href: "/rekap", icon: FileBarChart2 },
+      { label: "Laporan", href: "/laporan", icon: FileText },
+      { label: "Pantau", href: "/pantau", icon: ClipboardCheck },
     ],
   },
   {
     label: "Administrasi",
     items: [
-      { label: "Manajemen akun", href: "/admin/akun", icon: Users, roles: ["ADMIN"] },
-      { label: "Master data", href: "/admin/master", icon: Database, roles: ["ADMIN"] },
-      { label: "Audit log", href: "/admin/audit-log", icon: ShieldCheck, roles: ["ADMIN"] },
+      { label: "Manajemen akun", href: "/admin/akun", icon: Users },
+      { label: "Master data", href: "/admin/master", icon: Database },
+      { label: "Audit log", href: "/admin/audit-log", icon: ShieldCheck },
     ],
-  },
-  {
-    label: "Akun",
-    items: [{ label: "Pengaturan", href: "/pengaturan", icon: Settings, roles: ["PEGAWAI", "PIMPINAN", "ADMIN"] }],
   },
 ];
 
-const NAV_KEGIATAN_PEGAWAI: NavItem[] = [
-  { label: "Kegiatan unit saya", href: "/kegiatan", icon: Building2, roles: ["PEGAWAI"] },
-  { label: "Kegiatan saya", href: "/kegiatan?milik=saya", icon: UserRound, roles: ["PEGAWAI"] },
+// Pimpinan: memantau seluruh kegiatan lintas bidang, lalu memeriksa dan memberi catatan perbaikan
+const NAV_PIMPINAN: NavGroup[] = [
+  {
+    label: "Monitoring",
+    items: [
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Semua kegiatan", href: "/kegiatan", icon: ClipboardList },
+      { label: "Kalender", href: "/kalender", icon: CalendarDays },
+      { label: "Rekap", href: "/rekap", icon: FileBarChart2 },
+      { label: "Laporan", href: "/laporan", icon: FileText },
+    ],
+  },
+  { label: "Pengawasan", tampilkanLabel: true, items: [{ label: "Pemeriksaan kegiatan", href: "/pantau", icon: ClipboardCheck }] },
 ];
+
+// Pegawai: kegiatan miliknya lebih dulu; tanpa Rekap dan Laporan (ditolak juga oleh backend)
+const NAV_PEGAWAI: NavGroup[] = [
+  {
+    label: "Kegiatan",
+    items: [
+      { label: "Kegiatan saya", href: "/kegiatan?milik=saya", icon: UserRound },
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Semua kegiatan", href: "/kegiatan", icon: Building2 },
+      { label: "Kalender", href: "/kalender", icon: CalendarDays },
+      { label: "Perlu perbaikan", href: "/kegiatan?milik=saya&pemeriksaan=perlu_perbaikan", icon: MessageSquareWarning },
+    ],
+  },
+];
+
+const NAV_AKUN: NavGroup = { label: "Akun", items: [{ label: "Pengaturan", href: "/pengaturan", icon: Settings }] };
+
+const NAV_ROLE: Record<Role, NavGroup[]> = { ADMIN: NAV_ADMIN, PIMPINAN: NAV_PIMPINAN, PEGAWAI: NAV_PEGAWAI };
 
 export function navUntukRole(role: Role | undefined): NavGroup[] {
   if (!role) return [];
-  return NAV_GROUPS.map((g) => {
-    const items = g.items.filter((item) => item.roles.includes(role));
-    return { ...g, items: g.label === "Operasional" && role === "PEGAWAI" ? [...NAV_KEGIATAN_PEGAWAI, ...items] : items };
-  }).filter((g) => g.items.length > 0);
+  return [...NAV_ROLE[role], NAV_AKUN];
 }
 
 export function navAktif(groups: NavGroup[], pathname: string, search?: URLSearchParams | null) {

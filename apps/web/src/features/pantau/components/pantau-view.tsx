@@ -162,6 +162,8 @@ function KartuStatus({
 export function PantauView() {
   const id = useId();
   const { user } = useCurrentUser();
+  // Nama halaman mengikuti menu: "Pemeriksaan kegiatan" untuk pimpinan, "Pantau" untuk admin
+  const judulHalaman = user?.role === "PIMPINAN" ? "Pemeriksaan kegiatan" : "Pantau";
   const referensi = useReferensi();
   const [penyaring, setPenyaring] = useState<Penyaring>(KOSONG);
   const [status, setStatus] = useState<StatusPemeriksaanKegiatan | null>(null);
@@ -213,7 +215,7 @@ export function PantauView() {
   if (user && user.role !== "PIMPINAN" && user.role !== "ADMIN") {
     return (
       <>
-        <PageHeader eyebrow="Pemantauan" title="Pantau" />
+        <PageHeader eyebrow="Pemantauan" title={judulHalaman} />
         <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin. Kegiatan Anda tersedia di daftar Kegiatan." />
       </>
     );
@@ -224,7 +226,7 @@ export function PantauView() {
 
   return (
     <>
-      <PageHeader eyebrow="Pemantauan" title="Pantau" description="Gambaran kegiatan seluruh pegawai. Tandai kegiatan yang sudah diperiksa atau perlu perbaikan." />
+      <PageHeader eyebrow="Pemantauan" title={judulHalaman} description="Gambaran kegiatan seluruh pegawai. Tandai kegiatan yang sudah diperiksa atau perlu perbaikan." />
 
       <Panel>
         <div role="search" aria-label="Penyaring pantau" className="grid items-end gap-3 p-4 sm:grid-cols-2 md:p-5 lg:grid-cols-[1fr_1fr_minmax(14rem,1.2fr)_auto]">

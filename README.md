@@ -18,8 +18,8 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 
 | Peran | Yang bisa dilakukan | Menu yang terlihat |
 | --- | --- | --- |
-| **Pegawai** | Satu-satunya peran yang mencatat, mengubah, membatalkan, dan menghapus kegiatan (miliknya), mengunggah dokumentasi, mengisi hasil, serta menerima notifikasi catatan perbaikan | Dashboard, Kegiatan bidang saya, Kegiatan saya, Kalender, Rekap, Laporan, Pengaturan, lonceng notifikasi |
-| **Pimpinan** | Melihat seluruh kegiatan, dokumentasi, hasil, rekap, dan laporan; memeriksa dan memberi catatan perbaikan. Tidak mengubah data | Dashboard, Kegiatan, Kalender, Rekap, Laporan, Pantau, Pengaturan |
+| **Pegawai** | Satu-satunya peran yang mencatat, mengubah, membatalkan, dan menghapus kegiatan (miliknya), mengunggah dokumentasi, mengisi hasil, serta menerima notifikasi catatan perbaikan | Kegiatan saya, Dashboard, Semua kegiatan (bidang dan sub bidangnya), Kalender, Perlu perbaikan, Pengaturan, lonceng notifikasi. Tanpa Rekap dan Laporan |
+| **Pimpinan** | Melihat seluruh kegiatan, dokumentasi, hasil, rekap, dan laporan; memeriksa dan memberi catatan perbaikan. Tidak mengubah data | Monitoring: Dashboard, Semua kegiatan, Kalender, Rekap, Laporan. Pengawasan: Pemeriksaan kegiatan. Pengaturan |
 | **Admin** | Melihat seluruh kegiatan, memeriksa dan memberi catatan perbaikan, mengelola akun, master data, dan audit log. Tidak menambah, mengubah, atau menghapus kegiatan | Dashboard, Kegiatan, Kalender, Rekap, Laporan, Pantau, Manajemen akun, Master data, Audit log, Pengaturan |
 
 Aturan hak akses ditegakkan di backend pada setiap permintaan. Kegiatan di luar lingkup baca dijawab 404 (bukan 403), agar keberadaannya tidak bocor. Pemeriksaan (status terpisah dari status pelaksanaan) dilakukan pimpinan atau admin; setiap pemeriksaan tercatat di riwayat dan audit log, dan pegawai terkait mendapat notifikasi di lonceng.

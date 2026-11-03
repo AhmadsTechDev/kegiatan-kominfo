@@ -71,7 +71,7 @@ describe("angka laporan konsisten", () => {
 
   test("ekspor tercatat di audit log beserta filter dan jumlahnya", async () => {
     const { bidang } = await siapkanMaret2031();
-    const u = await buatPengguna({ unitId: bidang.id });
+    const u = await buatPengguna({ role: "PIMPINAN", unitId: bidang.id });
     await panggil(`/ekspor/kegiatan.pdf?unit=${bidang.id}`, { cookie: u.cookie });
     const admin = await loginAdmin();
     const audit = await panggil(`/audit-log?aktor=${u.userId}&aksi=ekspor`, { cookie: admin });
@@ -80,13 +80,11 @@ describe("angka laporan konsisten", () => {
     expect(detail.data.dataSesudah).toMatchObject({ format: "pdf", jumlah: 3, filter: { unit: bidang.id } });
   });
 
-  test("PEGAWAI hanya melihat rekap bidangnya sendiri", async () => {
-    const { bidang, u } = await siapkanMaret2031();
-    const rekap = await panggil("/rekap?periode=2031-03", { cookie: u.cookie });
-    expect(rekap.data.total.total).toBe(3);
-    expect(rekap.data.perUnit.map((p: { unit: { id: number } }) => p.unit.id)).toEqual([bidang.id]);
-    const pratinjau = await panggil("/ekspor/pratinjau?periode=2031-04", { cookie: u.cookie });
-    expect(pratinjau.data.subjudul).toContain("Bidang sendiri");
+  test("PEGAWAI tidak bisa membuka rekap dan laporan (403)", async () => {
+    const { u } = await siapkanMaret2031();
+    expect((await panggil("/rekap?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
+    expect((await panggil("/ekspor/pratinjau?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
+    expect((await panggil("/ekspor/kegiatan.pdf?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
   });
 
   test("kegiatan selesai tanpa dokumentasi muncul di beranda pemiliknya sampai dokumentasinya diunggah", async () => {
@@ -126,7 +124,7 @@ describe("batas laporan", () => {
   });
 
   test("ekspor dibatasi 10 kali per menit per akun; pratinjau tidak dibatasi", async () => {
-    const u = await buatPengguna({ unitId: (await buatBidang()).id });
+    const u = await buatPengguna({ role: "PIMPINAN", unitId: (await buatBidang()).id });
     for (let i = 0; i < 10; i++) expect((await panggil("/ekspor/kegiatan.pdf", { cookie: u.cookie })).status).toBe(200);
     const ke11 = await panggil("/ekspor/kegiatan.pdf", { cookie: u.cookie });
     expect(ke11.status).toBe(429);
