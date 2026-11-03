@@ -213,7 +213,7 @@ export function PantauView() {
   if (user && user.role !== "PIMPINAN" && user.role !== "ADMIN") {
     return (
       <>
-        <PageHeader eyebrow="Pemantauan" title="Pantau pimpinan" />
+        <PageHeader eyebrow="Pemantauan" title="Pantau" />
         <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin. Kegiatan Anda tersedia di daftar Kegiatan." />
       </>
     );
@@ -224,7 +224,7 @@ export function PantauView() {
 
   return (
     <>
-      <PageHeader eyebrow="Pemantauan" title="Pantau pimpinan" description="Gambaran kegiatan seluruh pegawai. Tandai kegiatan yang sudah diperiksa atau perlu perbaikan." />
+      <PageHeader eyebrow="Pemantauan" title="Pantau" description="Gambaran kegiatan seluruh pegawai. Tandai kegiatan yang sudah diperiksa atau perlu perbaikan." />
 
       <Panel>
         <div role="search" aria-label="Penyaring pantau" className="grid items-end gap-3 p-4 sm:grid-cols-2 md:p-5 lg:grid-cols-[1fr_1fr_minmax(14rem,1.2fr)_auto]">
