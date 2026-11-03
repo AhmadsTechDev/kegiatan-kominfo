@@ -131,16 +131,16 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
       <div className={cn("grid gap-4", awal && "sm:grid-cols-2")}>
         <Field data-invalid={!!formState.errors.nip}>
           <FieldLabel htmlFor="pegawai-nip">
-            NIP <span className="font-normal text-muted-foreground">(opsional)</span>
+            NIP
           </FieldLabel>
-          <Input id="pegawai-nip" inputMode="numeric" maxLength={18} className="h-10 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
+          <Input id="pegawai-nip" placeholder="Opsional, 18 digit" inputMode="numeric" maxLength={18} className="h-10 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
           <FieldError errors={[formState.errors.nip]} />
         </Field>
         {awal && (
           // Nomor telepon tersimpan di akun, jadi baru bisa diisi setelah pegawai diundang
           <Field data-invalid={!!formState.errors.kontak} data-disabled={!awal.akun || undefined}>
             <FieldLabel htmlFor="pegawai-kontak">
-              No. telp <span className="font-normal text-muted-foreground">(opsional)</span>
+              No. telp
             </FieldLabel>
             <Input
               id="pegawai-kontak"
@@ -148,21 +148,20 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
               inputMode="tel"
               maxLength={50}
               className="h-10 tabular-nums"
-              placeholder={awal.akun ? "Mis. 0812-3456-7890" : undefined}
+              placeholder="Opsional"
               disabled={!awal.akun}
               aria-invalid={!!formState.errors.kontak}
               {...register("kontak")}
             />
-            {!awal.akun && <FieldDescription>Bisa diisi setelah pegawai punya akun.</FieldDescription>}
             <FieldError errors={[formState.errors.kontak]} />
           </Field>
         )}
       </div>
       <Field data-invalid={!!formState.errors.jabatan}>
         <FieldLabel htmlFor="pegawai-jabatan">
-          Jabatan <span className="font-normal text-muted-foreground">(opsional)</span>
+          Jabatan
         </FieldLabel>
-        <Input id="pegawai-jabatan" maxLength={150} className="h-10" placeholder="Contoh: Pranata Komputer Ahli Muda" aria-invalid={!!formState.errors.jabatan} {...register("jabatan")} />
+        <Input id="pegawai-jabatan" maxLength={150} className="h-10" placeholder="Opsional, mis. Pranata Komputer Ahli Muda" aria-invalid={!!formState.errors.jabatan} {...register("jabatan")} />
         <FieldError errors={[formState.errors.jabatan]} />
       </Field>
       <Field data-invalid={!!formState.errors.bidangId}>

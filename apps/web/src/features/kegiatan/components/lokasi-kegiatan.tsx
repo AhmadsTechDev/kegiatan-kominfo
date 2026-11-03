@@ -141,7 +141,7 @@ export function LokasiKegiatan({ form }: { form: UseFormReturn<KegiatanFormValue
 
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium">
-          Titik di peta <span className="font-normal text-muted-foreground">(opsional)</span>
+          Titik di peta
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <CariLokasi key={resetCari} onPilih={pilihHasilCari} />
@@ -205,13 +205,13 @@ export function LokasiKegiatan({ form }: { form: UseFormReturn<KegiatanFormValue
 
       <Field data-invalid={!!errors.lokasiNama}>
         <FieldLabel htmlFor="lokasiNama">
-          Nama lokasi <span className="font-normal text-muted-foreground">(opsional)</span>
+          Nama lokasi
         </FieldLabel>
         <Input
           id="lokasiNama"
           className="h-10"
           maxLength={255}
-          placeholder="Terisi otomatis dari titik di peta, atau ketik sendiri"
+          placeholder="Opsional, terisi otomatis dari titik di peta"
           aria-invalid={!!errors.lokasiNama}
           {...register("lokasiNama", {
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => setNamaDiketik(e.target.value.trim() !== ""),

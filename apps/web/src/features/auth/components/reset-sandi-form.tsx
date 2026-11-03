@@ -75,7 +75,7 @@ export function LupaSandiForm() {
           <FieldLabel htmlFor="lupa-email">
             Email akun <Wajib />
           </FieldLabel>
-          <Input id="lupa-email" type="email" aria-required inputMode="email" autoComplete="email" className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
+          <Input id="lupa-email" type="email" placeholder="Masukkan email" aria-required inputMode="email" autoComplete="email" className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
           <FieldError errors={[formState.errors.email]} />
         </Field>
         <Button type="submit" className="h-11 w-full" disabled={minta.isPending}>

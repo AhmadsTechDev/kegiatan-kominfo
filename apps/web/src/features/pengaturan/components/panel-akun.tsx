@@ -81,7 +81,7 @@ function GantiEmailDialog({ emailLama, onClose }: { emailLama: string; onClose: 
         <FieldLabel htmlFor="email-baru">
           Email pribadi baru <Wajib />
         </FieldLabel>
-        <Input id="email-baru" type="email" aria-required inputMode="email" autoComplete="email" maxLength={255} className="h-10" autoFocus aria-invalid={!!formState.errors.email} {...register("email")} />
+        <Input id="email-baru" type="email" placeholder="Masukkan email" aria-required inputMode="email" autoComplete="email" maxLength={255} className="h-10" autoFocus aria-invalid={!!formState.errors.email} {...register("email")} />
         <FieldError errors={[formState.errors.email]} />
       </Field>
       <Field data-invalid={!!formState.errors.password}>

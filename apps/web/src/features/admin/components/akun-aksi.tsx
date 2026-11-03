@@ -208,7 +208,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
           <FieldLabel htmlFor="akun-email">
             Email pribadi <Wajib />
           </FieldLabel>
-          <Input id="akun-email" type="email" inputMode="email" autoComplete="off" maxLength={255} className="h-10" aria-required aria-invalid={!!formState.errors.email} {...register("email")} />
+          <Input id="akun-email" type="email" placeholder="Masukkan email" inputMode="email" autoComplete="off" maxLength={255} className="h-10" aria-required aria-invalid={!!formState.errors.email} {...register("email")} />
           <FieldDescription>
             {gantiEmail
               ? awal?.status === "MENUNGGU_AKTIVASI"
@@ -220,9 +220,9 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
         </Field>
         <Field data-invalid={!!formState.errors.nip}>
           <FieldLabel htmlFor="akun-nip">
-            NIP <span className="font-normal text-muted-foreground">(opsional)</span>
+            NIP
           </FieldLabel>
-          <Input id="akun-nip" inputMode="numeric" maxLength={18} placeholder="18 digit" className="h-10 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
+          <Input id="akun-nip" inputMode="numeric" maxLength={18} placeholder="Opsional, 18 digit" className="h-10 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
           <FieldError errors={[formState.errors.nip]} />
         </Field>
         <Field data-invalid={!!formState.errors.jabatan}>
@@ -357,8 +357,8 @@ export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelah
           }
         >
           <Field>
-            <FieldLabel htmlFor="alasan-nonaktif">Alasan (opsional)</FieldLabel>
-            <Input id="alasan-nonaktif" value={alasan} onChange={(e) => setAlasan(e.target.value)} maxLength={255} className="h-10" placeholder="Contoh: pindah tugas" />
+            <FieldLabel htmlFor="alasan-nonaktif">Alasan</FieldLabel>
+            <Input id="alasan-nonaktif" value={alasan} onChange={(e) => setAlasan(e.target.value)} maxLength={255} className="h-10" placeholder="Opsional, mis. pindah tugas" />
           </Field>
         </ConfirmDialog>
       );

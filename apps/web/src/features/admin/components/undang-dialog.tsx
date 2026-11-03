@@ -83,7 +83,6 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
       open
       onOpenChange={(v) => !v && onClose()}
       title={title}
-      description="Pegawai akan menerima email berisi tautan untuk membuat kata sandi dan mengaktifkan akun. Tautan berlaku 72 jam."
       onSubmit={kirim}
       pending={pending}
       submitLabel={submitLabel}
@@ -106,11 +105,10 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
           maxLength={255}
           className="h-10"
           aria-required
-          placeholder="nama@contoh.com"
+          placeholder="Masukkan email"
           aria-invalid={!!formState.errors.email}
           {...register("email")}
         />
-        <FieldDescription>Email ini menjadi identitas login. Pastikan sudah diverifikasi bersama pegawainya.</FieldDescription>
         <FieldError errors={[formState.errors.email]} />
       </Field>
       <Field data-invalid={!!formState.errors.role}>

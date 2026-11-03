@@ -101,7 +101,7 @@ export function LoginForm() {
               type="email"
               inputMode="email"
               autoComplete="username"
-              placeholder="nama@contoh.com"
+              placeholder="Masukkan email"
               className="h-11 pl-9"
               aria-required
               aria-invalid={!!errors.email}

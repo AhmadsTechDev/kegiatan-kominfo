@@ -118,9 +118,9 @@ export function MintaAkunForm() {
           </Field>
           <Field data-invalid={!!formState.errors.nip}>
             <FieldLabel htmlFor="minta-nip">
-              NIP <span className="font-normal text-muted-foreground">(opsional)</span>
+              NIP
             </FieldLabel>
-            <Input id="minta-nip" inputMode="numeric" maxLength={18} placeholder="18 digit" className="h-11 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
+            <Input id="minta-nip" inputMode="numeric" maxLength={18} placeholder="Opsional, 18 digit" className="h-11 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
             <FieldDescription>Kosongkan bila Anda non-ASN.</FieldDescription>
             <FieldError errors={[formState.errors.nip]} />
           </Field>
@@ -128,7 +128,7 @@ export function MintaAkunForm() {
             <FieldLabel htmlFor="minta-email">
               Email pribadi <Wajib />
             </FieldLabel>
-            <Input id="minta-email" type="email" autoComplete="email" maxLength={255} className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
+            <Input id="minta-email" type="email" placeholder="Masukkan email" autoComplete="email" maxLength={255} className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
             <FieldDescription>Email ini menjadi email untuk masuk. Pakai yang Anda baca sehari-hari.</FieldDescription>
             <FieldError errors={[formState.errors.email]} />
           </Field>
