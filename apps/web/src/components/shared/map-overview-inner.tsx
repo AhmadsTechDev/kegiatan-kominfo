@@ -12,8 +12,9 @@
 //
 // Cara kerja:
 //   1. Menginisialisasi kanvas peta MapLibre GL dengan layer gedung 3D dan kluster.
-//   2. Mengelompokkan titik-titik kegiatan yang berdekatan ke dalam lingkaran kluster.
-//   3. Memperbesar tampilan saat kluster diklik, atau menampilkan popup saat titik diklik.
+//   2. Titik kegiatan berupa pin per warna status; yang berdekatan dikelompokkan ke kluster berjumlah.
+//   3. Hover pin: tooltip judul. Klik pin: popup judul, tanggal, lokasi, bidang, status.
+//      Klik kluster: zoom ke kumpulannya. Popup otomatis berpindah sisi agar tetap di dalam peta.
 //   4. Menyaring titik yang tampil sesuai status yang dipilih tanpa memuat ulang peta.
 //   5. Menyesuaikan sudut kamera ke seluruh titik melalui tombol Semua Titik.
 //
@@ -29,7 +30,7 @@
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import { type GeoJSONSource, LngLatBounds, type LngLatBoundsLike, type ExpressionSpecification, type Map as PetaGL, type MapLayerMouseEvent, Popup } from "maplibre-gl";
+import { type GeoJSONSource, LngLatBounds, type LngLatBoundsLike, type Map as PetaGL, type MapLayerMouseEvent, Popup } from "maplibre-gl";
 import { Maximize } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -55,23 +56,45 @@ export type TitikPeta = {
   tglMulai: string;
   tglSelesai: string;
   statusPelaksanaan: StatusPelaksanaan;
+  lokasiNama?: string | null;
+  bidang?: string;
 };
 
 const URUTAN: StatusPelaksanaan[] = ["akan_datang", "berlangsung", "selesai", "dibatalkan"];
 
-const WARNA_TITIK: ExpressionSpecification = [
-  "match",
-  ["get", "status"],
-  "akan_datang",
-  WARNA_STATUS.akan_datang,
-  "berlangsung",
-  WARNA_STATUS.berlangsung,
-  "selesai",
-  WARNA_STATUS.selesai,
-  "dibatalkan",
-  WARNA_STATUS.dibatalkan,
-  "#64748b",
-];
+// Pin berbentuk tetes per status, digambar di kanvas sekali lalu didaftarkan sebagai ikon peta.
+// Ikon (bukan lingkaran) agar titik kegiatan berbeda dari POI basemap; warna = status pelaksanaan
+function gambarPin(warna: string, tepi: string) {
+  const r = 2;
+  const w = 30 * r;
+  const h = 40 * r;
+  const kanvas = document.createElement("canvas");
+  kanvas.width = w;
+  kanvas.height = h;
+  const c = kanvas.getContext("2d")!;
+  const cx = w / 2;
+  const cy = 14 * r;
+  const rad = 11.5 * r;
+  c.shadowColor = "rgba(0,0,0,0.35)";
+  c.shadowBlur = 3 * r;
+  c.shadowOffsetY = 1 * r;
+  c.beginPath();
+  c.arc(cx, cy, rad, Math.PI * 0.82, Math.PI * 2.18);
+  c.lineTo(cx, h - 3 * r);
+  c.closePath();
+  c.fillStyle = warna;
+  c.fill();
+  c.shadowColor = "transparent";
+  c.lineWidth = 2 * r;
+  c.strokeStyle = tepi;
+  c.stroke();
+  c.beginPath();
+  c.arc(cx, cy, 4.5 * r, 0, Math.PI * 2);
+  c.fillStyle = tepi;
+  c.fill();
+  return { image: c.getImageData(0, 0, w, h), pixelRatio: r };
+}
+
 
 function keGeoJson(titik: TitikPeta[]): GeoJSON.FeatureCollection<GeoJSON.Point> {
   return {
@@ -79,21 +102,41 @@ function keGeoJson(titik: TitikPeta[]): GeoJSON.FeatureCollection<GeoJSON.Point>
     features: titik.map((t) => ({
       type: "Feature",
       geometry: { type: "Point", coordinates: [t.lng, t.lat] },
-      properties: { id: t.id, judul: t.judul, rentang: formatRentangTanggal(t.tglMulai, t.tglSelesai), status: t.statusPelaksanaan },
+      properties: {
+        id: t.id,
+        judul: t.judul,
+        rentang: formatRentangTanggal(t.tglMulai, t.tglSelesai),
+        status: t.statusPelaksanaan,
+        lokasi: t.lokasiNama ?? "",
+        bidang: t.bidang ?? "",
+      },
     })),
   };
 }
 
-function isiPopup(p: { id: number; judul: string; rentang: string; status: StatusPelaksanaan }, buka: (href: string) => void) {
+type PropsTitik = { id: number; judul: string; rentang: string; status: StatusPelaksanaan; lokasi: string; bidang: string };
+
+// Baris keterangan berlabel di popup (lokasi, bidang); dilewati bila datanya kosong
+function baris(label: string, nilai: string) {
+  const p = document.createElement("p");
+  p.className = "text-xs text-muted-foreground [overflow-wrap:anywhere]";
+  const l = document.createElement("span");
+  l.className = "font-medium text-foreground";
+  l.textContent = `${label}: `;
+  p.append(l, nilai);
+  return p;
+}
+
+function isiPopup(p: PropsTitik, buka: (href: string) => void) {
   const akar = document.createElement("div");
-  akar.className = "flex min-w-52 max-w-64 flex-col gap-1.5 font-sans";
+  akar.className = "flex w-[min(16rem,calc(100vw-5rem))] flex-col gap-1.5 font-sans";
   const status = document.createElement("span");
   status.className = "inline-flex w-fit items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium";
   status.style.background = `${WARNA_STATUS[p.status]}1f`;
   status.style.color = WARNA_STATUS[p.status];
   status.textContent = LABEL_STATUS[p.status];
   const judul = document.createElement("p");
-  judul.className = "text-sm leading-snug font-semibold";
+  judul.className = "text-sm leading-snug font-semibold [overflow-wrap:anywhere]";
   judul.textContent = p.judul;
   const waktu = document.createElement("p");
   waktu.className = "text-xs text-muted-foreground";
@@ -107,7 +150,10 @@ function isiPopup(p: { id: number; judul: string; rentang: string; status: Statu
     e.preventDefault();
     buka(tautan.pathname);
   });
-  akar.append(status, judul, waktu, tautan);
+  akar.append(status, judul, waktu);
+  if (p.lokasi) akar.append(baris("Lokasi", p.lokasi));
+  if (p.bidang) akar.append(baris("Bidang", p.bidang));
+  akar.append(tautan);
   return akar;
 }
 
@@ -156,12 +202,31 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
     if (!wadah.current) return;
     const p = buatPeta(wadah.current, { gelap, pitch: terkini.current.tigaD ? 50 : 0, bearing: terkini.current.tigaD ? -17 : 0 });
     peta.current = p;
-    const popup = new Popup({ closeButton: true, maxWidth: "280px", offset: 14 });
+    const popup = new Popup({ closeButton: true, maxWidth: "none", offset: [0, -34] });
+    // Tooltip nama saat kursor di atas pin (hanya perangkat dengan kursor)
+    const tooltip = new Popup({ closeButton: false, closeOnClick: false, maxWidth: "240px", offset: [0, -36], className: "peta-tooltip" });
+    const pin = (s: StatusPelaksanaan) => `pin-${s}`;
 
     p.on("load", () => {
       tambahGedung3d(p, gelap);
       if (!terkini.current.tigaD) p.setLayoutProperty("gedung-3d", "visibility", "none");
-      p.addSource("kegiatan", { type: "geojson", data: keGeoJson(terkini.current.titik), cluster: true, clusterRadius: 44, clusterMaxZoom: 15 });
+      for (const s of URUTAN) if (!p.hasImage(pin(s))) {
+        const g = gambarPin(WARNA_STATUS[s], gelap ? "#0b1220" : "#ffffff");
+        p.addImage(pin(s), g.image, { pixelRatio: g.pixelRatio });
+      }
+      p.addSource("kegiatan", { type: "geojson", data: keGeoJson(terkini.current.titik), cluster: true, clusterRadius: 48, clusterMaxZoom: 15 });
+      // Kluster: cincin luar transparan + inti, ukurannya naik bertahap sesuai jumlah kegiatan
+      p.addLayer({
+        id: "kluster-cincin",
+        type: "circle",
+        source: "kegiatan",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": gelap ? "#8fb0ff" : "#1a2a6e",
+          "circle-opacity": 0.18,
+          "circle-radius": ["step", ["get", "point_count"], 24, 5, 30, 15, 38],
+        },
+      });
       p.addLayer({
         id: "kluster",
         type: "circle",
@@ -171,8 +236,8 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
           "circle-color": gelap ? "#8fb0ff" : "#1a2a6e",
           "circle-opacity": 0.92,
           "circle-radius": ["step", ["get", "point_count"], 16, 5, 20, 15, 26],
-          "circle-stroke-width": 4,
-          "circle-stroke-color": gelap ? "rgba(143,176,255,0.28)" : "rgba(26,42,110,0.22)",
+          "circle-stroke-width": 2,
+          "circle-stroke-color": gelap ? "#0b1220" : "#ffffff",
         },
       });
       p.addLayer({
@@ -184,23 +249,16 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
         paint: { "text-color": gelap ? "#0b1220" : "#ffffff" },
       });
       p.addLayer({
-        id: "titik-halo",
-        type: "circle",
-        source: "kegiatan",
-        filter: ["!", ["has", "point_count"]],
-        paint: { "circle-radius": 13, "circle-color": WARNA_TITIK, "circle-opacity": 0.2 },
-      });
-      p.addLayer({
         id: "titik",
-        type: "circle",
+        type: "symbol",
         source: "kegiatan",
         filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-radius": 7,
-          "circle-color": WARNA_TITIK,
-          "circle-stroke-width": 2.5,
-          "circle-stroke-color": gelap ? "#0b1220" : "#ffffff",
-          "circle-pitch-alignment": "viewport",
+        layout: {
+          "icon-image": ["concat", "pin-", ["get", "status"]],
+          "icon-anchor": "bottom",
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+          "icon-pitch-alignment": "viewport",
         },
       });
       pasDenganTitik(false);
@@ -216,9 +274,15 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
     p.on("click", "titik", (e: MapLayerMouseEvent) => {
       const f = e.features?.[0];
       if (!f) return;
-      const props = f.properties as { id: number; judul: string; rentang: string; status: StatusPelaksanaan };
+      const props = f.properties as PropsTitik;
+      tooltip.remove();
+      const titikPin = (f.geometry as GeoJSON.Point).coordinates as [number, number];
+      // Popup (~220 px di atas ujung pin) tidak boleh tertutup tombol 2D/3D di tepi atas: geser peta bila perlu
+      const yPin = p.project(titikPin).y;
+      const yAman = Math.min(290, p.getContainer().clientHeight - 40);
+      if (yPin < yAman) p.panBy([0, yPin - yAman], { duration: geraknyaDikurangi() ? 0 : 400 });
       popup
-        .setLngLat((f.geometry as GeoJSON.Point).coordinates as [number, number])
+        .setLngLat(titikPin)
         .setDOMContent(isiPopup(props, (href) => terkini.current.router.push(href)))
         .addTo(p);
     });
@@ -226,9 +290,18 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
       p.on("mouseenter", lapis, () => (p.getCanvas().style.cursor = "pointer"));
       p.on("mouseleave", lapis, () => (p.getCanvas().style.cursor = ""));
     }
+    if (!window.matchMedia("(pointer: coarse)").matches) {
+      p.on("mousemove", "titik", (e: MapLayerMouseEvent) => {
+        const f = e.features?.[0];
+        if (!f || popup.isOpen()) return;
+        tooltip.setLngLat((f.geometry as GeoJSON.Point).coordinates as [number, number]).setText(String(f.properties.judul)).addTo(p);
+      });
+      p.on("mouseleave", "titik", () => tooltip.remove());
+    }
 
     return () => {
       popup.remove();
+      tooltip.remove();
       p.remove();
       peta.current = null;
       setSiap(false);

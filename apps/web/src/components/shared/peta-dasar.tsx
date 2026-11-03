@@ -14,7 +14,7 @@
 //   - Tombol3d                            : komponen tombol alih sudut pandang 2D/3D
 //
 // Cara kerja:
-//   1. Menginisialisasi peta vektor OpenFreeMap dengan titik tengah Kota Palembang.
+//   1. Menginisialisasi peta vektor OpenFreeMap (gaya Liberty: jalan, kawasan, POI) di Kota Palembang.
 //   2. Mewarnai ulang layer peta secara dinamis jika aplikasi dalam mode gelap.
 //   3. Mengamankan interaksi gulir mouse agar tidak mengganggu pengguliran halaman.
 //   4. Menambahkan ekstrusi gedung 3D mulai zoom 14 di bawah layer label jalan.
@@ -41,7 +41,10 @@ export const PUSAT_AWAL: [number, number] = [104.7754, -2.9761];
 export const ZOOM_AWAL = 12;
 export const KEMIRINGAN_3D = 55;
 
-const GAYA = "https://tiles.openfreemap.org/styles/positron";
+// Liberty (OpenFreeMap, data OpenStreetMap/OpenMapTiles): selain jalan dan wilayah, memuat lapisan POI
+// (fasilitas umum, sekolah, rumah sakit, ibadah, halte), nama kawasan, dan label sungai.
+// Positron yang dipakai sebelumnya tidak punya lapisan POI sehingga hanya nama jalan yang terlihat
+const GAYA = "https://tiles.openfreemap.org/styles/liberty";
 
 const GELAP = {
   latar: "#0f1a2e",
@@ -56,10 +59,12 @@ const GELAP = {
   tepiJalan: "#0b1426",
   rel: "#2a3756",
   batas: "#3b4b6d",
-  label: "#a9b6cc",
-  labelKota: "#dde5f2",
-  labelJalan: "#8494b0",
-  labelAir: "#7196d1",
+  // Teks label minimal 4,5:1 terhadap latar #0f1a2e
+  label: "#b4c0d4",
+  labelKota: "#e6ecf5",
+  labelJalan: "#9aa8c2",
+  labelAir: "#86a8dc",
+  labelPoi: "#c9b98f",
   halo: "rgba(11,17,32,0.9)",
 };
 
@@ -67,13 +72,16 @@ function warnaLapisGelap(id: string, jenis: string): Record<string, string | num
   if (jenis === "background") return { "background-color": GELAP.latar };
   if (jenis === "fill") {
     if (id === "water") return { "fill-color": GELAP.air };
+    if (id.startsWith("landuse_") && id !== "landuse_residential") return { "fill-color": GELAP.taman, "fill-opacity": 0.5 };
     if (id === "park" || id.startsWith("landcover_wood")) return { "fill-color": GELAP.taman };
     if (id === "building") return { "fill-color": GELAP.gedung, "fill-outline-color": GELAP.gedungTepi };
     if (id.startsWith("aeroway") || id.startsWith("road_area")) return { "fill-color": GELAP.jalanKecil };
     return { "fill-color": GELAP.pemukiman };
   }
   if (jenis === "line") {
-    if (id === "waterway") return { "line-color": GELAP.air };
+    if (id.startsWith("waterway")) return { "line-color": GELAP.air };
+    if (id.includes("hatching")) return { "line-color": GELAP.rel };
+    if (id.includes("path_pedestrian")) return { "line-color": GELAP.jalanKecil };
     if (id.includes("casing")) return { "line-color": GELAP.tepiJalan };
     if (id.includes("dashline")) return { "line-color": GELAP.latar };
     if (id.startsWith("railway")) return { "line-color": GELAP.rel };
@@ -82,12 +90,15 @@ function warnaLapisGelap(id: string, jenis: string): Record<string, string | num
     if (id.includes("major")) return { "line-color": GELAP.jalanBesar };
     return { "line-color": GELAP.jalanKecil };
   }
+  if (jenis === "raster") return { "raster-opacity": 0.15 };
   if (jenis === "symbol") {
-    const warna = id.startsWith("water")
+    const warna = id.startsWith("poi") || id === "airport"
+      ? GELAP.labelPoi
+      : id.startsWith("water")
       ? GELAP.labelAir
       : id.startsWith("highway")
         ? GELAP.labelJalan
-        : /^label_(city|town|village|country|state)/.test(id)
+        : /^label_(city|town|village|country|state|other)/.test(id)
           ? GELAP.labelKota
           : GELAP.label;
     return { "text-color": warna, "text-halo-color": GELAP.halo };
@@ -171,13 +182,19 @@ export function buatPeta(
     attributionControl: { compact: true },
     locale: LOKAL,
   });
-  if (gelap) {
-    peta.once("style.load", () => {
-      for (const l of peta.getStyle().layers) {
-        for (const [properti, nilai] of Object.entries(warnaLapisGelap(l.id, l.type))) peta.setPaintProperty(l.id, properti, nilai);
+  peta.once("style.load", () => {
+    // Ekstrusi gedung bawaan Liberty diganti lapisan gedung-3d sendiri (hanya tampil di mode 3D)
+    if (peta.getLayer("building-3d")) peta.setLayoutProperty("building-3d", "visibility", "none");
+    if (!gelap) return;
+    for (const l of peta.getStyle().layers) {
+      // Pola isian (rawa, area jalan) tidak bisa diwarnai ulang; disembunyikan di tema gelap
+      if (l.type === "fill" && l.paint && "fill-pattern" in l.paint) {
+        peta.setLayoutProperty(l.id, "visibility", "none");
+        continue;
       }
-    });
-  }
+      for (const [properti, nilai] of Object.entries(warnaLapisGelap(l.id, l.type))) peta.setPaintProperty(l.id, properti, nilai);
+    }
+  });
   if (!layarSentuh()) aktifkanGulirSaatDiklik(peta, wadah);
   peta.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
   peta.addControl(new FullscreenControl(), "top-right");

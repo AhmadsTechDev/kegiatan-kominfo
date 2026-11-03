@@ -129,7 +129,6 @@ export function MintaAkunForm() {
               Email pribadi <Wajib />
             </FieldLabel>
             <Input id="minta-email" type="email" placeholder="Masukkan email" autoComplete="email" maxLength={255} className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
-            <FieldDescription>Email ini menjadi email untuk masuk. Pakai yang Anda baca sehari-hari.</FieldDescription>
             <FieldError errors={[formState.errors.email]} />
           </Field>
           <Field data-invalid={!!formState.errors.catatan}>
