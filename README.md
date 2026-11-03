@@ -9,7 +9,7 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | [`docs/api/`](docs/api/README.md) | Dokumentasi API: ringkasan semua endpoint, aturan umum, hak akses, serta rincian header, body, dan respons |
 | [`docs/features/`](docs/features/README.md) | Spesifikasi per fitur: tujuan, kriteria selesai, dan daftar tugas |
 | [`docs/uml/`](docs/uml/README.md) | Diagram UML dalam Mermaid (use case, activity, sequence, class, ERD, state, component, deployment) |
-| [`PRD.md`](PRD.md) | Kebutuhan produk (FR, NFR, kriteria penerimaan) |
+| [`docs/PRD.md`](docs/PRD.md) | Kebutuhan produk (FR, NFR, kriteria penerimaan) |
 | [`apps/web/DESIGN.md`](apps/web/DESIGN.md) | Spesifikasi tampilan dan perilaku UI |
 
 ## Fitur

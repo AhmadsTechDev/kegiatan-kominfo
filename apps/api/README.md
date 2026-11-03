@@ -1,6 +1,6 @@
 # Backend Aplikasi Pendataan Kegiatan
 
-Bun + Elysia + Prisma (PostgreSQL) + Better Auth. Dokumentasi endpoint ada di [`../../docs`](../docs/README.md).
+Bun + Elysia + Prisma (PostgreSQL) + Better Auth. Dokumentasi endpoint ada di [`docs/api`](../../docs/api/README.md).
 
 ## Struktur folder (layered architecture)
 
