@@ -161,7 +161,7 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <Ringkasan label="Total 6 bulan" nilai={formatAngka(totalTampil)} keterangan={sembunyi.size ? "unit terpilih" : "seluruh unit"} />
+              <Ringkasan label="Total 6 bulan" nilai={formatAngka(totalTampil)} keterangan={sembunyi.size ? "bidang terpilih" : "seluruh bidang"} />
               <Ringkasan label="Rata-rata" nilai={formatAngka(Math.round((totalTampil / Math.max(1, baris.length)) * 10) / 10)} keterangan="kegiatan per bulan" />
               <Ringkasan
                 label="Bulan tersibuk"

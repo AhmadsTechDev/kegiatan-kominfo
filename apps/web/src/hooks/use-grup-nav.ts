@@ -5,7 +5,7 @@
 // tempat halaman itu berada, karena kelompoknya berbeda per role
 // (Pegawai: "Kegiatan", Pimpinan: "Monitoring", Admin: "Operasional").
 //
-// Dipakai oleh: kegiatan-list-view.tsx, kalender-view.tsx
+// Dipakai oleh: kegiatan-list-view.tsx, kalender-view.tsx, pantau-view.tsx, rekap-view.tsx, laporan-view.tsx
 // =============================================================================
 
 "use client";

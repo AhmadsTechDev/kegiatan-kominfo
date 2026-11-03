@@ -64,6 +64,9 @@ export async function pastikanBisaTulis(aktor: Aktor, k: PemilikKegiatan, pesan:
   if (!bisaUbah(aktor, k)) throw Forbidden(pesan);
 }
 
+// Pemeriksaan hanya untuk kegiatan yang sudah berjalan atau selesai: sebelum itu belum ada dokumentasi dan hasil
+export const sudahTerlaksana = (status: string) => status === "berlangsung" || status === "selesai";
+
 // ---------- Filter dari query string ----------
 
 // Rentang waktu dari query: dari/sampai (tanggal) lebih diutamakan daripada periode (bulan)
@@ -192,7 +195,7 @@ export const KegiatanService = {
       pengubahTerakhir,
       riwayat,
       catatanPemeriksaan,
-      bisaPeriksa: (PEMERIKSA as readonly string[]).includes(aktor.role),
+      bisaPeriksa: (PEMERIKSA as readonly string[]).includes(aktor.role) && sudahTerlaksana(k.statusPelaksanaan),
       bisaUbah: bisaUbah(aktor, pemilik),
     };
   },
@@ -260,6 +263,10 @@ export const KegiatanService = {
     return prisma.$transaction(async (tx) => {
       const sebelum = await KegiatanRepository.kunciAktif(id, tx);
       if (!sebelum) throw NotFound("Kegiatan tidak ditemukan");
+      const status = hitungStatus(sebelum, new Date());
+      if (!sudahTerlaksana(status)) {
+        throw Unprocessable(status === "dibatalkan" ? "Kegiatan yang dibatalkan tidak diperiksa" : "Kegiatan belum dimulai, belum bisa diperiksa");
+      }
       await KegiatanRepository.setPemeriksaan(id, isi.status, sebelum.updatedAt, tx);
       await KegiatanRepository.insertCatatan({ kegiatanId: id, pemeriksaId: aktor.id, status: isi.status, isi: catatan }, tx);
       await NotifikasiService.hasilPemeriksaan({ ...sebelum, status: isi.status, catatan, pemeriksaId: aktor.id }, tx);

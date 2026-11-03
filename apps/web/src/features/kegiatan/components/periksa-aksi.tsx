@@ -33,10 +33,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { usePeriksaKegiatan } from "../hooks/use-kegiatan";
+import type { StatusPelaksanaan } from "@/components/shared/status-badge";
 import type { StatusPemeriksaanKegiatan } from "../types";
 
 type Props = {
-  kegiatan: { id: number; judul: string; statusPemeriksaan: StatusPemeriksaanKegiatan };
+  kegiatan: { id: number; judul: string; statusPemeriksaan: StatusPemeriksaanKegiatan; statusPelaksanaan: StatusPelaksanaan };
   ringkas?: boolean;
   className?: string;
 };
@@ -70,19 +71,25 @@ export function PeriksaAksi({ kegiatan, ringkas, className }: Props) {
     );
   };
 
-  const ukuran = ringkas ? "h-8 px-2.5 text-xs" : "h-10";
+  // Kegiatan yang belum dimulai atau dibatalkan belum punya dokumentasi dan hasil, jadi tidak diperiksa (backend juga menolak)
+  if (kegiatan.statusPelaksanaan !== "berlangsung" && kegiatan.statusPelaksanaan !== "selesai") return null;
+
+  const ukuran = ringkas ? "h-8 px-2.5 text-xs pointer-coarse:h-11" : "h-10 pointer-coarse:min-h-11";
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
-      <Button
-        variant="outline"
-        className={ukuran}
-        onClick={tandaiDiperiksa}
-        disabled={periksa.isPending || kegiatan.statusPemeriksaan === "diperiksa"}
-        aria-label={ringkas ? `Tandai "${kegiatan.judul}" sudah diperiksa` : undefined}
-      >
-        {sibukDiperiksa ? <Spinner /> : <CheckCheck aria-hidden />}
-        <span className={cn(ringkas && "hidden xl:inline")}>{kegiatan.statusPemeriksaan === "diperiksa" ? "Sudah diperiksa" : "Tandai diperiksa"}</span>
-      </Button>
+      {/* Yang sudah diperiksa cukup ditandai lencana statusnya; tombolnya tidak perlu tampil lagi */}
+      {kegiatan.statusPemeriksaan !== "diperiksa" && (
+        <Button
+          variant="outline"
+          className={ukuran}
+          onClick={tandaiDiperiksa}
+          disabled={periksa.isPending}
+          aria-label={ringkas ? `Tandai "${kegiatan.judul}" sudah diperiksa` : undefined}
+        >
+          {sibukDiperiksa ? <Spinner /> : <CheckCheck aria-hidden />}
+          <span className={cn(ringkas && "hidden xl:inline")}>Tandai diperiksa</span>
+        </Button>
+      )}
       <Button
         variant="outline"
         className={ukuran}

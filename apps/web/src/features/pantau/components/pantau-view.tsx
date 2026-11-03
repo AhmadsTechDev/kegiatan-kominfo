@@ -34,7 +34,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { CheckCheck, ChevronRight, ClipboardList, FilePen, MessageSquareWarning, RotateCcw, SearchX, Send } from "lucide-react";
+import { CheckCheck, ClipboardList, MessageSquareWarning, RotateCcw, SearchX, Send } from "lucide-react";
 import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { AvatarInisial } from "@/components/shared/avatar-inisial";
@@ -52,6 +52,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { useGrupNav } from "@/hooks/use-grup-nav";
 import { getDaftarKegiatan, UKURAN_HALAMAN } from "@/features/kegiatan/api/kegiatan";
 import { PeriksaAksi } from "@/features/kegiatan/components/periksa-aksi";
 import { KegiatanTanpaAkses } from "@/features/kegiatan/components/kegiatan-states";
@@ -109,15 +110,33 @@ const kolom: DataTableColumn<KegiatanItem>[] = [
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-2">
         <PeriksaAksi kegiatan={row.original} ringkas />
-        <Button asChild variant="ghost" size="sm" className="h-8 px-2" aria-label={`Detail ${row.original.judul}`}>
-          <Link href={`/kegiatan/${row.original.id}`}>
-            <ChevronRight aria-hidden className="size-4" />
-          </Link>
-        </Button>
       </div>
     ),
   },
 ];
+
+// HP: satu kartu per kegiatan; status dan tombol periksa langsung terlihat tanpa menggeser tabel
+function KartuPemeriksaan({ k }: { k: KegiatanItem }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border bg-card p-3">
+      <div className="flex items-start justify-between gap-2">
+        <Link href={`/kegiatan/${k.id}`} className="min-w-0 rounded font-semibold [overflow-wrap:anywhere] hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+          {k.judul}
+        </Link>
+        <StatusPemeriksaanBadge status={k.statusPemeriksaan} className="shrink-0" />
+      </div>
+      <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+        <span>
+          {k.jenis.nama} · {formatRentangTanggal(k.tglMulai, k.tglSelesai)}
+        </span>
+        <span>
+          {k.penanggungJawab.nama} · {k.bidang.nama}
+        </span>
+      </div>
+      <PeriksaAksi kegiatan={k} className="[&>button]:flex-1" />
+    </div>
+  );
+}
 
 function KartuStatus({
   label,
@@ -164,6 +183,7 @@ export function PantauView() {
   const { user } = useCurrentUser();
   // Nama halaman mengikuti menu: "Pemeriksaan kegiatan" untuk pimpinan, "Pantau" untuk admin
   const judulHalaman = user?.role === "PIMPINAN" ? "Pemeriksaan kegiatan" : "Pantau";
+  const grupNav = useGrupNav("Pengawasan");
   const referensi = useReferensi();
   const [penyaring, setPenyaring] = useState<Penyaring>(KOSONG);
   const [status, setStatus] = useState<StatusPemeriksaanKegiatan | null>(null);
@@ -215,7 +235,7 @@ export function PantauView() {
   if (user && user.role !== "PIMPINAN" && user.role !== "ADMIN") {
     return (
       <>
-        <PageHeader eyebrow="Pemantauan" title={judulHalaman} />
+        <PageHeader eyebrow={grupNav} title={judulHalaman} />
         <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin. Kegiatan Anda tersedia di daftar Kegiatan." />
       </>
     );
@@ -226,7 +246,7 @@ export function PantauView() {
 
   return (
     <>
-      <PageHeader eyebrow="Pemantauan" title={judulHalaman} description="Gambaran kegiatan seluruh pegawai. Tandai kegiatan yang sudah diperiksa atau perlu perbaikan." />
+      <PageHeader eyebrow={grupNav} title={judulHalaman} description="Tandai kegiatan yang sudah diperiksa atau perlu perbaikan." />
 
       <Panel>
         <div role="search" aria-label="Penyaring pantau" className="grid items-end gap-3 p-4 sm:grid-cols-2 md:p-5 lg:grid-cols-[1fr_1fr_minmax(14rem,1.2fr)_auto]">
@@ -289,12 +309,11 @@ export function PantauView() {
       {ringkasan.isError ? (
         <ErrorState message={ringkasan.error.message} onRetry={() => ringkasan.refetch()} retrying={ringkasan.isRefetching} />
       ) : (
-        <div className={cn("grid grid-cols-2 gap-3 md:grid-cols-5", ringkasan.isPlaceholderData && "opacity-60")}>
+        <div className={cn("grid grid-cols-2 gap-3 md:grid-cols-4", ringkasan.isPlaceholderData && "opacity-60")}>
           <KartuStatus label="Total kegiatan" nilai={r?.total} ikon={ClipboardList} keterangan="Sudah dicatat" />
           <KartuStatus label="Belum diperiksa" nilai={r?.terkirim} ikon={Send} aktif={status === "terkirim"} onPilih={() => pilihStatus("terkirim")} />
           <KartuStatus label="Perlu perbaikan" nilai={r?.perluPerbaikan} ikon={MessageSquareWarning} aktif={status === "perlu_perbaikan"} onPilih={() => pilihStatus("perlu_perbaikan")} />
           <KartuStatus label="Sudah diperiksa" nilai={r?.diperiksa} ikon={CheckCheck} aktif={status === "diperiksa"} onPilih={() => pilihStatus("diperiksa")} />
-          <KartuStatus label="Draf" nilai={r?.draf} ikon={FilePen} keterangan={penyaring.q ? "Belum dikirim; tidak ikut kata kunci" : "Belum dikirim pegawai"} />
         </div>
       )}
 
@@ -312,6 +331,7 @@ export function PantauView() {
               bleed
               caption="Kegiatan terbaru seluruh pegawai"
               getRowKey={(k) => String(k.id)}
+              renderMobileCard={(k) => <KartuPemeriksaan k={k} />}
               className={cn("transition-opacity", daftar.isPlaceholderData && "opacity-60")}
               empty={
                 adaPenyaring

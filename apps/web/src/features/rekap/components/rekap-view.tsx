@@ -38,6 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ChartJenis } from "@/features/dashboard/components/chart-jenis";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { useGrupNav } from "@/hooks/use-grup-nav";
 import { KegiatanTanpaAkses } from "@/features/kegiatan/components/kegiatan-states";
 import { useReferensi } from "@/features/kegiatan/hooks/use-kegiatan";
 import { useKegiatanFilter } from "@/features/kegiatan/hooks/use-kegiatan-filter";
@@ -135,6 +136,7 @@ export function RekapView() {
 }
 
 function RekapIsi() {
+  const grupNav = useGrupNav("Monitoring");
   const { filter: filterUrl, setFilter, resetFilter, adaFilter } = useKegiatanFilter();
   const { terbatas, unit: unitSaya, saringUnit } = useLingkupPegawai();
   const { q, dari, sampai, unit, jenis, status, pegawai } = filterUrl;
@@ -147,7 +149,7 @@ function RekapIsi() {
   const animasi = useAnimasiPertama(rekap.data);
 
   const namaUnit = referensi.data?.bidang.find((u) => String(u.id) === filter.unit)?.nama;
-  const cakupan = [labelRentang(filter), filter.unit ? (namaUnit ?? "unit terpilih") : terbatas ? "lingkup Anda" : "seluruh dinas"].join(" · ");
+  const cakupan = [labelRentang(filter), filter.unit ? (namaUnit ?? "bidang terpilih") : terbatas ? "lingkup Anda" : "seluruh dinas"].join(" · ");
 
   const pilihSatuan = (s: SatuanRekap) => {
     setSatuan(s);
@@ -172,12 +174,12 @@ function RekapIsi() {
   return (
     <>
       <PageHeader
-        eyebrow="Pelaporan"
+        eyebrow={grupNav}
         title="Rekap kegiatan"
         description={
           terbatas
-            ? `Jumlah kegiatan ${unitSaya?.nama ?? "bidang Anda"} dan kegiatan yang Anda catat, dihitung otomatis dari data terkini.`
-            : "Jumlah dan sebaran kegiatan per periode, bidang, dan pegawai, dihitung otomatis dari data terkini."
+            ? `Jumlah kegiatan ${unitSaya?.nama ?? "bidang Anda"} dan kegiatan yang Anda catat.`
+            : "Jumlah kegiatan per periode, bidang, dan pegawai."
         }
         actions={
           <Button asChild className="h-10">

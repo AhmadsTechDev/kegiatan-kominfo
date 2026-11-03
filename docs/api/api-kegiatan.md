@@ -274,7 +274,7 @@ Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti men
 
 Pimpinan/admin menandai kegiatan sudah diperiksa atau perlu perbaikan. Versi data (`updatedAt`) tidak berubah.
 
-**Akses**: PIMPINAN, ADMIN. Membuat catatan di riwayat pemeriksaan, audit log (`periksa`), dan notifikasi untuk pegawai pembuat dan penanggung jawab (kecuali pemeriksa sendiri). Status pelaksanaan tidak berubah.
+**Akses**: PIMPINAN, ADMIN. Membuat catatan di riwayat pemeriksaan, audit log (`periksa`), dan notifikasi untuk pegawai pembuat dan penanggung jawab (kecuali pemeriksa sendiri). Status pelaksanaan tidak berubah. Hanya untuk kegiatan yang sedang berlangsung atau selesai; kegiatan yang belum dimulai atau dibatalkan dijawab 422.
 
 **Body**
 

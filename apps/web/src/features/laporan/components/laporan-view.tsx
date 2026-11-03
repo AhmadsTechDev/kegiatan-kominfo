@@ -38,6 +38,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { useGrupNav } from "@/hooks/use-grup-nav";
 import { KegiatanTanpaAkses } from "@/features/kegiatan/components/kegiatan-states";
 import { useReferensi } from "@/features/kegiatan/hooks/use-kegiatan";
 import { useKegiatanFilter } from "@/features/kegiatan/hooks/use-kegiatan-filter";
@@ -80,6 +81,7 @@ export function LaporanView() {
 }
 
 function LaporanIsi() {
+  const grupNav = useGrupNav("Monitoring");
   const id = useId();
   const { filter, setFilter } = useKegiatanFilter();
   const { terbatas, saringUnit } = useLingkupPegawai();
@@ -135,7 +137,7 @@ function LaporanIsi() {
   return (
     <>
       <PageHeader
-        eyebrow="Pelaporan"
+        eyebrow={grupNav}
         title="Cetak & unduh laporan"
         description="Pilih periode dan cakupan, periksa pratinjaunya, lalu unduh sebagai PDF, atau cetak langsung."
         actions={
