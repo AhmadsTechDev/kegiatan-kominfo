@@ -230,7 +230,7 @@ export function PilihUnit({ unit, value, onChange, id, invalid, required }: { un
           <SelectValue placeholder={utamaId ? "Tidak ada sub bidang" : "Pilih bidang dulu"} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={LANGSUNG}>Langsung di unit ini</SelectItem>
+          <SelectItem value={LANGSUNG}>Tanpa sub bidang</SelectItem>
           {sub.map((u) => (
             <SelectItem key={u.id} value={String(u.id)}>
               {u.nama}
