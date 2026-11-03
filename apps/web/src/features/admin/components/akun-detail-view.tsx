@@ -46,7 +46,8 @@ function Kepala({ a, idSaya, buka }: { a: AkunDetail; idSaya?: string; buka: (j:
   const ringkas = dariDetail(a);
   return (
     <Panel>
-      <PanelBody className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      {/* Tanpa PanelHeader, jadi padding atas ditambahkan agar sama dengan bawah */}
+      <PanelBody className="flex flex-col gap-4 pt-4 sm:flex-row sm:items-center md:pt-5">
         <AvatarInisial nama={a.name} src={a.foto} className="size-16 rounded-2xl text-lg" />
         <div className="min-w-0 flex-1">
           <h1 className="font-heading text-2xl font-extrabold tracking-tight break-words">

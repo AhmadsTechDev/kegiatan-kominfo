@@ -61,7 +61,8 @@ export function DaftarSesi({ sesi, onCabut, pendingId }: { sesi: Sesi[]; onCabut
                 {s.sesiIni && <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-primary">Perangkat ini</span>}
               </p>
               <p className="text-xs text-muted-foreground">
-                {s.ipAddress ?? "IP tidak tercatat"} · masuk {formatTanggalJam(s.createdAt)} · aktif terakhir {formatTanggalJam(s.updatedAt)}
+                {/* IP bisa kosong (mis. di balik proxy); jangan sisakan pemisah "·" di depan */}
+                {[s.ipAddress?.trim(), `masuk ${formatTanggalJam(s.createdAt)}`, `aktif terakhir ${formatTanggalJam(s.updatedAt)}`].filter(Boolean).join(" · ")}
               </p>
             </div>
             {onCabut && !s.sesiIni && (
