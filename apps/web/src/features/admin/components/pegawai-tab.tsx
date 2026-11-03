@@ -21,7 +21,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, SearchX, Users } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -45,9 +44,10 @@ const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const satisfies readonly Role[
 import { zNip } from "@/lib/nip";
 import { cn } from "@/lib/utils";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
-import { usePegawaiAdmin, useSimpanPegawai, useBidangAdmin } from "../hooks/use-admin";
+import { usePegawaiAdmin, useSimpanPegawai, useBidangAdmin, useUndangPegawai } from "../hooks/use-admin";
 import type { FilterPegawai, PegawaiAdmin, BidangAdmin } from "../types";
 import { BadgeAktif, KartuMaster, KolomCari, PilihUnit, TombolUbah, terapkanGalatServer } from "./admin-shared";
+import { UndangDialog } from "./undang-dialog";
 
 const SEMUA = "semua";
 
@@ -66,9 +66,21 @@ const schema = z.object({
 type Nilai = z.infer<typeof schema>;
 
 // Pegawai yang belum punya akun juga bisa diberi role bawaan; role itu dipakai saat pegawai diundang
-export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "baru"; unit: BidangAdmin[]; onClose: () => void }) {
+type PegawaiBaru = { id: number; nama: string; nip: string | null; bidang: string };
+
+// onDibuat: dipanggil setelah pegawai baru tersimpan, agar pemanggil bisa langsung membuka dialog Undang
+export function PegawaiDialog({
+  pegawai,
+  unit,
+  onClose,
+  onDibuat,
+}: {
+  pegawai: PegawaiAdmin | "baru";
+  unit: BidangAdmin[];
+  onClose: () => void;
+  onDibuat?: (p: PegawaiBaru) => void;
+}) {
   const simpan = useSimpanPegawai();
-  const router = useRouter();
   const [galat, setGalat] = useState<string | null>(null);
   const awal = pegawai === "baru" ? null : pegawai;
   const { register, control, handleSubmit, setError, formState } = useForm<Nilai>({
@@ -98,12 +110,11 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
         },
       },
       {
-        onSuccess: () => {
+        onSuccess: (h) => {
           if (awal) toast.success("Data pegawai diperbarui");
-          // Pegawai baru belum punya akun, jadi tampil di Manajemen akun > Perlu diundang, bukan di daftar ini
           else {
-            toast.success("Pegawai ditambahkan", { description: "Undang dari tab Perlu diundang." });
-            router.push("/admin/akun?tab=belum");
+            toast.success("Pegawai ditambahkan");
+            onDibuat?.({ id: h.id, nama: v.nama.trim(), nip: v.nip || null, bidang: unit.find((u) => u.id === Number(v.bidangId))?.nama ?? "" });
           }
           onClose();
         },
@@ -230,6 +241,8 @@ export function PegawaiTab() {
   const daftar = usePegawaiAdmin(filter);
   const unit = useBidangAdmin();
   const [dialog, setDialog] = useState<PegawaiAdmin | "baru" | null>(null);
+  const [undangBaru, setUndangBaru] = useState<PegawaiBaru | null>(null);
+  const kirimUndangan = useUndangPegawai();
   const adaFilter = filter.q !== "" || filter.unit !== null || filter.aktif !== null;
 
   const kolom = useMemo<DataTableColumn<PegawaiAdmin>[]>(
@@ -351,7 +364,36 @@ export function PegawaiTab() {
         </>
       )}
 
-      {dialog && unit.data && <PegawaiDialog pegawai={dialog} unit={unit.data} onClose={() => setDialog(null)} />}
+      {dialog && unit.data && <PegawaiDialog pegawai={dialog} unit={unit.data} onClose={() => setDialog(null)} onDibuat={setUndangBaru} />}
+      {/* Pegawai baru belum punya akun, jadi langsung ditawari undangan. Bila dibatalkan, ia tetap ada di Manajemen akun > Perlu diundang */}
+      {undangBaru && (
+        <UndangDialog
+          title={`Undang ${undangBaru.nama}`}
+          penerima={
+            <>
+              <p className="truncate font-semibold">{undangBaru.nama}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {undangBaru.nip ? `NIP ${undangBaru.nip}` : "Tanpa NIP"} · {undangBaru.bidang}
+              </p>
+            </>
+          }
+          submitLabel="Kirim undangan"
+          pending={kirimUndangan.isPending}
+          onClose={() => setUndangBaru(null)}
+          onSubmit={(isi, gagal) =>
+            kirimUndangan.mutate(
+              { pegawaiId: undangBaru.id, isi },
+              {
+                onSuccess: (h) => {
+                  toast.success(`Undangan dikirim ke ${h.email}`);
+                  setUndangBaru(null);
+                },
+                onError: gagal,
+              },
+            )
+          }
+        />
+      )}
     </>
   );
 }
