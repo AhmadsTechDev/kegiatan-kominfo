@@ -76,7 +76,7 @@ export const PermintaanAkunService = {
       const surat = {
         judul: "Ada permintaan akun baru",
         pratinjau: `${nama} meminta akun dengan email ${email}.`,
-        paragraf: ["Seseorang meminta akun Aplikasi Pendataan Kegiatan. Tinjau lalu setujui atau tolak di halaman Manajemen akun."],
+        paragraf: ["Seseorang meminta akun Pendataan Kegiatan. Tinjau lalu setujui atau tolak di halaman Manajemen akun."],
         rincian: [
           { label: "Nama", nilai: nama },
           { label: "NIP", nilai: pegawai?.nip ?? "Tanpa NIP" },
@@ -140,8 +140,8 @@ export const PermintaanAkunService = {
     await kirimTanpaGagal(() =>
       kirimEmail(permintaan.email, "Permintaan akun Anda belum disetujui", {
         judul: "Permintaan akun belum dapat disetujui",
-        pratinjau: "Permintaan akun Anda di Aplikasi Pendataan Kegiatan belum dapat disetujui.",
-        paragraf: [`Halo ${permintaan.nama},`, "Permintaan akun Anda di Aplikasi Pendataan Kegiatan belum dapat disetujui.", `Alasan: ${bersih}`],
+        pratinjau: "Permintaan akun Anda di Pendataan Kegiatan belum dapat disetujui.",
+        paragraf: [`Halo ${permintaan.nama},`, "Permintaan akun Anda di Pendataan Kegiatan belum dapat disetujui.", `Alasan: ${bersih}`],
         catatan: "Bila ada pertanyaan, hubungi administrator aplikasi Diskominfo Kota Palembang.",
       }),
     );

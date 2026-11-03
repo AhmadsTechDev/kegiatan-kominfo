@@ -46,8 +46,8 @@ ${rincian
 </table>`
     : "";
   const t = tombol
-    ? `<p style="margin:22px 0 14px"><a href="${escapeHtml(tombol.url)}" style="background:${NAVY};color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;display:inline-block">${escapeHtml(tombol.label)}</a></p>
-<p style="margin:0 0 14px;font-size:12px;color:${REDUP};line-height:1.5">Bila tombol tidak berfungsi, buka tautan ini:<br><a href="${escapeHtml(tombol.url)}" style="color:${NAVY};word-break:break-all">${escapeHtml(tombol.url)}</a></p>`
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 12px"><tr><td style="border-radius:10px;background:${NAVY}"><a href="${escapeHtml(tombol.url)}" style="display:inline-block;padding:13px 28px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px">${escapeHtml(tombol.label)}</a></td></tr></table>
+<p style="margin:0;font-size:12px;color:${REDUP};line-height:1.5">Tombol tidak berfungsi? <a href="${escapeHtml(tombol.url)}" style="color:${NAVY};font-weight:600">Buka tautan ini</a>.</p>`
     : "";
   const c = catatan
     ? `<p style="margin:18px 0 0;padding-top:16px;border-top:1px solid ${GARIS};font-size:12px;color:${REDUP};line-height:1.5">${escapeHtml(catatan)}</p>`
@@ -63,14 +63,13 @@ ${rincian
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${LATAR};padding:28px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:540px">
 <tr><td style="padding:0 4px 16px"><table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="padding-right:12px;vertical-align:middle"><img src="${escapeHtml(urlLogo())}" width="43" height="48" alt="Logo Kota Palembang" style="display:block;border:0"></td>
-<td style="vertical-align:middle"><div style="font-size:15px;font-weight:700;line-height:1.3">Aplikasi Pendataan Kegiatan</div><div style="font-size:13px;color:${REDUP};line-height:1.4">Diskominfo Kota Palembang</div></td>
+<td style="padding-right:12px;vertical-align:middle"><img src="${escapeHtml(urlLogo())}" width="43" height="48" alt="" style="display:block;border:0"></td>
+<td style="vertical-align:middle"><div style="font-size:15px;font-weight:700;line-height:1.3">Pendataan Kegiatan</div><div style="font-size:13px;color:${REDUP};line-height:1.4">Diskominfo Kota Palembang</div></td>
 </tr></table></td></tr>
-<tr><td style="background:#ffffff;border:1px solid ${GARIS};border-radius:16px;padding:28px">
-<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;font-weight:800;color:${TEKS}">${escapeHtml(judul)}</h1>
-<div style="font-size:14px">${p}${r}${t}${c}</div>
+<tr><td style="background:#ffffff;border:1px solid ${GARIS};border-top:4px solid ${NAVY};border-radius:16px;padding:32px 28px">
+<h1 style="margin:0 0 18px;font-size:22px;line-height:1.3;font-weight:800;color:${TEKS}">${escapeHtml(judul)}</h1>
+<div style="font-size:15px">${p}${r}${t}${c}</div>
 </td></tr>
-<tr><td style="padding:16px 4px 0;font-size:12px;line-height:1.5;color:${REDUP}">Email otomatis dari Aplikasi Pendataan Kegiatan. Balasan ke alamat ini tidak dibaca; hubungi administrator aplikasi bila ada pertanyaan.<br><a href="${escapeHtml(env.FRONTEND_URL)}" style="color:${NAVY}">Buka aplikasi</a></td></tr>
 </table>
 </td></tr></table></body></html>`;
 }
@@ -85,7 +84,7 @@ function teksEmail({ judul, paragraf, rincian, tombol, catatan }: IsiEmail) {
     ...(tombol ? ["", `${tombol.label}: ${tombol.url}`] : []),
     ...(catatan ? ["", catatan] : []),
     "",
-    "Aplikasi Pendataan Kegiatan, Diskominfo Kota Palembang",
+    "Pendataan Kegiatan, Diskominfo Kota Palembang",
   ].join("\n");
 }
 

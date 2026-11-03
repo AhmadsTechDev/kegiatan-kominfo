@@ -39,11 +39,10 @@ const SURAT = {
       pratinjau: `Buat kata sandi untuk mulai memakai aplikasi. Tautan berlaku ${jam("aktivasi")} jam.`,
       paragraf: [
         `Halo ${nama},`,
-        "Administrator Diskominfo Kota Palembang telah membuatkan akun untuk Anda di Aplikasi Pendataan Kegiatan.",
+        "Administrator Diskominfo Kota Palembang telah membuatkan akun untuk Anda di Pendataan Kegiatan.",
         "Tekan tombol di bawah untuk memverifikasi email dan membuat kata sandi. Setelah itu Anda masuk dengan email ini.",
       ],
       tombol: { label: "Aktifkan akun", url: tautan("aktivasi", token) },
-      catatan: `Tautan berlaku ${jam("aktivasi")} jam dan hanya dapat dipakai sekali. Bila Anda tidak merasa meminta akun, abaikan email ini.`,
     },
   }),
   reset: (nama: string, token: string) => ({
@@ -61,7 +60,7 @@ const SURAT = {
     isi: {
       judul: "Kata sandi Anda diubah",
       pratinjau: `Kata sandi akun Anda diubah pada ${formatWaktu(waktu)}.`,
-      paragraf: [`Halo ${nama},`, "Kata sandi akun Aplikasi Pendataan Kegiatan Anda baru saja diubah."],
+      paragraf: [`Halo ${nama},`, "Kata sandi akun Pendataan Kegiatan Anda baru saja diubah."],
       rincian: [{ label: "Waktu", nilai: formatWaktu(waktu) }],
       tombol: amankan,
       catatan: "Bila bukan Anda yang mengubahnya, segera atur ulang kata sandi lewat tombol di atas lalu hubungi administrator aplikasi.",
@@ -96,7 +95,7 @@ const SURAT = {
     isi: {
       judul: "Email akun Anda diganti",
       pratinjau: `Mulai sekarang Anda masuk dengan ${emailBaru}.`,
-      paragraf: [`Halo ${nama},`, "Email akun Aplikasi Pendataan Kegiatan Anda telah diganti. Email ini tidak lagi dapat dipakai untuk masuk."],
+      paragraf: [`Halo ${nama},`, "Email akun Pendataan Kegiatan Anda telah diganti. Email ini tidak lagi dapat dipakai untuk masuk."],
       rincian: [
         { label: "Email baru", nilai: emailBaru },
         { label: "Waktu", nilai: formatWaktu(waktu) },

@@ -23,7 +23,7 @@ export const env = {
   SMTP_SECURE: process.env.SMTP_SECURE === "true",
   SMTP_USER: process.env.SMTP_USER || undefined,
   SMTP_PASS: process.env.SMTP_PASS || undefined,
-  SMTP_FROM: process.env.SMTP_FROM || "Aplikasi Pendataan Kegiatan <no-reply@diskominfo.local>",
+  SMTP_FROM: process.env.SMTP_FROM || "Pendataan Kegiatan <no-reply@diskominfo.local>",
   BREVO_API_KEY: process.env.BREVO_API_KEY || undefined,
   CLOUDINARY_URL: process.env.CLOUDINARY_URL || undefined,
   CLOUDINARY_FOLDER: process.env.CLOUDINARY_FOLDER || "kominfo-kegiatan",
