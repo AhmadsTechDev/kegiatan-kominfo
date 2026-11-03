@@ -209,11 +209,6 @@ export function DokumentasiGaleri({ kegiatan }: { kegiatan: Pick<KegiatanDetail,
           <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed bg-background px-4 py-8 text-center">
             <FileText aria-hidden className="size-6 text-muted-foreground" />
             <p className="text-sm font-semibold">Belum ada dokumentasi</p>
-            <p className="text-xs text-muted-foreground">
-              {kegiatan.statusPelaksanaan === "selesai"
-                ? "Kegiatan selesai sebaiknya dilengkapi foto atau PDF oleh pemiliknya."
-                : "Dokumentasi bersifat opsional dan dapat ditambahkan kapan saja."}
-            </p>
           </div>
         )
       )}

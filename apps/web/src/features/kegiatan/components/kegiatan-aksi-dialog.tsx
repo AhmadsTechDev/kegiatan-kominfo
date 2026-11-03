@@ -30,7 +30,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/api-client";
 import { kegiatanKeys, useBatalkanKegiatan, useHapusKegiatan } from "../hooks/use-kegiatan";
@@ -82,7 +82,7 @@ export function KegiatanAksiDialog({ target, aksi, onClose, onDihapus }: Props) 
         open
         onOpenChange={(v) => !v && tutup()}
         title={`Batalkan kegiatan "${target.judul}"?`}
-        description="Kegiatan tetap tercatat dengan status Dibatalkan beserta alasannya. Tindakan ini tidak dapat diurungkan."
+        description="Kegiatan tetap tercatat sebagai Dibatalkan dan tidak dapat diurungkan."
         confirmLabel="Batalkan kegiatan"
         pendingLabel="Membatalkan..."
         pending={batalkan.isPending}
@@ -118,7 +118,6 @@ export function KegiatanAksiDialog({ target, aksi, onClose, onDihapus }: Props) 
             aria-invalid={!!galat}
             autoFocus
           />
-          <FieldDescription>Contoh: narasumber berhalangan hadir.</FieldDescription>
           {galat && <FieldError>{galat}</FieldError>}
         </Field>
       </ConfirmDialog>
@@ -133,8 +132,7 @@ export function KegiatanAksiDialog({ target, aksi, onClose, onDihapus }: Props) 
         title={`Hapus kegiatan "${target.judul}"?`}
         description={
           <>
-            Kegiatan tidak lagi muncul di daftar, dashboard, rekap, dan ekspor. Bila kegiatan hanya tidak jadi
-            dilaksanakan, pilih Batalkan agar tetap tercatat.
+            Kegiatan hilang dari daftar dan rekap. Pilih Batalkan bila hanya tidak jadi dilaksanakan.
             {galat && <span className="mt-2 block text-destructive">{galat}</span>}
           </>
         }

@@ -211,9 +211,9 @@ export function KegiatanListView() {
   const { terbatas: pegawai, unit: unitSaya, saringUnit } = useLingkupPegawai();
   const lingkup: Lingkup = !pegawai ? "semua" : filter.milik === "saya" ? "saya" : "unit";
   const judul: Record<Lingkup, { title: string; description: string }> = {
-    semua: { title: "Kegiatan", description: "Cari, filter, dan telusuri seluruh kegiatan dinas dalam satu daftar." },
-    unit: { title: "Kegiatan bidang saya", description: `Kegiatan ${unitSaya?.nama ?? "bidang Anda"}, termasuk kegiatan yang Anda catat.` },
-    saya: { title: "Kegiatan saya", description: "Kegiatan yang Anda catat atau menjadi penanggung jawabnya." },
+    semua: { title: "Kegiatan", description: "Seluruh kegiatan dinas." },
+    unit: { title: "Kegiatan bidang saya", description: unitSaya?.nama ?? "Kegiatan bidang Anda." },
+    saya: { title: "Kegiatan saya", description: "Kegiatan yang Anda catat atau tangani." },
   };
   const referensi = useReferensi();
   const tanpaPj = lingkup === "saya";

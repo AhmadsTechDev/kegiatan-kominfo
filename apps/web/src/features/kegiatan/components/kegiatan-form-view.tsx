@@ -58,7 +58,7 @@ export function KegiatanBaruView({ drafId = null }: { drafId?: number | null }) 
     <PageHeader
       eyebrow="Operasional / Kegiatan"
       title={drafId ? "Lanjutkan draf" : "Tambah kegiatan"}
-      description="Dua langkah singkat. Dokumentasi dan hasil kegiatan dilengkapi setelah kegiatan berlangsung."
+      description="Dua langkah singkat."
       actions={<TombolKembali href="/kegiatan" />}
     />
   );

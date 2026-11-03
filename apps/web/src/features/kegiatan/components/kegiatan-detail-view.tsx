@@ -236,7 +236,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
       <Panel className="gap-4 p-4 md:p-5">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={k.statusPelaksanaan} />
-          <StatusPemeriksaanBadge status={k.statusPemeriksaan} />
+          {k.statusPemeriksaan !== "terkirim" && <StatusPemeriksaanBadge status={k.statusPemeriksaan} />}
           <span className="text-xs text-muted-foreground">
             Dicatat {formatTanggal(k.createdAt)} oleh {k.pembuat.nama}
           </span>
@@ -291,7 +291,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
           <CircleAlert aria-hidden className="size-5 shrink-0 text-status-berlangsung-foreground" />
           <div className="min-w-0 flex-1 text-sm text-status-berlangsung-foreground">
             <p className="font-semibold">Kegiatan sudah selesai</p>
-            <p>Lengkapi {[kurangDok && "dokumentasi", kurangHasil && "hasil kegiatan"].filter(Boolean).join(" dan ")} agar laporan dinas lengkap.</p>
+            <p>Lengkapi {[kurangDok && "dokumentasi", kurangHasil && "hasil kegiatan"].filter(Boolean).join(" dan ")}.</p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             {kurangDok && (
@@ -322,7 +322,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
                 <Paragraf
                   label="Hasil kegiatan"
                   isi={k.hasil}
-                  kosong={k.statusPelaksanaan === "selesai" ? "Belum diisi." : "Diisi setelah kegiatan berlangsung."}
+                  kosong="Belum diisi."
                 />
                 {k.refEksternal && <Paragraf label="Nomor surat" isi={k.refEksternal} kosong="" />}
               </dl>
@@ -332,7 +332,6 @@ export function KegiatanDetailView({ id }: { id: number }) {
           <Panel id="dokumentasi" className="scroll-mt-24">
             <PanelHeader
               title="Dokumentasi"
-              description={k.bisaUbah ? "Foto atau PDF langsung tersimpan begitu dipilih." : undefined}
               action={
                 <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground tabular-nums">{k.dokumentasi.length} berkas</span>
               }
@@ -369,11 +368,11 @@ export function KegiatanDetailView({ id }: { id: number }) {
                   <span className="truncate text-xs text-muted-foreground">{k.unitKerja.nama}</span>
                 </div>
               </div>
-              <p className="border-t border-muted pt-3 text-xs text-muted-foreground">
-                {k.pengubahTerakhir
-                  ? `Terakhir diubah ${k.pengubahTerakhir.nama}, ${formatTanggalJam(k.pengubahTerakhir.waktu)}`
-                  : "Belum pernah diubah sejak dicatat."}
-              </p>
+              {k.pengubahTerakhir && (
+                <p className="border-t border-muted pt-3 text-xs text-muted-foreground">
+                  Terakhir diubah {k.pengubahTerakhir.nama}, {formatTanggalJam(k.pengubahTerakhir.waktu)}
+                </p>
+              )}
             </PanelBody>
           </Panel>
 
