@@ -9,12 +9,12 @@ const TANPA_DOKUMENTASI = { dokumentasi: { none: {} } } satisfies Prisma.Kegiata
 // Kegiatan aktif yang mulai di dalam rentang waktu
 const dalamRentang = (rentang: Rentang): Prisma.KegiatanWhereInput => ({ ...KEGIATAN_AKTIF, ...kondisiRentang(rentang) });
 
-// Daftar ringkas kegiatan untuk kartu dashboard (unit kerja ditampilkan sebagai nama saja)
+// Daftar ringkas kegiatan untuk kartu dashboard (bidang ditampilkan sebagai nama saja)
 async function daftarRingkas(where: Prisma.KegiatanWhereInput, orderBy: Prisma.KegiatanOrderByWithRelationInput, batas: number, sekarang: Date) {
   const baris = await prisma.kegiatan.findMany({ where, select: PILIH_RINGKAS, orderBy, take: batas });
   return baris.map((b) => {
     const k = ratakanRingkas(b, sekarang);
-    return { ...k, unitKerja: k.unitKerja.nama };
+    return { ...k, bidang: k.bidang.nama };
   });
 }
 
@@ -52,9 +52,9 @@ export const DashboardRepository = {
       GROUP BY bulan, unit_induk_id`;
   },
 
-  // Unit kerja tertinggi (tanpa induk) yang aktif
+  // Bidang tertinggi (tanpa induk) yang aktif
   daftarUnitInduk() {
-    return prisma.unitKerja.findMany({
+    return prisma.bidang.findMany({
       where: { parentId: null, aktif: true },
       select: { id: true, kode: true, nama: true },
       orderBy: { id: "asc" },
@@ -85,7 +85,7 @@ export const DashboardRepository = {
     });
     return baris.map(({ lat, lng, ...b }) => {
       const k = ratakanRingkas(b, sekarang);
-      return { ...k, unitKerja: k.unitKerja.nama, lat: angka(lat)!, lng: angka(lng)! };
+      return { ...k, bidang: k.bidang.nama, lat: angka(lat)!, lng: angka(lng)! };
     });
   },
 

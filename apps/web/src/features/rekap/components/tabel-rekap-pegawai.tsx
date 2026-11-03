@@ -10,7 +10,7 @@
 //
 // Cara kerja:
 //   1. Menerima data rekapitulasi pegawai dan parameter penyaring yang aktif.
-//   2. Menampilkan nomor urut, nama pegawai, unit kerja, dan jumlah kegiatan.
+//   2. Menampilkan nomor urut, nama pegawai, bidang, dan jumlah kegiatan.
 //   3. Menyediakan tautan pada nama pegawai untuk memeriksa rincian kegiatannya.
 //   4. Menampilkan baris total akumulasi kegiatan pada bagian bawah tabel.
 //
@@ -61,7 +61,7 @@ export function TabelRekapPegawai({ data, filter }: { data: RekapData; filter: N
                 {p.nama}
               </Link>
             </TableCell>
-            <TableCell className="max-w-64 truncate text-muted-foreground">{p.unitKerja}</TableCell>
+            <TableCell className="max-w-64 truncate text-muted-foreground">{p.bidang}</TableCell>
             <TableCell className="pr-4 text-right font-semibold tabular-nums md:pr-5">{formatAngka(p.jumlah)}</TableCell>
           </TableRow>
         ))}

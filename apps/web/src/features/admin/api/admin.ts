@@ -5,8 +5,7 @@
 // master data, akun pengguna, jejak audit log, dan persetujuan permintaan akun.
 //
 // Isi berkas:
-//   - getUnitKerja, buatUnitKerja, ubahUnitKerja : API master unit kerja
-//   - getJenisUnit, buatJenisUnit, ubahJenisUnit : API tingkatan jenis unit
+//   - getBidang, buatBidang, ubahBidang : API master bidang
 //   - getPegawai, buatPegawai, ubahPegawai : API master pegawai
 //   - getJenisKegiatan, buatJenisKegiatan, ubahJenisKegiatan : API jenis kegiatan
 //   - getAkun, getDetailAkun, buatAkun, ubahAkun, nonaktifkanAkun, aktifkanAkun, hapusAkun : API akun
@@ -36,15 +35,13 @@ import type {
   IsiPegawai,
   IsiPegawaiBaru,
   HasilPegawaiBaru,
-  IsiJenisUnit,
   IsiUnit,
-  JenisUnitAdmin,
   JenisKegiatanAdmin,
   PegawaiAdmin,
   PermintaanAkun,
   StatusPermintaan,
   PilihanAudit,
-  UnitKerjaAdmin,
+  BidangAdmin,
 } from "../types";
 
 export const UKURAN_HALAMAN_ADMIN = 20;
@@ -55,13 +52,9 @@ const params = (nilai: Record<string, unknown>) =>
 
 type Hasil<T = number> = { id: T };
 
-export const getUnitKerja = () => apiClient.get<UnitKerjaAdmin[]>("/admin/unit-kerja").then((r) => r.data);
-export const buatUnitKerja = (isi: IsiUnit) => apiClient.post<Hasil>("/admin/unit-kerja", isi).then((r) => r.data);
-export const ubahUnitKerja = (id: number, isi: IsiUnit) => apiClient.patch<Hasil>(`/admin/unit-kerja/${id}`, isi).then((r) => r.data);
-
-export const getJenisUnit = () => apiClient.get<JenisUnitAdmin[]>("/admin/jenis-unit").then((r) => r.data);
-export const buatJenisUnit = (isi: IsiJenisUnit) => apiClient.post<Hasil>("/admin/jenis-unit", isi).then((r) => r.data);
-export const ubahJenisUnit = (id: number, isi: IsiJenisUnit) => apiClient.patch<Hasil>(`/admin/jenis-unit/${id}`, isi).then((r) => r.data);
+export const getBidang = () => apiClient.get<BidangAdmin[]>("/admin/bidang").then((r) => r.data);
+export const buatBidang = (isi: IsiUnit) => apiClient.post<Hasil>("/admin/bidang", isi).then((r) => r.data);
+export const ubahBidang = (id: number, isi: IsiUnit) => apiClient.patch<Hasil>(`/admin/bidang/${id}`, isi).then((r) => r.data);
 
 export const getPegawai = (f: FilterPegawai) =>
   apiClient

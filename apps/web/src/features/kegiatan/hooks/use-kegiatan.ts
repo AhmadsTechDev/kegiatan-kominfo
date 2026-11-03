@@ -9,7 +9,7 @@
 //   - idValid            : fungsi validasi parameter ID bilangan bulat positif
 //   - useDaftarKegiatan  : hook pembaca daftar kegiatan dengan keepPreviousData
 //   - useKegiatan        : hook pembaca rincian detail kegiatan tunggal
-//   - useReferensi       : hook pembaca data master (jenis, unit kerja, pegawai)
+//   - useReferensi       : hook pembaca data master (jenis, bidang, pegawai)
 //   - useBuatKegiatan    : hook mutasi pencatatan kegiatan baru
 //   - useUbahKegiatan    : hook mutasi pengubahan data kegiatan
 //   - useBatalkanKegiatan: hook mutasi pembatalan kegiatan disertai alasan

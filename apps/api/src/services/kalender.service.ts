@@ -13,14 +13,14 @@ export const KalenderService = {
     const periode = parsePeriode(bulan, sekarang);
     const [items, unit] = await Promise.all([
       KegiatanRepository.kalender(rentangPeriode(periode), await lingkupBaca(aktor), sekarang, BATAS),
-      ReferensiRepository.semuaUnitKerja(),
+      ReferensiRepository.semuaBidang(),
     ]);
     const unitInduk = unit.filter((u) => u.parentId == null).map((u) => ({ id: u.id, nama: u.nama }));
     return {
       bulan: kodePeriode(periode),
       bulanSekarang: kodePeriode(periodeSekarang(sekarang)),
       unitInduk,
-      items: items.map((k) => ({ ...k, unitIndukId: cariIndukTertinggi(unit, k.unitKerja.id)?.id ?? k.unitKerja.id })),
+      items: items.map((k) => ({ ...k, unitIndukId: cariIndukTertinggi(unit, k.bidang.id)?.id ?? k.bidang.id })),
       terpotong: items.length >= BATAS,
     };
   },

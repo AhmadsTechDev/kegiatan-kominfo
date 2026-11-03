@@ -35,16 +35,16 @@ Data untuk pilihan di formulir dan filter.
 
 ```json
 {
-  "unitKerja": [
+  "bidang": [
     { "id": 4, "parentId": null, "kode": "BID-TIP", "nama": "Bidang Teknologi Informasi dan Persandian", "aktif": true },
     { "id": 10, "parentId": 4, "kode": "SEKSI-DATA", "nama": "Seksi Pengelolaan Data dan Persediaan", "aktif": true }
   ],
   "jenisKegiatan": [{ "id": 1, "nama": "Rapat" }],
-  "pegawai": [{ "id": 1, "nama": "Andi Saputra", "jabatan": "Analis Data", "unitKerjaId": 10 }]
+  "pegawai": [{ "id": 1, "nama": "Andi Saputra", "jabatan": "Analis Data", "bidangId": 10 }]
 }
 ```
 
-`unitKerja` berisi semua unit (aktif dan nonaktif). `jenisKegiatan` dan `pegawai` hanya yang aktif. NIP pegawai sengaja tidak disertakan.
+`bidang` berisi semua unit (aktif dan nonaktif). `jenisKegiatan` dan `pegawai` hanya yang aktif. NIP pegawai sengaja tidak disertakan.
 
 ---
 
@@ -86,7 +86,7 @@ Contoh: `GET /api/kegiatan?periode=2026-11&status=selesai&page=1`
       "tglMulai": "2026-10-30T22:10:53.043Z",
       "tglSelesai": "2026-10-31T00:10:53.043Z",
       "lokasiNama": "Ruang rapat",
-      "unitKerja": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
+      "bidang": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
       "jenis": { "id": 1, "nama": "Rapat" },
       "penanggungJawab": { "id": 1, "nama": "Andi Saputra" },
       "statusPemeriksaan": "perlu_perbaikan",
@@ -129,7 +129,7 @@ Detail kegiatan.
   "dibatalkanAt": null,
   "alasanBatal": null,
   "jenis": { "id": 1, "nama": "Rapat" },
-  "unitKerja": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
+  "bidang": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
   "unitInduk": { "id": 4, "nama": "Bidang Teknologi Informasi dan Persandian" },
   "penanggungJawab": { "id": 1, "nama": "Andi Saputra", "jabatan": "Analis Data" },
   "pembuat": { "id": "07747c26-fd62-4ab6-8584-ebf7b244fc3a", "nama": "Andi Saputra" },
@@ -154,7 +154,7 @@ Detail kegiatan.
 
 | Field | Keterangan |
 | --- | --- |
-| `unitInduk` | Unit di atas `unitKerja`; `null` bila bidangnya sudah unit tertinggi |
+| `unitInduk` | Unit di atas `bidang`; `null` bila bidangnya sudah unit tertinggi |
 | `pengubahTerakhir` | Terakhir diubah/dibatalkan; `null` bila belum pernah |
 | `riwayat` | 20 aksi terakhir pada kegiatan dan dokumentasinya |
 | `updatedAt` | **Versi data.** Kirim kembali sebagai `expectedUpdatedAt` saat mengubah atau membatalkan |

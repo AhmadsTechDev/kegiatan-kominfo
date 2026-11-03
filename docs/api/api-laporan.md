@@ -13,7 +13,7 @@ Beberapa endpoint memakai **kegiatan ringkas** dengan bentuk:
   "tglMulai": "2026-11-05T02:00:00.000Z",
   "tglSelesai": "2026-11-05T04:00:00.000Z",
   "lokasiNama": "Ruang rapat",
-  "unitKerja": "Seksi Pengelolaan Data dan Persediaan",
+  "bidang": "Seksi Pengelolaan Data dan Persediaan",
   "jenis": "Rapat",
   "penanggungJawab": "Andi Saputra",
   "statusPelaksanaan": "akan_datang"
@@ -128,7 +128,7 @@ Beranda pribadi.
       "tglMulai": "2026-11-05T02:00:00.000Z",
       "tglSelesai": "2026-11-05T04:00:00.000Z",
       "lokasiNama": "Ruang rapat",
-      "unitKerja": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
+      "bidang": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
       "jenis": "Rapat",
       "penanggungJawab": "Andi Saputra",
       "statusPelaksanaan": "akan_datang",
@@ -167,7 +167,7 @@ Jumlah kegiatan menurut periode, pegawai, unit, dan jenis.
   "satuan": "bulan",
   "total": { "total": 1, "akanDatang": 0, "berlangsung": 0, "selesai": 1, "dibatalkan": 0, "peserta": 12 },
   "tren": [{ "periode": "2026-10", "jumlah": 1 }],
-  "perPegawai": [{ "id": 1, "nama": "Andi Saputra", "unitKerja": "Seksi Pengelolaan Data dan Persediaan", "jumlah": 1 }],
+  "perPegawai": [{ "id": 1, "nama": "Andi Saputra", "bidang": "Seksi Pengelolaan Data dan Persediaan", "jumlah": 1 }],
   "perUnit": [
     {
       "unit": { "id": 4, "kode": "BID-TIP", "nama": "Bidang Teknologi Informasi dan Persandian" },
@@ -254,7 +254,7 @@ Isi laporan PDF dalam bentuk JSON, untuk ditampilkan sebelum diunduh. Tidak dihi
       "judul": "Rapat koordinasi data",
       "lokasi": "Ruang rapat",
       "jenis": "Rapat",
-      "unitKerja": "Seksi Pengelolaan Data dan Persediaan",
+      "bidang": "Seksi Pengelolaan Data dan Persediaan",
       "penanggungJawab": "Andi Saputra",
       "waktu": "31 Okt 2026, 05.10–07.10",
       "peserta": "12",

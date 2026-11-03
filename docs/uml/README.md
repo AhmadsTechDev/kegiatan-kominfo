@@ -13,4 +13,4 @@ Diagram Aplikasi Pendataan Kegiatan Diskominfo Kota Palembang, ditulis dengan [M
 | 7 | [Component](07-component.md) | Komponen frontend, backend, dan layanan luar |
 | 8 | [Deployment](08-deployment.md) | Railway + Vercel, dan alternatif VPS dengan Docker Compose |
 
-Istilah yang dipakai di diagram mengikuti kode: *unit kerja* adalah bidang atau sub bidang, *pegawai* adalah data kepegawaian (terpisah dari akun login), dan *akun* adalah tabel `user`.
+Istilah yang dipakai di diagram mengikuti kode: tabel `bidang` berisi bidang dan sub bidang (sub bidang menaut ke bidang lewat `parent_id`; tanpa induk berarti bidang), *pegawai* adalah data kepegawaian (terpisah dari akun login), dan *akun* adalah tabel `user`.

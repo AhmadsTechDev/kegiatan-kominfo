@@ -6,11 +6,11 @@
 //
 // Isi berkas:
 //   - Baris, Kosong      : baris label-nilai dan penanda nilai kosong (dipakai panel lain)
-//   - PanelKepegawaian   : nama, NIP, jabatan, dan unit kerja (read-only)
+//   - PanelKepegawaian   : nama, NIP, jabatan, dan bidang (read-only)
 //   - PanelKontak        : formulir nomor kontak (PATCH /me)
 //
 // Catatan penting:
-//   - Nama, NIP, jabatan, dan unit kerja hanya bisa diubah admin; backend menolak perubahan dari pemilik akun.
+//   - Nama, NIP, jabatan, dan bidang hanya bisa diubah admin; backend menolak perubahan dari pemilik akun.
 //   - Foto profil diubah dari kartu profil di bagian atas halaman Pengaturan.
 //
 // Dipakai oleh: frontend/src/features/pengaturan/components/pengaturan-view.tsx
@@ -43,7 +43,7 @@ export function Baris({ label, children }: { label: string; children: React.Reac
 export const Kosong = ({ teks = "-" }: { teks?: string }) => <span className="font-normal text-muted-foreground">{teks}</span>;
 
 export function PanelKepegawaian({ p }: { p: Profil }) {
-  const unit = p.pegawai?.unitKerja;
+  const unit = p.pegawai?.bidang;
   // Admin mengelola datanya sendiri lewat Manajemen akun; role lain harus meminta admin
   const admin = p.role === "ADMIN";
   return (

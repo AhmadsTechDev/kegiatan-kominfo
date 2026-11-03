@@ -26,7 +26,7 @@ export type KegiatanRingkas = {
   tglMulai: string;
   tglSelesai: string;
   lokasiNama: string | null;
-  unitKerja: string;
+  bidang: string;
   jenis: string;
   penanggungJawab: string;
   statusPelaksanaan: StatusPelaksanaan;
@@ -61,7 +61,7 @@ export type AgendaPekan = {
   tglMulai: string;
   tglSelesai: string;
   lokasiNama: string | null;
-  unitKerja: { id: number; nama: string };
+  bidang: { id: number; nama: string };
   jenis: string;
   penanggungJawab: string;
   statusPelaksanaan: StatusPelaksanaan;

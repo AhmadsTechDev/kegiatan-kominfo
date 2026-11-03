@@ -11,7 +11,7 @@
 //   - terapkanGalatServer : pemeta galat validasi 422 backend ke React Hook Form
 //   - KolomCari : masukan pencarian data dengan mekanisme jeda ketik (debounce 300ms)
 //   - PilihanTab : tombol navigasi kelompok data bergaya pil dengan lencana jumlah
-//   - PilihUnit : pemilih unit kerja berjenjang dua tingkat (induk dan sub unit)
+//   - PilihUnit : pemilih bidang berjenjang dua tingkat (induk dan sub unit)
 //
 // Cara kerja:
 //   1. AdminGuard memeriksa sesi pengguna saat ini; bila bukan ADMIN, akses diblokir.
@@ -23,7 +23,7 @@
 //   - Debounce 300ms pada KolomCari mencegah pemanggilan kueri pencarian berlebihan.
 //
 // Dipakai oleh: akun-view.tsx, akun-aksi.tsx, akun-detail-view.tsx, audit-log-view.tsx,
-//               master-view.tsx, pegawai-tab.tsx, unit-kerja-tab.tsx
+//               master-view.tsx, pegawai-tab.tsx, bidang-tab.tsx
 // =============================================================================
 
 "use client";
@@ -39,7 +39,7 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { ApiError } from "@/lib/api-client";
 import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
 import { cn } from "@/lib/utils";
-import type { UnitKerjaAdmin } from "../types";
+import type { BidangAdmin } from "../types";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isPending } = useCurrentUser();
@@ -190,7 +190,7 @@ export function PilihanTab<T extends string>({
 
 const LANGSUNG = "__langsung__";
 
-export function PilihUnit({ unit, value, onChange, id, invalid, required }: { unit: UnitKerjaAdmin[]; value: string; onChange: (v: string) => void; id: string; invalid?: boolean; required?: boolean }) {
+export function PilihUnit({ unit, value, onChange, id, invalid, required }: { unit: BidangAdmin[]; value: string; onChange: (v: string) => void; id: string; invalid?: boolean; required?: boolean }) {
   const tampil = unit.filter((u) => u.aktif || String(u.id) === value);
   const dipilih = unit.find((u) => String(u.id) === value);
   const utamaId = dipilih ? (dipilih.parentId ?? dipilih.id) : null;

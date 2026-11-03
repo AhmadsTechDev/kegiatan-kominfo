@@ -31,7 +31,7 @@ describe("membuat akun", () => {
       role: "PIMPINAN",
       status: "MENUNGGU_AKTIVASI",
       emailVerified: false,
-      pegawai: { nip, nama: "Akun Baru", jabatan: "Analis Data", unitKerja: { nama: "Seksi Pengelolaan Data dan Persediaan" } },
+      pegawai: { nip, nama: "Akun Baru", jabatan: "Analis Data", bidang: { nama: "Seksi Pengelolaan Data dan Persediaan" } },
     });
     expect(new Date(detail.data.undangan.kedaluwarsa).getTime()).toBeGreaterThan(Date.now());
     expect(JSON.stringify(detail.data)).not.toMatch(/password|token/i);
@@ -43,7 +43,7 @@ describe("membuat akun", () => {
     expect((await panggil("/admin/akun", { cookie: admin, json: await isiAkun({ nip: "" }) })).status).toBe(201);
 
     const nip = nipAcak();
-    const p = await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Sudah Terdaftar", unitKerjaId: await idUnit("SEKSI-DATA") } });
+    const p = await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Sudah Terdaftar", bidangId: await idUnit("SEKSI-DATA") } });
     const res = await panggil("/admin/akun", { cookie: admin, json: await isiAkun({ name: "Sudah Terdaftar", nip, jabatan: "Pranata Komputer" }) });
     expect(res.status).toBe(201);
     expect((await prisma.user.findUniqueOrThrow({ where: { id: res.data.id } })).pegawaiId).toBe(p.data.id);
@@ -59,7 +59,7 @@ describe("membuat akun", () => {
     expect((await coba({ nip: u.nip })).details[0]).toMatchObject({ field: "nip", message: `Pegawai ini sudah tertaut ke akun ${u.email}` });
     expect((await coba({ pegawaiId: u.pegawaiId })).details[0].field).toBe("pegawaiId");
     expect((await coba({ jabatan: "" })).details[0].field).toBe("jabatan");
-    expect((await coba({ unitKerjaId: 999999 })).details[0].field).toBe("unitKerjaId");
+    expect((await coba({ bidangId: 999999 })).details[0].field).toBe("bidangId");
     expect((await coba({ nip: "12345" })).details[0].field).toBe("nip");
   });
 
@@ -224,12 +224,12 @@ describe("permintaan akun", () => {
     const jumlah = await panggil("/admin/permintaan-akun/jumlah", { cookie: admin });
     expect(jumlah.data.menunggu).toBeGreaterThanOrEqual(1);
 
-    // Tanpa unit kerja dan jabatan ditolak, dan permintaan tetap menunggu
+    // Tanpa bidang dan jabatan ditolak, dan permintaan tetap menunggu
     const kurang = await panggil(`/admin/permintaan-akun/${ajukan.data.id}/setujui`, { cookie: admin, json: { role: "PEGAWAI" } });
     expect(kurang.status).toBe(422);
-    expect(kurang.data.details.map((d: { field: string }) => d.field)).toEqual(["unitKerjaId", "jabatan"]);
+    expect(kurang.data.details.map((d: { field: string }) => d.field)).toEqual(["bidangId", "jabatan"]);
 
-    const setujui = await panggil(`/admin/permintaan-akun/${ajukan.data.id}/setujui`, { cookie: admin, json: { role: "PEGAWAI", unitKerjaId: await idUnit("SEKSI-DATA"), jabatan: "Staf" } });
+    const setujui = await panggil(`/admin/permintaan-akun/${ajukan.data.id}/setujui`, { cookie: admin, json: { role: "PEGAWAI", bidangId: await idUnit("SEKSI-DATA"), jabatan: "Staf" } });
     expect(setujui.status).toBe(200);
     expect(setujui.data).toMatchObject({ email, kirimUlang: false });
 
@@ -245,13 +245,13 @@ describe("permintaan akun", () => {
   test("permintaan dengan NIP pegawai terdaftar menampilkan data pegawainya", async () => {
     const admin = await loginAdmin();
     const nip = nipAcak();
-    await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Pegawai Belum Berakun", jabatan: "Analis", unitKerjaId: await idUnit("SEKSI-DATA") } });
+    await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Pegawai Belum Berakun", jabatan: "Analis", bidangId: await idUnit("SEKSI-DATA") } });
     const ajukan = await panggil("/permintaan-akun", { json: { nama: "Pegawai Belum Berakun", nip, email: emailAcak("nip") } });
     expect(ajukan.status).toBe(201);
     const daftar = await panggil("/admin/permintaan-akun?status=MENUNGGU&pageSize=100", { cookie: admin });
     expect(daftar.data.items.find((p: { id: number }) => p.id === ajukan.data.id)).toMatchObject({
       pegawai: { nip, nama: "Pegawai Belum Berakun", jabatan: "Analis" },
-      unitKerja: "Seksi Pengelolaan Data dan Persediaan",
+      bidang: "Seksi Pengelolaan Data dan Persediaan",
     });
     const kedua = await panggil("/permintaan-akun", { json: { nama: "X", nip, email: emailAcak() } });
     expect(kedua.status).toBe(422);

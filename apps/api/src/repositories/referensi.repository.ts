@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
 
 export const ReferensiRepository = {
-  // Semua unit kerja (aktif maupun tidak), urut id
-  semuaUnitKerja() {
-    return prisma.unitKerja.findMany({
+  // Semua bidang (aktif maupun tidak), urut id
+  semuaBidang() {
+    return prisma.bidang.findMany({
       select: { id: true, parentId: true, kode: true, nama: true, aktif: true },
       orderBy: { id: "asc" },
     });
@@ -18,7 +18,7 @@ export const ReferensiRepository = {
   pegawaiAktif() {
     return prisma.pegawai.findMany({
       where: { aktif: true },
-      select: { id: true, nama: true, jabatan: true, unitKerjaId: true },
+      select: { id: true, nama: true, jabatan: true, bidangId: true },
       orderBy: { nama: "asc" },
     });
   },
@@ -28,8 +28,8 @@ export const ReferensiRepository = {
     return (await prisma.jenisKegiatan.findFirst({ where: { id, aktif: true }, select: { id: true } })) ?? undefined;
   },
 
-  // Pegawai aktif berdasarkan id beserta unit kerjanya; undefined bila tidak ada/nonaktif
+  // Pegawai aktif berdasarkan id beserta bidangnya; undefined bila tidak ada/nonaktif
   async findPegawaiAktif(id: number) {
-    return (await prisma.pegawai.findFirst({ where: { id, aktif: true }, select: { id: true, unitKerjaId: true } })) ?? undefined;
+    return (await prisma.pegawai.findFirst({ where: { id, aktif: true }, select: { id: true, bidangId: true } })) ?? undefined;
   },
 };

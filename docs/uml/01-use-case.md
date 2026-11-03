@@ -31,7 +31,7 @@ flowchart LR
 
         uc_akun(["Kelola akun: buat/undang, ubah role,<br/>nonaktifkan, hapus, reset sandi, cabut sesi"])
         uc_tinjau(["Setujui / tolak permintaan akun"])
-        uc_master(["Kelola master data: bidang, sub bidang,<br/>jenis unit, pegawai, jenis kegiatan"])
+        uc_master(["Kelola master data: bidang, sub bidang,<br/>pegawai, jenis kegiatan"])
         uc_audit(["Lihat audit log"])
 
         uc_ingat(["Kirim email pengingat<br/>H-1 dan dokumentasi"])

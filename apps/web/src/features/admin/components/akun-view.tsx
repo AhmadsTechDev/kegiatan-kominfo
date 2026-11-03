@@ -105,7 +105,7 @@ function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: B
             </span>
           )}
         </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">{p ? [p.unitKerja, p.jabatan].filter(Boolean).join(" · ") : "Belum ada data kepegawaian"}</p>
+        <p className="mt-1.5 text-xs text-muted-foreground">{p ? [p.bidang, p.jabatan].filter(Boolean).join(" · ") : "Belum ada data kepegawaian"}</p>
       </div>
       <TombolAksi akun={dariAdmin(a)} idSaya={idSaya} buka={buka} />
     </div>
@@ -168,7 +168,7 @@ function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
           if (p) {
             return (
               <span className="flex max-w-64 min-w-44 flex-col gap-0.5 whitespace-normal">
-                <span className="text-sm font-medium">{p.unitKerja}</span>
+                <span className="text-sm font-medium">{p.bidang}</span>
                 <span className="text-xs text-muted-foreground">
                   {[p.jabatan, p.nip ? `NIP ${p.nip}` : "Tanpa NIP"].filter(Boolean).join(" · ")}
                 </span>

@@ -15,7 +15,7 @@
 // Cara kerja:
 //   1. Mengambil data detail kegiatan dari server via hook useKegiatan(id).
 //   2. Menampilkan kerangka skeleton saat memuat, atau pesan 404 jika tidak ada.
-//   3. Menyajikan kartu fakta waktu, lokasi tempat, unit kerja, dan jumlah peserta.
+//   3. Menyajikan kartu fakta waktu, lokasi tempat, bidang, dan jumlah peserta.
 //   4. Memunculkan pengingat melengkapi dokumen/hasil jika kegiatan sudah selesai.
 //   5. Menampilkan panel pemeriksaan jika pengguna memiliki peran pimpinan.
 //   6. Menyediakan menu ubah, aksi pembatalan, dan penghapusan bagi yang berhak.
@@ -256,7 +256,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
             {k.lokasiNama ?? <span className="font-normal text-muted-foreground">Belum diisi</span>}
           </Fakta>
           <Fakta ikon={Building2} label="Bidang">
-            {k.unitKerja.nama}
+            {k.bidang.nama}
             {k.unitInduk && <span className="block text-xs font-normal text-muted-foreground">{k.unitInduk.nama}</span>}
           </Fakta>
           <Fakta ikon={Users} label="Peserta">
@@ -365,7 +365,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
                 <AvatarInisial nama={k.penanggungJawab.nama} className="size-10 rounded-full" />
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-semibold">{k.penanggungJawab.nama}</span>
-                  <span className="truncate text-xs text-muted-foreground">{k.unitKerja.nama}</span>
+                  <span className="truncate text-xs text-muted-foreground">{k.bidang.nama}</span>
                 </div>
               </div>
               {k.pengubahTerakhir && (

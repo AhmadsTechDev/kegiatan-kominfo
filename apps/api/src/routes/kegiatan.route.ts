@@ -8,7 +8,7 @@ const params = KegiatanValidator.params;
 
 export const kegiatanRoutes = new Elysia({ prefix: "/kegiatan" })
   .use(authPlugin)
-  // Daftar kegiatan (PEGAWAI hanya melihat unit kerjanya dan kegiatan miliknya)
+  // Daftar kegiatan (PEGAWAI hanya melihat bidangnya dan kegiatan miliknya)
   .get("/", KegiatanController.daftar, { auth: true, query: KegiatanValidator.daftarQuery })
   // Detail kegiatan
   .get("/:id", KegiatanController.detail, { auth: true, params })

@@ -53,17 +53,17 @@ export function isiTren(data: { kunci: string; jumlah: number }[], awal: string,
   return hasil;
 }
 
-// Menjumlahkan kegiatan per unit kerja, termasuk per status pelaksanaan dan total peserta
+// Menjumlahkan kegiatan per bidang, termasuk per status pelaksanaan dan total peserta
 function hitungPerUnit(baris: BarisRekap[], sekarang: Date) {
   const peta = new Map<number, Jumlah>();
   for (const k of baris) {
-    const j = peta.get(k.unitKerjaId) ?? kosong();
+    const j = peta.get(k.bidangId) ?? kosong();
     j.total++;
     j[KOLOM_STATUS[hitungStatus(k, sekarang)]]++;
     j.peserta += k.jumlahPeserta ?? 0;
-    peta.set(k.unitKerjaId, j);
+    peta.set(k.bidangId, j);
   }
-  return [...peta.entries()].map(([unitKerjaId, j]) => ({ unitKerjaId, ...j }));
+  return [...peta.entries()].map(([bidangId, j]) => ({ bidangId, ...j }));
 }
 
 // Menjumlahkan kegiatan per periode (kunci tanggal WIB), urut naik
@@ -78,9 +78,9 @@ function hitungPerPeriode(baris: BarisRekap[], satuan: SatuanRekap) {
 
 // Menjumlahkan kegiatan per penanggung jawab, terbanyak di atas
 function hitungPerPegawai(baris: BarisRekap[]) {
-  const peta = new Map<number, { id: number; nama: string; unitKerja: string; jumlah: number }>();
+  const peta = new Map<number, { id: number; nama: string; bidang: string; jumlah: number }>();
   for (const { penanggungJawab: p } of baris) {
-    const j = peta.get(p.id) ?? { id: p.id, nama: p.nama, unitKerja: p.unitKerja.nama, jumlah: 0 };
+    const j = peta.get(p.id) ?? { id: p.id, nama: p.nama, bidang: p.bidang.nama, jumlah: 0 };
     j.jumlah++;
     peta.set(p.id, j);
   }
@@ -102,7 +102,7 @@ export const RekapService = {
   // Rekap kegiatan: total, tren per periode, per pegawai, per unit induk, dan per jenis
   async rekap({ satuan = "bulan", ...query }: RekapPeriodeQuery, aktor: Aktor, sekarang = new Date()) {
     const filter = await filterDariQuery(query, aktor);
-    const [baris, unit] = await Promise.all([RekapRepository.barisRekap(filter, sekarang), ReferensiRepository.semuaUnitKerja()]);
+    const [baris, unit] = await Promise.all([RekapRepository.barisRekap(filter, sekarang), ReferensiRepository.semuaBidang()]);
     const perUnit = hitungPerUnit(baris, sekarang);
     const perPeriode = hitungPerPeriode(baris, satuan);
 
@@ -124,7 +124,7 @@ export const RekapService = {
 
     const total = kosong();
     for (const r of perUnit) {
-      const induk = filter.lingkup ? unit.find((u) => u.id === r.unitKerjaId) : cariIndukTertinggi(unit, r.unitKerjaId);
+      const induk = filter.lingkup ? unit.find((u) => u.id === r.bidangId) : cariIndukTertinggi(unit, r.bidangId);
       if (induk) tambah(ambilBaris(induk), r);
       tambah(total, r);
     }

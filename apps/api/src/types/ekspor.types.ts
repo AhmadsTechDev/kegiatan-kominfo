@@ -7,8 +7,8 @@ export type BarisEkspor = {
   id: number;
   judul: string;
   jenis: string;
-  unitKerja: string;
-  unitKerjaId: number;
+  bidang: string;
+  bidangId: number;
   penanggungJawab: string;
   tglMulai: Date;
   tglSelesai: Date;

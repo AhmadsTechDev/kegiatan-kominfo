@@ -21,18 +21,18 @@ export function cariIndukTertinggi<T extends { id: number; parentId: number | nu
 }
 
 export const ReferensiService = {
-  // Data pilihan formulir: unit kerja, jenis kegiatan aktif, dan pegawai aktif
+  // Data pilihan formulir: bidang, jenis kegiatan aktif, dan pegawai aktif
   async semua() {
-    const [unitKerja, jenisKegiatan, pegawai] = await Promise.all([
-      ReferensiRepository.semuaUnitKerja(),
+    const [bidang, jenisKegiatan, pegawai] = await Promise.all([
+      ReferensiRepository.semuaBidang(),
       ReferensiRepository.jenisKegiatanAktif(),
       ReferensiRepository.pegawaiAktif(),
     ]);
-    return { unitKerja, jenisKegiatan, pegawai };
+    return { bidang, jenisKegiatan, pegawai };
   },
 
   // Id unit beserta seluruh turunannya, diambil dari basis data
   async unitDanTurunan(akarId: number) {
-    return unitDanTurunan(await ReferensiRepository.semuaUnitKerja(), akarId);
+    return unitDanTurunan(await ReferensiRepository.semuaBidang(), akarId);
   },
 };

@@ -26,7 +26,7 @@ export type RekapData = {
   satuan: SatuanRekap;
   total: JumlahStatus;
   tren: { periode: string; jumlah: number }[];
-  perPegawai: { id: number; nama: string; unitKerja: string; jumlah: number }[];
+  perPegawai: { id: number; nama: string; bidang: string; jumlah: number }[];
   perUnit: ({ unit: { id: number; kode: string; nama: string } } & JumlahStatus)[];
   perJenis: { id: number; nama: string; jumlah: number }[];
 };

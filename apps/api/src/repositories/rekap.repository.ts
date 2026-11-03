@@ -8,13 +8,13 @@ export const RekapRepository = {
     return prisma.kegiatan.findMany({
       where: kondisiDaftar(f, sekarang),
       select: {
-        unitKerjaId: true,
+        bidangId: true,
         tglMulai: true,
         tglSelesai: true,
         dibatalkanAt: true,
         jumlahPeserta: true,
         jenis: { select: { id: true, nama: true } },
-        penanggungJawab: { select: { id: true, nama: true, unitKerja: { select: { nama: true } } } },
+        penanggungJawab: { select: { id: true, nama: true, bidang: { select: { nama: true } } } },
       },
     });
   },

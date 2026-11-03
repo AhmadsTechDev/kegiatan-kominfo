@@ -2,7 +2,7 @@
 // TAMPILAN INDUK PENGELOLAAN MASTER DATA
 // =============================================================================
 // Gunanya: menyediakan wadah navigasi bertab untuk mengelola seluruh master data
-// aplikasi: pegawai, unit kerja utama, sub bagian/seksi, dan jenis kegiatan.
+// aplikasi: pegawai, bidang utama, sub bagian/seksi, dan jenis kegiatan.
 //
 // Isi berkas:
 //   - MasterView : komponen induk pengatur tab master data dengan navigasi URL
@@ -25,11 +25,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Panel } from "@/components/shared/panel";
-import { useJenisAdmin, usePegawaiAdmin, useUnitKerjaAdmin } from "../hooks/use-admin";
+import { useJenisAdmin, usePegawaiAdmin, useBidangAdmin } from "../hooks/use-admin";
 import { AdminGuard, PilihanTab } from "./admin-shared";
 import { JenisTab } from "./jenis-tab";
 import { PegawaiTab } from "./pegawai-tab";
-import { UnitKerjaTab } from "./unit-kerja-tab";
+import { BidangTab } from "./bidang-tab";
 
 type Tab = "pegawai" | "unit" | "sub" | "jenis";
 const TAB_SAH: Tab[] = ["pegawai", "unit", "sub", "jenis"];
@@ -39,12 +39,12 @@ export function MasterView() {
   const router = useRouter();
   const pathname = usePathname();
   const nilai = searchParams.get("tab");
-  const tab: Tab = nilai === "jenis-unit" ? "unit" : TAB_SAH.includes(nilai as Tab) ? (nilai as Tab) : "pegawai";
+  const tab: Tab = TAB_SAH.includes(nilai as Tab) ? (nilai as Tab) : "pegawai";
   const indukParam = Number(searchParams.get("induk"));
   const induk = Number.isInteger(indukParam) && indukParam > 0 ? indukParam : null;
 
   const pegawai = usePegawaiAdmin({ q: "", unit: null, aktif: null, page: 1 });
-  const unit = useUnitKerjaAdmin();
+  const unit = useBidangAdmin();
   const jenis = useJenisAdmin();
   const jumlahUtama = unit.data?.filter((u) => u.parentId === null).length;
   const jumlahSub = unit.data?.filter((u) => u.parentId !== null).length;
@@ -79,8 +79,8 @@ export function MasterView() {
             />
           </div>
           {tab === "pegawai" && <PegawaiTab />}
-          {tab === "unit" && <UnitKerjaTab tingkat="utama" onLihatTurunan={lihatTurunan} />}
-          {tab === "sub" && <UnitKerjaTab key={induk ?? "semua"} tingkat="turunan" indukAwal={induk} />}
+          {tab === "unit" && <BidangTab tingkat="utama" onLihatTurunan={lihatTurunan} />}
+          {tab === "sub" && <BidangTab key={induk ?? "semua"} tingkat="turunan" indukAwal={induk} />}
           {tab === "jenis" && <JenisTab />}
         </Panel>
       </AdminGuard>

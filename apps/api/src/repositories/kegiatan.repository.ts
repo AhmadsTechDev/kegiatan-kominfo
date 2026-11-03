@@ -11,9 +11,9 @@ export function kondisiMilik({ userId, pegawaiId }: Milik): Prisma.KegiatanWhere
   return pegawaiId == null ? { dibuatOleh: userId } : { OR: [{ dibuatOleh: userId }, { penanggungJawabId: pegawaiId }] };
 }
 
-// Kondisi kegiatan yang boleh dilihat PEGAWAI: unit kerjanya, atau kegiatan miliknya
+// Kondisi kegiatan yang boleh dilihat PEGAWAI: bidangnya, atau kegiatan miliknya
 export function kondisiLingkup({ unitIds, milik }: LingkupBaca): Prisma.KegiatanWhereInput {
-  return unitIds.length > 0 ? { OR: [{ unitKerjaId: { in: unitIds } }, kondisiMilik(milik)] } : kondisiMilik(milik);
+  return unitIds.length > 0 ? { OR: [{ bidangId: { in: unitIds } }, kondisiMilik(milik)] } : kondisiMilik(milik);
 }
 
 // Kondisi status pelaksanaan (dihitung dari waktu sekarang, tidak disimpan di tabel)
@@ -36,7 +36,7 @@ export const kondisiRentang = ({ mulai, akhir }: Rentang): Prisma.KegiatanWhereI
 // Menyusun `where` Prisma dari filter daftar kegiatan (dipakai juga oleh rekap, pantau, ekspor)
 export function kondisiDaftar(f: FilterDaftar, sekarang: Date): Prisma.KegiatanWhereInput {
   const syarat: Prisma.KegiatanWhereInput[] = [KEGIATAN_AKTIF];
-  if (f.unitIds) syarat.push({ unitKerjaId: { in: f.unitIds } });
+  if (f.unitIds) syarat.push({ bidangId: { in: f.unitIds } });
   if (f.jenisId) syarat.push({ jenisId: f.jenisId });
   if (f.pegawaiId) syarat.push({ penanggungJawabId: f.pegawaiId });
   if (f.status) syarat.push(kondisiStatus(f.status, sekarang));
@@ -60,7 +60,7 @@ export const PILIH_RINGKAS = {
   tglSelesai: true,
   lokasiNama: true,
   dibatalkanAt: true,
-  unitKerja: { select: { id: true, nama: true } },
+  bidang: { select: { id: true, nama: true } },
   jenis: { select: { nama: true } },
   penanggungJawab: { select: { nama: true } },
 } satisfies Prisma.KegiatanSelect;
@@ -91,7 +91,7 @@ export const KegiatanRepository = {
           tglSelesai: true,
           lokasiNama: true,
           dibatalkanAt: true,
-          unitKerja: { select: { id: true, nama: true } },
+          bidang: { select: { id: true, nama: true } },
           jenis: { select: { id: true, nama: true } },
           penanggungJawab: { select: { id: true, nama: true } },
           dibuatOleh: true,
@@ -140,7 +140,7 @@ export const KegiatanRepository = {
         dibatalkanAt: true,
         alasanBatal: true,
         jenis: { select: { id: true, nama: true } },
-        unitKerja: { select: { id: true, nama: true, parent: { select: { id: true, nama: true } } } },
+        bidang: { select: { id: true, nama: true, parent: { select: { id: true, nama: true } } } },
         penanggungJawab: { select: { id: true, nama: true, jabatan: true } },
         pembuat: { select: { id: true, name: true } },
         statusPemeriksaan: true,
@@ -149,13 +149,13 @@ export const KegiatanRepository = {
       },
     });
     if (!k) return undefined;
-    const { unitKerja, pembuat, ...sisa } = k;
+    const { bidang, pembuat, ...sisa } = k;
     return {
       ...sisa,
       lat: angka(k.lat),
       lng: angka(k.lng),
-      unitKerja: { id: unitKerja.id, nama: unitKerja.nama },
-      unitInduk: unitKerja.parent,
+      bidang: { id: bidang.id, nama: bidang.nama },
+      unitInduk: bidang.parent,
       pembuat: { id: pembuat.id, nama: pembuat.name },
       statusPelaksanaan: hitungStatus(k, sekarang),
     };
@@ -222,8 +222,8 @@ export const KegiatanRepository = {
         id: true,
         judul: true,
         jenis: { select: { nama: true } },
-        unitKerja: { select: { nama: true } },
-        unitKerjaId: true,
+        bidang: { select: { nama: true } },
+        bidangId: true,
         penanggungJawab: { select: { nama: true } },
         tglMulai: true,
         tglSelesai: true,
@@ -240,10 +240,10 @@ export const KegiatanRepository = {
       orderBy: [{ tglMulai: "desc" }, { id: "desc" }],
       take: batas,
     });
-    return baris.map(({ jenis, unitKerja, penanggungJawab, dibatalkanAt, ...k }) => ({
+    return baris.map(({ jenis, bidang, penanggungJawab, dibatalkanAt, ...k }) => ({
       ...k,
       jenis: jenis.nama,
-      unitKerja: unitKerja.nama,
+      bidang: bidang.nama,
       penanggungJawab: penanggungJawab.nama,
       lat: angka(k.lat),
       lng: angka(k.lng),

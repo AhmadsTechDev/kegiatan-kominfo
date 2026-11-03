@@ -12,7 +12,7 @@
 //
 // Cara kerja:
 //   1. Membaca parameter filter dan halaman dari query string URL via useKegiatanFilter.
-//   2. Menentukan lingkup data (seluruh dinas, unit kerja, atau kegiatan milik saya).
+//   2. Menentukan lingkup data (seluruh dinas, bidang, atau kegiatan milik saya).
 //   3. Mengambil data kegiatan via useDaftarKegiatan dengan caching otomatis.
 //   4. Merender tabel pada desktop atau beralih ke format kartu pada layar sempit.
 //   5. Menampilkan panel draf kegiatan di atas daftar khusus bagi pengguna berhak.
@@ -71,9 +71,9 @@ function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanI
       ),
     },
     {
-      id: "unitKerja",
+      id: "bidang",
       header: "Bidang",
-      cell: ({ row }) => <UnitChip className="max-w-48 min-w-32 whitespace-normal">{row.original.unitKerja.nama}</UnitChip>,
+      cell: ({ row }) => <UnitChip className="max-w-48 min-w-32 whitespace-normal">{row.original.bidang.nama}</UnitChip>,
     },
     {
       id: "tanggal",
@@ -138,7 +138,7 @@ function KartuKegiatan({ k }: { k: KegiatanItem }) {
           {formatRentangTanggal(k.tglMulai, k.tglSelesai)} · {formatJam(k.tglMulai)}
         </span>
         <span className="text-xs text-muted-foreground">
-          {k.unitKerja.nama} · {k.penanggungJawab.nama}
+          {k.bidang.nama} · {k.penanggungJawab.nama}
         </span>
       </div>
       <ChevronRight aria-hidden className="size-4 shrink-0 text-muted-foreground" />
@@ -251,7 +251,7 @@ export function KegiatanListView() {
         onChange={setFilter}
         onReset={resetFilter}
         adaFilter={adaFilter}
-        unitKerja={lingkup === "saya" ? [] : saringUnit(referensi.data?.unitKerja ?? [])}
+        bidang={lingkup === "saya" ? [] : saringUnit(referensi.data?.bidang ?? [])}
         jenisKegiatan={referensi.data?.jenisKegiatan ?? []}
       />
       {filter.pegawai && (

@@ -2,7 +2,7 @@
 // HOOK DATA PROFIL PENGGUNA (useProfil)
 // =============================================================================
 // Gunanya: Mengambil data profil lengkap pengguna aktif dari backend via endpoint GET /api/me,
-// mencakup identitas akun, status & verifikasi email, foto, data pegawai, dan unit kerja.
+// mencakup identitas akun, status & verifikasi email, foto, data pegawai, dan bidang.
 //
 // Isi berkas:
 //   - Profil    : tipe data struktur respons profil pengguna dari endpoint GET /api/me
@@ -33,7 +33,7 @@ export type Profil = {
     nip: string | null;
     nama: string;
     jabatan: string | null;
-    unitKerja: { id: number; kode: string; nama: string; parent: { id: number; nama: string } | null };
+    bidang: { id: number; kode: string; nama: string; parent: { id: number; nama: string } | null };
   } | null;
 };
 

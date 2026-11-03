@@ -1,7 +1,7 @@
 // Data DEMO untuk development: pegawai, akun berbagai role/status, dan kegiatan 3 bulan ke belakang + 3 minggu ke depan.
 // Semua nama, NIP, dan kegiatan di sini fiktif dan hanya untuk mencoba tampilan; JANGAN dijalankan di produksi.
 // Jalankan: bun run db:seed:demo (bisa diulang; data demo lama dihapus lalu dibuat ulang).
-// Prasyarat: bun run db:seed sudah dijalankan (unit kerja dan jenis kegiatan).
+// Prasyarat: bun run db:seed sudah dijalankan (bidang dan jenis kegiatan).
 import { prisma } from "@/lib/prisma";
 import { hashSandi } from "@/lib/sandi";
 
@@ -77,7 +77,7 @@ async function hapusDemoLama() {
 }
 
 const dihapus = await hapusDemoLama();
-const unit = new Map((await prisma.unitKerja.findMany({ select: { id: true, kode: true } })).map((u) => [u.kode, u.id]));
+const unit = new Map((await prisma.bidang.findMany({ select: { id: true, kode: true } })).map((u) => [u.kode, u.id]));
 const jenis = await prisma.jenisKegiatan.findMany({ select: { id: true, nama: true } });
 const admin = await prisma.user.findFirst({ where: { role: "ADMIN" }, select: { id: true } });
 if (!unit.size || !jenis.length || !admin) throw new Error("Jalankan dulu: bun run db:seed");
@@ -89,7 +89,7 @@ let pimpinanId = admin.id;
 for (const [i, o] of ORANG.entries()) {
   const unitId = unit.get(o.unit);
   if (!unitId) throw new Error(`Unit ${o.unit} tidak ada`);
-  const p = await prisma.pegawai.create({ data: { nama: o.nama, jabatan: o.jabatan, unitKerjaId: unitId, nip: o.nip ? nip(i + 1) : null } });
+  const p = await prisma.pegawai.create({ data: { nama: o.nama, jabatan: o.jabatan, bidangId: unitId, nip: o.nip ? nip(i + 1) : null } });
   if (!o.akun) continue;
   const email = `${o.nama.toLowerCase().replace(/\s+/g, ".")}@${DOMAIN}`;
   const id = crypto.randomUUID();
@@ -139,7 +139,7 @@ for (let i = 0; i < 48; i++) {
       lng: lokasi.lng,
       tglMulai: mulai,
       tglSelesai: selesai,
-      unitKerjaId: orang.unitId,
+      bidangId: orang.unitId,
       penanggungJawabId: orang.pegawaiId,
       dibuatOleh: orang.userId,
       jumlahPeserta: 5 + Math.floor(acak() * 60),

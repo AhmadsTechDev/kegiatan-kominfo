@@ -34,7 +34,7 @@ Nama modul `user` (`user.route.ts`, `user.service.ts`, ...) adalah manajemen aku
 cp .env.example .env          # isi DATABASE_URL, BETTER_AUTH_SECRET (min. 32 karakter), dll.
 bun install                   # otomatis menjalankan `prisma generate`
 bun run db:migrate:prod       # menerapkan migrasi ke basis data
-bun run db:seed               # unit kerja, jenis kegiatan, dan akun admin awal
+bun run db:seed               # bidang, jenis kegiatan, dan akun admin awal
 bun run dev                   # http://localhost:3001/api
 ```
 

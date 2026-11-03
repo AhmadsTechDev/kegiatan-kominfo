@@ -40,7 +40,7 @@ import { Input } from "@/components/ui/input";
 import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
 import { cn } from "@/lib/utils";
 import { LABEL_ROLE, type Role, type StatusAkun } from "@/types/auth";
-import { useCabutSesiAkun, useHapusAkun, useKirimUlangUndangan, useResetSandi, useSimpanAkun, useStatusAkun, useUnitKerjaAdmin } from "../hooks/use-admin";
+import { useCabutSesiAkun, useHapusAkun, useKirimUlangUndangan, useResetSandi, useSimpanAkun, useStatusAkun, useBidangAdmin } from "../hooks/use-admin";
 import type { AkunAdmin, AkunDetail, HasilSimpanAkun } from "../types";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
 
@@ -53,7 +53,7 @@ export type AkunRingkas = {
   bisaDihapus: boolean;
   nip: string | null;
   jabatan: string | null;
-  unitKerjaId: number | null;
+  bidangId: number | null;
 };
 
 export const dariAdmin = (a: AkunAdmin): AkunRingkas => ({
@@ -65,7 +65,7 @@ export const dariAdmin = (a: AkunAdmin): AkunRingkas => ({
   bisaDihapus: a.bisaDihapus,
   nip: a.pegawai?.nip ?? null,
   jabatan: a.pegawai?.jabatan ?? null,
-  unitKerjaId: a.pegawai?.unitKerjaId ?? null,
+  bidangId: a.pegawai?.bidangId ?? null,
 });
 
 export const dariDetail = (a: AkunDetail): AkunRingkas => ({
@@ -77,7 +77,7 @@ export const dariDetail = (a: AkunDetail): AkunRingkas => ({
   bisaDihapus: a.bisaDihapus,
   nip: a.pegawai?.nip ?? null,
   jabatan: a.pegawai?.jabatan ?? null,
-  unitKerjaId: a.pegawai?.unitKerja.id ?? null,
+  bidangId: a.pegawai?.bidang.id ?? null,
 });
 
 const ROLE: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
@@ -95,7 +95,7 @@ const schemaAkun = z.object({
     .trim()
     .refine((v) => v === "" || /^\d{18}$/.test(v), "NIP harus 18 digit angka"),
   jabatan: z.string().trim().min(1, "Jabatan wajib diisi").max(150, "Jabatan maksimal 150 karakter"),
-  unitKerjaId: z.string().min(1, "Bidang wajib dipilih"),
+  bidangId: z.string().min(1, "Bidang wajib dipilih"),
   role: z.enum(["PEGAWAI", "PIMPINAN", "ADMIN"]),
 });
 type NilaiAkun = z.infer<typeof schemaAkun>;
@@ -145,7 +145,7 @@ function beriTahu(h: HasilSimpanAkun, baru: boolean) {
 
 export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | "baru"; idSaya?: string; onClose: () => void }) {
   const simpan = useSimpanAkun();
-  const unit = useUnitKerjaAdmin();
+  const unit = useBidangAdmin();
   const [galat, setGalat] = useState<string | null>(null);
   const awal = akun === "baru" ? null : akun;
   const { register, control, handleSubmit, setError, formState } = useForm<NilaiAkun>({
@@ -155,7 +155,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
       email: awal?.email ?? "",
       nip: awal?.nip ?? "",
       jabatan: awal?.jabatan ?? "",
-      unitKerjaId: awal?.unitKerjaId ? String(awal.unitKerjaId) : "",
+      bidangId: awal?.bidangId ? String(awal.bidangId) : "",
       role: awal?.role ?? "PEGAWAI",
     },
   });
@@ -166,7 +166,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
   const kirim = handleSubmit((v) => {
     setGalat(null);
     simpan.mutate(
-      { id: awal?.id, isi: { name: v.name, email: v.email.toLowerCase(), nip: v.nip || null, jabatan: v.jabatan, unitKerjaId: Number(v.unitKerjaId), role: v.role } },
+      { id: awal?.id, isi: { name: v.name, email: v.email.toLowerCase(), nip: v.nip || null, jabatan: v.jabatan, bidangId: Number(v.bidangId), role: v.role } },
       {
         onSuccess: (h) => {
           beriTahu(h, !awal);
@@ -174,7 +174,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
         },
         onError: (e) =>
           setGalat(
-            terapkanGalatServer(e, setError, { name: "name", nama: "name", email: "email", nip: "nip", pegawaiId: "nip", jabatan: "jabatan", unitKerjaId: "unitKerjaId", role: "role" }) ||
+            terapkanGalatServer(e, setError, { name: "name", nama: "name", email: "email", nip: "nip", pegawaiId: "nip", jabatan: "jabatan", bidangId: "bidangId", role: "role" }) ||
               null,
           ),
       },
@@ -234,16 +234,16 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
         </Field>
       </div>
 
-      <Field data-invalid={!!formState.errors.unitKerjaId}>
+      <Field data-invalid={!!formState.errors.bidangId}>
         <FieldLabel htmlFor="akun-unit">
           Bidang <Wajib />
         </FieldLabel>
         <Controller
           control={control}
-          name="unitKerjaId"
-          render={({ field }) => <PilihUnit id="akun-unit" unit={unit.data ?? []} value={field.value} onChange={field.onChange} invalid={!!formState.errors.unitKerjaId} required />}
+          name="bidangId"
+          render={({ field }) => <PilihUnit id="akun-unit" unit={unit.data ?? []} value={field.value} onChange={field.onChange} invalid={!!formState.errors.bidangId} required />}
         />
-        <FieldError errors={[formState.errors.unitKerjaId]} />
+        <FieldError errors={[formState.errors.bidangId]} />
       </Field>
 
       <Field data-invalid={!!formState.errors.role}>

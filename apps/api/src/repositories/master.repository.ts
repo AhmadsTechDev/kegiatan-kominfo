@@ -1,5 +1,5 @@
 import { prisma, type Db, type Prisma } from "@/lib/prisma";
-import type { FilterPegawai, NilaiJenis, NilaiJenisUnit, NilaiPegawai, NilaiUnit } from "@/types/master.types";
+import type { FilterPegawai, NilaiJenis, NilaiPegawai, NilaiUnit } from "@/types/master.types";
 import type { Halaman } from "@/types/umum.types";
 
 // Menyusun `where` Prisma dari filter daftar pegawai
@@ -7,24 +7,22 @@ function kondisiPegawai(f: FilterPegawai): Prisma.PegawaiWhereInput {
   const cari = f.q ? ({ contains: f.q, mode: "insensitive" } as const) : undefined;
   return {
     OR: cari ? [{ nama: cari }, { nip: cari }, { jabatan: cari }] : undefined,
-    unitKerjaId: f.unitIds ? { in: f.unitIds } : undefined,
+    bidangId: f.unitIds ? { in: f.unitIds } : undefined,
     aktif: f.aktif,
     users: f.tanpaAkun ? { none: {} } : undefined,
   };
 }
 
 export const MasterRepository = {
-  // ---------- Unit kerja ----------
+  // ---------- Bidang ----------
 
-  // Semua unit kerja beserta nama jenis dan nama unit induknya
+  // Semua bidang dan sub bidang beserta nama induknya. Tingkat (jenis) ditentukan ada-tidaknya induk
   async daftarUnit() {
-    const baris = await prisma.unitKerja.findMany({
+    const baris = await prisma.bidang.findMany({
       select: {
         id: true,
         kode: true,
         nama: true,
-        jenisUnitId: true,
-        jenisUnit: { select: { nama: true } },
         parentId: true,
         parent: { select: { nama: true } },
         aktif: true,
@@ -32,97 +30,53 @@ export const MasterRepository = {
       },
       orderBy: { id: "asc" },
     });
-    return baris.map(({ jenisUnit, parent, ...u }) => ({ ...u, jenis: jenisUnit.nama, induk: parent?.nama ?? null }));
+    return baris.map(({ parent, ...u }) => ({ ...u, jenis: u.parentId === null ? "Bidang" : "Sub bidang", induk: parent?.nama ?? null }));
   },
 
-  // Jumlah pegawai aktif di setiap unit kerja
+  // Jumlah pegawai aktif di setiap bidang
   async jumlahPegawaiPerUnit() {
-    const baris = await prisma.pegawai.groupBy({ by: ["unitKerjaId"], where: { aktif: true }, _count: { _all: true } });
-    return baris.map((b) => ({ unitKerjaId: b.unitKerjaId, jumlah: b._count._all }));
+    const baris = await prisma.pegawai.groupBy({ by: ["bidangId"], where: { aktif: true }, _count: { _all: true } });
+    return baris.map((b) => ({ bidangId: b.bidangId, jumlah: b._count._all }));
   },
 
-  // Satu unit kerja berdasarkan id
+  // Satu bidang berdasarkan id
   async unitById(id: number, db: Db = prisma) {
-    return (await db.unitKerja.findUnique({ where: { id } })) ?? undefined;
+    return (await db.bidang.findUnique({ where: { id } })) ?? undefined;
   },
 
-  // Jumlah unit turunan yang masih aktif
+  // Jumlah sub bidang di bawah sebuah bidang (semua) dan yang masih aktif
+  jumlahTurunan(id: number) {
+    return prisma.bidang.count({ where: { parentId: id } });
+  },
+
   jumlahTurunanAktif(id: number) {
-    return prisma.unitKerja.count({ where: { parentId: id, aktif: true } });
+    return prisma.bidang.count({ where: { parentId: id, aktif: true } });
   },
 
   // Jumlah pegawai aktif di sebuah unit
   jumlahPegawaiAktif(unitId: number) {
-    return prisma.pegawai.count({ where: { unitKerjaId: unitId, aktif: true } });
+    return prisma.pegawai.count({ where: { bidangId: unitId, aktif: true } });
   },
 
   // Kode unit yang diawali teks tertentu (untuk membuat kode unik otomatis)
   async kodeUnitBerawalan(awalan: string) {
-    const baris = await prisma.unitKerja.findMany({ where: { kode: { startsWith: awalan } }, select: { kode: true } });
+    const baris = await prisma.bidang.findMany({ where: { kode: { startsWith: awalan } }, select: { kode: true } });
     return new Set(baris.map((b) => b.kode));
   },
 
-  // Menyimpan unit kerja baru dan mengembalikan id-nya
+  // Menyimpan bidang baru dan mengembalikan id-nya
   async insertUnit(nilai: NilaiUnit, tx: Db) {
-    return (await tx.unitKerja.create({ data: nilai, select: { id: true } })).id;
+    return (await tx.bidang.create({ data: nilai, select: { id: true } })).id;
   },
 
-  // Mengubah unit kerja
+  // Mengubah bidang
   async updateUnit(id: number, nilai: Partial<NilaiUnit>, tx: Db) {
-    await tx.unitKerja.update({ where: { id }, data: nilai });
-  },
-
-  // ---------- Jenis unit ----------
-
-  // Semua jenis unit, urut id
-  daftarJenisUnit() {
-    return prisma.jenisUnit.findMany({
-      select: { id: true, nama: true, indukJenisId: true, aktif: true, updatedAt: true },
-      orderBy: { id: "asc" },
-    });
-  },
-
-  // Jumlah unit (semua dan yang aktif) untuk setiap jenis unit
-  async jumlahUnitPerJenis() {
-    const baris = await prisma.unitKerja.groupBy({ by: ["jenisUnitId", "aktif"], _count: { _all: true } });
-    const peta = new Map<number, { jenisUnitId: number; jumlah: number; aktif: number }>();
-    for (const b of baris) {
-      const j = peta.get(b.jenisUnitId) ?? { jenisUnitId: b.jenisUnitId, jumlah: 0, aktif: 0 };
-      j.jumlah += b._count._all;
-      if (b.aktif) j.aktif += b._count._all;
-      peta.set(b.jenisUnitId, j);
-    }
-    return [...peta.values()];
-  },
-
-  // Satu jenis unit berdasarkan id
-  async jenisUnitById(id: number, db: Db = prisma) {
-    return (await db.jenisUnit.findUnique({ where: { id } })) ?? undefined;
-  },
-
-  // Jumlah unit aktif yang memakai jenis ini
-  jumlahUnitAktifBerjenis(jenisUnitId: number) {
-    return prisma.unitKerja.count({ where: { jenisUnitId, aktif: true } });
-  },
-
-  // Jumlah jenis unit aktif yang menjadikan jenis ini sebagai induknya
-  jumlahJenisTurunanAktif(id: number) {
-    return prisma.jenisUnit.count({ where: { indukJenisId: id, aktif: true } });
-  },
-
-  // Menyimpan jenis unit baru dan mengembalikan id-nya
-  async insertJenisUnit(nilai: NilaiJenisUnit, tx: Db) {
-    return (await tx.jenisUnit.create({ data: nilai, select: { id: true } })).id;
-  },
-
-  // Mengubah jenis unit
-  async updateJenisUnit(id: number, nilai: Partial<NilaiJenisUnit>, tx: Db) {
-    await tx.jenisUnit.update({ where: { id }, data: nilai });
+    await tx.bidang.update({ where: { id }, data: nilai });
   },
 
   // ---------- Pegawai ----------
 
-  // Daftar pegawai dengan filter dan paginasi, beserta unit kerja dan akun loginnya (bila ada)
+  // Daftar pegawai dengan filter dan paginasi, beserta bidang dan akun loginnya (bila ada)
   async daftarPegawai(f: FilterPegawai, halaman: Halaman) {
     const where = kondisiPegawai(f);
     const pilih = {
@@ -130,7 +84,7 @@ export const MasterRepository = {
       nip: true,
       nama: true,
       jabatan: true,
-      unitKerja: { select: { id: true, nama: true } },
+      bidang: { select: { id: true, nama: true } },
       aktif: true,
       users: { select: { id: true, email: true, kontak: true, accounts: { where: { providerId: "credential" }, select: { id: true } } }, take: 1 },
       updatedAt: true,

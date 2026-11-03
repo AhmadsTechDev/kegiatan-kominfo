@@ -9,7 +9,7 @@
 //   - UKURAN_HALAMAN    : konstanta batas jumlah data per halaman (20 item)
 //   - getDaftarKegiatan : mengambil daftar kegiatan dengan filter dan paginasi
 //   - getKegiatan       : mengambil rincian data satu kegiatan berdasarkan ID
-//   - getReferensi      : mengambil data opsi master (jenis, unit kerja, pegawai)
+//   - getReferensi      : mengambil data opsi master (jenis, bidang, pegawai)
 //   - buatKegiatan      : mengirim data kegiatan baru (bisa melanjutkan draf)
 //   - ubahKegiatan      : memperbarui data kegiatan dengan expectedUpdatedAt
 //   - batalkanKegiatan  : membatalkan kegiatan disertai alasan pembatalan

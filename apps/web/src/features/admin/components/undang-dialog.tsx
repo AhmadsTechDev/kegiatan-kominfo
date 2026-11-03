@@ -5,17 +5,17 @@
 // akun baru kepada calon pengguna (role PEGAWAI atau PIMPINAN).
 //
 // Isi berkas:
-//   - UndangDialog : dialog formulir email pribadi, role, serta unit kerja dan jabatan (bila belum ada data pegawai)
+//   - UndangDialog : dialog formulir email pribadi, role, serta bidang dan jabatan (bila belum ada data pegawai)
 //
 // Cara kerja:
 //   1. Administrator menentukan surel tujuan dan role hak akses calon pengguna.
-//   2. Jika pemohon tidak memiliki NIP, dialog menyediakan pemilih unit kerja terkait.
+//   2. Jika pemohon tidak memiliki NIP, dialog menyediakan pemilih bidang terkait.
 //   3. Saat form dikirim, backend membuat akun tertunda dan mengirim surel aktivasi.
 //
 // Catatan penting:
 //   - Tautan aktivasi akun yang dikirimkan ke surel berlaku selama 72 jam.
 //   - Role ADMIN tidak dapat dibuat via undangan, melainkan lewat pembuatan akun manual.
-//   - Pegawai wajib memiliki unit kerja agar dapat melakukan pencatatan kegiatan dinas.
+//   - Pegawai wajib memiliki bidang agar dapat melakukan pencatatan kegiatan dinas.
 //
 // Dipakai oleh: permintaan-tab.tsx, pegawai-tab.tsx, akun-view.tsx
 // =============================================================================
@@ -33,7 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LABEL_ROLE, type Role } from "@/types/auth";
 import type { IsiUndangan } from "../types";
-import { useUnitKerjaAdmin } from "../hooks/use-admin";
+import { useBidangAdmin } from "../hooks/use-admin";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
 
 const ROLE_UNDANGAN: Role[] = ["PEGAWAI", "PIMPINAN"];
@@ -41,7 +41,7 @@ const ROLE_UNDANGAN: Role[] = ["PEGAWAI", "PIMPINAN"];
 const schema = z.object({
   email: z.email("Email tidak valid").max(255),
   role: z.enum(["PEGAWAI", "PIMPINAN", "ADMIN"]),
-  unitKerjaId: z.string(),
+  bidangId: z.string(),
   jabatan: z.string().trim().max(150, "Jabatan maksimal 150 karakter"),
 });
 type Nilai = z.infer<typeof schema>;
@@ -59,22 +59,22 @@ type Props = {
 };
 
 export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole = "PEGAWAI", submitLabel, pending, onSubmit, onClose, pilihUnit }: Props) {
-  const unit = useUnitKerjaAdmin();
+  const unit = useBidangAdmin();
   const [galat, setGalat] = useState<string | null>(null);
   const { register, control, handleSubmit, setError, formState } = useForm<Nilai>({
     resolver: zodResolver(schema),
-    defaultValues: { email: defaultEmail, role: defaultRole, unitKerjaId: "", jabatan: "" },
+    defaultValues: { email: defaultEmail, role: defaultRole, bidangId: "", jabatan: "" },
   });
 
   const kirim = handleSubmit((v) => {
     setGalat(null);
-    // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa data pegawai wajib diberi unit kerja dan jabatan
-    if (pilihUnit && !v.unitKerjaId) setError("unitKerjaId", { message: "Bidang wajib dipilih" });
+    // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa data pegawai wajib diberi bidang dan jabatan
+    if (pilihUnit && !v.bidangId) setError("bidangId", { message: "Bidang wajib dipilih" });
     if (pilihUnit && !v.jabatan) setError("jabatan", { message: "Jabatan wajib diisi" });
-    if (pilihUnit && (!v.unitKerjaId || !v.jabatan)) return;
+    if (pilihUnit && (!v.bidangId || !v.jabatan)) return;
     const isi: IsiUndangan = { email: v.email.trim().toLowerCase(), role: v.role };
-    if (pilihUnit) Object.assign(isi, { unitKerjaId: Number(v.unitKerjaId), jabatan: v.jabatan });
-    onSubmit(isi, (e) => setGalat(terapkanGalatServer(e, setError, { email: "email", role: "role", unitKerjaId: "unitKerjaId", jabatan: "jabatan" }) || null));
+    if (pilihUnit) Object.assign(isi, { bidangId: Number(v.bidangId), jabatan: v.jabatan });
+    onSubmit(isi, (e) => setGalat(terapkanGalatServer(e, setError, { email: "email", role: "role", bidangId: "bidangId", jabatan: "jabatan" }) || null));
   });
 
   return (
@@ -146,19 +146,19 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
             <Input id="undang-jabatan" maxLength={150} className="h-10" aria-required aria-invalid={!!formState.errors.jabatan} {...register("jabatan")} />
             <FieldError errors={[formState.errors.jabatan]} />
           </Field>
-          <Field data-invalid={!!formState.errors.unitKerjaId}>
+          <Field data-invalid={!!formState.errors.bidangId}>
             <FieldLabel htmlFor="undang-unit">
               Bidang <Wajib />
             </FieldLabel>
             <Controller
               control={control}
-              name="unitKerjaId"
+              name="bidangId"
               render={({ field }) => (
-                <PilihUnit id="undang-unit" unit={unit.data ?? []} value={field.value} onChange={field.onChange} invalid={!!formState.errors.unitKerjaId} required />
+                <PilihUnit id="undang-unit" unit={unit.data ?? []} value={field.value} onChange={field.onChange} invalid={!!formState.errors.bidangId} required />
               )}
             />
             <FieldDescription>Data pegawainya dibuat otomatis dengan unit dan jabatan ini, tanpa NIP.</FieldDescription>
-            <FieldError errors={[formState.errors.unitKerjaId]} />
+            <FieldError errors={[formState.errors.bidangId]} />
           </Field>
         </>
       )}

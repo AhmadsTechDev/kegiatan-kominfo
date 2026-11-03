@@ -2,7 +2,7 @@
 // KOMPONEN GRAFIK TREN KEGIATAN PER UNIT BULANAN
 // =============================================================================
 // Gunanya: Menampilkan visualisasi grafik batang bertumpuk tren kegiatan per
-// unit kerja selama enam bulan terakhir pada Aplikasi Pendataan Kegiatan.
+// bidang selama enam bulan terakhir pada Aplikasi Pendataan Kegiatan.
 //
 // Isi berkas:
 //   - Ringkasan : Komponen kartu metrik kecil (total, rata-rata, bulan tersibuk).
@@ -10,7 +10,7 @@
 //   - ChartUnitBulanan : Komponen utama grafik batang bertumpuk Recharts.
 //
 // Cara kerja:
-//   1. Memetakan data enam bulan terakhir ke format baris Recharts per unit kerja.
+//   1. Memetakan data enam bulan terakhir ke format baris Recharts per bidang.
 //   2. Menyediakan filter interaktif untuk menyembunyikan atau menampilkan unit.
 //   3. Menghitung total dan menandai unit teratas (puncak) di tiap bulan.
 //   4. Merender kartu metrik ringkasan, grafik Recharts, dan legenda interaktif.
@@ -19,8 +19,8 @@
 //   - Animasi batang tumbuh hanya aktif saat pertama kali dimuat, bukan ketika
 //     pengguna mengganti periode filter (DESIGN.md bagian 8.2).
 //   - Label nama unit pada legenda dipendekkan dengan regex agar rapi, sedangkan
-//     nama lengkap unit kerja tetap disajikan pada tooltip detail.
-//   - Minimal satu unit kerja harus selalu tampil agar grafik tidak kosong.
+//     nama lengkap bidang tetap disajikan pada tooltip detail.
+//   - Minimal satu bidang harus selalu tampil agar grafik tidak kosong.
 //   - Sudut membulat dan angka total hanya dipasang pada segmen teratas (puncak).
 //
 // Dipakai oleh: features/dashboard/components/dashboard-view.tsx

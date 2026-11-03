@@ -10,7 +10,7 @@
 //   - StatusAkun, LABEL_STATUS_AKUN : status akun dari backend dan labelnya.
 //
 // Catatan penting:
-//   - Nilai PEGAWAI di backend ditampilkan "Pegawai" (pencatat kegiatan unit kerjanya).
+//   - Nilai PEGAWAI di backend ditampilkan "Pegawai" (pencatat kegiatan bidangnya).
 //
 // Dipakai oleh: Komponen navigasi, menu profil, dan kendali tampilan berbasis peran
 // =============================================================================

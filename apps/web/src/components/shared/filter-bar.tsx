@@ -2,15 +2,15 @@
 // BILAH PENYARING DAFTAR KEGIATAN
 // =============================================================================
 // Gunanya: Menyediakan panel interaktif untuk menyaring daftar kegiatan menurut
-//          kata kunci, rentang tanggal, unit kerja, jenis, dan status pelaksanaan.
+//          kata kunci, rentang tanggal, bidang, jenis, dan status pelaksanaan.
 //
 // Isi berkas:
-//   - urutPohon : fungsi penyusun hierarki pohon unit kerja (induk dan anak)
+//   - urutPohon : fungsi penyusun hierarki pohon bidang (induk dan anak)
 //   - FilterBar : komponen bilah filter kegiatan dengan pencarian ber-debounce
 //
 // Cara kerja:
 //   1. Menampung teks pencarian dan mendebounce perubahan selama 300 ms.
-//   2. Mengurutkan opsi unit kerja secara hierarkis sebelum ditampilkan di dropdown.
+//   2. Mengurutkan opsi bidang secara hierarkis sebelum ditampilkan di dropdown.
 //   3. Mengirim pembaruan kriteria filter ke komponen induk melalui callback onChange.
 //   4. Menyediakan tombol atur ulang untuk mengembalikan semua filter ke awal.
 //
@@ -47,7 +47,7 @@ type FilterBarProps = {
   onChange: (ubah: Partial<NilaiFilter>) => void;
   onReset: () => void;
   adaFilter: boolean;
-  unitKerja: { id: number; parentId: number | null; nama: string }[];
+  bidang: { id: number; parentId: number | null; nama: string }[];
   jenisKegiatan: { id: number; nama: string }[];
   className?: string;
 };
@@ -62,7 +62,7 @@ const LABEL_STATUS: Record<StatusPelaksanaan, string> = {
   dibatalkan: "Dibatalkan",
 };
 
-function urutPohon(unit: FilterBarProps["unitKerja"]) {
+function urutPohon(unit: FilterBarProps["bidang"]) {
   return unit
     .filter((u) => u.parentId === null)
     .flatMap((induk) => [
@@ -71,7 +71,7 @@ function urutPohon(unit: FilterBarProps["unitKerja"]) {
     ]);
 }
 
-export function FilterBar({ value, onChange, onReset, adaFilter, unitKerja, jenisKegiatan, className }: FilterBarProps) {
+export function FilterBar({ value, onChange, onReset, adaFilter, bidang, jenisKegiatan, className }: FilterBarProps) {
   const id = useId();
   const [bukaFilter, setBukaFilter] = useState(false);
   const jumlahAktif = [value.dari ?? value.sampai, value.unit, value.jenis, value.status].filter((v) => v != null).length;
@@ -90,7 +90,7 @@ export function FilterBar({ value, onChange, onReset, adaFilter, unitKerja, jeni
   }, [teks, value.q, onChange]);
 
   const label = "text-xs font-bold text-foreground/80";
-  const adaUnit = unitKerja.length > 1;
+  const adaUnit = bidang.length > 1;
 
   return (
     <div
@@ -158,7 +158,7 @@ export function FilterBar({ value, onChange, onReset, adaFilter, unitKerja, jeni
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={SEMUA}>Semua bidang</SelectItem>
-                {urutPohon(unitKerja).map((u) => (
+                {urutPohon(bidang).map((u) => (
                   <SelectItem key={u.id} value={String(u.id)} className={cn(u.turunan && "pl-6 text-muted-foreground")}>
                     {u.nama}
                   </SelectItem>

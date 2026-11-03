@@ -39,8 +39,8 @@ import { formatTelp } from "@/lib/format";
 import { zNip } from "@/lib/nip";
 import { cn } from "@/lib/utils";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
-import { usePegawaiAdmin, useSimpanPegawai, useUnitKerjaAdmin } from "../hooks/use-admin";
-import type { FilterPegawai, PegawaiAdmin, UnitKerjaAdmin } from "../types";
+import { usePegawaiAdmin, useSimpanPegawai, useBidangAdmin } from "../hooks/use-admin";
+import type { FilterPegawai, PegawaiAdmin, BidangAdmin } from "../types";
 import { BadgeAktif, KartuMaster, KolomCari, PilihUnit, TombolUbah, terapkanGalatServer } from "./admin-shared";
 
 const SEMUA = "semua";
@@ -48,13 +48,13 @@ const SEMUA = "semua";
 const schema = z.object({
   nip: z.union([z.literal(""), zNip()]),
   nama: z.string().trim().min(1, "Nama wajib diisi").max(150, "Nama maksimal 150 karakter"),
-  unitKerjaId: z.string().min(1, "Bidang wajib dipilih"),
+  bidangId: z.string().min(1, "Bidang wajib dipilih"),
   jabatan: z.string().trim().max(150, "Jabatan maksimal 150 karakter"),
   status: z.enum(["aktif", "nonaktif"]),
 });
 type Nilai = z.infer<typeof schema>;
 
-function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "baru"; unit: UnitKerjaAdmin[]; onClose: () => void }) {
+function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "baru"; unit: BidangAdmin[]; onClose: () => void }) {
   const simpan = useSimpanPegawai();
   const [galat, setGalat] = useState<string | null>(null);
   const awal = pegawai === "baru" ? null : pegawai;
@@ -64,7 +64,7 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
       nip: awal?.nip ?? "",
       nama: awal?.nama ?? "",
       jabatan: awal?.jabatan ?? "",
-      unitKerjaId: awal ? String(awal.unitKerja.id) : "",
+      bidangId: awal ? String(awal.bidang.id) : "",
       status: awal && !awal.aktif ? "nonaktif" : "aktif",
     },
   });
@@ -78,7 +78,7 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
           nip: v.nip || null,
           nama: v.nama,
           jabatan: v.jabatan || null,
-          unitKerjaId: Number(v.unitKerjaId),
+          bidangId: Number(v.bidangId),
           aktif: awal ? v.status === "aktif" : undefined,
         },
       },
@@ -88,7 +88,7 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
           onClose();
         },
         onError: (e) =>
-          setGalat(terapkanGalatServer(e, setError, { nip: "nip", nama: "nama", jabatan: "jabatan", unitKerjaId: "unitKerjaId" }) || null),
+          setGalat(terapkanGalatServer(e, setError, { nip: "nip", nama: "nama", jabatan: "jabatan", bidangId: "bidangId" }) || null),
       },
     );
   });
@@ -126,18 +126,18 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
         <Input id="pegawai-jabatan" maxLength={150} className="h-10" placeholder="Contoh: Pranata Komputer Ahli Muda" aria-invalid={!!formState.errors.jabatan} {...register("jabatan")} />
         <FieldError errors={[formState.errors.jabatan]} />
       </Field>
-      <Field data-invalid={!!formState.errors.unitKerjaId}>
+      <Field data-invalid={!!formState.errors.bidangId}>
         <FieldLabel htmlFor="pegawai-unit">
           Bidang <Wajib />
         </FieldLabel>
         <Controller
           control={control}
-          name="unitKerjaId"
+          name="bidangId"
           render={({ field }) => (
-            <PilihUnit id="pegawai-unit" unit={unit} value={field.value} onChange={field.onChange} invalid={!!formState.errors.unitKerjaId} />
+            <PilihUnit id="pegawai-unit" unit={unit} value={field.value} onChange={field.onChange} invalid={!!formState.errors.bidangId} />
           )}
         />
-        <FieldError errors={[formState.errors.unitKerjaId]} />
+        <FieldError errors={[formState.errors.bidangId]} />
       </Field>
       {awal && (
         <Field>
@@ -170,7 +170,7 @@ export function PegawaiTab() {
   const [filter, setFilterState] = useState<FilterPegawai>(FILTER_AWAL);
   const setFilter = useCallback((ubah: Partial<FilterPegawai>) => setFilterState((f) => ({ ...f, page: 1, ...ubah })), []);
   const daftar = usePegawaiAdmin(filter);
-  const unit = useUnitKerjaAdmin();
+  const unit = useBidangAdmin();
   const [dialog, setDialog] = useState<PegawaiAdmin | "baru" | null>(null);
   const adaFilter = filter.q !== "" || filter.unit !== null || filter.aktif !== null;
 
@@ -188,7 +188,7 @@ export function PegawaiTab() {
           <span className="block max-w-56 min-w-36 text-sm whitespace-normal">{row.original.jabatan ?? <span className="text-muted-foreground">-</span>}</span>
         ),
       },
-      { id: "unit", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-72 whitespace-normal">{row.original.unitKerja.nama}</UnitChip> },
+      { id: "unit", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-72 whitespace-normal">{row.original.bidang.nama}</UnitChip> },
       {
         id: "kontak",
         header: "No. telp",
@@ -265,7 +265,7 @@ export function PegawaiTab() {
                 }
                 aksi={<TombolUbah nama={p.nama} onClick={() => setDialog(p)} />}
               >
-                <UnitChip className="max-w-full self-start whitespace-normal">{p.unitKerja.nama}</UnitChip>
+                <UnitChip className="max-w-full self-start whitespace-normal">{p.bidang.nama}</UnitChip>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground tabular-nums">
                   <span>NIP {p.nip ?? "-"}</span>
                   <span>Telp {p.kontak ? formatTelp(p.kontak) : "-"}</span>

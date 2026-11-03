@@ -11,7 +11,7 @@ Kembali ke [README utama](../../README.md). Diagram alurnya ada di [UML](../uml/
 | [api-auth.md](api-auth.md) | Login, aktivasi akun, lupa dan atur ulang sandi, verifikasi email baru, dan akun sendiri (`/api/me`: profil, foto, email, sandi, sesi, preferensi) |
 | [api-kegiatan.md](api-kegiatan.md) | Referensi pilihan formulir, kegiatan (catat, ubah, batalkan, periksa, hapus), draf kegiatan, dan dokumentasi foto/PDF |
 | [api-laporan.md](api-laporan.md) | Dashboard, kalender, rekap, pantau pemeriksaan, dan ekspor PDF |
-| [api-admin.md](api-admin.md) | Data master (bidang, jenis unit, pegawai, jenis kegiatan), manajemen akun, undangan, permintaan akun, dan audit log |
+| [api-admin.md](api-admin.md) | Data master (bidang dan sub bidang, pegawai, jenis kegiatan), manajemen akun, undangan, permintaan akun, dan audit log |
 
 ## Aturan umum
 
@@ -87,8 +87,7 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 
 | Metode dan jalur | Fungsi |
 | --- | --- |
-| `GET`, `POST /api/admin/unit-kerja`, `PATCH /api/admin/unit-kerja/:id` | Bidang dan sub bidang |
-| `GET`, `POST /api/admin/jenis-unit`, `PATCH /api/admin/jenis-unit/:id` | Jenis unit |
+| `GET`, `POST /api/admin/bidang`, `PATCH /api/admin/bidang/:id` | Bidang dan sub bidang |
 | `GET`, `POST /api/admin/pegawai`, `PATCH /api/admin/pegawai/:id` | Data kepegawaian |
 | `GET`, `POST /api/admin/jenis-kegiatan`, `PATCH /api/admin/jenis-kegiatan/:id` | Jenis kegiatan |
 | `GET`, `POST /api/admin/akun`, `GET`, `PATCH`, `DELETE /api/admin/akun/:id` | Daftar, buat, detail, ubah, dan hapus akun |

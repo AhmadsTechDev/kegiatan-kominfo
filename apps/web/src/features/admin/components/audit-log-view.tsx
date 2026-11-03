@@ -84,8 +84,8 @@ const LABEL_ENTITAS: Record<string, string> = {
   kegiatan: "Kegiatan",
   dokumentasi: "Dokumentasi",
   user: "Akun",
-  unit_kerja: "Bidang",
-  jenis_unit: "Jenis unit",
+  bidang: "Bidang",
+  jenis_unit: "Jenis unit", // tabel sudah dihapus; label untuk baris audit lama
   pegawai: "Pegawai",
   jenis_kegiatan: "Jenis kegiatan",
   permintaan_akun: "Permintaan akun",

@@ -47,7 +47,7 @@ Dokumen kebutuhan produk, diselaraskan dengan aplikasi yang sudah berjalan. Nomo
 | No | Kebutuhan | Kriteria selesai |
 | --- | --- | --- |
 | FR-01 | **Masuk dan keamanan akun.** Login hanya dengan email pribadi. Tidak ada pendaftaran mandiri: akun dibuat admin lalu diaktivasi pemiliknya lewat tautan email. Lupa dan atur ulang sandi, ganti email dengan verifikasi, sesi aktif, dan preferensi | Login berhasil dan gagal tercatat; akun terkunci 15 menit setelah 5 kali salah sandi; tautan aktivasi (72 jam) dan atur ulang (1 jam) sekali pakai; pengguna bisa mengeluarkan perangkat lain |
-| FR-02 | **Master data dan akun.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, jenis unit, jenis kegiatan, dan akun beserta bidangnya. Permintaan akun dari halaman login ditinjau admin | Data master dinonaktifkan, tidak dihapus. Akun yang belum membuat kegiatan, mengunggah dokumentasi, atau memeriksa kegiatan bisa dihapus; selebihnya dinonaktifkan agar jejaknya utuh |
+| FR-02 | **Master data dan akun.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, jenis kegiatan, dan akun beserta bidangnya. Permintaan akun dari halaman login ditinjau admin | Data master dinonaktifkan, tidak dihapus. Akun yang belum membuat kegiatan, mengunggah dokumentasi, atau memeriksa kegiatan bisa dihapus; selebihnya dinonaktifkan agar jejaknya utuh |
 | FR-03 | **Audit log.** Setiap perubahan data dan kejadian keamanan dicatat dengan pelaku, waktu, IP, serta nilai sebelum dan sesudah | Hanya bisa ditambah (append-only, dijaga sampai hak basis data); admin dapat memfilter dan membuka detail |
 | FR-04 | **Catat kegiatan.** Dua langkah: judul, jenis, waktu, penanggung jawab, bidang, lalu lokasi, uraian, peserta, dan nomor surat. Draf bisa disimpan dan dilanjutkan | Lokasi opsional; waktu mulai terisi waktu sekarang; validasi tanggal terbalik dijawab 422 |
 | FR-05 | **Kelola kegiatan.** Ubah, isi hasil, batalkan (alasan wajib), dan hapus | Status pelaksanaan dihitung otomatis; pengubahan bersamaan dijawab 409; pembatalan tidak dapat diurungkan |
@@ -167,7 +167,7 @@ Tabel dan relasinya digambar di [docs/uml/05-erd.md](uml/05-erd.md), sumbernya `
 | Kelompok | Tabel |
 | --- | --- |
 | Autentikasi | `user`, `session`, `account`, `verification`, `preferensi_pengguna` |
-| Master data | `jenis_unit`, `unit_kerja`, `pegawai`, `jenis_kegiatan` |
+| Master data | `bidang` (bidang dan sub bidang), `pegawai`, `jenis_kegiatan` |
 | Kegiatan | `kegiatan`, `dokumentasi`, `catatan_pemeriksaan`, `draf_kegiatan`, `pengingat` |
 | Pendukung | `audit_log`, `permintaan_akun` |
 

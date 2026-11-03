@@ -48,9 +48,9 @@ const kolom: DataTableColumn<KegiatanRingkas>[] = [
     ),
   },
   {
-    id: "unitKerja",
+    id: "bidang",
     header: "Bidang",
-    cell: ({ row }) => <UnitChip className="max-w-52 min-w-32 whitespace-normal">{row.original.unitKerja}</UnitChip>,
+    cell: ({ row }) => <UnitChip className="max-w-52 min-w-32 whitespace-normal">{row.original.bidang}</UnitChip>,
   },
   {
     id: "tanggal",
@@ -94,7 +94,7 @@ function KartuKegiatan({ k }: { k: KegiatanRingkas }) {
         {formatRentangTanggal(k.tglMulai, k.tglSelesai)} · {formatJam(k.tglMulai)}
       </span>
       <span className="text-xs text-muted-foreground">
-        {k.unitKerja} · {k.penanggungJawab}
+        {k.bidang} · {k.penanggungJawab}
       </span>
     </Link>
   );

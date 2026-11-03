@@ -6,7 +6,7 @@
 //
 // Isi berkas:
 //   - PratinjauLaporan : kontrak respons GET /ekspor/pratinjau (kop, kolom, baris)
-//   - CakupanLaporan   : pilihan filter rentang tanggal, unit kerja, dan pegawai
+//   - CakupanLaporan   : pilihan filter rentang tanggal, bidang, dan pegawai
 //
 // Dipakai oleh: api.ts, halaman-laporan.tsx, dan laporan-view.tsx
 // =============================================================================
@@ -22,7 +22,7 @@ export type PratinjauLaporan = {
     judul: string;
     lokasi: string | null;
     jenis: string;
-    unitKerja: string;
+    bidang: string;
     penanggungJawab: string;
     waktu: string;
     peserta: string;

@@ -16,7 +16,7 @@ export const DokumentasiRepository = {
   async findDenganKegiatan(id: number) {
     const baris = await prisma.dokumentasi.findFirst({
       where: { id, kegiatan: KEGIATAN_AKTIF },
-      include: { kegiatan: { select: { id: true, unitKerjaId: true, dibuatOleh: true, penanggungJawabId: true } } },
+      include: { kegiatan: { select: { id: true, bidangId: true, dibuatOleh: true, penanggungJawabId: true } } },
     });
     if (!baris) return undefined;
     const { kegiatan, ...dokumentasi } = baris;

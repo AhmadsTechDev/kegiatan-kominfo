@@ -199,7 +199,7 @@ function IsiDetail({ id }: { id: string }) {
   }
 
   const a = detail.data;
-  const unit = a.pegawai?.unitKerja;
+  const unit = a.pegawai?.bidang;
   return (
     <div className="flex flex-col gap-5">
       <Kepala a={a} idSaya={user?.id} buka={buka} />

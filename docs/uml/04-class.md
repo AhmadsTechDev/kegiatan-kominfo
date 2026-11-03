@@ -27,15 +27,10 @@ classDiagram
         +String jabatan
         +Boolean aktif
     }
-    class UnitKerja {
+    class Bidang {
         +Int id
         +String kode
         +String nama
-        +Boolean aktif
-    }
-    class JenisUnit {
-        +Int id
-        +String nama  «Bidang, Sub bidang»
         +Boolean aktif
     }
     class JenisKegiatan {
@@ -111,13 +106,11 @@ classDiagram
     }
 
     User "0..*" --> "0..1" Pegawai : tertaut ke
-    Pegawai "0..*" --> "1" UnitKerja : bekerja di
-    UnitKerja "0..*" --> "0..1" UnitKerja : induk
-    UnitKerja "0..*" --> "1" JenisUnit : berjenis
-    JenisUnit "0..*" --> "0..1" JenisUnit : induk jenis
+    Pegawai "0..*" --> "1" Bidang : bekerja di
+    Bidang "0..*" --> "0..1" Bidang : induk (sub bidang punya induk)
 
     Kegiatan "0..*" --> "1" JenisKegiatan : berjenis
-    Kegiatan "0..*" --> "1" UnitKerja : milik bidang
+    Kegiatan "0..*" --> "1" Bidang : milik bidang
     Kegiatan "0..*" --> "1" Pegawai : penanggung jawab
     Kegiatan "0..*" --> "1" User : dibuat oleh
     Kegiatan "1" *-- "0..10" Dokumentasi : memiliki

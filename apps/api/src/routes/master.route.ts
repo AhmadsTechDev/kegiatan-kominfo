@@ -6,17 +6,13 @@ import { MasterValidator } from "@/validators/master.validator";
 const ADMIN = { auth: ["ADMIN" as const] };
 const params = MasterValidator.params;
 
-// Data master (unit kerja, jenis unit, pegawai, jenis kegiatan), khusus ADMIN
+// Data master (bidang dan sub bidang, pegawai, jenis kegiatan), khusus ADMIN
 export const masterRoutes = new Elysia({ prefix: "/admin" })
   .use(authPlugin)
-  // Unit kerja
-  .get("/unit-kerja", MasterController.daftarUnit, ADMIN)
-  .post("/unit-kerja", MasterController.buatUnit, { ...ADMIN, body: MasterValidator.buatUnit })
-  .patch("/unit-kerja/:id", MasterController.ubahUnit, { ...ADMIN, params, body: MasterValidator.ubahUnit })
-  // Jenis unit
-  .get("/jenis-unit", MasterController.daftarJenisUnit, ADMIN)
-  .post("/jenis-unit", MasterController.buatJenisUnit, { ...ADMIN, body: MasterValidator.buatJenisUnit })
-  .patch("/jenis-unit/:id", MasterController.ubahJenisUnit, { ...ADMIN, params, body: MasterValidator.ubahJenisUnit })
+  // Bidang
+  .get("/bidang", MasterController.daftarUnit, ADMIN)
+  .post("/bidang", MasterController.buatUnit, { ...ADMIN, body: MasterValidator.buatUnit })
+  .patch("/bidang/:id", MasterController.ubahUnit, { ...ADMIN, params, body: MasterValidator.ubahUnit })
   // Pegawai
   .get("/pegawai", MasterController.daftarPegawai, { ...ADMIN, query: MasterValidator.daftarPegawaiQuery })
   .post("/pegawai", MasterController.buatPegawai, { ...ADMIN, body: MasterValidator.buatPegawai })

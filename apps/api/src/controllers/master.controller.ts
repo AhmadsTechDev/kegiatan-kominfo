@@ -1,36 +1,23 @@
 import { MasterService } from "@/services/master.service";
 import { UndanganService } from "@/services/undangan.service";
-import type { DaftarPegawaiQuery, IsiJenis, IsiJenisUnit, IsiPegawai, IsiPegawaiBaru, IsiUnit } from "@/types/master.types";
+import type { DaftarPegawaiQuery, IsiJenis, IsiPegawai, IsiPegawaiBaru, IsiUnit } from "@/types/master.types";
 import type { Konteks } from "@/types/umum.types";
 import { adminDari, aktorDari, requestMeta } from "@/utils/konteks";
 
 type Id = { id: number };
 
 export const MasterController = {
-  // GET /api/admin/unit-kerja
+  // GET /api/admin/bidang
   daftarUnit: () => MasterService.daftarUnit(),
 
-  // POST /api/admin/unit-kerja
+  // POST /api/admin/bidang
   buatUnit: ({ body, user, request, set }: Konteks<IsiUnit>) => {
     set.status = 201;
     return MasterService.buatUnit(body, aktorDari(user), requestMeta(request.headers));
   },
 
-  // PATCH /api/admin/unit-kerja/:id
+  // PATCH /api/admin/bidang/:id
   ubahUnit: ({ params, body, user, request }: Konteks<IsiUnit, Id>) => MasterService.ubahUnit(params.id, body, aktorDari(user), requestMeta(request.headers)),
-
-  // GET /api/admin/jenis-unit
-  daftarJenisUnit: () => MasterService.daftarJenisUnit(),
-
-  // POST /api/admin/jenis-unit
-  buatJenisUnit: ({ body, user, request, set }: Konteks<IsiJenisUnit>) => {
-    set.status = 201;
-    return MasterService.buatJenisUnit(body, aktorDari(user), requestMeta(request.headers));
-  },
-
-  // PATCH /api/admin/jenis-unit/:id
-  ubahJenisUnit: ({ params, body, user, request }: Konteks<IsiJenisUnit, Id>) =>
-    MasterService.ubahJenisUnit(params.id, body, aktorDari(user), requestMeta(request.headers)),
 
   // GET /api/admin/pegawai
   daftarPegawai: ({ query }: Konteks<unknown, unknown, DaftarPegawaiQuery>) => MasterService.daftarPegawai(query),

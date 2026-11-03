@@ -176,7 +176,7 @@ Semua endpoint di bawah butuh login (semua role).
     "nip": "198702152011012002",
     "nama": "Andi Saputra",
     "jabatan": "Analis Data",
-    "unitKerja": { "id": 10, "kode": "SEKSI-DATA", "nama": "Seksi Pengelolaan Data dan Persediaan", "parent": { "id": 4, "nama": "Bidang Teknologi Informasi dan Persandian" } }
+    "bidang": { "id": 10, "kode": "SEKSI-DATA", "nama": "Seksi Pengelolaan Data dan Persediaan", "parent": { "id": 4, "nama": "Bidang Teknologi Informasi dan Persandian" } }
   },
   "foto": "/api/me/foto/07747c26-...?v=e2e12a91-..."
 }

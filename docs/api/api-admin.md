@@ -10,7 +10,7 @@ Data master tidak pernah dihapus; nonaktifkan dengan `"aktif": false` agar data 
 
 ## Bidang
 
-### `GET /api/admin/unit-kerja`
+### `GET /api/admin/bidang`
 
 **Respons 200**
 
@@ -18,10 +18,9 @@ Data master tidak pernah dihapus; nonaktifkan dengan `"aktif": false` agar data 
 [
   {
     "id": 7,
-    "kode": "SEKSI-DATA",
-    "nama": "Seksi Pengelolaan Data dan Persediaan",
-    "jenisUnitId": 5,
-    "jenis": "Seksi",
+    "kode": "SUBBID-DATA",
+    "nama": "Sub Bidang Pengelolaan Data",
+    "jenis": "Sub bidang",
     "parentId": 3,
     "induk": "Bidang Teknologi Informasi dan Persandian",
     "aktif": true,
@@ -31,63 +30,33 @@ Data master tidak pernah dihapus; nonaktifkan dengan `"aktif": false` agar data 
 ]
 ```
 
-### `POST /api/admin/unit-kerja`
+### `POST /api/admin/bidang`
 
 **Body**
 
 | Field | Tipe | Wajib | Keterangan |
 | --- | --- | --- | --- |
 | `nama` | string | ya | 1–150 karakter |
-| `jenisUnitId` | angka | ya | Id jenis unit aktif |
-| `parentId` | angka \| null | ya | Unit induk. Wajib diisi bila jenisnya punya jenis induk (mis. Seksi harus di bawah Bidang); `null` untuk unit tertinggi |
+| `parentId` | angka \| null | ya | Bidang induk. `null` untuk bidang (tingkat tertinggi); diisi untuk sub bidang, dan induknya harus sebuah bidang (maksimal dua tingkat) |
 | `kode` | string | tidak | Huruf, angka, `-`, maks. 30. Bila kosong dibuat otomatis, mis. "Bidang Statistik Sektoral" menjadi `BID-SS` |
 
 ```json
-{ "nama": "Bidang Statistik Sektoral", "jenisUnitId": 2, "parentId": null }
+{ "nama": "Bidang Statistik Sektoral", "parentId": null }
 ```
 
 **Respons 201**: `{ "id": 12 }`
 
-**Galat**: 422 bila induk tidak sesuai jenis, unit induk nonaktif, atau kode sudah dipakai.
+**Galat**: 422 bila induk bukan sebuah bidang, bidang induk nonaktif, atau kode sudah dipakai.
 
-### `PATCH /api/admin/unit-kerja/:id`
+### `PATCH /api/admin/bidang/:id`
 
 Body sama dengan `POST`, ditambah `aktif` (boolean, opsional). Kode yang dikosongkan tidak berubah.
 
 **Respons 200**: `{ "id": 12 }`
 
-**Galat**: 422 bila menonaktifkan unit yang masih punya sub-unit atau pegawai aktif, atau mengganti jenis unit yang masih punya sub-unit aktif.
+**Galat**: 422 bila menonaktifkan bidang yang masih punya sub bidang atau pegawai aktif, atau menjadikan bidang yang masih punya sub bidang sebagai sub bidang.
 
----
-
-## Jenis unit
-
-### `GET /api/admin/jenis-unit`
-
-**Respons 200**
-
-```json
-[{ "id": 5, "nama": "Seksi", "indukJenisId": 2, "aktif": true, "updatedAt": "2026-11-01T22:10:38.968Z", "jumlahUnit": 2, "jumlahUnitAktif": 2 }]
-```
-
-### `POST /api/admin/jenis-unit`
-
-**Body**
-
-| Field | Tipe | Wajib | Keterangan |
-| --- | --- | --- | --- |
-| `nama` | string | ya | 1–100 karakter, unik |
-| `indukJenisId` | angka \| null | ya | Jenis unit di atasnya; `null` untuk jenis tertinggi |
-
-**Respons 201**: `{ "id": 6 }`
-
-### `PATCH /api/admin/jenis-unit/:id`
-
-Body sama dengan `POST`, ditambah `aktif` (opsional).
-
-**Respons 200**: `{ "id": 6 }`
-
-**Galat**: 422 bila induk membentuk lingkaran, atau mengubah posisi/menonaktifkan jenis yang masih dipakai unit aktif.
+Tingkat (`jenis` pada respons) tidak disimpan: dihitung dari `parentId`, yaitu `Bidang` bila kosong dan `Sub bidang` bila terisi. Kode otomatis memakai awalan `BID` atau `SUBBID`.
 
 ---
 
@@ -114,7 +83,7 @@ Body sama dengan `POST`, ditambah `aktif` (opsional).
       "nip": "198702152011012002",
       "nama": "Andi Saputra",
       "jabatan": "Analis Data",
-      "unitKerja": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
+      "bidang": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
       "aktif": true,
       "updatedAt": "2026-11-01T22:10:53.770Z",
       "akun": { "id": "07747c26-fd62-4ab6-8584-ebf7b244fc3a", "email": "andi@diskominfo.local", "aktif": true }
@@ -137,14 +106,14 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 | Field | Tipe | Wajib | Keterangan |
 | --- | --- | --- | --- |
 | `nama` | string | ya | 1–150 karakter |
-| `unitKerjaId` | angka | ya | Bidang aktif |
+| `bidangId` | angka | ya | Bidang aktif |
 | `nip` | string \| null | tidak | 18 digit, sah, dan belum terdaftar. Kosongkan untuk non-ASN |
 | `jabatan` | string \| null | tidak | Maks. 150 karakter |
 | `email` | string \| null | tidak | Bila diisi, langsung dikirimi undangan akun |
 | `role` | `PEGAWAI` \| `PIMPINAN` | tidak | Role akun undangan, bawaan `PEGAWAI` |
 
 ```json
-{ "nip": "198702152011012002", "nama": "Andi Saputra", "jabatan": "Analis", "unitKerjaId": 10, "email": "andi@diskominfo.local" }
+{ "nip": "198702152011012002", "nama": "Andi Saputra", "jabatan": "Analis", "bidangId": 10, "email": "andi@diskominfo.local" }
 ```
 
 **Respons 201**
@@ -158,7 +127,7 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 
 ### `PATCH /api/admin/pegawai/:id`
 
-**Body**: `nip`, `nama`, `jabatan`, `unitKerjaId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
+**Body**: `nip`, `nama`, `jabatan`, `bidangId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
 
 **Respons 200**: `{ "id": 1 }`
 
@@ -225,8 +194,8 @@ Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi p
         "nama": "Andi Saputra",
         "nip": "198702152011012002",
         "jabatan": "Analis Data",
-        "unitKerjaId": 10,
-        "unitKerja": "Seksi Pengelolaan Data dan Persediaan",
+        "bidangId": 10,
+        "bidang": "Seksi Pengelolaan Data dan Persediaan",
         "unitInduk": "Bidang Teknologi Informasi dan Persandian"
       },
       "foto": null,
@@ -248,7 +217,7 @@ Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi p
 
 ### `GET /api/admin/akun/:id`
 
-Detail akun: semua field daftar, ditambah `kontak`, `updatedAt`, data pegawai lengkap (`unitKerja: { id, nama, parent }`), `undangan` (`{ "kedaluwarsa": "..." }` untuk akun `MENUNGGU_AKTIVASI`, selain itu `null`), `sesi` (sesi aktif tanpa token), dan `riwayat` (15 catatan audit terbaru terkait akun).
+Detail akun: semua field daftar, ditambah `kontak`, `updatedAt`, data pegawai lengkap (`bidang: { id, nama, parent }`), `undangan` (`{ "kedaluwarsa": "..." }` untuk akun `MENUNGGU_AKTIVASI`, selain itu `null`), `sesi` (sesi aktif tanpa token), dan `riwayat` (15 catatan audit terbaru terkait akun).
 
 **Galat**: 404 bila tidak ada.
 
@@ -264,12 +233,12 @@ Membuat akun beserta data pegawainya dalam satu transaksi, lalu mengirim email a
 | `email` | string | ya | Email pribadi, unik. Menjadi identitas login |
 | `nip` | string \| null | tidak | 18 digit. Bila milik pegawai terdaftar yang belum punya akun, data pegawai itu dipakai (tidak diduplikasi) |
 | `jabatan` | string | ya | 1–150 karakter |
-| `unitKerjaId` | angka | ya | Bidang aktif |
+| `bidangId` | angka | ya | Bidang aktif |
 | `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | ya | |
 | `pegawaiId` | angka \| null | tidak | Pakai pegawai tertentu dari Master data |
 
 ```json
-{ "name": "Andi Saputra", "email": "andi@contoh.com", "nip": null, "jabatan": "Analis Data", "unitKerjaId": 10, "role": "PEGAWAI" }
+{ "name": "Andi Saputra", "email": "andi@contoh.com", "nip": null, "jabatan": "Analis Data", "bidangId": 10, "role": "PEGAWAI" }
 ```
 
 **Respons 201**
@@ -391,7 +360,7 @@ Permintaan yang diajukan dari halaman login (lihat [api-auth.md](api-auth.md#men
       "diprosesOleh": "Administrator",
       "createdAt": "2026-11-01T22:10:54.447Z",
       "pegawai": null,
-      "unitKerja": null
+      "bidang": null
     }
   ],
   "total": 1,
@@ -401,7 +370,7 @@ Permintaan yang diajukan dari halaman login (lihat [api-auth.md](api-auth.md#men
 }
 ```
 
-`pegawai` (`{ id, nip, nama, jabatan }`) dan `unitKerja` terisi bila pemohon mengisi NIP yang terdaftar.
+`pegawai` (`{ id, nip, nama, jabatan }`) dan `bidang` terisi bila pemohon mengisi NIP yang terdaftar.
 
 ### `GET /api/admin/permintaan-akun/jumlah`
 
@@ -411,7 +380,7 @@ Untuk badge di menu admin.
 
 ### `POST /api/admin/permintaan-akun/:id/setujui`
 
-Menyetujui permintaan setelah identitas pemohon diverifikasi: akun dibuat dan email aktivasi dikirim. Bila pemohon tidak punya data pegawai, data pegawai baru dibuat dari `unitKerjaId` dan `jabatan` (keduanya wajib dalam kasus ini).
+Menyetujui permintaan setelah identitas pemohon diverifikasi: akun dibuat dan email aktivasi dikirim. Bila pemohon tidak punya data pegawai, data pegawai baru dibuat dari `bidangId` dan `jabatan` (keduanya wajib dalam kasus ini).
 
 **Body**
 
@@ -419,7 +388,7 @@ Menyetujui permintaan setelah identitas pemohon diverifikasi: akun dibuat dan em
 | --- | --- | --- | --- |
 | `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | ya | |
 | `email` | string | tidak | Ganti email pemohon bila perlu |
-| `unitKerjaId` | angka | bila tanpa data pegawai | Bidang pegawai baru |
+| `bidangId` | angka | bila tanpa data pegawai | Bidang pegawai baru |
 | `jabatan` | string | bila tanpa data pegawai | Jabatan pegawai baru |
 
 **Respons 200**: sama dengan undangan, `{ "userId": "...", "email": "...", "kirimUlang": false }`
@@ -496,7 +465,7 @@ Isi pilihan filter.
 ```json
 {
   "aktor": [{ "id": "1ef5cd20-...", "nama": "Administrator", "email": "admin@diskominfo.local" }],
-  "entitas": ["dokumentasi", "kegiatan", "pegawai", "permintaan_akun", "unit_kerja", "user"],
+  "entitas": ["dokumentasi", "kegiatan", "pegawai", "permintaan_akun", "bidang", "user"],
   "aksi": ["login", "login_gagal", "akun_terkunci", "logout", "buat", "ubah", "hapus", "batal", "unggah", "hapus_file", "ganti_file", "periksa", "ekspor", "aktifkan", "nonaktifkan", "reset_sandi", "undang", "aktivasi", "minta_akun", "setujui", "tolak", "minta_reset_sandi", "kirim_reset_sandi", "ganti_sandi", "minta_ganti_email", "ganti_email", "batal_ganti_email", "cabut_sesi"]
 }
 ```

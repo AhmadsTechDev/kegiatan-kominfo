@@ -150,7 +150,7 @@ describe("hak akses role", () => {
   test("PEGAWAI dan PIMPINAN ditolak 403 di semua endpoint admin", async () => {
     const pegawai = await buatPengguna();
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
-    const dapat = ["/admin/akun", `/admin/akun/${pegawai.userId}`, "/admin/pegawai", "/admin/unit-kerja", "/audit-log", "/admin/permintaan-akun"];
+    const dapat = ["/admin/akun", `/admin/akun/${pegawai.userId}`, "/admin/pegawai", "/admin/bidang", "/audit-log", "/admin/permintaan-akun"];
     const kirim = [`/admin/akun/${pegawai.userId}/kirim-ulang-undangan`, `/admin/akun/${pimpinan.userId}/reset-sandi`, `/admin/akun/${pimpinan.userId}/cabut-sesi`];
     for (const u of [pegawai, pimpinan]) {
       for (const path of dapat) expect((await panggil(path, { cookie: u.cookie })).status).toBe(403);
@@ -211,7 +211,7 @@ describe("aktivasi akun dari email undangan", () => {
     const admin = await loginAdmin();
     const email = emailAcak("undangan");
     const nip = nipAcak();
-    const buat = await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Pegawai Undangan", unitKerjaId: await idUnit("SEKSI-DATA"), email } });
+    const buat = await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Pegawai Undangan", bidangId: await idUnit("SEKSI-DATA"), email } });
     expect(buat.status).toBe(201);
     expect(buat.data.undangan).toEqual({ email, galat: null });
     expect((await panggil(`/admin/pegawai?q=${nip}`, { cookie: admin })).data.items[0].akun.aktif).toBe(false);

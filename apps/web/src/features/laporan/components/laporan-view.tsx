@@ -5,7 +5,7 @@
 // filter cakupan, melihat pratinjau halaman, serta mengekspor atau mencetak.
 //
 // Isi berkas:
-//   - unitDanTurunan : fungsi rekursif menghimpun ID unit kerja dan seksi bawahnya
+//   - unitDanTurunan : fungsi rekursif menghimpun ID bidang dan seksi bawahnya
 //   - LaporanView    : komponen utama pengatur filter, pratinjau, dan ekspor
 //
 // Cara kerja:
@@ -84,16 +84,16 @@ export function LaporanView() {
   const estimasi = useQuery({ queryKey: ["laporan", "estimasi", cakupan], queryFn: () => getEstimasi(cakupan), placeholderData: keepPreviousData });
   const pratinjau = useQuery({ queryKey: ["laporan", "pratinjau", cakupan], queryFn: () => getPratinjau(cakupan), placeholderData: keepPreviousData });
 
-  const unitPilihan = saringUnit(referensi.data?.unitKerja ?? []);
+  const unitPilihan = saringUnit(referensi.data?.bidang ?? []);
   const unitBoleh = useMemo(() => new Set(unitPilihan.map((u) => u.id)), [unitPilihan]);
   const pegawaiPilihan = useMemo(() => {
     const semua = referensi.data?.pegawai ?? [];
-    const dalamUnit = cakupan.unit ? unitDanTurunan(referensi.data?.unitKerja ?? [], Number(cakupan.unit)) : null;
-    return semua.filter((p) => (dalamUnit ? dalamUnit.has(p.unitKerjaId) : !terbatas || unitBoleh.has(p.unitKerjaId)));
+    const dalamUnit = cakupan.unit ? unitDanTurunan(referensi.data?.bidang ?? [], Number(cakupan.unit)) : null;
+    return semua.filter((p) => (dalamUnit ? dalamUnit.has(p.bidangId) : !terbatas || unitBoleh.has(p.bidangId)));
   }, [referensi.data, cakupan.unit, terbatas, unitBoleh]);
   const opsiPegawai = useMemo<OpsiCari[]>(() => {
-    const namaUnit = new Map((referensi.data?.unitKerja ?? []).map((u) => [u.id, u.nama]));
-    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.unitKerjaId)].filter(Boolean).join(" · ") }));
+    const namaUnit = new Map((referensi.data?.bidang ?? []).map((u) => [u.id, u.nama]));
+    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.bidangId)].filter(Boolean).join(" · ") }));
   }, [pegawaiPilihan, referensi.data]);
 
   const kosong = pratinjau.data?.baris.length === 0;

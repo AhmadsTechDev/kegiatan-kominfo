@@ -19,7 +19,7 @@
 //
 // Catatan penting:
 //   - Mengacu pada kebutuhan pengelolaan akun di features/07-masuk-kelola-akun.md.
-//   - Nama, NIP, jabatan, dan unit kerja bersifat read-only (dikelola admin).
+//   - Nama, NIP, jabatan, dan bidang bersifat read-only (dikelola admin).
 //
 // Dipakai oleh: frontend/src/app/(app)/pengaturan/page.tsx
 // =============================================================================
@@ -115,7 +115,7 @@ function KartuProfil({ p }: { p: Profil }) {
             {p.pegawai && (
               <span className="inline-flex min-w-0 items-center gap-1.5">
                 <Building2 aria-hidden className="size-3.5 shrink-0" />
-                <span className="truncate">{p.pegawai.unitKerja.nama}</span>
+                <span className="truncate">{p.pegawai.bidang.nama}</span>
               </span>
             )}
           </p>

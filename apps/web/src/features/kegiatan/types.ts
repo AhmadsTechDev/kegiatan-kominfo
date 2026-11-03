@@ -7,7 +7,7 @@
 // Isi berkas:
 //   - StatusPemeriksaanKegiatan : status verifikasi tanpa menyertakan draf
 //   - KegiatanItem & KegiatanDetail : struktur ringkas tabel dan detail kegiatan
-//   - Referensi : master data unit kerja, jenis kegiatan, dan daftar pegawai
+//   - Referensi : master data bidang, jenis kegiatan, dan daftar pegawai
 //   - FilterKegiatan : kumpulan parameter pencarian, rentang WIB, dan paginasi
 //   - KegiatanPayload & HasilSimpan : data masukan dan hasil simpan API
 //   - Draf & IsiDraf : struktur draf kegiatan yang disimpan sementara
@@ -32,7 +32,7 @@ export type KegiatanItem = {
   tglMulai: string;
   tglSelesai: string;
   lokasiNama: string | null;
-  unitKerja: Ref;
+  bidang: Ref;
   jenis: Ref;
   penanggungJawab: Ref;
   statusPelaksanaan: StatusPelaksanaan;
@@ -60,7 +60,7 @@ export type KegiatanDetail = {
   dibatalkanAt: string | null;
   alasanBatal: string | null;
   jenis: Ref;
-  unitKerja: Ref;
+  bidang: Ref;
   unitInduk: Ref | null;
   penanggungJawab: Ref & { jabatan: string | null };
   pembuat: { id: string; nama: string };
@@ -77,9 +77,9 @@ export type KegiatanDetail = {
 };
 
 export type Referensi = {
-  unitKerja: { id: number; parentId: number | null; kode: string; nama: string; aktif: boolean }[];
+  bidang: { id: number; parentId: number | null; kode: string; nama: string; aktif: boolean }[];
   jenisKegiatan: Ref[];
-  pegawai: { id: number; nama: string; jabatan: string | null; unitKerjaId: number }[];
+  pegawai: { id: number; nama: string; jabatan: string | null; bidangId: number }[];
 };
 
 export type FilterKegiatan = {

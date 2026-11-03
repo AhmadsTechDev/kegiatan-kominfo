@@ -17,7 +17,7 @@
 //
 // Catatan penting:
 //   - Mengacu pada spesifikasi fitur features/04-rekap-otomatis.md.
-//   - Hak akses pegawai dibatasi hanya melihat unit kerja dan kegiatannya sendiri.
+//   - Hak akses pegawai dibatasi hanya melihat bidang dan kegiatannya sendiri.
 //
 // Dipakai oleh: frontend/src/app/(app)/rekap/page.tsx
 // =============================================================================
@@ -130,7 +130,7 @@ export function RekapView() {
   const referensi = useReferensi();
   const animasi = useAnimasiPertama(rekap.data);
 
-  const namaUnit = referensi.data?.unitKerja.find((u) => String(u.id) === filter.unit)?.nama;
+  const namaUnit = referensi.data?.bidang.find((u) => String(u.id) === filter.unit)?.nama;
   const cakupan = [labelRentang(filter), filter.unit ? (namaUnit ?? "unit terpilih") : terbatas ? "lingkup Anda" : "seluruh dinas"].join(" · ");
 
   const pilihSatuan = (s: SatuanRekap) => {
@@ -180,7 +180,7 @@ export function RekapView() {
             onChange={setFilter}
             onReset={resetFilter}
             adaFilter={adaFilter}
-            unitKerja={saringUnit(referensi.data?.unitKerja ?? [])}
+            bidang={saringUnit(referensi.data?.bidang ?? [])}
             jenisKegiatan={referensi.data?.jenisKegiatan ?? []}
           />
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

@@ -96,7 +96,7 @@ const kolom: DataTableColumn<KegiatanItem>[] = [
       </span>
     ),
   },
-  { id: "bidang", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-44 whitespace-normal">{row.original.unitKerja.nama}</UnitChip> },
+  { id: "bidang", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-44 whitespace-normal">{row.original.bidang.nama}</UnitChip> },
   {
     id: "tanggal",
     header: "Tanggal",
@@ -189,26 +189,26 @@ export function PantauView() {
   );
   const daftar = useQuery({ queryKey: ["kegiatan", "pantau", filter], queryFn: () => getDaftarKegiatan(filter), placeholderData: keepPreviousData });
 
-  const unitKerja = useMemo(() => referensi.data?.unitKerja ?? [], [referensi.data]);
+  const bidang = useMemo(() => referensi.data?.bidang ?? [], [referensi.data]);
   const pegawaiPilihan = useMemo(() => {
     if (!penyaring.unit) return referensi.data?.pegawai ?? [];
     const ids = new Set([Number(penyaring.unit)]);
     for (let tambah = true; tambah; ) {
       tambah = false;
-      for (const u of unitKerja) {
+      for (const u of bidang) {
         if (u.parentId != null && ids.has(u.parentId) && !ids.has(u.id)) {
           ids.add(u.id);
           tambah = true;
         }
       }
     }
-    return (referensi.data?.pegawai ?? []).filter((p) => ids.has(p.unitKerjaId));
-  }, [penyaring.unit, referensi.data, unitKerja]);
+    return (referensi.data?.pegawai ?? []).filter((p) => ids.has(p.bidangId));
+  }, [penyaring.unit, referensi.data, bidang]);
   // Jabatan dan bidang ikut ditampilkan dan dicari: membedakan pegawai bernama sama dan memudahkan mencari per bidang
   const opsiPegawai = useMemo<OpsiCari[]>(() => {
-    const namaUnit = new Map(unitKerja.map((u) => [u.id, u.nama]));
-    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.unitKerjaId)].filter(Boolean).join(" · ") }));
-  }, [pegawaiPilihan, unitKerja]);
+    const namaUnit = new Map(bidang.map((u) => [u.id, u.nama]));
+    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.bidangId)].filter(Boolean).join(" · ") }));
+  }, [pegawaiPilihan, bidang]);
 
   if (user && user.role !== "PIMPINAN") {
     return (
@@ -250,7 +250,7 @@ export function PantauView() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={SEMUA}>Semua bidang</SelectItem>
-                {unitKerja.map((u) => (
+                {bidang.map((u) => (
                   <SelectItem key={u.id} value={String(u.id)} className={cn(u.parentId != null && "pl-6 text-muted-foreground")}>
                     {u.nama}
                   </SelectItem>

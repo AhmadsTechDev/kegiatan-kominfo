@@ -157,7 +157,7 @@ export function PencarianCepat() {
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-sm font-semibold">{h.kegiatan.judul}</span>
               <span className="truncate text-xs text-muted-foreground">
-                {formatRentangTanggal(h.kegiatan.tglMulai, h.kegiatan.tglSelesai)} · {h.kegiatan.unitKerja.nama}
+                {formatRentangTanggal(h.kegiatan.tglMulai, h.kegiatan.tglSelesai)} · {h.kegiatan.bidang.nama}
               </span>
             </span>
             <StatusBadge status={h.kegiatan.statusPelaksanaan} className="hidden shrink-0 sm:inline-flex" />

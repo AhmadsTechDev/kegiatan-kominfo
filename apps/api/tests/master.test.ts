@@ -1,38 +1,53 @@
-// Uji data master: unit kerja (aturan induk, kode otomatis, nonaktif), jenis unit, jenis kegiatan, pegawai
+// Uji data master: bidang dan sub bidang (aturan induk, kode otomatis, nonaktif), jenis kegiatan, pegawai
 import { describe, expect, test } from "bun:test";
 import { prisma } from "@/lib/prisma";
 import { buatBidang, buatPengguna, formBerkas, idUnit, login, loginAdmin, nipAcak, panggil, SANDI } from "./helpers";
 
 const kodeAcak = () => crypto.randomUUID().slice(0, 6);
 
-describe("unit kerja", () => {
-  test("kode unit dibuat otomatis dari jenis dan singkatan nama, dan tetap unik", async () => {
+describe("bidang", () => {
+  test("kode dibuat otomatis dari tingkat dan singkatan nama, dan tetap unik", async () => {
     const admin = await loginAdmin();
     const nama = `Bidang Statistik Sektoral ${kodeAcak()}`;
-    const a = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama, jenisUnitId: 2, parentId: null } });
-    const b = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: `${nama} Dua`, jenisUnitId: 2, parentId: null } });
+    const a = await panggil("/admin/bidang", { cookie: admin, json: { nama, parentId: null } });
+    const b = await panggil("/admin/bidang", { cookie: admin, json: { nama: `${nama} Dua`, parentId: null } });
     expect(a.status).toBe(201);
-    const unit = await prisma.unitKerja.findMany({ where: { id: { in: [a.data.id, b.data.id] } }, orderBy: { id: "asc" } });
+    const unit = await prisma.bidang.findMany({ where: { id: { in: [a.data.id, b.data.id] } }, orderBy: { id: "asc" } });
     expect(unit[0]!.kode).toStartWith("BID-SS");
     expect(new Set(unit.map((u) => u.kode)).size).toBe(2);
   });
 
-  test("seksi wajib di bawah bidang; bidang tidak boleh punya induk", async () => {
+  test("sub bidang wajib di bawah bidang (maksimal dua tingkat)", async () => {
     const admin = await loginAdmin();
-    const tanpaInduk = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: "Seksi X", jenisUnitId: 5, parentId: null } });
-    expect(tanpaInduk.status).toBe(422);
-    expect(tanpaInduk.data.details[0].field).toBe("parentId");
-    const indukSalah = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: "Seksi X", jenisUnitId: 5, parentId: await idUnit("SEKSI-DATA") } });
+    const indukSalah = await panggil("/admin/bidang", { cookie: admin, json: { nama: "Sub X", parentId: await idUnit("SEKSI-DATA") } });
+    expect(indukSalah.status).toBe(422);
     expect(indukSalah.data.details[0].message).toBe("Induk sub bidang harus bidang");
-    const bidangBerinduk = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: "Bidang X", jenisUnitId: 2, parentId: await idUnit("BID-TIP") } });
-    expect(bidangBerinduk.status).toBe(422);
-    const sah = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: `Seksi Uji ${kodeAcak()}`, jenisUnitId: 5, parentId: await idUnit("BID-TIP") } });
+    const indukTidakAda = await panggil("/admin/bidang", { cookie: admin, json: { nama: "Sub X", parentId: 999999 } });
+    expect(indukTidakAda.status).toBe(422);
+    expect(indukTidakAda.data.details[0].field).toBe("parentId");
+
+    const sah = await panggil("/admin/bidang", { cookie: admin, json: { nama: `Sub Bidang Uji ${kodeAcak()}`, parentId: await idUnit("BID-TIP") } });
     expect(sah.status).toBe(201);
+    expect((await prisma.bidang.findUniqueOrThrow({ where: { id: sah.data.id } })).kode).toStartWith("SUBBID-");
+    const daftar = await panggil("/admin/bidang", { cookie: admin });
+    expect(daftar.data.find((u: { id: number }) => u.id === sah.data.id)).toMatchObject({ jenis: "Sub bidang", induk: expect.any(String) });
+  });
+
+  test("bidang yang masih punya sub bidang tidak bisa dijadikan sub bidang", async () => {
+    const admin = await loginAdmin();
+    const induk = await idUnit("BID-TIP");
+    const bidang = await buatBidang();
+    const lain = await buatBidang();
+    const ubah = await panggil(`/admin/bidang/${induk}`, { method: "PATCH", cookie: admin, json: { nama: "Bidang Teknologi Informasi dan Persandian", parentId: bidang.id } });
+    expect(ubah.status).toBe(422);
+    expect(ubah.data.details[0].message).toContain("masih punya sub bidang");
+    const boleh = await panggil(`/admin/bidang/${lain.id}`, { method: "PATCH", cookie: admin, json: { nama: lain.nama, parentId: bidang.id } });
+    expect(boleh.status).toBe(200);
   });
 
   test("kode unit yang sudah dipakai ditolak 422", async () => {
     const admin = await loginAdmin();
-    const res = await panggil("/admin/unit-kerja", { cookie: admin, json: { kode: "BID-TIP", nama: "Duplikat", jenisUnitId: 2, parentId: null } });
+    const res = await panggil("/admin/bidang", { cookie: admin, json: { kode: "BID-TIP", nama: "Duplikat", parentId: null } });
     expect(res.status).toBe(422);
     expect(res.data.details[0].field).toBe("kode");
   });
@@ -40,16 +55,16 @@ describe("unit kerja", () => {
   test("unit tidak bisa dinonaktifkan selama masih punya pegawai aktif", async () => {
     const admin = await loginAdmin();
     const bidang = await buatBidang();
-    const p = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Pegawai Unit", unitKerjaId: bidang.id } });
-    const isi = { nama: bidang.nama, jenisUnitId: 2, parentId: null, aktif: false };
-    expect((await panggil(`/admin/unit-kerja/${bidang.id}`, { method: "PATCH", cookie: admin, json: isi })).status).toBe(422);
+    const p = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Pegawai Unit", bidangId: bidang.id } });
+    const isi = { nama: bidang.nama, parentId: null, aktif: false };
+    expect((await panggil(`/admin/bidang/${bidang.id}`, { method: "PATCH", cookie: admin, json: isi })).status).toBe(422);
 
-    await panggil(`/admin/pegawai/${p.data.id}`, { method: "PATCH", cookie: admin, json: { nama: "Pegawai Unit", unitKerjaId: bidang.id, aktif: false } });
-    expect((await panggil(`/admin/unit-kerja/${bidang.id}`, { method: "PATCH", cookie: admin, json: isi })).status).toBe(200);
+    await panggil(`/admin/pegawai/${p.data.id}`, { method: "PATCH", cookie: admin, json: { nama: "Pegawai Unit", bidangId: bidang.id, aktif: false } });
+    expect((await panggil(`/admin/bidang/${bidang.id}`, { method: "PATCH", cookie: admin, json: isi })).status).toBe(200);
 
-    const audit = await panggil(`/audit-log?entitas=unit_kerja&aksi=nonaktifkan`, { cookie: admin });
+    const audit = await panggil(`/audit-log?entitas=bidang&aksi=nonaktifkan`, { cookie: admin });
     expect(audit.data.items.some((a: { entitasId: string }) => a.entitasId === String(bidang.id))).toBe(true);
-    const pegawaiBaru = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Masuk Unit Nonaktif", unitKerjaId: bidang.id } });
+    const pegawaiBaru = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Masuk Unit Nonaktif", bidangId: bidang.id } });
     expect(pegawaiBaru.status).toBe(422);
   });
 
@@ -57,20 +72,15 @@ describe("unit kerja", () => {
     const admin = await loginAdmin();
     const bidang = await buatBidang();
     await buatPengguna({ unitId: bidang.id });
-    const daftar = await panggil("/admin/unit-kerja", { cookie: admin });
+    const daftar = await panggil("/admin/bidang", { cookie: admin });
     expect(daftar.data.find((u: { id: number }) => u.id === bidang.id)).toMatchObject({ jenis: "Bidang", induk: null, jumlahPegawaiAktif: 1 });
   });
 });
 
-describe("jenis unit dan jenis kegiatan", () => {
-  test("jenis unit tidak boleh menjadi induk dari dirinya sendiri secara melingkar", async () => {
+describe("jenis kegiatan", () => {
+  test("tabel jenis unit sudah dihapus: endpoint lamanya tidak ada", async () => {
     const admin = await loginAdmin();
-    const a = await panggil("/admin/jenis-unit", { cookie: admin, json: { nama: `Jenis A ${kodeAcak()}`, indukJenisId: null } });
-    const b = await panggil("/admin/jenis-unit", { cookie: admin, json: { nama: `Jenis B ${kodeAcak()}`, indukJenisId: a.data.id } });
-    expect(b.status).toBe(201);
-    const lingkar = await panggil(`/admin/jenis-unit/${a.data.id}`, { method: "PATCH", cookie: admin, json: { nama: "Jenis A ubah", indukJenisId: b.data.id } });
-    expect(lingkar.status).toBe(422);
-    expect(lingkar.data.details[0].field).toBe("indukJenisId");
+    expect((await panggil("/admin/jenis-unit", { cookie: admin })).status).toBe(404);
   });
 
   test("jenis kegiatan: nama kembar ditolak, yang nonaktif hilang dari pilihan formulir", async () => {
@@ -90,11 +100,11 @@ describe("jenis unit dan jenis kegiatan", () => {
 describe("pegawai", () => {
   test("NIP tidak sah atau sudah terdaftar ditolak 422", async () => {
     const admin = await loginAdmin();
-    const unitKerjaId = await idUnit("SEKSI-DATA");
-    expect((await panggil("/admin/pegawai", { cookie: admin, json: { nip: "198702302011012002", nama: "X", unitKerjaId } })).status).toBe(422);
+    const bidangId = await idUnit("SEKSI-DATA");
+    expect((await panggil("/admin/pegawai", { cookie: admin, json: { nip: "198702302011012002", nama: "X", bidangId } })).status).toBe(422);
     const nip = nipAcak();
-    await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Pemilik NIP", unitKerjaId } });
-    const kembar = await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Peniru", unitKerjaId } });
+    await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Pemilik NIP", bidangId } });
+    const kembar = await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Peniru", bidangId } });
     expect(kembar.status).toBe(422);
     expect(kembar.data.details[0].message).toBe("NIP sudah terdaftar atas nama Pemilik NIP");
   });
@@ -103,7 +113,7 @@ describe("pegawai", () => {
     const admin = await loginAdmin();
     const bidang = await buatBidang();
     await buatPengguna({ unitId: bidang.id });
-    await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Belum Punya Akun", unitKerjaId: bidang.id } });
+    await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Belum Punya Akun", bidangId: bidang.id } });
     const daftar = await panggil(`/admin/pegawai?unit=${bidang.id}&akun=tanpa`, { cookie: admin });
     expect(daftar.data.items.map((p: { nama: string }) => p.nama)).toEqual(["Belum Punya Akun"]);
   });
@@ -130,7 +140,7 @@ describe("pegawai", () => {
 
   test("pegawai tanpa NIP (non-ASN) boleh", async () => {
     const admin = await loginAdmin();
-    const res = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Honorer", unitKerjaId: await idUnit("SEKSI-DATA") } });
+    const res = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Honorer", bidangId: await idUnit("SEKSI-DATA") } });
     expect(res.status).toBe(201);
   });
 
@@ -138,7 +148,7 @@ describe("pegawai", () => {
     const u = await buatPengguna();
     const admin = await loginAdmin();
     const nipBaru = nipAcak();
-    const ubah = await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: { nip: nipBaru, nama: "Ganti NIP", unitKerjaId: await idUnit("SEKSI-DATA") } });
+    const ubah = await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: { nip: nipBaru, nama: "Ganti NIP", bidangId: await idUnit("SEKSI-DATA") } });
     expect(ubah.status).toBe(200);
     const masuk = await login(u.email, SANDI);
     expect(masuk.status).toBe(200);

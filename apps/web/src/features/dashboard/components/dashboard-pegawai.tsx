@@ -5,7 +5,7 @@
 // Aplikasi Pendataan Kegiatan, berisi agenda pribadi dan pemantauan tugas.
 //
 // Isi berkas:
-//   - Sambutan : Banner sapaan waktu, identitas unit kerja, dan tombol aksi cepat.
+//   - Sambutan : Banner sapaan waktu, identitas bidang, dan tombol aksi cepat.
 //   - TautanAngka : Kartu metrik responsif yang mengarah ke filter daftar kegiatan.
 //   - AgendaPekanPanel : Panel daftar agenda kegiatan unit tujuh hari ke depan.
 //   - DashboardPegawai : Komponen utama penyusun tampilan dashboard personal pegawai.
@@ -47,7 +47,7 @@ import { KegiatanSayaPanel } from "./kegiatan-saya";
 function Sambutan({ hariIni }: { hariIni?: string }) {
   const sapaan = useSapaan();
   const { user } = useCurrentUser();
-  const unit = useProfil().data?.pegawai?.unitKerja;
+  const unit = useProfil().data?.pegawai?.bidang;
   const namaDepan = user?.name.split(" ")[0];
 
   return (

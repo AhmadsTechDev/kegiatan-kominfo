@@ -2,23 +2,17 @@ import { t } from "elysia";
 
 const aktif = { aktif: t.Optional(t.Boolean({ error: "Status aktif tidak valid" })) };
 
-const unitKerja = {
+const bidang = {
   kode: t.Optional(t.String({ maxLength: 30, pattern: "^[A-Za-z0-9-]*$", error: "Kode maksimal 30 karakter: huruf, angka, atau tanda hubung" })),
   nama: t.String({ minLength: 1, maxLength: 150, error: "Nama unit wajib diisi, maksimal 150 karakter" }),
-  jenisUnitId: t.Integer({ minimum: 1, error: "Jenis unit wajib dipilih" }),
-  parentId: t.Nullable(t.Integer({ minimum: 1, error: "Unit induk tidak valid" })),
-};
-
-const jenisUnit = {
-  nama: t.String({ minLength: 1, maxLength: 100, error: "Nama jenis unit wajib diisi, maksimal 100 karakter" }),
-  indukJenisId: t.Nullable(t.Integer({ minimum: 1, error: "Jenis induk tidak valid" })),
+  parentId: t.Nullable(t.Integer({ minimum: 1, error: "Bidang induk tidak valid" })),
 };
 
 const pegawai = {
   nip: t.Optional(t.Nullable(t.String({ pattern: "^\\d{18}$", error: "NIP harus 18 digit angka" }))),
   nama: t.String({ minLength: 1, maxLength: 150, error: "Nama wajib diisi, maksimal 150 karakter" }),
   jabatan: t.Optional(t.Nullable(t.String({ maxLength: 150, error: "Jabatan maksimal 150 karakter" }))),
-  unitKerjaId: t.Integer({ minimum: 1, error: "Bidang wajib dipilih" }),
+  bidangId: t.Integer({ minimum: 1, error: "Bidang wajib dipilih" }),
 };
 
 const jenisKegiatan = {
@@ -28,11 +22,8 @@ const jenisKegiatan = {
 export const MasterValidator = {
   params: t.Object({ id: t.Numeric({ minimum: 1, error: "ID tidak valid" }) }),
 
-  buatUnit: t.Object(unitKerja),
-  ubahUnit: t.Object({ ...unitKerja, ...aktif }),
-
-  buatJenisUnit: t.Object(jenisUnit),
-  ubahJenisUnit: t.Object({ ...jenisUnit, ...aktif }),
+  buatUnit: t.Object(bidang),
+  ubahUnit: t.Object({ ...bidang, ...aktif }),
 
   daftarPegawaiQuery: t.Object({
     q: t.Optional(t.String({ maxLength: 100, error: "Kata kunci maksimal 100 karakter" })),

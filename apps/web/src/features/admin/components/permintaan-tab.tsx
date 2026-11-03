@@ -14,7 +14,7 @@
 //
 // Catatan penting:
 //   - Menampilkan perbandingan jika nama yang diisikan berbeda dengan data master pegawai.
-//   - Pemohon tanpa NIP dapat langsung ditentukan unit kerjanya saat permohonan disetujui.
+//   - Pemohon tanpa NIP dapat langsung ditentukan bidangnya saat permohonan disetujui.
 //   - Riwayat penolakan dan admin yang memproses tersimpan dan tampil pada tabel.
 //
 // Dipakai oleh: akun-view.tsx
@@ -87,7 +87,7 @@ export function PermintaanTab() {
               <span className="font-semibold">{p.pegawai.nama}</span>
               {p.pegawai.nip && <span className="text-xs text-muted-foreground tabular-nums">NIP {p.pegawai.nip}</span>}
               <span className="text-xs text-muted-foreground">
-                {p.unitKerja}
+                {p.bidang}
               </span>
               {namaBeda && <span className="text-xs text-status-berlangsung-foreground">Nama diisi: {p.nama}</span>}
             </span>
@@ -194,7 +194,7 @@ export function PermintaanTab() {
               <p className="truncate font-semibold">{setujui.pegawai?.nama ?? setujui.nama}</p>
               <p className="text-xs text-muted-foreground">
                 {setujui.pegawai
-                  ? `NIP ${setujui.pegawai.nip} · ${setujui.unitKerja}`
+                  ? `NIP ${setujui.pegawai.nip} · ${setujui.bidang}`
                   : "Tanpa NIP terdaftar. Isi jabatan dan bidangnya; data pegawainya dibuat bersamaan dengan akun."}
               </p>
             </>

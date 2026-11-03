@@ -242,7 +242,7 @@ Dasar: **shadcn/ui** (disalin ke `src/components/ui/`, jangan diubah kecuali lew
 | `StatCard` | `components/shared/stat-card.tsx` | Angka KPI dengan ikon, label, dan keterangan tren |
 | `StatusBadge` | `components/shared/status-badge.tsx` | Status pelaksanaan (FR-05) |
 | `DataTable` | `components/shared/data-table.tsx` | Tabel dengan paginasi, pengurutan, dan keadaan kosong |
-| `FilterBar` | `components/shared/filter-bar.tsx` | Baris filter periode, unit kerja, jenis, status, dan pencarian |
+| `FilterBar` | `components/shared/filter-bar.tsx` | Baris filter periode, bidang, jenis, status, dan pencarian |
 | `EmptyState` | `components/shared/empty-state.tsx` | Ikon, judul, penjelasan, dan satu aksi |
 | `ConfirmDialog` | `components/shared/confirm-dialog.tsx` | Konfirmasi hapus dan batalkan |
 | `MapPicker` | `components/shared/map-picker.tsx` | Memilih titik lokasi di peta (FR-07) |
@@ -355,7 +355,7 @@ Inilah halaman yang paling perlu terasa hidup. Ia dibangun dari lima jenis visua
 │ (gelap)      ├────────────────────────────────────────────────────────────┤
 │              │ [Total bulan ini] [Berlangsung] [Akan datang] [Tanpa dok.] │ 4 StatCard
 │ Dashboard    ├─────────────────────────────────┬──────────────────────────┤
-│ Kegiatan     │ Kegiatan per unit kerja per bulan   │ Sebaran jenis kegiatan   │
+│ Kegiatan     │ Kegiatan per bidang per bulan   │ Sebaran jenis kegiatan   │
 │ Rekap        │ (batang bertumpuk, 6 bulan)     │ (batang horizontal)      │
 │              ├─────────────────────────────────┼──────────────────────────┤
 │              │ Peta sebaran kegiatan           │ Perlu perhatian          │
@@ -368,7 +368,7 @@ Inilah halaman yang paling perlu terasa hidup. Ia dibangun dari lima jenis visua
 | Blok | Isi | Catatan |
 | --- | --- | --- |
 | 4 `StatCard` | Total kegiatan periode, sedang berlangsung, akan datang, selesai tanpa dokumentasi | Ikon dalam lingkaran berwarna lembut (`bg-secondary`), angka `tabular-nums`, selisih dibanding periode sebelumnya bila ada |
-| Batang bertumpuk | Jumlah kegiatan per unit kerja per bulan | Satu warna per unit induk (bidang dan kelompok jabatan fungsional, serta Sekretariat bila admin menambahkannya) dari `chart-1..6`; legenda terlihat; tooltip menampilkan angka pasti |
+| Batang bertumpuk | Jumlah kegiatan per bidang per bulan | Satu warna per unit induk (bidang dan kelompok jabatan fungsional, serta Sekretariat bila admin menambahkannya) dari `chart-1..6`; legenda terlihat; tooltip menampilkan angka pasti |
 | Batang horizontal | Sebaran jenis kegiatan | Diurutkan dari terbanyak, label di sisi kiri. Hindari donut: sulit dibandingkan |
 | `MapOverview` | Titik semua kegiatan yang punya koordinat | Klik marker membuka kartu mini: judul, tanggal, status, tautan detail |
 | Perlu perhatian | Daftar kegiatan selesai tanpa dokumentasi | Ini penanda utama kualitas data karena tidak ada persetujuan (PRD bagian 12). Tiap baris punya tautan ke detail |
@@ -382,9 +382,9 @@ Pegawai melihat dashboard yang sama untuk seluruh dinas (keputusan PRD), ditamba
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ Kegiatan                                              [ + Tambah kegiatan ]│
 ├────────────────────────────────────────────────────────────────────────────┤
-│ [Cari judul...] [Periode v] [Unit kerja v] [Jenis v] [Status v] [Atur ulang]│
+│ [Cari judul...] [Periode v] [Bidang v] [Jenis v] [Status v] [Atur ulang]│
 ├────────────────────────────────────────────────────────────────────────────┤
-│ Kegiatan            Unit kerja    Tanggal        Lokasi       Status    ⋯  │
+│ Kegiatan            Bidang    Tanggal        Lokasi       Status    ⋯  │
 │ Rapat koordinasi    E-Government  14 Okt 2026    Palembang    Berlangsung   │
 │ ...                                                                         │
 ├────────────────────────────────────────────────────────────────────────────┤
@@ -665,7 +665,7 @@ Uji wajib di lebar 375 px untuk alur login, tambah kegiatan, dan unggah dokument
 ## 11. Bahasa dan format
 
 - Seluruh teks UI dalam Bahasa Indonesia, nada sopan dan lugas. Kalimat tombol berupa kata kerja: "Simpan kegiatan", "Ekspor PDF".
-- Istilah baku di UI: "Kegiatan", "Bidang" (struktur tertinggi, dulu disebut "Unit kerja") dan "Sub bidang" (di bawah bidang), "Penanggung jawab", "Dokumentasi", "Rekap". Sekretariat dan jenis lain ditambahkan admin sendiri lewat Jenis unit.
+- Istilah baku di UI: "Kegiatan", "Bidang" (struktur tertinggi, dulu disebut "Bidang") dan "Sub bidang" (di bawah bidang), "Penanggung jawab", "Dokumentasi", "Rekap". Sekretariat dan sub bidang ditambahkan admin sendiri di Master data.
 - Tanggal "14 Okt 2026", rentang "14–16 Okt 2026", waktu 24 jam dengan "WIB". Angka memakai pemisah ribuan titik (`id-ID`).
 - Semua format lewat satu berkas agar konsisten:
 

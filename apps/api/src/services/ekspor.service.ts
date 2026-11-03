@@ -35,7 +35,7 @@ function rentangBerkas(query: Pick<RekapQuery, "periode" | "dari" | "sampai">) {
 // Uraian semua filter yang dipakai (rentang, unit, jenis, status, pegawai, kata kunci) dalam bahasa manusia
 async function uraianFilter(query: RekapQuery, terbatas: boolean) {
   const [unit, jenis, pegawai] = await Promise.all([
-    query.unit ? ReferensiRepository.semuaUnitKerja() : undefined,
+    query.unit ? ReferensiRepository.semuaBidang() : undefined,
     query.jenis ? ReferensiRepository.jenisKegiatanAktif() : undefined,
     query.pegawai ? ReferensiRepository.pegawaiAktif() : undefined,
   ]);
@@ -46,7 +46,7 @@ async function uraianFilter(query: RekapQuery, terbatas: boolean) {
       ? (unit?.find((u) => u.id === query.unit)?.nama ?? "Unit tidak dikenal")
       : terbatas
         ? "Bidang sendiri dan kegiatan milik sendiri"
-        : "Semua unit kerja",
+        : "Semua bidang",
     query.jenis ? (jenis?.find((j) => j.id === query.jenis)?.nama ?? "Jenis tidak dikenal") : "Semua jenis",
     query.status ? LABEL_STATUS[query.status] : "Semua status",
     ...(query.pegawai ? [`Penanggung jawab ${pegawai?.find((p) => p.id === query.pegawai)?.nama ?? "tidak dikenal"}`] : []),

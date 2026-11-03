@@ -40,7 +40,7 @@ Alurnya digambar lengkap di [diagram activity](docs/uml/02-activity.md), dan per
 | --- | --- | --- | --- |
 | FR-01 | **Masuk dan keamanan akun.** Login hanya dengan email pribadi; akun terkunci 15 menit setelah 5 kali salah sandi. Lupa dan atur ulang sandi, ganti email dengan verifikasi, melihat dan mencabut sesi aktif, foto profil, dan preferensi (tema, notifikasi) | Semua peran | `/login`, `/pengaturan` |
 | FR-02 | **Akun dan permintaan akun.** Tanpa pendaftaran mandiri: akun dibuat admin atau dari permintaan akun, lalu diaktivasi pemiliknya lewat email. Akun bisa dinonaktifkan atau dihapus; akun yang sudah membuat kegiatan, mengunggah dokumentasi, atau memeriksa hanya bisa dinonaktifkan agar jejaknya utuh | Admin | `/admin/akun` |
-| FR-02 | **Master data.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, jenis unit, dan jenis kegiatan. Data master tidak dihapus, cukup dinonaktifkan | Admin | `/admin/master` |
+| FR-02 | **Master data.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, dan jenis kegiatan. Data master tidak dihapus, cukup dinonaktifkan | Admin | `/admin/master` |
 | FR-03 | **Audit log** append-only (dijaga sampai hak basis data) dengan filter serta nilai sebelum dan sesudah | Admin | `/admin/audit-log` |
 | FR-04, FR-05 | **Kegiatan.** Catat dalam dua langkah, simpan draf, ubah, isi hasil, batalkan (alasan wajib), dan hapus. Status pelaksanaan (akan datang, berlangsung, selesai, dibatalkan) dihitung otomatis dari waktu. Pengubahan bersamaan oleh dua orang dijawab 409 | Pegawai, Admin | `/kegiatan`, `/kegiatan/baru` |
 | FR-06 | **Dokumentasi.** Unggah foto atau PDF maksimal 20 MB (jenis berkas dicek lewat magic bytes, foto dikompres, EXIF dan GPS dibuang), maksimal 10 berkas per kegiatan. Unduhan hanya untuk yang login dan berhak membaca kegiatannya | Pegawai, Admin (lihat: semua peran) | Detail kegiatan |
@@ -76,7 +76,7 @@ API REST di `apps/api` (Bun, Elysia, Prisma, Better Auth), alamat dasar `/api`. 
 | Autentikasi dan akun sendiri | `POST /api/auth/sign-in/email`, `/api/aktivasi`, `/api/lupa-sandi`, `/api/me/*` | [api-auth.md](docs/api/api-auth.md) |
 | Kegiatan, draf, dokumentasi | `/api/kegiatan`, `/api/draf-kegiatan`, `/api/kegiatan/:id/dokumentasi` | [api-kegiatan.md](docs/api/api-kegiatan.md) |
 | Dashboard, kalender, rekap, pantau, ekspor | `/api/dashboard`, `/api/kalender`, `/api/rekap`, `/api/ekspor/kegiatan.pdf` | [api-laporan.md](docs/api/api-laporan.md) |
-| Administrasi | `/api/admin/akun`, `/api/admin/pegawai`, `/api/admin/unit-kerja`, `/api/audit-log` | [api-admin.md](docs/api/api-admin.md) |
+| Administrasi | `/api/admin/akun`, `/api/admin/pegawai`, `/api/admin/bidang`, `/api/audit-log` | [api-admin.md](docs/api/api-admin.md) |
 
 Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses, audit) → **repository** (query Prisma). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram class](docs/uml/04-class.md#42-lapisan-backend).
 

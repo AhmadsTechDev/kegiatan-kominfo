@@ -67,7 +67,7 @@ export function PerluPerhatian({
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="truncate text-sm font-semibold">{k.judul}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {k.unitKerja} · {formatTanggal(k.tglSelesai)}
+                  {k.bidang} · {formatTanggal(k.tglSelesai)}
                 </span>
               </div>
               <Link

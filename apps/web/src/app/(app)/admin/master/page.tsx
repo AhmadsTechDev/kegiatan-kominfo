@@ -2,7 +2,7 @@
 // HALAMAN PENGELOLAAN DATA MASTER
 // =============================================================================
 // Gunanya: Menyediakan antarmuka bagi admin untuk mengelola referensi data master
-// seperti data pegawai, unit kerja, dan jenis kegiatan pada Aplikasi Pendataan Kegiatan.
+// seperti data pegawai, bidang, dan jenis kegiatan pada Aplikasi Pendataan Kegiatan.
 //
 // Isi berkas:
 //   - metadata   : judul tab peramban untuk rute master data

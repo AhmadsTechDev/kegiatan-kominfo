@@ -174,7 +174,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
   });
 
   const pj = referensi.pegawai.find((p) => p.id === (kegiatan?.penanggungJawab.id ?? penanggungJawabBawaan));
-  const unitPj = referensi.unitKerja.find((u) => u.id === pj?.unitKerjaId);
+  const unitPj = referensi.bidang.find((u) => u.id === pj?.bidangId);
   const profil = useProfil();
   const fotoPj = pj && profil.data?.pegawai?.id === pj.id ? profil.data.foto : null;
 

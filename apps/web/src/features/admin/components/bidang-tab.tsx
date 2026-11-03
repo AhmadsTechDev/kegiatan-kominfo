@@ -1,24 +1,22 @@
 // =============================================================================
-// TAB MASTER STRUKTUR ORGANISASI DAN UNIT KERJA
+// TAB MASTER BIDANG DAN SUB BIDANG
 // =============================================================================
-// Gunanya: menyediakan antarmuka pengelolaan data unit kerja dinas, meliputi unit
-// utama (Dinas/Bidang), unit turunan (Sub Bagian/Seksi), dan hierarki jenisnya.
+// Gunanya: menyediakan antarmuka pengelolaan bidang dan sub bidang. Tingkatnya
+// ditentukan induknya: tanpa induk berarti bidang, dengan induk berarti sub bidang.
 //
 // Isi berkas:
-//   - SelNamaUnit : perender nama unit kerja beserta ikon tingkatan hierarki
-//   - UnitDialog : modal formulir pembuatan dan pembaruan data unit kerja dinas
-//   - UnitKerjaTab : panel tabel daftar unit kerja dengan filter induk dan aksi
+//   - SelNamaUnit : perender nama bidang beserta ikon tingkatan hierarki
+//   - UnitDialog : modal formulir pembuatan dan pembaruan data bidang dinas
+//   - BidangTab : panel tabel daftar bidang dengan filter induk dan aksi
 //
 // Cara kerja:
-//   1. Memuat daftar unit kerja berdasarkan tingkatannya (unit utama atau sub-unit).
-//   2. Formulir unit kerja menentukan unit induk yang sah sesuai jenis tingkatan terpilih.
-//   3. Administrator dapat menyaring sub-unit berdasarkan unit induk atasannya.
-//   4. Menyediakan panel samping (Sheet) untuk mengelola master jenis unit secara langsung.
+//   1. Memuat daftar berdasarkan tingkatnya (bidang atau sub bidang).
+//   2. Formulir sub bidang mewajibkan memilih satu bidang sebagai induknya.
+//   3. Administrator dapat menyaring sub bidang berdasarkan bidang induknya.
 //
 // Catatan penting:
 //   - Kode unit bersifat opsional; jika dikosongkan, server mengisinya secara otomatis.
 //   - Kegiatan yang dicatat oleh unit turunan otomatis terhitung pada rekap unit induknya.
-//   - Dialog tambah unit induk baru dapat dibuka langsung saat menyusun hierarki unit.
 //
 // Dipakai oleh: master-view.tsx
 // =============================================================================
@@ -41,8 +39,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useJenisUnitAdmin, useSimpanUnitKerja, useUnitKerjaAdmin } from "../hooks/use-admin";
-import type { UnitKerjaAdmin } from "../types";
+import { useSimpanBidang, useBidangAdmin } from "../hooks/use-admin";
+import type { BidangAdmin } from "../types";
 import { AksiBaris, BadgeAktif, KartuMaster, KolomCari, terapkanGalatServer } from "./admin-shared";
 
 const schema = z.object({
@@ -59,7 +57,7 @@ type Nilai = z.infer<typeof schema>;
 export type TingkatUnit = "utama" | "turunan";
 const SEMUA = "semua";
 
-function SelNamaUnit({ u, turunan }: { u: UnitKerjaAdmin; turunan: boolean }) {
+function SelNamaUnit({ u, turunan }: { u: BidangAdmin; turunan: boolean }) {
   return (
     <span className="flex max-w-120 min-w-56 items-center gap-3 whitespace-normal">
       <span
@@ -79,10 +77,9 @@ function SelNamaUnit({ u, turunan }: { u: UnitKerjaAdmin; turunan: boolean }) {
   );
 }
 
-// Jenis dipilih otomatis dari tab: tab Bidang membuat jenis "Bidang", tab Sub bidang membuat "Sub bidang" di bawah satu bidang
-function UnitDialog({ unit, semua, tingkat, onClose }: { unit: UnitKerjaAdmin | "baru"; semua: UnitKerjaAdmin[]; tingkat: TingkatUnit; onClose: () => void }) {
-  const simpan = useSimpanUnitKerja();
-  const daftarJenis = useJenisUnitAdmin();
+// Tingkat mengikuti tab: tab Bidang membuat bidang (tanpa induk), tab Sub bidang membuat sub bidang di bawah satu bidang
+function UnitDialog({ unit, semua, tingkat, onClose }: { unit: BidangAdmin | "baru"; semua: BidangAdmin[]; tingkat: TingkatUnit; onClose: () => void }) {
+  const simpan = useSimpanBidang();
   const [galat, setGalat] = useState<string | null>(null);
   const awal = unit === "baru" ? null : unit;
   const turunan = awal ? awal.parentId !== null : tingkat === "turunan";
@@ -90,28 +87,23 @@ function UnitDialog({ unit, semua, tingkat, onClose }: { unit: UnitKerjaAdmin | 
     resolver: zodResolver(schema),
     defaultValues: { kode: awal?.kode ?? "", nama: awal?.nama ?? "", parentId: awal?.parentId ? String(awal.parentId) : "" },
   });
-  const semuaJenis = daftarJenis.data ?? [];
-  const jenisBidang = semuaJenis.find((j) => j.nama.toLowerCase() === "bidang");
-  const jenisSub = semuaJenis.find((j) => j.nama.toLowerCase() === "sub bidang");
-  const jenisId = awal?.jenisUnitId ?? (turunan ? jenisSub?.id : jenisBidang?.id);
   const calonInduk = semua.filter((u) => u.parentId === null && u.id !== awal?.id && (u.aktif || u.id === awal?.parentId));
   const noun = turunan ? "sub bidang" : "bidang";
 
   const kirim = handleSubmit((v) => {
     setGalat(null);
-    if (!jenisId) return setGalat(`Jenis "${turunan ? "Sub bidang" : "Bidang"}" belum tersedia. Hubungi pengembang aplikasi.`);
     if (turunan && !v.parentId) return setError("parentId", { message: "Bidang induk wajib dipilih" });
     simpan.mutate(
       {
         id: awal?.id,
-        isi: { kode: v.kode.toUpperCase() || undefined, nama: v.nama, jenisUnitId: jenisId, parentId: turunan ? Number(v.parentId) : null, aktif: awal?.aktif },
+        isi: { kode: v.kode.toUpperCase() || undefined, nama: v.nama, parentId: turunan ? Number(v.parentId) : null, aktif: awal?.aktif },
       },
       {
         onSuccess: () => {
           toast.success(awal ? `${turunan ? "Sub bidang" : "Bidang"} diperbarui` : `${turunan ? "Sub bidang" : "Bidang"} ditambahkan`);
           onClose();
         },
-        onError: (e) => setGalat(terapkanGalatServer(e, setError, { kode: "kode", nama: "nama", jenisUnitId: "nama", parentId: "parentId" }) || null),
+        onError: (e) => setGalat(terapkanGalatServer(e, setError, { kode: "kode", nama: "nama", parentId: "parentId" }) || null),
       },
     );
   });
@@ -123,7 +115,7 @@ function UnitDialog({ unit, semua, tingkat, onClose }: { unit: UnitKerjaAdmin | 
       title={awal ? `Ubah "${awal.nama}"` : `Tambah ${noun}`}
       description={turunan ? "Sub bidang berada di bawah satu bidang. Kegiatannya ikut terhitung ke bidang itu." : "Bidang adalah tingkat tertinggi di struktur organisasi."}
       onSubmit={kirim}
-      pending={simpan.isPending || daftarJenis.isPending}
+      pending={simpan.isPending}
       submitLabel={awal ? "Simpan perubahan" : `Tambah ${noun}`}
       galat={galat}
     >
@@ -173,7 +165,7 @@ function UnitDialog({ unit, semua, tingkat, onClose }: { unit: UnitKerjaAdmin | 
   );
 }
 
-export function UnitKerjaTab({
+export function BidangTab({
   tingkat,
   indukAwal,
   onLihatTurunan,
@@ -182,10 +174,10 @@ export function UnitKerjaTab({
   indukAwal?: number | null;
   onLihatTurunan?: (indukId: number) => void;
 }) {
-  const daftar = useUnitKerjaAdmin();
-  const simpan = useSimpanUnitKerja();
-  const [dialog, setDialog] = useState<UnitKerjaAdmin | "baru" | null>(null);
-  const [konfirmasi, setKonfirmasi] = useState<UnitKerjaAdmin | null>(null);
+  const daftar = useBidangAdmin();
+  const simpan = useSimpanBidang();
+  const [dialog, setDialog] = useState<BidangAdmin | "baru" | null>(null);
+  const [konfirmasi, setKonfirmasi] = useState<BidangAdmin | null>(null);
   const [kata, setKata] = useState("");
   const [induk, setInduk] = useState(indukAwal ? String(indukAwal) : SEMUA);
   const turunan = tingkat === "turunan";
@@ -203,7 +195,7 @@ export function UnitKerjaTab({
   const sesuaiTingkat = useMemo(() => semua.filter((u) => (turunan ? u.parentId !== null : u.parentId === null)), [semua, turunan]);
   const baris = useMemo(() => {
     const q = kata.trim().toLowerCase();
-    const namaInduk = (u: UnitKerjaAdmin) => (u.parentId !== null ? (perId.get(u.parentId)?.nama ?? "") : "");
+    const namaInduk = (u: BidangAdmin) => (u.parentId !== null ? (perId.get(u.parentId)?.nama ?? "") : "");
     return sesuaiTingkat
       .filter((u) => !turunan || induk === SEMUA || String(u.parentId) === induk)
       .filter((u) => !q || u.nama.toLowerCase().includes(q) || namaInduk(u).toLowerCase().includes(q))
@@ -211,9 +203,9 @@ export function UnitKerjaTab({
   }, [sesuaiTingkat, turunan, induk, kata, perId]);
 
   const ubahStatus = useCallback(
-    (u: UnitKerjaAdmin, aktif: boolean) =>
+    (u: BidangAdmin, aktif: boolean) =>
       mutate(
-        { id: u.id, isi: { kode: u.kode, nama: u.nama, jenisUnitId: u.jenisUnitId, parentId: u.parentId, aktif } },
+        { id: u.id, isi: { kode: u.kode, nama: u.nama, parentId: u.parentId, aktif } },
         {
           onSuccess: () => {
             toast.success(aktif ? `${u.nama} diaktifkan` : `${u.nama} dinonaktifkan`);
@@ -225,7 +217,7 @@ export function UnitKerjaTab({
     [mutate],
   );
 
-  const kolom = useMemo<DataTableColumn<UnitKerjaAdmin>[]>(
+  const kolom = useMemo<DataTableColumn<BidangAdmin>[]>(
     () => [
       { id: "nama", header: turunan ? "Sub bidang" : "Bidang", cell: ({ row }) => <SelNamaUnit u={row.original} turunan={turunan} /> },
       ...(turunan
@@ -233,7 +225,7 @@ export function UnitKerjaTab({
             {
               id: "induk",
               header: "Di bawah",
-              cell: ({ row }: { row: { original: UnitKerjaAdmin } }) => (
+              cell: ({ row }: { row: { original: BidangAdmin } }) => (
                 <span className="block max-w-72 min-w-40 text-sm whitespace-normal text-muted-foreground">
                   {row.original.parentId !== null ? perId.get(row.original.parentId)?.nama : "-"}
                 </span>
@@ -246,7 +238,7 @@ export function UnitKerjaTab({
             {
               id: "turunan",
               header: "Sub bidang",
-              cell: ({ row }: { row: { original: UnitKerjaAdmin } }) => {
+              cell: ({ row }: { row: { original: BidangAdmin } }) => {
                 const n = jumlahTurunan.get(row.original.id) ?? 0;
                 if (!n) return <span className="text-sm text-muted-foreground">-</span>;
                 return (

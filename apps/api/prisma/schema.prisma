@@ -138,57 +138,42 @@ model Verification {
 // Data master. Tidak pernah dihapus, cukup dinonaktifkan (kolom aktif).
 // ---------------------------------------------------------------------------
 
-model JenisUnit {
-  id           Int      @id @default(autoincrement())
-  nama         String   @unique(map: "jenis_unit_nama_unique") @db.VarChar(100)
-  indukJenisId Int?     @map("induk_jenis_id")
-  aktif        Boolean  @default(true)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+// Bidang dan sub bidang dalam satu tabel. Tingkatnya ditentukan parent_id: tanpa induk berarti bidang,
+// dengan induk berarti sub bidang (maksimal dua tingkat).
+model Bidang {
+  id        Int      @id @default(autoincrement())
+  parentId  Int?     @map("parent_id")
+  kode      String   @unique(map: "bidang_kode_unique") @db.VarChar(30)
+  nama      String   @db.VarChar(150)
+  aktif     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  indukJenis   JenisUnit?  @relation("IndukJenisUnit", fields: [indukJenisId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "jenis_unit_induk_jenis_id_jenis_unit_id_fk")
-  turunanJenis JenisUnit[] @relation("IndukJenisUnit")
-  unitKerja    UnitKerja[]
+  parent   Bidang?    @relation("PohonUnit", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "bidang_parent_id_bidang_id_fk")
+  turunan  Bidang[]   @relation("PohonUnit")
+  pegawai  Pegawai[]
+  kegiatan Kegiatan[]
 
-  @@map("jenis_unit")
-}
-
-model UnitKerja {
-  id          Int      @id @default(autoincrement())
-  parentId    Int?     @map("parent_id")
-  kode        String   @unique(map: "unit_kerja_kode_unique") @db.VarChar(30)
-  nama        String   @db.VarChar(150)
-  jenisUnitId Int      @map("jenis_unit_id")
-  aktif       Boolean  @default(true)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
-
-  parent    UnitKerja?  @relation("PohonUnit", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "unit_kerja_parent_id_unit_kerja_id_fk")
-  turunan   UnitKerja[] @relation("PohonUnit")
-  jenisUnit JenisUnit   @relation(fields: [jenisUnitId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "unit_kerja_jenis_unit_id_jenis_unit_id_fk")
-  pegawai   Pegawai[]
-  kegiatan  Kegiatan[]
-
-  @@index([parentId], map: "unit_kerja_parent_id_idx")
-  @@map("unit_kerja")
+  @@index([parentId], map: "bidang_parent_id_idx")
+  @@map("bidang")
 }
 
 model Pegawai {
-  id          Int      @id @default(autoincrement())
-  nip         String?  @unique(map: "pegawai_nip_unique") @db.VarChar(18)
-  nama        String   @db.VarChar(150)
-  jabatan     String?  @db.VarChar(150)
-  unitKerjaId Int      @map("unit_kerja_id")
-  aktif       Boolean  @default(true)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id        Int      @id @default(autoincrement())
+  nip       String?  @unique(map: "pegawai_nip_unique") @db.VarChar(18)
+  nama      String   @db.VarChar(150)
+  jabatan   String?  @db.VarChar(150)
+  bidangId  Int      @map("bidang_id")
+  aktif     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  unitKerja          UnitKerja        @relation(fields: [unitKerjaId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "pegawai_unit_kerja_id_unit_kerja_id_fk")
+  bidang             Bidang           @relation(fields: [bidangId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "pegawai_bidang_id_bidang_id_fk")
   users              User[]
   kegiatanDitanggung Kegiatan[]
   permintaanAkun     PermintaanAkun[]
 
-  @@index([unitKerjaId], map: "pegawai_unit_kerja_id_idx")
+  @@index([bidangId], map: "pegawai_bidang_id_idx")
   @@map("pegawai")
 }
 
@@ -219,7 +204,7 @@ model Kegiatan {
   lng               Decimal?  @db.Decimal(9, 6)
   tglMulai          DateTime  @map("tgl_mulai") @db.Timestamptz(6)
   tglSelesai        DateTime  @map("tgl_selesai") @db.Timestamptz(6)
-  unitKerjaId       Int       @map("unit_kerja_id")
+  bidangId          Int       @map("bidang_id")
   penanggungJawabId Int       @map("penanggung_jawab_id")
   dibuatOleh        String    @map("dibuat_oleh") @db.VarChar(36)
   jumlahPeserta     Int?      @map("jumlah_peserta")
@@ -233,14 +218,14 @@ model Kegiatan {
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(3)
 
   jenis              JenisKegiatan        @relation(fields: [jenisId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_jenis_id_jenis_kegiatan_id_fk")
-  unitKerja          UnitKerja            @relation(fields: [unitKerjaId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_unit_kerja_id_unit_kerja_id_fk")
+  bidang             Bidang               @relation(fields: [bidangId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_bidang_id_bidang_id_fk")
   penanggungJawab    Pegawai              @relation(fields: [penanggungJawabId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_penanggung_jawab_id_pegawai_id_fk")
   pembuat            User                 @relation(fields: [dibuatOleh], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "kegiatan_dibuat_oleh_user_id_fk")
   catatanPemeriksaan CatatanPemeriksaan[]
   dokumentasi        Dokumentasi[]
   pengingat          Pengingat[]
 
-  @@index([unitKerjaId, tglMulai], map: "kegiatan_unit_tgl_mulai_idx")
+  @@index([bidangId, tglMulai], map: "kegiatan_bidang_tgl_mulai_idx")
   @@index([tglMulai], map: "kegiatan_tgl_mulai_idx")
   @@index([deletedAt], map: "kegiatan_deleted_at_idx")
   @@index([statusPemeriksaan], map: "kegiatan_status_pemeriksaan_idx")
@@ -329,8 +314,8 @@ model PermintaanAkun {
   createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  pegawai   Pegawai? @relation(fields: [pegawaiId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "permintaan_akun_pegawai_id_pegawai_id_fk")
-  pemroses  User?    @relation(fields: [diprosesOleh], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "permintaan_akun_diproses_oleh_user_id_fk")
+  pegawai  Pegawai? @relation(fields: [pegawaiId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "permintaan_akun_pegawai_id_pegawai_id_fk")
+  pemroses User?    @relation(fields: [diprosesOleh], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "permintaan_akun_diproses_oleh_user_id_fk")
 
   @@index([status], map: "permintaan_akun_status_idx")
   @@index([pegawaiId], map: "permintaan_akun_pegawai_id_idx")

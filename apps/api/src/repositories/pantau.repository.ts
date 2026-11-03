@@ -9,11 +9,11 @@ export const PantauRepository = {
     return baris.map((b) => ({ status: b.statusPemeriksaan, jumlah: b._count._all }));
   },
 
-  // Jumlah draf yang belum dikirim, bisa dibatasi per pegawai atau per unit kerja pemiliknya
+  // Jumlah draf yang belum dikirim, bisa dibatasi per pegawai atau per bidang pemiliknya
   jumlahDraf(f: Pick<FilterDaftar, "unitIds" | "pegawaiId">) {
     const pemilik: Prisma.UserWhereInput = {};
     if (f.pegawaiId) pemilik.pegawaiId = f.pegawaiId;
-    if (f.unitIds) pemilik.pegawai = { is: { unitKerjaId: { in: f.unitIds } } };
+    if (f.unitIds) pemilik.pegawai = { is: { bidangId: { in: f.unitIds } } };
     return prisma.drafKegiatan.count({ where: { pemilik: { is: pemilik } } });
   },
 };

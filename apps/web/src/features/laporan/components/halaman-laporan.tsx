@@ -101,7 +101,7 @@ export function HalamanLaporan({ data, className }: { data: PratinjauLaporan; cl
                       {b.lokasi && <span className="mt-px block text-[10px] text-slate-500">{b.lokasi}</span>}
                     </td>
                     <td className="px-1 py-1">{b.jenis}</td>
-                    <td className="px-1 py-1">{b.unitKerja}</td>
+                    <td className="px-1 py-1">{b.bidang}</td>
                     <td className="px-1 py-1">{b.penanggungJawab}</td>
                     <td className="px-1 py-1">{b.waktu}</td>
                     <td className="px-1 py-1">{b.peserta}</td>

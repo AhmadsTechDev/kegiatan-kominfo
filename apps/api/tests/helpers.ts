@@ -71,7 +71,7 @@ export async function aktifkan(email: string, password = SANDI) {
 
 // Isian form Buat akun yang sah
 export async function isiAkun(ubah: Record<string, unknown> = {}) {
-  return { name: `Akun Uji ${crypto.randomUUID().slice(0, 4)}`, email: emailAcak(), jabatan: "Staf", unitKerjaId: await idUnit("SEKSI-DATA"), role: "PEGAWAI", ...ubah };
+  return { name: `Akun Uji ${crypto.randomUUID().slice(0, 4)}`, email: emailAcak(), jabatan: "Staf", bidangId: await idUnit("SEKSI-DATA"), role: "PEGAWAI", ...ubah };
 }
 
 let cookieAdmin: string | undefined;
@@ -86,9 +86,9 @@ export async function loginAdmin() {
   return cookieAdmin;
 }
 
-// Id unit kerja dari kodenya
+// Id bidang dari kodenya
 export async function idUnit(kode: string) {
-  return (await prisma.unitKerja.findUniqueOrThrow({ where: { kode } })).id;
+  return (await prisma.bidang.findUniqueOrThrow({ where: { kode } })).id;
 }
 
 // Id jenis kegiatan dari namanya
@@ -99,9 +99,9 @@ export async function idJenis(nama = "Rapat") {
 // Membuat unit tertinggi baru (Bidang) dengan nama unik; berguna agar angka rekap uji tidak tercampur
 export async function buatBidang(awalan = "Bidang Uji") {
   const admin = await loginAdmin();
-  const res = await panggil("/admin/unit-kerja", { cookie: admin, json: { nama: `${awalan} ${crypto.randomUUID().slice(0, 6)}`, jenisUnitId: 2, parentId: null } });
+  const res = await panggil("/admin/bidang", { cookie: admin, json: { nama: `${awalan} ${crypto.randomUUID().slice(0, 6)}`, parentId: null } });
   if (res.status !== 201) throw new Error(JSON.stringify(res.data));
-  return (await prisma.unitKerja.findUniqueOrThrow({ where: { id: res.data.id } })) as { id: number; kode: string; nama: string };
+  return (await prisma.bidang.findUniqueOrThrow({ where: { id: res.data.id } })) as { id: number; kode: string; nama: string };
 }
 
 type Pengguna = { cookie: string; userId: string; pegawaiId: number; email: string; nip: string };
@@ -111,7 +111,7 @@ export async function buatPengguna({ role = "PEGAWAI", unitId }: { role?: Role; 
   const admin = await loginAdmin();
   const nip = nipAcak();
   const email = emailAcak(role.toLowerCase());
-  const isi = await isiAkun({ name: `Uji ${role} ${crypto.randomUUID().slice(0, 4)}`, email, nip, role, unitKerjaId: unitId ?? (await idUnit("SEKSI-DATA")) });
+  const isi = await isiAkun({ name: `Uji ${role} ${crypto.randomUUID().slice(0, 4)}`, email, nip, role, bidangId: unitId ?? (await idUnit("SEKSI-DATA")) });
   const akun = await panggil("/admin/akun", { cookie: admin, json: isi });
   if (akun.status !== 201) throw new Error(JSON.stringify(akun.data));
   await aktifkan(email);

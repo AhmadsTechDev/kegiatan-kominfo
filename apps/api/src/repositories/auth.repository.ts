@@ -88,7 +88,7 @@ export const AuthRepository = {
     return u != null;
   },
 
-  // Profil lengkap user beserta pegawai, unit kerja, unit induk, dan info akunnya
+  // Profil lengkap user beserta pegawai, bidang, unit induk, dan info akunnya
   async findProfil(userId: string) {
     const u = await prisma.user.findUnique({
       where: { id: userId },
@@ -110,7 +110,7 @@ export const AuthRepository = {
             nip: true,
             nama: true,
             jabatan: true,
-            unitKerja: { select: { id: true, kode: true, nama: true, parent: { select: { id: true, nama: true } } } },
+            bidang: { select: { id: true, kode: true, nama: true, parent: { select: { id: true, nama: true } } } },
           },
         },
       },

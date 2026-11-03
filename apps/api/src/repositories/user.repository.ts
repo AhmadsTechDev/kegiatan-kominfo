@@ -59,7 +59,7 @@ export const UserRepository = {
           nama: true,
           nip: true,
           jabatan: true,
-          unitKerja: { select: { id: true, nama: true, parent: { select: { nama: true } } } },
+          bidang: { select: { id: true, nama: true, parent: { select: { nama: true } } } },
         },
       },
     } satisfies Prisma.UserSelect;
@@ -89,9 +89,9 @@ export const UserRepository = {
             nama: pegawai.nama,
             nip: pegawai.nip,
             jabatan: pegawai.jabatan,
-            unitKerjaId: pegawai.unitKerja.id,
-            unitKerja: pegawai.unitKerja.nama,
-            unitInduk: pegawai.unitKerja.parent?.nama ?? null,
+            bidangId: pegawai.bidang.id,
+            bidang: pegawai.bidang.nama,
+            unitInduk: pegawai.bidang.parent?.nama ?? null,
           }
         : null,
     }));
@@ -104,7 +104,7 @@ export const UserRepository = {
     return a ? ringkas(a) : undefined;
   },
 
-  // Detail akun untuk halaman detail admin: data akun, pegawai beserta unit kerjanya, dan sesi yang masih berlaku
+  // Detail akun untuk halaman detail admin: data akun, pegawai beserta bidangnya, dan sesi yang masih berlaku
   async detail(id: string, sekarang = new Date()) {
     const a = await prisma.user.findUnique({
       where: { id },
@@ -120,7 +120,7 @@ export const UserRepository = {
             nama: true,
             jabatan: true,
             aktif: true,
-            unitKerja: { select: { id: true, nama: true, parent: { select: { id: true, nama: true } } } },
+            bidang: { select: { id: true, nama: true, parent: { select: { id: true, nama: true } } } },
           },
         },
         sessions: {
@@ -163,7 +163,7 @@ export const UserRepository = {
 
   // Pegawai berdasarkan id
   async pegawai(id: number) {
-    return (await prisma.pegawai.findUnique({ where: { id }, select: { id: true, nip: true, unitKerjaId: true, aktif: true } })) ?? undefined;
+    return (await prisma.pegawai.findUnique({ where: { id }, select: { id: true, nip: true, bidangId: true, aktif: true } })) ?? undefined;
   },
 
   // Id akun yang meninggalkan data kegiatan (membuat kegiatan, mengunggah dokumentasi, atau memeriksa) sehingga tidak boleh dihapus.

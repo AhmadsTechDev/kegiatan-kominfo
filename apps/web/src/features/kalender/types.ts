@@ -19,7 +19,7 @@ export type KegiatanKalender = {
   tglMulai: string;
   tglSelesai: string;
   lokasiNama: string | null;
-  unitKerja: { id: number; nama: string };
+  bidang: { id: number; nama: string };
   unitIndukId: number;
   jenis: string;
   penanggungJawab: string;

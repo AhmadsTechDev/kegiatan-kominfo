@@ -20,7 +20,7 @@ import { awalHariJakarta, parsePeriode, rentangPeriode } from "@/utils/periode";
 import { AuditLogService } from "./audit-log.service";
 import { ReferensiService } from "./referensi.service";
 
-type PemilikKegiatan = { unitKerjaId: number; dibuatOleh: string; penanggungJawabId: number };
+type PemilikKegiatan = { bidangId: number; dibuatOleh: string; penanggungJawabId: number };
 
 const AWAL_ZAMAN = new Date(Date.UTC(1000, 0, 1));
 const AKHIR_ZAMAN = new Date(Date.UTC(9999, 11, 31));
@@ -37,12 +37,12 @@ export function bisaUbah(aktor: Aktor, k: { dibuatOleh: string; penanggungJawabI
   return k.dibuatOleh === aktor.id || (aktor.pegawaiId != null && k.penanggungJawabId === aktor.pegawaiId);
 }
 
-// Lingkup baca PEGAWAI (unit kerjanya + turunannya, dan kegiatan miliknya); PIMPINAN/ADMIN melihat semua (undefined)
+// Lingkup baca PEGAWAI (bidangnya + turunannya, dan kegiatan miliknya); PIMPINAN/ADMIN melihat semua (undefined)
 export async function lingkupBaca(aktor: Aktor): Promise<LingkupBaca | undefined> {
   if (aktor.role !== "PEGAWAI") return undefined;
   const p = aktor.pegawaiId == null ? undefined : await ReferensiRepository.findPegawaiAktif(aktor.pegawaiId);
   return {
-    unitIds: p ? await ReferensiService.unitDanTurunan(p.unitKerjaId) : [],
+    unitIds: p ? await ReferensiService.unitDanTurunan(p.bidangId) : [],
     milik: { userId: aktor.id, pegawaiId: aktor.pegawaiId },
   };
 }
@@ -51,7 +51,7 @@ export async function lingkupBaca(aktor: Aktor): Promise<LingkupBaca | undefined
 export function dalamLingkup(lingkup: LingkupBaca | undefined, k: PemilikKegiatan) {
   if (!lingkup) return true;
   const { userId, pegawaiId } = lingkup.milik;
-  return lingkup.unitIds.includes(k.unitKerjaId) || k.dibuatOleh === userId || (pegawaiId != null && k.penanggungJawabId === pegawaiId);
+  return lingkup.unitIds.includes(k.bidangId) || k.dibuatOleh === userId || (pegawaiId != null && k.penanggungJawabId === pegawaiId);
 }
 
 // Memastikan aktor boleh menulis: di luar lingkup dianggap tidak ada (404), di dalam lingkup tapi bukan miliknya 403
@@ -92,7 +92,7 @@ export async function filterDariQuery(query: QueryFilter, aktor: Aktor): Promise
 
 // ---------- Validasi isian ----------
 
-// Memeriksa isian kegiatan dan mengubahnya menjadi nilai kolom; unit kerja diambil dari penanggung jawab
+// Memeriksa isian kegiatan dan mengubahnya menjadi nilai kolom; bidang diambil dari penanggung jawab
 async function validasiIsi(isi: Omit<IsiKegiatan, "drafId">): Promise<NilaiKegiatan> {
   const galat: GalatField[] = [];
   const judul = isi.judul.trim();
@@ -120,7 +120,7 @@ async function validasiIsi(isi: Omit<IsiKegiatan, "drafId">): Promise<NilaiKegia
     jenisId: isi.jenisId,
     uraian: teks(isi.uraian),
     penanggungJawabId: pj.id,
-    unitKerjaId: pj.unitKerjaId,
+    bidangId: pj.bidangId,
     jumlahPeserta: isi.jumlahPeserta ?? null,
     hasil: teks(isi.hasil),
     tglMulai: mulai,
@@ -173,7 +173,7 @@ export const KegiatanService = {
   // Detail kegiatan lengkap: dokumentasi, riwayat, catatan pemeriksaan, dan hak aktor
   async detail(id: number, aktor: Aktor, sekarang = new Date()) {
     const k = await KegiatanRepository.detail(id, sekarang);
-    const pemilik = k && { unitKerjaId: k.unitKerja.id, dibuatOleh: k.pembuat.id, penanggungJawabId: k.penanggungJawab.id };
+    const pemilik = k && { bidangId: k.bidang.id, dibuatOleh: k.pembuat.id, penanggungJawabId: k.penanggungJawab.id };
     if (!pemilik || !dalamLingkup(await lingkupBaca(aktor), pemilik)) throw NotFound("Kegiatan tidak ditemukan");
 
     const [dokumentasi, pengubahTerakhir, riwayat, catatanPemeriksaan] = await Promise.all([

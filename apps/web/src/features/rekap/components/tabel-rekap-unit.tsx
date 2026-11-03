@@ -1,18 +1,18 @@
 // =============================================================================
 // TABEL REKAPITULASI KEGIATAN PER UNIT KERJA
 // =============================================================================
-// Gunanya: Menyajikan ringkasan statistik kegiatan per unit kerja dinas yang
+// Gunanya: Menyajikan ringkasan statistik kegiatan per bidang dinas yang
 // mencakup sebaran status pelaksanaan, total kegiatan, serta jumlah peserta.
 //
 // Isi berkas:
 //   - KOLOM          : konfigurasi kolom metrik status kegiatan dan peserta
-//   - hrefDaftar     : pembuat tautan rute kegiatan yang disaring per unit kerja
+//   - hrefDaftar     : pembuat tautan rute kegiatan yang disaring per bidang
 //   - SelAngka       : komponen sel angka dengan perataan kanan dan format ribuan
-//   - TabelRekapUnit : komponen tabel utama rekapitulasi kegiatan per unit kerja
+//   - TabelRekapUnit : komponen tabel utama rekapitulasi kegiatan per bidang
 //
 // Cara kerja:
 //   1. Merender kolom status: akan datang, berlangsung, selesai, dan dibatalkan.
-//   2. Menampilkan baris tiap unit kerja dengan tautan menuju daftar kegiatannya.
+//   2. Menampilkan baris tiap bidang dengan tautan menuju daftar kegiatannya.
 //   3. Menghitung dan merender baris total keseluruhan dinas pada footer tabel.
 //
 // Catatan penting:

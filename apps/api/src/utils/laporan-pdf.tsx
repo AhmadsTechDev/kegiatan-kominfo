@@ -87,7 +87,7 @@ export function isiSel(b: BarisEkspor) {
     judul: b.judul,
     lokasi: b.lokasiNama,
     jenis: b.jenis,
-    unitKerja: b.unitKerja,
+    bidang: b.bidang,
     penanggungJawab: b.penanggungJawab,
     waktu: formatRentang(b.tglMulai, b.tglSelesai),
     peserta: b.jumlahPeserta == null ? "–" : b.jumlahPeserta.toLocaleString("id-ID"),
@@ -143,7 +143,7 @@ function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
                 {isi.lokasi && <Text style={s.kecil}>{isi.lokasi}</Text>}
               </View>
               <Text style={sel(2)}>{isi.jenis}</Text>
-              <Text style={sel(3)}>{isi.unitKerja}</Text>
+              <Text style={sel(3)}>{isi.bidang}</Text>
               <Text style={sel(4)}>{isi.penanggungJawab}</Text>
               <Text style={sel(5)}>{isi.waktu}</Text>
               <Text style={sel(6)}>{isi.peserta}</Text>

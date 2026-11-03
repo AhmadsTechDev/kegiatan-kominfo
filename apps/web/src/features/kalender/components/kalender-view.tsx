@@ -19,7 +19,7 @@
 //   5. Merender kisi kalender (tabel semantik) dengan warna pembeda per unit induk serta panel detail.
 //
 // Catatan penting:
-//   - Warna pembeda menandai unit kerja induk (bidang/bagian) memakai chart-2 sampai chart-6;
+//   - Warna pembeda menandai bidang induk (bidang/bagian) memakai chart-2 sampai chart-6;
 //     chart-1 (navy) dipakai "hari ini" sehingga tidak dipakai unit. Unit ke-6 dan seterusnya
 //     digabung sebagai "Unit lainnya" agar tidak ada dua unit berwarna sama.
 //   - Warna bukan satu-satunya petunjuk: tiap chip memuat jam, dan panel agenda memuat nama unit.
@@ -119,7 +119,7 @@ function ChipKegiatan({ k, warna, hari }: { k: KegiatanKalender; warna: string; 
   return (
     <Link
       href={`/kegiatan/${k.id}`}
-      title={`${hariPertama ? formatJam(k.tglMulai) : "Lanjutan"} · ${k.judul} · ${k.unitKerja.nama}`}
+      title={`${hariPertama ? formatJam(k.tglMulai) : "Lanjutan"} · ${k.judul} · ${k.bidang.nama}`}
       onClick={(e) => e.stopPropagation()}
       className={cn(
         "flex min-w-0 items-start rounded-md px-1.5 py-1 text-xs leading-tight transition-[filter] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:hover:brightness-125",
@@ -246,7 +246,7 @@ function AgendaHari({
                   </span>
                 )}
                 <span className="text-xs text-muted-foreground">
-                  {k.jenis} · {k.unitKerja.nama} · {k.penanggungJawab}
+                  {k.jenis} · {k.bidang.nama} · {k.penanggungJawab}
                 </span>
               </Link>
             </li>

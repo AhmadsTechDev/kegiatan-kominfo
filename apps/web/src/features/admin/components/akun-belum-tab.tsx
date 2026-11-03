@@ -58,7 +58,7 @@ export function BelumPunyaAkun() {
         header: "Jabatan",
         cell: ({ row }) => <span className="block max-w-56 min-w-36 text-sm whitespace-normal">{row.original.jabatan ?? <span className="text-muted-foreground">-</span>}</span>,
       },
-      { id: "unit", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-72 whitespace-normal">{row.original.unitKerja.nama}</UnitChip> },
+      { id: "unit", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-72 whitespace-normal">{row.original.bidang.nama}</UnitChip> },
       {
         id: "nip",
         header: "NIP",
@@ -105,7 +105,7 @@ export function BelumPunyaAkun() {
                 }
                 aksi={<TombolUndang p={p} onClick={() => setUndang(p)} />}
               >
-                <UnitChip className="max-w-full self-start whitespace-normal">{p.unitKerja.nama}</UnitChip>
+                <UnitChip className="max-w-full self-start whitespace-normal">{p.bidang.nama}</UnitChip>
                 <span className="text-xs text-muted-foreground tabular-nums">NIP {p.nip ?? "-"}</span>
               </KartuMaster>
             )}
@@ -137,7 +137,7 @@ export function BelumPunyaAkun() {
             <>
               <p className="truncate font-semibold">{undang.nama}</p>
               <p className="truncate text-xs text-muted-foreground">
-                {undang.nip ? `NIP ${undang.nip}` : "Tanpa NIP"} · {undang.unitKerja.nama}
+                {undang.nip ? `NIP ${undang.nip}` : "Tanpa NIP"} · {undang.bidang.nama}
               </p>
             </>
           }

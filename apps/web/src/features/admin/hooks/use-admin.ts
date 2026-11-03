@@ -7,8 +7,7 @@
 // Isi berkas:
 //   - adminKeys : definisi kunci kueri (query keys) terpusat untuk cache modul admin
 //   - useSegarkan : fungsi pembantu pembatalan cache query terkait secara paralel
-//   - useUnitKerjaAdmin, useSimpanUnitKerja : kueri dan mutasi master unit kerja
-//   - useJenisUnitAdmin, useSimpanJenisUnit : kueri dan mutasi hierarki jenis unit
+//   - useBidangAdmin, useSimpanBidang : kueri dan mutasi master bidang
 //   - usePegawaiAdmin, useSimpanPegawai : kueri dan mutasi pegawai
 //   - useJenisAdmin, useSimpanJenis : kueri dan mutasi master kategori kegiatan
 //   - useAkunAdmin, useDetailAkun, useSimpanAkun, useStatusAkun, useHapusAkun : manajemen akun
@@ -20,7 +19,7 @@
 //   - Mutasi data otomatis membatalkan cache referensi form kegiatan dan audit log.
 //   - Hook useJumlahPermintaan melakukan penyegaran berkala (polling) setiap 60 detik.
 //
-// Dipakai oleh: MasterView, PegawaiTab, UnitKerjaTab, JenisTab, AkunView, AuditLogView
+// Dipakai oleh: MasterView, PegawaiTab, BidangTab, JenisTab, AkunView, AuditLogView
 // =============================================================================
 
 "use client";
@@ -31,9 +30,8 @@ import {
   aktifkanAkun,
   buatAkun,
   buatJenisKegiatan,
-  buatJenisUnit,
   buatPegawai,
-  buatUnitKerja,
+  buatBidang,
   cabutSesiAkun,
   getAkun,
   getDetailAkun,
@@ -42,10 +40,9 @@ import {
   getPermintaanAkun,
   getAuditLog,
   getJenisKegiatan,
-  getJenisUnit,
   getPegawai,
   getPilihanAudit,
-  getUnitKerja,
+  getBidang,
   hapusAkun,
   kirimUlangUndangan,
   nonaktifkanAkun,
@@ -55,15 +52,13 @@ import {
   undangPegawai,
   ubahAkun,
   ubahJenisKegiatan,
-  ubahJenisUnit,
   ubahPegawai,
-  ubahUnitKerja,
+  ubahBidang,
 } from "../api/admin";
-import type { FilterAkun, FilterAudit, FilterPegawai, IsiAkun, IsiJenisUnit, IsiPegawaiBaru, HasilPegawaiBaru, IsiUndangan, IsiUnit, StatusPermintaan } from "../types";
+import type { FilterAkun, FilterAudit, FilterPegawai, IsiAkun, IsiPegawaiBaru, HasilPegawaiBaru, IsiUndangan, IsiUnit, StatusPermintaan } from "../types";
 
 export const adminKeys = {
-  unitKerja: ["admin", "unit-kerja"] as const,
-  jenisUnit: ["admin", "jenis-unit"] as const,
+  bidang: ["admin", "bidang"] as const,
   pegawai: ["admin", "pegawai"] as const,
   daftarPegawai: (f: FilterPegawai) => [...adminKeys.pegawai, f] as const,
   jenis: ["admin", "jenis-kegiatan"] as const,
@@ -87,22 +82,12 @@ function useSegarkan(...kunci: (readonly unknown[])[]) {
     );
 }
 
-export const useUnitKerjaAdmin = () => useQuery({ queryKey: adminKeys.unitKerja, queryFn: getUnitKerja });
+export const useBidangAdmin = () => useQuery({ queryKey: adminKeys.bidang, queryFn: getBidang });
 
-export function useSimpanUnitKerja() {
-  const segarkan = useSegarkan(adminKeys.unitKerja, adminKeys.pegawai);
+export function useSimpanBidang() {
+  const segarkan = useSegarkan(adminKeys.bidang, adminKeys.pegawai);
   return useMutation({
-    mutationFn: ({ id, isi }: { id?: number; isi: IsiUnit }) => (id ? ubahUnitKerja(id, isi) : buatUnitKerja(isi)),
-    onSuccess: segarkan,
-  });
-}
-
-export const useJenisUnitAdmin = () => useQuery({ queryKey: adminKeys.jenisUnit, queryFn: getJenisUnit });
-
-export function useSimpanJenisUnit() {
-  const segarkan = useSegarkan(adminKeys.jenisUnit, adminKeys.unitKerja);
-  return useMutation({
-    mutationFn: ({ id, isi }: { id?: number; isi: IsiJenisUnit }) => (id ? ubahJenisUnit(id, isi) : buatJenisUnit(isi)),
+    mutationFn: ({ id, isi }: { id?: number; isi: IsiUnit }) => (id ? ubahBidang(id, isi) : buatBidang(isi)),
     onSuccess: segarkan,
   });
 }
@@ -111,7 +96,7 @@ export const usePegawaiAdmin = (f: FilterPegawai) =>
   useQuery({ queryKey: adminKeys.daftarPegawai(f), queryFn: () => getPegawai(f), placeholderData: keepPreviousData });
 
 export function useSimpanPegawai() {
-  const segarkan = useSegarkan(adminKeys.pegawai, adminKeys.unitKerja, adminKeys.akun);
+  const segarkan = useSegarkan(adminKeys.pegawai, adminKeys.bidang, adminKeys.akun);
   return useMutation({
     mutationFn: ({ id, isi }: { id?: number; isi: IsiPegawaiBaru }): Promise<{ id: number; undangan?: HasilPegawaiBaru["undangan"] }> =>
       id ? ubahPegawai(id, isi) : buatPegawai(isi),

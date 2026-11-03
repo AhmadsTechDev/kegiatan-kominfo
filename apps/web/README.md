@@ -57,7 +57,7 @@ Semua halaman memakai bahasa Indonesia. Menu yang terlihat bergantung pada peran
 | `/laporan` | Pilih rentang, pratinjau, dan unduh PDF | Semua peran |
 | `/pantau` | Pantau dan periksa kegiatan | Pimpinan |
 | `/admin/akun`, `/admin/akun/[id]` | Manajemen akun, permintaan akses, dan detail akun | Admin |
-| `/admin/master` | Pegawai, bidang dan sub bidang, jenis unit, jenis kegiatan | Admin |
+| `/admin/master` | Pegawai, bidang dan sub bidang, jenis kegiatan | Admin |
 | `/admin/audit-log` | Audit log dengan filter | Admin |
 | `/pengaturan` | Profil, kontak, email, sandi, sesi aktif, dan preferensi | Semua peran |
 

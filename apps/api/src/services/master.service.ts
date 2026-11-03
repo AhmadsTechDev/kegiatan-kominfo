@@ -4,10 +4,8 @@ import { MasterRepository } from "@/repositories/master.repository";
 import type {
   DaftarPegawaiQuery,
   IsiJenis,
-  IsiJenisUnit,
   IsiPegawai,
   IsiUnit,
-  JenisUnit,
   NilaiPegawai,
 } from "@/types/master.types";
 import type { AksiAudit, Aktor, GalatField, MetaRequest } from "@/types/umum.types";
@@ -15,7 +13,7 @@ import { periksaNip } from "@/utils/nip";
 import { AuditLogService } from "./audit-log.service";
 import { ReferensiService } from "./referensi.service";
 
-const AWALAN_BAWAAN: Record<string, string> = { bidang: "BID", "sub bidang": "SUBBID", "sub bagian": "SUBAG", "kelompok fungsional": "JAFUNG" };
+const AWALAN_BAWAAN: Record<string, string> = { bidang: "BID", "sub bidang": "SUBBID" };
 const KATA_SAMBUNG = new Set(["dan", "serta", "atau", "di", "ke", "dari", "yang", "untuk", "pada"]);
 
 // Merapikan teks opsional: dipangkas, teks kosong menjadi null
@@ -40,10 +38,10 @@ function aksiUbah(sebelum: { aktif: boolean }, aktifBaru: boolean | undefined): 
   return aktifBaru ? "aktifkan" : "nonaktifkan";
 }
 
-// Membuat kode unit otomatis dari jenis dan singkatan nama, contoh "BID-TIP"; ditambah "-2", "-3" bila sudah dipakai
-async function buatKodeUnit(nama: string, jenis: JenisUnit) {
-  const kataJenis = kataKata(jenis.nama);
-  const awalan = AWALAN_BAWAAN[jenis.nama.toLowerCase()] ?? kataJenis.join("").toUpperCase().slice(0, 12);
+// Membuat kode otomatis dari tingkat dan singkatan nama, contoh "BID-TIP"; ditambah "-2", "-3" bila sudah dipakai
+async function buatKodeUnit(nama: string, namaJenis: string) {
+  const kataJenis = kataKata(namaJenis);
+  const awalan = AWALAN_BAWAAN[namaJenis.toLowerCase()] ?? kataJenis.join("").toUpperCase().slice(0, 12);
   const kataNama = kataKata(nama);
   const diawaliJenis = kataNama.slice(0, kataJenis.length).join(" ").toLowerCase() === kataJenis.join(" ").toLowerCase();
   const singkatan = (diawaliJenis ? kataNama.slice(kataJenis.length) : kataNama)
@@ -57,53 +55,27 @@ async function buatKodeUnit(nama: string, jenis: JenisUnit) {
   for (let i = 2; ; i++) if (!terpakai.has(`${dasar}-${i}`)) return `${dasar}-${i}`;
 }
 
-// Memeriksa isian unit kerja, termasuk aturan induk sesuai jenisnya (mis. seksi harus di bawah bidang)
-async function validasiUnit(isi: Omit<IsiUnit, "aktif">, sebelum?: { id: number; jenisUnitId: number }) {
+// Memeriksa isian bidang. Tanpa induk berarti bidang; dengan induk berarti sub bidang, dan induknya harus sebuah bidang (maksimal dua tingkat)
+async function validasiUnit(isi: Omit<IsiUnit, "aktif">, sebelum?: { id: number; parentId: number | null }) {
   const galat: GalatField[] = [];
-  const jenis = await MasterRepository.jenisUnitById(isi.jenisUnitId);
-  if (!jenis) throw Unprocessable("Periksa kembali isian bidang", [{ field: "jenisUnitId", message: "Jenis unit tidak ditemukan" }]);
-  if (!jenis.aktif && jenis.id !== sebelum?.jenisUnitId) galat.push({ field: "jenisUnitId", message: "Jenis unit sedang nonaktif" });
-
-  const jenisInduk = jenis.indukJenisId == null ? null : await MasterRepository.jenisUnitById(jenis.indukJenisId);
-  if (!jenisInduk && isi.parentId != null) galat.push({ field: "parentId", message: `${jenis.nama} adalah unit tertinggi, tanpa unit induk` });
-  if (jenisInduk) {
-    const induk = isi.parentId == null ? undefined : await MasterRepository.unitById(isi.parentId);
-    if (!induk || induk.id === sebelum?.id) galat.push({ field: "parentId", message: `Unit induk wajib dipilih (${jenisInduk.nama.toLowerCase()})` });
-    else if (induk.jenisUnitId !== jenisInduk.id) galat.push({ field: "parentId", message: `Induk ${jenis.nama.toLowerCase()} harus ${jenisInduk.nama.toLowerCase()}` });
-    else if (!induk.aktif) galat.push({ field: "parentId", message: "Unit induk sedang nonaktif" });
+  if (!isi.nama.trim()) galat.push({ field: "nama", message: "Nama wajib diisi" });
+  if (isi.parentId != null) {
+    const induk = await MasterRepository.unitById(isi.parentId);
+    if (!induk || induk.id === sebelum?.id) galat.push({ field: "parentId", message: "Bidang induk wajib dipilih" });
+    else if (induk.parentId !== null) galat.push({ field: "parentId", message: "Induk sub bidang harus bidang" });
+    else if (!induk.aktif && induk.id !== sebelum?.parentId) galat.push({ field: "parentId", message: "Bidang induk sedang nonaktif" });
+    else if (sebelum && sebelum.parentId === null && (await MasterRepository.jumlahTurunan(sebelum.id)) > 0) {
+      galat.push({ field: "parentId", message: "Bidang yang masih punya sub bidang tidak dapat dijadikan sub bidang" });
+    }
   }
-  if (!isi.nama.trim()) galat.push({ field: "nama", message: "Nama unit wajib diisi" });
   if (galat.length) throw Unprocessable("Periksa kembali isian bidang", galat);
   return {
-    nilai: { kode: isi.kode?.trim().toUpperCase() || null, nama: isi.nama.trim(), jenisUnitId: jenis.id, parentId: jenisInduk ? isi.parentId : null },
-    jenis,
+    nilai: { kode: isi.kode?.trim().toUpperCase() || null, nama: isi.nama.trim(), parentId: isi.parentId },
+    namaJenis: isi.parentId == null ? "Bidang" : "Sub bidang",
   };
 }
 
-// Memeriksa isian jenis unit; jenis induk tidak boleh dirinya sendiri atau turunannya (mencegah lingkaran)
-async function validasiJenisUnit(isi: Omit<IsiJenisUnit, "aktif">, sebelum?: JenisUnit) {
-  const nama = isi.nama.trim();
-  const galat: GalatField[] = [];
-  if (!nama) galat.push({ field: "nama", message: "Nama jenis unit wajib diisi" });
-  if (isi.indukJenisId != null) {
-    const induk = await MasterRepository.jenisUnitById(isi.indukJenisId);
-    if (!induk) galat.push({ field: "indukJenisId", message: "Jenis induk tidak ditemukan" });
-    else if (!induk.aktif && induk.id !== sebelum?.indukJenisId) galat.push({ field: "indukJenisId", message: "Jenis induk sedang nonaktif" });
-    else if (sebelum) {
-      for (let j: JenisUnit | undefined = induk, langkah = 0; j && langkah < 50; langkah++) {
-        if (j.id === sebelum.id) {
-          galat.push({ field: "indukJenisId", message: "Jenis induk tidak boleh jenis ini sendiri atau turunannya" });
-          break;
-        }
-        j = j.indukJenisId == null ? undefined : await MasterRepository.jenisUnitById(j.indukJenisId);
-      }
-    }
-  }
-  if (galat.length) throw Unprocessable("Periksa kembali isian jenis unit", galat);
-  return { nama, indukJenisId: isi.indukJenisId };
-}
-
-// Memeriksa isian pegawai: NIP sah dan belum dipakai, email belum dipakai, unit kerja ada dan aktif.
+// Memeriksa isian pegawai: NIP sah dan belum dipakai, email belum dipakai, bidang ada dan aktif.
 // Juga dipakai user.service.ts saat admin membuat/mengubah akun beserta data pegawainya
 export async function validasiPegawai(
   isi: IsiPegawai,
@@ -121,11 +93,11 @@ export async function validasiPegawai(
   }
   if (opsi.email && (await MasterRepository.akunDenganEmail(opsi.email))) galat.push({ field: "email", message: "Email sudah dipakai akun lain" });
   if (!isi.nama.trim()) galat.push({ field: "nama", message: "Nama wajib diisi" });
-  const unit = await MasterRepository.unitById(isi.unitKerjaId);
-  if (!unit) galat.push({ field: "unitKerjaId", message: "Bidang tidak ditemukan" });
-  else if (!unit.aktif && unit.id !== unitLamaId) galat.push({ field: "unitKerjaId", message: "Bidang sedang nonaktif" });
+  const unit = await MasterRepository.unitById(isi.bidangId);
+  if (!unit) galat.push({ field: "bidangId", message: "Bidang tidak ditemukan" });
+  else if (!unit.aktif && unit.id !== unitLamaId) galat.push({ field: "bidangId", message: "Bidang sedang nonaktif" });
   if (galat.length) throw Unprocessable("Periksa kembali isian pegawai", galat);
-  return { nip, nama: isi.nama.trim(), jabatan: teks(isi.jabatan), unitKerjaId: isi.unitKerjaId };
+  return { nip, nama: isi.nama.trim(), jabatan: teks(isi.jabatan), bidangId: isi.bidangId };
 }
 
 // Nama jenis kegiatan wajib diisi
@@ -136,91 +108,36 @@ function validasiNamaJenis(nama: string) {
 }
 
 export const MasterService = {
-  // ---------- Jenis unit ----------
+  // ---------- Bidang ----------
 
-  // Semua jenis unit beserta jumlah unit (semua dan aktif) yang memakainya
-  async daftarJenisUnit() {
-    const [jenis, jumlah] = await Promise.all([MasterRepository.daftarJenisUnit(), MasterRepository.jumlahUnitPerJenis()]);
-    const peta = new Map(jumlah.map((j) => [j.jenisUnitId, j]));
-    return jenis.map((j) => ({ ...j, jumlahUnit: peta.get(j.id)?.jumlah ?? 0, jumlahUnitAktif: peta.get(j.id)?.aktif ?? 0 }));
-  },
-
-  // Membuat jenis unit baru
-  async buatJenisUnit(isi: IsiJenisUnit, aktor: Aktor, meta: MetaRequest) {
-    const nilai = await validasiJenisUnit(isi);
-    return denganCekDuplikat("nama", "Nama jenis unit sudah ada", () =>
-      prisma.$transaction(async (tx) => {
-        const id = await MasterRepository.insertJenisUnit(nilai, tx);
-        const sesudah = await MasterRepository.jenisUnitById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: "buat", entitas: "jenis_unit", entitasId: id, sesudah, ...meta }, tx);
-        return { id };
-      }),
-    );
-  },
-
-  // Mengubah atau (non)aktifkan jenis unit; ditolak bila masih dipakai unit aktif
-  async ubahJenisUnit(id: number, isi: IsiJenisUnit, aktor: Aktor, meta: MetaRequest) {
-    const sebelum = await MasterRepository.jenisUnitById(id);
-    if (!sebelum) throw NotFound("Jenis unit tidak ditemukan");
-    const nilai = await validasiJenisUnit(isi, sebelum);
-
-    if (nilai.indukJenisId !== sebelum.indukJenisId && (await MasterRepository.jumlahUnitAktifBerjenis(id)) > 0) {
-      throw Unprocessable("Posisi jenis tidak dapat diubah selama masih ada unit aktif berjenis ini", [
-        { field: "indukJenisId", message: "Pindahkan atau nonaktifkan unit berjenis ini lebih dulu" },
-      ]);
-    }
-    if (isi.aktif === false && sebelum.aktif) {
-      const [unitAktif, jenisTurunan] = await Promise.all([MasterRepository.jumlahUnitAktifBerjenis(id), MasterRepository.jumlahJenisTurunanAktif(id)]);
-      if (unitAktif > 0 || jenisTurunan > 0) {
-        throw Unprocessable(`Jenis ini masih dipakai ${unitAktif} unit aktif dan menjadi induk ${jenisTurunan} jenis aktif. Pindahkan atau nonaktifkan lebih dulu`);
-      }
-    }
-
-    return denganCekDuplikat("nama", "Nama jenis unit sudah ada", () =>
-      prisma.$transaction(async (tx) => {
-        await MasterRepository.updateJenisUnit(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif }, tx);
-        const sesudah = await MasterRepository.jenisUnitById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: aksiUbah(sebelum, isi.aktif), entitas: "jenis_unit", entitasId: id, sebelum, sesudah, ...meta }, tx);
-        return { id };
-      }),
-    );
-  },
-
-  // ---------- Unit kerja ----------
-
-  // Semua unit kerja beserta jumlah pegawai aktifnya
+  // Semua bidang beserta jumlah pegawai aktifnya
   async daftarUnit() {
     const [unit, jumlah] = await Promise.all([MasterRepository.daftarUnit(), MasterRepository.jumlahPegawaiPerUnit()]);
-    const peta = new Map(jumlah.map((j) => [j.unitKerjaId, j.jumlah]));
+    const peta = new Map(jumlah.map((j) => [j.bidangId, j.jumlah]));
     return unit.map((u) => ({ ...u, jumlahPegawaiAktif: peta.get(u.id) ?? 0 }));
   },
 
-  // Membuat unit kerja; kode dibuat otomatis bila dikosongkan
+  // Membuat bidang; kode dibuat otomatis bila dikosongkan
   async buatUnit(isi: IsiUnit, aktor: Aktor, meta: MetaRequest) {
-    const { nilai: isian, jenis } = await validasiUnit(isi);
-    const nilai = { ...isian, kode: isian.kode ?? (await buatKodeUnit(isian.nama, jenis)) };
+    const { nilai: isian, namaJenis } = await validasiUnit(isi);
+    const nilai = { ...isian, kode: isian.kode ?? (await buatKodeUnit(isian.nama, namaJenis)) };
     return denganCekDuplikat("kode", "Kode unit sudah dipakai", () =>
       prisma.$transaction(async (tx) => {
         const id = await MasterRepository.insertUnit(nilai, tx);
         const sesudah = await MasterRepository.unitById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: "buat", entitas: "unit_kerja", entitasId: id, sesudah, ...meta }, tx);
+        await AuditLogService.catat({ aktorId: aktor.id, aksi: "buat", entitas: "bidang", entitasId: id, sesudah, ...meta }, tx);
         return { id };
       }),
     );
   },
 
-  // Mengubah atau (non)aktifkan unit kerja; ditolak bila masih punya turunan/pegawai aktif
+  // Mengubah atau (non)aktifkan bidang; ditolak bila masih punya turunan/pegawai aktif
   async ubahUnit(id: number, isi: IsiUnit, aktor: Aktor, meta: MetaRequest) {
     const sebelum = await MasterRepository.unitById(id);
     if (!sebelum) throw NotFound("Bidang tidak ditemukan");
     const { nilai: isian } = await validasiUnit(isi, sebelum);
     const nilai = { ...isian, kode: isian.kode ?? sebelum.kode };
 
-    if (nilai.jenisUnitId !== sebelum.jenisUnitId && (await MasterRepository.jumlahTurunanAktif(id)) > 0) {
-      throw Unprocessable("Jenis unit tidak dapat diubah selama masih punya unit turunan aktif", [
-        { field: "jenisUnitId", message: "Pindahkan atau nonaktifkan unit turunannya lebih dulu" },
-      ]);
-    }
     if (isi.aktif === false && sebelum.aktif) {
       const [turunan, pegawaiAktif] = await Promise.all([MasterRepository.jumlahTurunanAktif(id), MasterRepository.jumlahPegawaiAktif(id)]);
       if (turunan > 0 || pegawaiAktif > 0) {
@@ -232,7 +149,7 @@ export const MasterService = {
       prisma.$transaction(async (tx) => {
         await MasterRepository.updateUnit(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif }, tx);
         const sesudah = await MasterRepository.unitById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: aksiUbah(sebelum, isi.aktif), entitas: "unit_kerja", entitasId: id, sebelum, sesudah, ...meta }, tx);
+        await AuditLogService.catat({ aktorId: aktor.id, aksi: aksiUbah(sebelum, isi.aktif), entitas: "bidang", entitasId: id, sebelum, sesudah, ...meta }, tx);
         return { id };
       }),
     );
@@ -273,7 +190,7 @@ export const MasterService = {
   async ubahPegawai(id: number, isi: IsiPegawai, aktor: Aktor, meta: MetaRequest) {
     const sebelum = await MasterRepository.pegawaiById(id);
     if (!sebelum) throw NotFound("Pegawai tidak ditemukan");
-    const nilai = await validasiPegawai(isi, sebelum.unitKerjaId, sebelum.nip, { pegawaiId: id });
+    const nilai = await validasiPegawai(isi, sebelum.bidangId, sebelum.nip, { pegawaiId: id });
     return denganCekDuplikat("nip", "NIP sudah terdaftar", () =>
       prisma.$transaction(async (tx) => {
         await MasterRepository.updatePegawai(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif }, tx);

@@ -72,13 +72,13 @@ export const DashboardService = {
       aktor.pegawaiId == null ? undefined : ReferensiRepository.findPegawaiAktif(aktor.pegawaiId),
     ]);
     const unitIds = lingkup?.unitIds ?? [];
-    const unitBulanIni = bulanIni.filter((k) => unitIds.includes(k.unitKerja.id) && k.statusPelaksanaan !== "dibatalkan");
+    const unitBulanIni = bulanIni.filter((k) => unitIds.includes(k.bidang.id) && k.statusPelaksanaan !== "dibatalkan");
     return {
       hariIni,
       perluDokumentasi,
       agenda,
       pekanIni: pekanIni.filter((k) => k.statusPelaksanaan !== "dibatalkan"),
-      unit: pegawai ? { id: pegawai.unitKerjaId, jumlahBulanIni: unitBulanIni.length } : null,
+      unit: pegawai ? { id: pegawai.bidangId, jumlahBulanIni: unitBulanIni.length } : null,
     };
   },
 };

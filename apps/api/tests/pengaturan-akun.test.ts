@@ -11,7 +11,7 @@ describe("profil", () => {
     const me = await panggil("/me", { cookie: u.cookie });
     expect(me.status).toBe(200);
     expect(me.data).toMatchObject({ id: u.userId, email: u.email, emailVerified: true, emailBaru: null, status: "AKTIF", role: "PEGAWAI", pegawai: { nip: u.nip } });
-    expect(me.data.pegawai.unitKerja.parent.nama).toBe("Bidang Teknologi Informasi dan Persandian");
+    expect(me.data.pegawai.bidang.parent.nama).toBe("Bidang Teknologi Informasi dan Persandian");
     expect(typeof me.data.createdAt).toBe("string");
     expect(JSON.stringify(me.data)).not.toMatch(/password|token|failedLogin|lockedUntil/i);
   });
@@ -22,7 +22,7 @@ describe("profil", () => {
     const res = await panggil("/me", {
       method: "PATCH",
       cookie: u.cookie,
-      json: { kontak: "0812-3456", nama: "Nama Palsu", name: "Nama Palsu", jabatan: "Kepala Dinas", nip: "199001012022211001", role: "ADMIN", unitKerjaId: 1 },
+      json: { kontak: "0812-3456", nama: "Nama Palsu", name: "Nama Palsu", jabatan: "Kepala Dinas", nip: "199001012022211001", role: "ADMIN", bidangId: 1 },
     });
     expect(res.status).toBe(200);
     expect(res.data.kontak).toBe("0812-3456");

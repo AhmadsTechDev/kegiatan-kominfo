@@ -34,7 +34,7 @@ describe("angka laporan konsisten", () => {
       { id: rapat, nama: "Rapat", jumlah: 2 },
       { id: sosialisasi, nama: "Sosialisasi", jumlah: 1 },
     ]);
-    expect(rekap.data.perPegawai).toEqual([expect.objectContaining({ id: u.pegawaiId, jumlah: 3, unitKerja: bidang.nama })]);
+    expect(rekap.data.perPegawai).toEqual([expect.objectContaining({ id: u.pegawaiId, jumlah: 3, bidang: bidang.nama })]);
     expect(rekap.data.perUnit).toEqual([expect.objectContaining({ unit: { id: bidang.id, kode: bidang.kode, nama: bidang.nama }, total: 3 })]);
 
     const harian = await panggil(`/rekap?unit=${bidang.id}&dari=2031-03-01&sampai=2031-03-31&satuan=hari`, { cookie: admin });
@@ -80,7 +80,7 @@ describe("angka laporan konsisten", () => {
     expect(detail.data.dataSesudah).toMatchObject({ format: "pdf", jumlah: 3, filter: { unit: bidang.id } });
   });
 
-  test("PEGAWAI hanya melihat rekap unit kerjanya sendiri", async () => {
+  test("PEGAWAI hanya melihat rekap bidangnya sendiri", async () => {
     const { bidang, u } = await siapkanMaret2031();
     const rekap = await panggil("/rekap?periode=2031-03", { cookie: u.cookie });
     expect(rekap.data.total.total).toBe(3);
@@ -97,7 +97,7 @@ describe("angka laporan konsisten", () => {
 
     const sebelum = await panggil("/dashboard?periode=2020-05", { cookie: admin });
     expect(sebelum.data.kpi).toMatchObject({ selesai: 1, selesaiTanpaDokumentasi: 1 });
-    expect(sebelum.data.perluPerhatian.items[0]).toMatchObject({ id: k.id, unitKerja: bidang.nama, statusPelaksanaan: "selesai" });
+    expect(sebelum.data.perluPerhatian.items[0]).toMatchObject({ id: k.id, bidang: bidang.nama, statusPelaksanaan: "selesai" });
     const saya = await panggil("/dashboard/saya", { cookie: u.cookie });
     expect(saya.data.perluDokumentasi.total).toBe(1);
     expect(saya.data.unit).toEqual({ id: bidang.id, jumlahBulanIni: 0 });

@@ -46,18 +46,11 @@ erDiagram
         boolean notif_pengingat_kegiatan
         boolean notif_pengingat_dokumentasi
     }
-    jenis_unit {
-        int id PK
-        varchar nama UK
-        int induk_jenis_id FK
-        boolean aktif
-    }
-    unit_kerja {
+    bidang {
         int id PK
         int parent_id FK
         varchar kode UK
         varchar nama
-        int jenis_unit_id FK
         boolean aktif
     }
     pegawai {
@@ -65,7 +58,7 @@ erDiagram
         varchar nip UK
         varchar nama
         varchar jabatan
-        int unit_kerja_id FK
+        int bidang_id FK
         boolean aktif
     }
     jenis_kegiatan {
@@ -83,7 +76,7 @@ erDiagram
         decimal lng
         timestamptz tgl_mulai
         timestamptz tgl_selesai
-        int unit_kerja_id FK
+        int bidang_id FK
         int penanggung_jawab_id FK
         varchar dibuat_oleh FK
         int jumlah_peserta
@@ -152,11 +145,9 @@ erDiagram
     user ||--o{ session : "CASCADE"
     user ||--o{ account : "CASCADE"
     user ||--o| preferensi_pengguna : "CASCADE"
-    jenis_unit |o--o{ jenis_unit : "induk jenis"
-    jenis_unit ||--o{ unit_kerja : "RESTRICT"
-    unit_kerja |o--o{ unit_kerja : "induk (RESTRICT)"
-    unit_kerja ||--o{ pegawai : "RESTRICT"
-    unit_kerja ||--o{ kegiatan : "RESTRICT"
+    bidang |o--o{ bidang : "induk (RESTRICT)"
+    bidang ||--o{ pegawai : "RESTRICT"
+    bidang ||--o{ kegiatan : "RESTRICT"
     jenis_kegiatan ||--o{ kegiatan : "RESTRICT"
     pegawai ||--o{ kegiatan : "penanggung jawab (RESTRICT)"
     user ||--o{ kegiatan : "pembuat (RESTRICT)"
@@ -175,7 +166,8 @@ erDiagram
 
 - **Status akun tidak disimpan**, melainkan diturunkan: belum punya baris `account` berarti *Menunggu aktivasi*, `banned = true` berarti *Nonaktif*, selain itu *Aktif*.
 - **Token** aktivasi, atur ulang sandi, dan ganti email disimpan di `verification` sebagai hash SHA-256, bukan teks asli.
-- **Data master** (`jenis_unit`, `unit_kerja`, `pegawai`, `jenis_kegiatan`) tidak dihapus, cukup dinonaktifkan lewat kolom `aktif`.
+- **Data master** (`bidang`, `pegawai`, `jenis_kegiatan`) tidak dihapus, cukup dinonaktifkan lewat kolom `aktif`.
+- **Tabel `bidang`** berisi bidang dan sub bidang. Tingkatnya ditentukan `parent_id`: kosong berarti bidang, terisi berarti sub bidang (maksimal dua tingkat). Tabel ini dulu bernama `unit_kerja` (migrasi `2_ganti_nama_unit_kerja_jadi_bidang`, data tetap utuh), dan tabel `jenis_unit` sudah dihapus (migrasi `3_hapus_jenis_unit`).
 - **Kegiatan dihapus secara lunak** (`deleted_at`), sehingga riwayat audit tetap merujuk ke data yang ada.
 - **`audit_log` append-only.** `aktor_id` sengaja tanpa kunci asing agar riwayat tetap utuh setelah akun dihapus.
 - Aturan `RESTRICT` pada pembuat kegiatan, pengunggah dokumentasi, dan pemeriksa adalah alasan akun yang sudah meninggalkan data kegiatan tidak bisa dihapus (cukup dinonaktifkan).

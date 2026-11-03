@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { auditUntuk, buatKegiatan, buatPengguna, idJenis, idUnit, isiKegiatan, jamLagi, loginAdmin, panggil } from "./helpers";
 
 describe("mencatat kegiatan", () => {
-  test("PEGAWAI mencatat kegiatannya sendiri; unit kerja mengikuti penanggung jawab", async () => {
+  test("PEGAWAI mencatat kegiatannya sendiri; bidang mengikuti penanggung jawab", async () => {
     const u = await buatPengguna();
     const isi = await isiKegiatan(u.pegawaiId!, { lat: -2.976074, lng: 104.775431 });
     const baru = await buatKegiatan(u.cookie, isi);
@@ -15,7 +15,7 @@ describe("mencatat kegiatan", () => {
       judul: isi.judul,
       lat: -2.976074,
       lng: 104.775431,
-      unitKerja: { id: await idUnit("SEKSI-DATA") },
+      bidang: { id: await idUnit("SEKSI-DATA") },
       unitInduk: { nama: "Bidang Teknologi Informasi dan Persandian" },
       statusPelaksanaan: "akan_datang",
       statusPemeriksaan: "terkirim",
@@ -283,7 +283,7 @@ describe("referensi", () => {
     const res = await panggil("/referensi", { cookie: u.cookie });
     expect(res.status).toBe(200);
     expect(res.data.jenisKegiatan.some((j: { id: number }) => j.id)).toBe(true);
-    expect(res.data.unitKerja.find((x: { kode: string }) => x.kode === "SEKSI-DATA").parentId).toBe(await idUnit("BID-TIP"));
+    expect(res.data.bidang.find((x: { kode: string }) => x.kode === "SEKSI-DATA").parentId).toBe(await idUnit("BID-TIP"));
     expect(res.data.pegawai.find((p: { id: number }) => p.id === u.pegawaiId)).not.toHaveProperty("nip");
     expect(await idJenis()).toBeGreaterThan(0);
   });

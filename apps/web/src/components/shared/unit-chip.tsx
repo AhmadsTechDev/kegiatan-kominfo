@@ -1,7 +1,7 @@
 // =============================================================================
 // LABEL PENANDA UNIT KERJA (UNIT CHIP)
 // =============================================================================
-// Gunanya: Menampilkan label penanda nama unit kerja atau bidang penanggung jawab
+// Gunanya: Menampilkan label penanda nama bidang atau sub bidang penanggung jawab
 // kegiatan pada tabel dan kartu antarmuka Aplikasi Pendataan Kegiatan.
 //
 // Isi berkas:
