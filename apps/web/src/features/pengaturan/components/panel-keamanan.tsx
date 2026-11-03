@@ -124,18 +124,27 @@ export function PanelSesi() {
 
 export function PanelKeluar() {
   const { logout, pending } = useLogout();
+  const cabutLain = useCabutSesiLain();
+  const sibuk = pending || cabutLain.isPending;
+
+  // Semua perangkat lain dikeluarkan lebih dulu, baru perangkat ini
+  const keluarSemua = () =>
+    cabutLain.mutate(undefined, { onSuccess: logout, onError: (e) => toast.error(e.message) });
+
   return (
     <Panel>
       {/* Panel tanpa PanelHeader, jadi PanelBody perlu padding atas sendiri */}
-      <PanelBody className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center md:pt-5">
-        <div className="min-w-0 flex-1 text-sm">
-          <p className="font-medium">Keluar dari perangkat ini</p>
-          <p className="text-muted-foreground">Sesi di perangkat lain tidak terpengaruh.</p>
+      <PanelBody className="pt-4 md:pt-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={keluarSemua} disabled={sibuk}>
+            {cabutLain.isPending ? <Spinner /> : <MonitorX aria-hidden />}
+            Keluar dari semua perangkat
+          </Button>
+          <Button variant="outline" className="h-10 pointer-coarse:min-h-11 text-destructive hover:text-destructive" onClick={logout} disabled={sibuk}>
+            {pending ? <Spinner /> : <LogOut aria-hidden />}
+            Keluar
+          </Button>
         </div>
-        <Button variant="outline" className="h-10 pointer-coarse:min-h-11 text-destructive hover:text-destructive" onClick={logout} disabled={pending}>
-          {pending ? <Spinner /> : <LogOut aria-hidden />}
-          Keluar
-        </Button>
       </PanelBody>
     </Panel>
   );

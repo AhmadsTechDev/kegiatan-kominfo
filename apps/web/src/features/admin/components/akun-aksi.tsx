@@ -346,7 +346,6 @@ export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelah
         <ConfirmDialog
           {...konfirmasi}
           title={`Nonaktifkan akun ${a.name}?`}
-          description="Akun tidak bisa masuk, semua sesinya dikeluarkan, dan tautan undangan/atur ulang yang belum dipakai dibatalkan. Bisa diaktifkan kembali kapan saja."
           confirmLabel="Nonaktifkan akun"
           pendingLabel="Menonaktifkan..."
           pending={status.isPending}

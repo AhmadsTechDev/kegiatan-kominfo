@@ -50,7 +50,7 @@ export function PanelKepegawaian({ p }: { p: Profil }) {
     <Panel className="h-fit">
       <PanelHeader
         title="Data kepegawaian"
-        description={admin ? "Diubah lewat Manajemen akun, sama seperti akun lain." : "Dikelola administrator. Hubungi admin bila ada data yang keliru."}
+        description={admin ? undefined : "Dikelola administrator. Hubungi admin bila ada data yang keliru."}
         action={
           admin && (
             <Button asChild variant="outline" size="sm" className="h-9 pointer-coarse:min-h-11">
@@ -109,7 +109,7 @@ export function PanelKontak({ p }: { p: Profil }) {
 
   return (
     <Panel className="h-fit">
-      <PanelHeader title="Kontak" description={p.role === "ADMIN" ? "Hanya terlihat oleh Anda dan administrator lain." : "Hanya terlihat oleh Anda dan administrator."} />
+      <PanelHeader title="Kontak" />
       <PanelBody className="border-t border-muted pt-4 md:pt-5">
         <form onSubmit={kirim} noValidate className="flex flex-col gap-4">
           <Field data-invalid={!!galat}>
@@ -124,7 +124,7 @@ export function PanelKontak({ p }: { p: Profil }) {
               onChange={(e) => setKontak(e.target.value)}
               aria-invalid={!!galat}
             />
-            {galat ? <FieldError>{galat}</FieldError> : <FieldDescription>Contoh: 0812-3456-7890. Boleh dikosongkan.</FieldDescription>}
+            {galat ? <FieldError>{galat}</FieldError> : <FieldDescription>Contoh: 0812-3456-7890</FieldDescription>}
           </Field>
           {/* Tombol utama baru muncul saat ada perubahan; tombol utama yang dipudarkan tampak kusam di tema gelap */}
           <Button type="submit" variant={kontak === awal ? "outline" : "default"} className="h-10 pointer-coarse:min-h-11 w-fit" disabled={kontak === awal || simpan.isPending}>
