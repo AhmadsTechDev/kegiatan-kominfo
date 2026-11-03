@@ -341,7 +341,6 @@ export function AuditLogView() {
       <PageHeader
         eyebrow="Administrasi"
         title="Audit log"
-        description="Jejak aksi penting yang tidak dapat diubah atau dihapus: login, perubahan kegiatan, unggah berkas, ekspor, serta perubahan master data dan akun."
       />
       <AdminGuard>
         <DaftarAudit />

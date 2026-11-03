@@ -89,14 +89,6 @@ const LANGKAH = [
 ] as const;
 const KOLOM_LANGKAH_1: FieldPath<KegiatanFormValues>[] = ["judul", "jenisId", "jumlahPeserta", "uraian"];
 
-function Wajib() {
-  return (
-    <span aria-hidden className="text-destructive">
-      *
-    </span>
-  );
-}
-
 function BarisRingkasan({ label, nilai }: { label: string; nilai: string | null }) {
   return (
     <div className="grid grid-cols-[7rem_1fr] gap-2 py-1.5 text-sm">
@@ -289,7 +281,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
       <div className="grid gap-4 md:grid-cols-2">
         <Field data-invalid={!!errors.judul} className="md:col-span-2">
           <FieldLabel htmlFor="judul">
-            Judul kegiatan <Wajib />
+            Judul kegiatan
           </FieldLabel>
           <Input
             id="judul"
@@ -305,7 +297,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
 
         <Field data-invalid={!!errors.jenisId}>
           <FieldLabel htmlFor="jenisId">
-            Jenis kegiatan <Wajib />
+            Jenis kegiatan
           </FieldLabel>
           <Controller
             control={control}
@@ -397,7 +389,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
         ).map(({ tanggal, jam, label }) => (
           <Field key={tanggal} data-invalid={!!errors[tanggal] || !!errors[jam]}>
             <FieldLabel htmlFor={tanggal}>
-              {label} <Wajib /> <span className="font-normal text-muted-foreground">(WIB)</span>
+              {label} <span className="font-normal text-muted-foreground">(WIB)</span>
             </FieldLabel>
             <div className="grid grid-cols-[1fr_7rem] gap-2">
               <Controller

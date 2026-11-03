@@ -29,7 +29,6 @@ import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ErrorState } from "@/components/shared/error-state";
-import { Wajib } from "@/components/shared/form-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -74,7 +73,7 @@ export function LupaSandiForm() {
         )}
         <Field data-invalid={!!formState.errors.email}>
           <FieldLabel htmlFor="lupa-email">
-            Email akun <Wajib />
+            Email akun
           </FieldLabel>
           <Input id="lupa-email" type="email" placeholder="Masukkan email" aria-required inputMode="email" autoComplete="email" className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
           <FieldError errors={[formState.errors.email]} />

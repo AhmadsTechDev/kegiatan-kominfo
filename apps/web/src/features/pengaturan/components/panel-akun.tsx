@@ -25,7 +25,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { FormDialog, Wajib } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/shared/form-dialog";
 import { Panel, PanelHeader } from "@/components/shared/panel";
 import { StatusAkunBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -79,14 +79,14 @@ function GantiEmailDialog({ emailLama, onClose }: { emailLama: string; onClose: 
     >
       <Field data-invalid={!!formState.errors.email}>
         <FieldLabel htmlFor="email-baru">
-          Email pribadi baru <Wajib />
+          Email pribadi baru
         </FieldLabel>
         <Input id="email-baru" type="email" placeholder="Masukkan email" aria-required inputMode="email" autoComplete="email" maxLength={255} className="h-10" autoFocus aria-invalid={!!formState.errors.email} {...register("email")} />
         <FieldError errors={[formState.errors.email]} />
       </Field>
       <Field data-invalid={!!formState.errors.password}>
         <FieldLabel htmlFor="email-sandi">
-          Kata sandi saat ini <Wajib />
+          Kata sandi saat ini
         </FieldLabel>
         <Input id="email-sandi" type="password" aria-required autoComplete="current-password" className="h-10" aria-invalid={!!formState.errors.password} {...register("password")} />
         <FieldDescription>Untuk memastikan perubahan ini dilakukan oleh Anda.</FieldDescription>
@@ -105,7 +105,6 @@ export function PanelAkun({ p }: { p: Profil }) {
     <Panel className="h-fit">
       <PanelHeader
         title="Informasi akun"
-        description="Email pribadi adalah identitas login Anda."
         action={
           <Button variant="outline" size="sm" className="h-9 pointer-coarse:min-h-11" onClick={() => setGantiEmail(true)}>
             <Pencil aria-hidden />

@@ -66,7 +66,7 @@ export function AktivasiForm() {
 
   return (
     <div className="flex flex-col gap-5">
-      <KepalaKartu judul="Buat kata sandi" deskripsi="Langkah terakhir sebelum Anda dapat masuk ke aplikasi." />
+      <KepalaKartu judul="Buat kata sandi" />
       <p className="rounded-xl bg-muted/70 p-3 text-sm">
         Halo, <span className="font-semibold">{info.data.nama}</span>
       </p>

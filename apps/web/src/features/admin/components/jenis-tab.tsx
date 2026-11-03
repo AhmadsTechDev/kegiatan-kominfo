@@ -31,7 +31,7 @@ import { z } from "zod";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { ErrorState } from "@/components/shared/error-state";
-import { FormDialog, Wajib } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/shared/form-dialog";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -80,7 +80,7 @@ function JenisDialog({ jenis, onClose }: { jenis: JenisKegiatanAdmin | "baru"; o
     >
       <Field data-invalid={!!formState.errors.nama}>
         <FieldLabel htmlFor="jenis-nama">
-          Nama jenis <Wajib />
+          Nama jenis
         </FieldLabel>
         <Input id="jenis-nama" maxLength={100} className="h-10" aria-invalid={!!formState.errors.nama} autoFocus {...register("nama")} />
         <FieldError errors={[formState.errors.nama]} />

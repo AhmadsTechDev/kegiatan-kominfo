@@ -246,7 +246,7 @@ export function PantauView() {
 
   return (
     <>
-      <PageHeader eyebrow={grupNav} title={judulHalaman} description="Tandai kegiatan yang sudah diperiksa atau perlu perbaikan." />
+      <PageHeader eyebrow={grupNav} title={judulHalaman} />
 
       <Panel>
         <div role="search" aria-label="Penyaring pantau" className="grid items-end gap-3 p-4 sm:grid-cols-2 md:p-5 lg:grid-cols-[1fr_1fr_minmax(14rem,1.2fr)_auto]">

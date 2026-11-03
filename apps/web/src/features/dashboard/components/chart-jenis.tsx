@@ -56,7 +56,7 @@ export function ChartJenis({
 
   return (
     <Panel className={cn("@container", className)}>
-      <PanelHeader title="Sebaran jenis kegiatan" description="Komposisi periode terpilih, dari yang terbanyak" />
+      <PanelHeader title="Sebaran jenis kegiatan" />
       <PanelBody className="flex flex-col gap-5">
         {total === 0 ? (
           <EmptyState icon={PieChart} title="Belum ada kegiatan pada periode ini." />

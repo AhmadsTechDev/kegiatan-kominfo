@@ -29,7 +29,6 @@ import { ArrowLeft, CircleAlert, MailCheck } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Wajib } from "@/components/shared/form-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -111,7 +110,7 @@ export function MintaAkunForm() {
         <FieldGroup className="gap-4">
           <Field data-invalid={!!formState.errors.nama}>
             <FieldLabel htmlFor="minta-nama">
-              Nama lengkap <Wajib />
+              Nama lengkap
             </FieldLabel>
             <Input id="minta-nama" autoComplete="name" maxLength={150} className="h-11" aria-invalid={!!formState.errors.nama} {...register("nama")} />
             <FieldError errors={[formState.errors.nama]} />
@@ -126,7 +125,7 @@ export function MintaAkunForm() {
           </Field>
           <Field data-invalid={!!formState.errors.email}>
             <FieldLabel htmlFor="minta-email">
-              Email pribadi <Wajib />
+              Email pribadi
             </FieldLabel>
             <Input id="minta-email" type="email" placeholder="Masukkan email" autoComplete="email" maxLength={255} className="h-11" aria-invalid={!!formState.errors.email} {...register("email")} />
             <FieldError errors={[formState.errors.email]} />

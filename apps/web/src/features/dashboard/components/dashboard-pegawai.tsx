@@ -130,7 +130,7 @@ function labelHari(tanggal: string, hariIni: string) {
 function AgendaPekanPanel({ items, hariIni, className }: { items?: AgendaPekan[]; hariIni?: string; className?: string }) {
   return (
     <Panel className={className}>
-      <PanelHeader title="Agenda 7 hari ke depan" description="Kegiatan bidang Anda dan kegiatan Anda, mulai hari ini" />
+      <PanelHeader title="Agenda 7 hari ke depan" />
       <PanelBody className="flex-1">
         {!items || !hariIni ? (
           <Skeleton className="h-48 w-full rounded-lg" />

@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { ErrorState } from "@/components/shared/error-state";
-import { FormDialog, Wajib } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/shared/form-dialog";
 import { PaginationBar } from "@/components/shared/pagination-bar";
 import { PanelFooter } from "@/components/shared/panel";
 import { UnitChip } from "@/components/shared/unit-chip";
@@ -136,7 +136,7 @@ export function PegawaiDialog({
     >
       <Field data-invalid={!!formState.errors.nama}>
         <FieldLabel htmlFor="pegawai-nama">
-          Nama lengkap <Wajib />
+          Nama lengkap
         </FieldLabel>
         <Input id="pegawai-nama" maxLength={150} className="h-10" aria-invalid={!!formState.errors.nama} {...register("nama")} />
         <FieldError errors={[formState.errors.nama]} />
@@ -172,7 +172,7 @@ export function PegawaiDialog({
       </div>
       <Field data-invalid={!!formState.errors.bidangId}>
         <FieldLabel htmlFor="pegawai-unit">
-          Bidang <Wajib />
+          Bidang
         </FieldLabel>
         <Controller
           control={control}

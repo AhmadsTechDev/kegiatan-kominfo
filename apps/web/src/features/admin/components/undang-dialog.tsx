@@ -28,7 +28,7 @@ import { MailCheck } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { FormDialog, Wajib } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/shared/form-dialog";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -93,7 +93,7 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
       </div>
       <Field data-invalid={!!formState.errors.email}>
         <FieldLabel htmlFor="undang-email">
-          Email pribadi <Wajib />
+          Email pribadi
         </FieldLabel>
         <Input
           id="undang-email"
@@ -110,7 +110,7 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
       </Field>
       <Field data-invalid={!!formState.errors.role}>
         <FieldLabel htmlFor="undang-role">
-          Role <Wajib />
+          Role
         </FieldLabel>
         <Controller
           control={control}
@@ -136,7 +136,7 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
         <>
           <Field data-invalid={!!formState.errors.bidangId}>
             <FieldLabel htmlFor="undang-unit">
-              Bidang <Wajib />
+              Bidang
             </FieldLabel>
             <Controller
               control={control}

@@ -6,7 +6,6 @@
 //
 // Isi berkas:
 //   - FormDialog : dialog formulir modal dengan footer aksi dan indikator loading
-//   - Wajib      : komponen penanda tanda bintang merah untuk kolom wajib diisi
 //
 // Cara kerja:
 //   1. Membuka dialog modal sesuai prop open dan menangani submit formulir.
@@ -77,10 +76,3 @@ export function FormDialog({ open, onOpenChange, title, description, onSubmit, p
   );
 }
 
-export function Wajib() {
-  return (
-    <span aria-hidden className="text-destructive">
-      *
-    </span>
-  );
-}

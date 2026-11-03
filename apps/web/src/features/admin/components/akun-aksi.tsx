@@ -33,7 +33,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { FormDialog, Wajib } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/shared/form-dialog";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -194,14 +194,14 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field data-invalid={!!formState.errors.name} className="sm:col-span-2">
           <FieldLabel htmlFor="akun-nama">
-            Nama lengkap <Wajib />
+            Nama lengkap
           </FieldLabel>
           <Input id="akun-nama" maxLength={150} className="h-10" aria-required aria-invalid={!!formState.errors.name} {...register("name")} />
           <FieldError errors={[formState.errors.name]} />
         </Field>
         <Field data-invalid={!!formState.errors.email} className="sm:col-span-2">
           <FieldLabel htmlFor="akun-email">
-            Email pribadi <Wajib />
+            Email pribadi
           </FieldLabel>
           <Input id="akun-email" type="email" placeholder="Masukkan email" inputMode="email" autoComplete="off" maxLength={255} className="h-10" aria-required aria-invalid={!!formState.errors.email} {...register("email")} />
           <FieldDescription>
@@ -224,7 +224,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
 
       <Field data-invalid={!!formState.errors.bidangId}>
         <FieldLabel htmlFor="akun-unit">
-          Bidang <Wajib />
+          Bidang
         </FieldLabel>
         <Controller
           control={control}
@@ -236,7 +236,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
 
       <Field data-invalid={!!formState.errors.role}>
         <FieldLabel>
-          Role <Wajib />
+          Role
         </FieldLabel>
         <Controller control={control} name="role" render={({ field }) => <PilihRole value={field.value} onChange={field.onChange} terkunci={awal?.id === idSaya} />} />
         {awal?.id === idSaya && <FieldDescription>Anda tidak dapat mengubah role akun Anda sendiri.</FieldDescription>}

@@ -139,7 +139,6 @@ function LaporanIsi() {
       <PageHeader
         eyebrow={grupNav}
         title="Cetak & unduh laporan"
-        description="Pilih periode dan cakupan, periksa pratinjaunya, lalu unduh sebagai PDF, atau cetak langsung."
         actions={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" className="h-10" onClick={cetak} disabled={!pratinjau.data || pratinjau.isPlaceholderData}>

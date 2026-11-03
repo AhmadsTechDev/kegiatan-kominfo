@@ -87,9 +87,6 @@ export function LoginForm() {
         <Field data-invalid={!!errors.email}>
           <FieldLabel htmlFor="email">
             Email
-            <span aria-hidden className="text-destructive">
-              *
-            </span>
           </FieldLabel>
           <div className="relative">
             <Mail
@@ -115,9 +112,6 @@ export function LoginForm() {
           <div className="flex items-center justify-between gap-2">
             <FieldLabel htmlFor="password">
               Kata sandi
-              <span aria-hidden className="text-destructive">
-                *
-              </span>
             </FieldLabel>
             <Link href="/lupa-sandi" className="inline-flex items-center rounded text-sm font-semibold text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11">
               Lupa kata sandi?

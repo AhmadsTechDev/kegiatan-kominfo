@@ -332,7 +332,6 @@ export function AkunView() {
       <PageHeader
         eyebrow="Administrasi"
         title="Manajemen akun"
-        description="Buat akun atau undang pegawai, atur role dan status, nonaktifkan atau hapus akun, serta tinjau permintaan akses."
       />
       <AdminGuard>
         <IsiAkun />

@@ -23,7 +23,6 @@ import { CircleAlert, CircleCheck, Eye, EyeOff, LinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Wajib } from "@/components/shared/form-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -104,7 +103,7 @@ export function FormSandiBaru({
       <FieldGroup className="gap-4">
         <Field data-invalid={!!formState.errors.password}>
           <FieldLabel htmlFor="sandi-baru">
-            Kata sandi baru <Wajib />
+            Kata sandi baru
           </FieldLabel>
           <div className="relative">
             <Input
@@ -132,7 +131,7 @@ export function FormSandiBaru({
         </Field>
         <Field data-invalid={!!formState.errors.ulang}>
           <FieldLabel htmlFor="sandi-ulang">
-            Ulangi kata sandi <Wajib />
+            Ulangi kata sandi
           </FieldLabel>
           <Input id="sandi-ulang" type={tampil ? "text" : "password"} autoComplete="new-password" className="h-11" aria-required aria-invalid={!!formState.errors.ulang} {...register("ulang")} />
           <FieldError errors={[formState.errors.ulang]} />

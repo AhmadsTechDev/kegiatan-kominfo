@@ -26,7 +26,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { FormDialog, Wajib } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/shared/form-dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useGantiSandi } from "@/features/pengaturan/hooks/use-akun-saya";
@@ -94,21 +94,21 @@ export function GantiSandiDialog({ open, onOpenChange }: { open: boolean; onOpen
       <input type="email" name="username" autoComplete="username" value={user?.email ?? ""} readOnly hidden />
       <Field data-invalid={!!formState.errors.sandiLama}>
         <FieldLabel htmlFor="sandi-lama">
-          Kata sandi saat ini <Wajib />
+          Kata sandi saat ini
         </FieldLabel>
         <Input id="sandi-lama" type="password" aria-required autoComplete="current-password" className="h-10" aria-invalid={!!formState.errors.sandiLama} autoFocus {...register("sandiLama")} />
         <FieldError errors={[formState.errors.sandiLama]} />
       </Field>
       <Field data-invalid={!!formState.errors.sandiBaru}>
         <FieldLabel htmlFor="sandi-baru">
-          Kata sandi baru <Wajib />
+          Kata sandi baru
         </FieldLabel>
         <Input id="sandi-baru" type="password" aria-required autoComplete="new-password" className="h-10" aria-invalid={!!formState.errors.sandiBaru} {...register("sandiBaru")} />
         <FieldError errors={[formState.errors.sandiBaru]} />
       </Field>
       <Field data-invalid={!!formState.errors.ulang}>
         <FieldLabel htmlFor="sandi-ulang">
-          Ulangi kata sandi baru <Wajib />
+          Ulangi kata sandi baru
         </FieldLabel>
         <Input id="sandi-ulang" type="password" aria-required autoComplete="new-password" className="h-10" aria-invalid={!!formState.errors.ulang} {...register("ulang")} />
         <FieldError errors={[formState.errors.ulang]} />

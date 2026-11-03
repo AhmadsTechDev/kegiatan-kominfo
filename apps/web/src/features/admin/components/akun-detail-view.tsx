@@ -96,7 +96,7 @@ function PanelUndangan({ a, buka }: { a: AkunDetail; buka: (j: JenisAksi, akun: 
   const kedaluwarsa = a.undangan?.kedaluwarsa;
   return (
     <Panel>
-      <PanelHeader title="Undangan aktivasi" description="Akun aktif setelah pemiliknya membuat kata sandi dari tautan di email." />
+      <PanelHeader title="Undangan aktivasi" />
       <PanelBody className="flex flex-col gap-3 border-t border-muted pt-4 sm:flex-row sm:items-center md:pt-5">
         <p className="min-w-0 flex-1 text-sm">
           {kedaluwarsa ? (
@@ -121,7 +121,6 @@ function PanelSesiAkun({ a, buka }: { a: AkunDetail; buka: (j: JenisAksi, akun: 
     <Panel>
       <PanelHeader
         title="Sesi aktif"
-        description="Perangkat yang sedang masuk dengan akun ini."
         action={
           a.sesi.length > 0 && (
             <Button variant="outline" size="sm" className="h-9 pointer-coarse:min-h-11" onClick={() => buka("sesi", dariDetail(a))}>
@@ -140,7 +139,7 @@ function PanelSesiAkun({ a, buka }: { a: AkunDetail; buka: (j: JenisAksi, akun: 
 function PanelRiwayat({ a }: { a: AkunDetail }) {
   return (
     <Panel>
-      <PanelHeader title="Riwayat terbaru" description="Aksi terhadap akun ini dan aksi yang dilakukannya." />
+      <PanelHeader title="Riwayat terbaru" />
       {a.riwayat.length ? (
         <ol className="divide-y divide-muted border-t border-muted">
           {a.riwayat.map((r) => (

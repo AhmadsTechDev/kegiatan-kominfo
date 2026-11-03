@@ -34,7 +34,7 @@ import { z } from "zod";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { ErrorState } from "@/components/shared/error-state";
-import { FormDialog, Wajib } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/shared/form-dialog";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -115,7 +115,6 @@ function UnitDialog({ unit, semua, tingkat, onClose }: { unit: BidangAdmin | "ba
       open
       onOpenChange={(v) => !v && onClose()}
       title={awal ? `Ubah "${awal.nama}"` : `Tambah ${noun}`}
-      description={turunan ? "Sub bidang berada di bawah satu bidang. Kegiatannya ikut terhitung ke bidang itu." : "Bidang adalah tingkat tertinggi di struktur organisasi."}
       onSubmit={kirim}
       pending={simpan.isPending}
       submitLabel={awal ? "Simpan perubahan" : `Tambah ${noun}`}
@@ -123,7 +122,7 @@ function UnitDialog({ unit, semua, tingkat, onClose }: { unit: BidangAdmin | "ba
     >
       <Field data-invalid={!!formState.errors.nama}>
         <FieldLabel htmlFor="unit-nama">
-          Nama {noun} <Wajib />
+          Nama {noun}
         </FieldLabel>
         <Input
           id="unit-nama"
@@ -139,7 +138,7 @@ function UnitDialog({ unit, semua, tingkat, onClose }: { unit: BidangAdmin | "ba
       {turunan && (
         <Field data-invalid={!!formState.errors.parentId}>
           <FieldLabel htmlFor="unit-induk">
-            Bidang induk <Wajib />
+            Bidang induk
           </FieldLabel>
           <Controller
             control={control}

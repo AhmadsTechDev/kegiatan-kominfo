@@ -138,7 +138,7 @@ export function RekapView() {
 function RekapIsi() {
   const grupNav = useGrupNav("Monitoring");
   const { filter: filterUrl, setFilter, resetFilter, adaFilter } = useKegiatanFilter();
-  const { terbatas, unit: unitSaya, saringUnit } = useLingkupPegawai();
+  const { terbatas, saringUnit } = useLingkupPegawai();
   const { q, dari, sampai, unit, jenis, status, pegawai } = filterUrl;
   const filter = useMemo<NilaiFilter>(() => ({ q, dari, sampai, unit, jenis, status, pegawai }), [q, dari, sampai, unit, jenis, status, pegawai]);
   const [satuan, setSatuan] = useState<SatuanRekap>("bulan");
@@ -176,11 +176,6 @@ function RekapIsi() {
       <PageHeader
         eyebrow={grupNav}
         title="Rekap kegiatan"
-        description={
-          terbatas
-            ? `Jumlah kegiatan ${unitSaya?.nama ?? "bidang Anda"} dan kegiatan yang Anda catat.`
-            : "Jumlah kegiatan per periode, bidang, dan pegawai."
-        }
         actions={
           <Button asChild className="h-10">
             <Link href={hrefLaporan(filter)}>
@@ -219,10 +214,10 @@ function RekapIsi() {
           </div>
           <TrenRekap data={rekap.data} animasi={animasi} />
           {peringkat === "bidang" ? (
-            <TabelRekapUnit terbatas={terbatas} data={rekap.data} filter={filter} aksi={pengalihPeringkat} />
+            <TabelRekapUnit data={rekap.data} filter={filter} aksi={pengalihPeringkat} />
           ) : (
             <Panel>
-              <PanelHeader title="Rekap per pegawai" description="Kegiatan per penanggung jawab, terbanyak di atas" action={pengalihPeringkat} />
+              <PanelHeader title="Rekap per pegawai" action={pengalihPeringkat} />
               <TabelRekapPegawai data={rekap.data} filter={filter} />
             </Panel>
           )}

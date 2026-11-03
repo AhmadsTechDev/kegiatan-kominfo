@@ -77,7 +77,7 @@ export function PanelTema() {
   );
   return (
     <Panel>
-      <PanelHeader title="Tema tampilan" description="Tersimpan di akun Anda dan dipakai di semua perangkat." />
+      <PanelHeader title="Tema tampilan" />
       <PanelBody className="border-t border-muted pt-4 md:pt-5">
         <div
           role="radiogroup"
@@ -118,7 +118,7 @@ export function PanelNotifikasi() {
 
   return (
     <Panel>
-      <PanelHeader title="Notifikasi email" description="Pengingat otomatis untuk kegiatan yang Anda tanggung jawabi." />
+      <PanelHeader title="Notifikasi email" />
       <PanelBody className="border-t border-muted py-1 md:py-1">
         {pref.isPending ? (
           <div className="flex flex-col gap-3 py-3">

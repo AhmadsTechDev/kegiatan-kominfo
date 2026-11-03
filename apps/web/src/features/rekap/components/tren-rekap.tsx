@@ -66,7 +66,7 @@ export function TrenRekap({ data, animasi, className }: Props) {
 
   return (
     <Panel className={className}>
-      <PanelHeader title={`Tren kegiatan ${NAMA_SATUAN[satuan]}`} description="Jumlah kegiatan menurut tanggal mulai (WIB)" />
+      <PanelHeader title={`Tren kegiatan ${NAMA_SATUAN[satuan]}`} />
       <PanelBody>
         {kosong ? (
           <EmptyState icon={BarChart3} title="Belum ada kegiatan pada periode ini." description="Ubah rentang tanggal atau filter untuk melihat tren." />

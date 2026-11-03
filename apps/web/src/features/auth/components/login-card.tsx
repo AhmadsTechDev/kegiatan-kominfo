@@ -22,7 +22,7 @@ import { LoginForm } from "./login-form";
 export function LoginCard() {
   return (
     <KartuPublik>
-      <KepalaKartu judul="Masuk" deskripsi="Gunakan email pribadi yang didaftarkan administrator untuk Anda." />
+      <KepalaKartu judul="Masuk" />
       <LoginForm />
       <p className="border-t pt-5 text-center text-sm text-muted-foreground">
         Belum punya akun?{" "}

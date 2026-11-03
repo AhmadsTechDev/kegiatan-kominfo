@@ -104,7 +104,7 @@ export function KegiatanSayaPanel({ className }: { className?: string }) {
 
   return (
     <Panel className={cn("@container", className)}>
-      <PanelHeader title="Kegiatan saya" description="Kegiatan yang Anda catat atau menjadi penanggung jawabnya" />
+      <PanelHeader title="Kegiatan saya" />
       {isError ? (
         <div className="px-4 pb-4 md:px-5">
           <ErrorState message={error.message} onRetry={() => refetch()} retrying={isRefetching} />

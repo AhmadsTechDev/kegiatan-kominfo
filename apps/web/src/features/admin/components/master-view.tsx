@@ -62,7 +62,7 @@ export function MasterView() {
 
   return (
     <>
-      <PageHeader eyebrow="Administrasi" title="Master data" description="Kelola pegawai, bidang, dan jenis kegiatan." />
+      <PageHeader eyebrow="Administrasi" title="Master data" />
       <AdminGuard>
         <Panel>
           <div className="border-b border-muted px-4 pt-4 pb-3 md:px-5">

@@ -59,13 +59,11 @@ function SelAngka({ nilai, tebal }: { nilai: number; tebal?: boolean }) {
 export function TabelRekapUnit({
   data,
   filter,
-  terbatas,
   aksi,
   className,
 }: {
   data: RekapData;
   filter: NilaiFilter;
-  terbatas?: boolean;
   aksi?: React.ReactNode;
   className?: string;
 }) {
@@ -74,7 +72,6 @@ export function TabelRekapUnit({
       <PanelHeader
         title="Rekap per bidang"
         action={aksi}
-        description={terbatas ? "Kegiatan dalam lingkup Anda per bidang pencatat" : "Kegiatan sub bidang ikut terhitung ke bidangnya"}
       />
       {data.perUnit.length === 0 ? (
         <EmptyState icon={Building2} title="Tidak ada kegiatan yang cocok." description="Coba ubah filter." className="pb-6" />

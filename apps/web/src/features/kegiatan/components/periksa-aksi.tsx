@@ -116,9 +116,6 @@ export function PeriksaAksi({ kegiatan, ringkas, className }: Props) {
           <Field data-invalid={!!galat}>
             <FieldLabel htmlFor={`catatan-${kegiatan.id}`}>
               Catatan perbaikan
-              <span aria-hidden className="text-destructive">
-                *
-              </span>
             </FieldLabel>
             <Textarea
               id={`catatan-${kegiatan.id}`}

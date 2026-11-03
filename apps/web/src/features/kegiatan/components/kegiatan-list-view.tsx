@@ -316,20 +316,18 @@ export function KegiatanListView() {
       : filter.milik === "saya"
         ? "saya"
         : "unit";
-  const judul: Record<Lingkup, { title: string; description: string }> = {
+  const judul: Record<Lingkup, { title: string; description?: string }> = {
     // Admin tetap "Kegiatan"; pimpinan memakai nama menu "Semua kegiatan"
-    semua: { title: user?.role === "PIMPINAN" ? "Semua kegiatan" : "Kegiatan", description: "Seluruh kegiatan dinas." },
+    semua: { title: user?.role === "PIMPINAN" ? "Semua kegiatan" : "Kegiatan" },
     unit: {
       title: "Semua kegiatan",
-      description: unitSaya ? `${unitSaya.nama} dan sub bidangnya` : "Kegiatan bidang Anda.",
+      description: unitSaya ? `${unitSaya.nama} dan sub bidangnya` : undefined,
     },
     perbaikan: {
       title: "Perlu perbaikan",
-      description: "Kegiatan Anda yang mendapat catatan dari admin atau pimpinan.",
     },
     saya: {
       title: "Kegiatan saya",
-      description: "Kegiatan yang Anda catat atau tangani.",
     },
   };
   const referensi = useReferensi();

@@ -84,7 +84,6 @@ export function PanelSesi() {
     <Panel>
       <PanelHeader
         title="Sesi aktif"
-        description="Perangkat yang sedang masuk ke akun Anda. Keluarkan perangkat yang tidak Anda kenali."
         action={
           jumlahLain > 0 && (
             <Button variant="outline" size="sm" className="h-9 pointer-coarse:min-h-11" onClick={() => setTarget("lainnya")}>
