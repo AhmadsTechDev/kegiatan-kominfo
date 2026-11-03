@@ -28,18 +28,17 @@ async function trenUnitBulanan(periode: Periode) {
 }
 
 export const DashboardService = {
-  // Dashboard pimpinan/admin untuk satu bulan: KPI, tren, sebaran jenis, peta, dan daftar perhatian.
+  // Dashboard pimpinan/admin untuk satu bulan: KPI, tren, sebaran jenis, peta, dan agenda terdekat.
   // Admin juga menerima jumlah akun yang menunggu aktivasi.
   async ringkasan(periode: Periode, aktor: Aktor, sekarang = new Date()) {
     const rentang = rentangPeriode(periode);
-    const [kpi, totalSebelumnya, tren, jenis, jenisAktif, peta, perhatian, mendatang, menungguAktivasi] = await Promise.all([
+    const [kpi, totalSebelumnya, tren, jenis, jenisAktif, peta, mendatang, menungguAktivasi] = await Promise.all([
       DashboardRepository.hitungKpi(rentang, sekarang),
       DashboardRepository.hitungTotal(rentangPeriode(geserPeriode(periode, -1))),
       trenUnitBulanan(periode),
       DashboardRepository.jumlahPerJenis(rentang),
       DashboardRepository.jenisAktif(),
       DashboardRepository.titikPeta(rentang, sekarang),
-      DashboardRepository.selesaiTanpaDokumentasi(rentang, sekarang, BATAS_DAFTAR),
       DashboardRepository.akanDatang(sekarang, BATAS_DAFTAR),
       aktor.role === "ADMIN" ? UserRepository.hitungStatus("MENUNGGU_AKTIVASI") : null,
     ]);
@@ -52,7 +51,6 @@ export const DashboardService = {
       trenUnitBulanan: tren,
       sebaranJenis: [...jenis, ...tanpaKegiatan],
       peta,
-      perluPerhatian: perhatian,
       akanDatang: mendatang,
       admin: menungguAktivasi == null ? null : { menungguAktivasi },
     };

@@ -54,7 +54,7 @@ Dokumen kebutuhan produk, diselaraskan dengan aplikasi yang sudah berjalan. Nomo
 | FR-06 | **Dokumentasi.** Unggah foto atau PDF, pratinjau, ganti, dan hapus | Maks. 20 MB per berkas dan 10 berkas per kegiatan; jenis dicek lewat magic bytes; foto dikompres dan EXIF atau GPS dibuang; unduhan hanya untuk yang login dan berhak membaca kegiatan |
 | FR-07 | **Peta dan lokasi.** Peta 2D dan 3D, pencarian tempat, nama lokasi terisi otomatis dari titik peta, atau koordinat manual | Lokasi bisa diisi tanpa peta (nama dan koordinat manual) |
 | FR-08 | **Rekap otomatis.** Jumlah kegiatan per periode (hari, bulan, tahun), per unit induk, dan per jenis | Angka rekap sama dengan angka dashboard dan ekspor untuk filter yang sama |
-| FR-09 | **Dashboard.** Dashboard dinas untuk pimpinan dan admin; dashboard tugas untuk pegawai | Menampilkan total, berlangsung, akan datang, selesai, dan kegiatan selesai tanpa dokumentasi |
+| FR-09 | **Dashboard.** Dashboard dinas untuk pimpinan dan admin; dashboard tugas untuk pegawai | Dashboard dinas menampilkan total, berlangsung, akan datang, dan selesai; dashboard pegawai mengingatkan kegiatannya yang selesai tanpa dokumentasi |
 | FR-10 | **Laporan PDF.** Pilih rentang dan cakupan, pratinjau jumlah, lalu unduh PDF berkop dinas | Isi mengikuti lingkup baca pengguna; maks. 10 ekspor per menit per akun |
 | FR-11 | **Pantau dan pemeriksaan.** Pimpinan melihat kegiatan dinas, menyaring per pegawai, dan menandai *Sudah diperiksa* atau *Perlu perbaikan* | Catatan wajib untuk *Perlu perbaikan*; pemeriksaan opsional dan tidak menghalangi kegiatan |
 | FR-12 | **Kalender.** Kegiatan per bulan dengan penyaringan per bidang | Hanya kegiatan dalam lingkup baca |

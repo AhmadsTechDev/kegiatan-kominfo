@@ -41,7 +41,6 @@ export type DashboardData = {
     berlangsung: number;
     akanDatang: number;
     selesai: number;
-    selesaiTanpaDokumentasi: number;
   };
   trenUnitBulanan: {
     unitInduk: { id: number; kode: string; nama: string }[];
@@ -49,7 +48,6 @@ export type DashboardData = {
   };
   sebaranJenis: { id: number; nama: string; jumlah: number }[];
   peta: (KegiatanRingkas & { lat: number; lng: number })[];
-  perluPerhatian: { total: number; items: KegiatanRingkas[] };
   akanDatang: KegiatanRingkas[];
   /** Hanya terisi untuk ADMIN */
   admin: { menungguAktivasi: number } | null;

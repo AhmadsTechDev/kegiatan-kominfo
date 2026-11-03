@@ -89,21 +89,22 @@ describe("angka laporan konsisten", () => {
     expect(pratinjau.data.subjudul).toContain("Bidang sendiri");
   });
 
-  test("kegiatan selesai tanpa dokumentasi muncul di dashboard sampai dokumentasinya diunggah", async () => {
+  test("kegiatan selesai tanpa dokumentasi muncul di beranda pemiliknya sampai dokumentasinya diunggah", async () => {
     const bidang = await buatBidang();
     const u = await buatPengguna({ unitId: bidang.id });
     const k = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!, { tglMulai: wib("2020-05-10", 9), tglSelesai: wib("2020-05-10", 11) }));
     const admin = await loginAdmin();
 
     const sebelum = await panggil("/dashboard?periode=2020-05", { cookie: admin });
-    expect(sebelum.data.kpi).toMatchObject({ selesai: 1, selesaiTanpaDokumentasi: 1 });
-    expect(sebelum.data.perluPerhatian.items[0]).toMatchObject({ id: k.id, bidang: bidang.nama, statusPelaksanaan: "selesai" });
+    expect(sebelum.data.kpi).toMatchObject({ selesai: 1 });
+    // Dashboard dinas tidak lagi memantau dokumentasi (opsional)
+    expect(sebelum.data.kpi.selesaiTanpaDokumentasi).toBeUndefined();
+    expect(sebelum.data.perluPerhatian).toBeUndefined();
     const saya = await panggil("/dashboard/saya", { cookie: u.cookie });
     expect(saya.data.perluDokumentasi.total).toBe(1);
     expect(saya.data.unit).toEqual({ id: bidang.id, jumlahBulanIni: 0 });
 
     await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie: u.cookie, form: formBerkas(PNG) });
-    expect((await panggil("/dashboard?periode=2020-05", { cookie: admin })).data.kpi).toMatchObject({ selesai: 1, selesaiTanpaDokumentasi: 0 });
     expect((await panggil("/dashboard/saya", { cookie: u.cookie })).data.perluDokumentasi.total).toBe(0);
   });
 

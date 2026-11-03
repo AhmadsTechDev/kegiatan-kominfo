@@ -47,7 +47,6 @@ Dashboard bulanan untuk pimpinan dan admin (semua unit).
     "berlangsung": 1,
     "akanDatang": 5,
     "selesai": 8,
-    "selesaiTanpaDokumentasi": 2,
     "totalPeriodeSebelumnya": 11
   },
   "trenUnitBulanan": {
@@ -59,7 +58,6 @@ Dashboard bulanan untuk pimpinan dan admin (semua unit).
   },
   "sebaranJenis": [{ "id": 1, "nama": "Rapat", "jumlah": 8 }, { "id": 5, "nama": "Bimtek", "jumlah": 0 }],
   "peta": [{ "...kegiatan ringkas": "", "lat": -2.976074, "lng": 104.775431 }],
-  "perluPerhatian": { "total": 2, "items": ["...kegiatan ringkas (maks. 5)"] },
   "akanDatang": ["...kegiatan ringkas (maks. 5)"],
   "admin": { "menungguAktivasi": 1 }
 }
@@ -67,11 +65,10 @@ Dashboard bulanan untuk pimpinan dan admin (semua unit).
 
 | Field | Keterangan |
 | --- | --- |
-| `kpi` | Angka bulan terpilih. `selesai` = sudah selesai (tidak dibatalkan); `selesaiTanpaDokumentasi` = bagian dari `selesai` yang belum ada berkas dokumentasi |
+| `kpi` | Angka bulan terpilih. `selesai` = sudah selesai (tidak dibatalkan) |
 | `trenUnitBulanan` | 6 bulan terakhir sampai `periode`. Kunci di `jumlah` adalah `kode` unit induk; unit turunan digabung ke induknya |
 | `sebaranJenis` | Jumlah per jenis, terbanyak di atas; jenis aktif tanpa kegiatan ikut di belakang dengan `jumlah` 0 |
 | `peta` | Kegiatan bulan ini yang punya koordinat |
-| `perluPerhatian` | Kegiatan bulan ini yang selesai tanpa dokumentasi (terbaru di atas) |
 | `akanDatang` | 5 kegiatan terdekat yang akan datang (tidak terbatas bulan) |
 | `admin` | Hanya untuk ADMIN: jumlah akun yang menunggu aktivasi. `null` untuk PIMPINAN |
 
