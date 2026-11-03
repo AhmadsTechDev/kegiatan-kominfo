@@ -145,7 +145,6 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
     <Panel className={className}>
       <PanelHeader
         title="Kegiatan per bidang per bulan"
-        description="Enam bulan terakhir; kegiatan sub bidang dihitung ke bidangnya"
         action={
           <Button asChild variant="outline" size="sm" className="h-9 border-border/60 text-xs">
             <Link href="/kegiatan">
