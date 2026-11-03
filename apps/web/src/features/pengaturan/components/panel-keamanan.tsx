@@ -134,8 +134,9 @@ export function PanelKeluar() {
   return (
     <Panel>
       {/* Panel tanpa PanelHeader, jadi PanelBody perlu padding atas sendiri */}
-      <PanelBody className="pt-4 md:pt-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+      <PanelBody className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center md:pt-5">
+        <p className="min-w-0 flex-1 text-sm font-medium">Keluar dari akun</p>
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={keluarSemua} disabled={sibuk}>
             {cabutLain.isPending ? <Spinner /> : <MonitorX aria-hidden />}
             Keluar dari semua perangkat
