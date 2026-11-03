@@ -1,5 +1,5 @@
 import { KegiatanService } from "@/services/kegiatan.service";
-import type { BatalkanKegiatan, DaftarQuery, IsiKegiatan, PeriksaKegiatan, UbahKegiatan } from "@/types/kegiatan.types";
+import type { BatalkanKegiatan, DaftarQuery, IsiKegiatan, PeriksaKegiatan, SelesaikanKegiatan, UbahKegiatan } from "@/types/kegiatan.types";
 import type { Konteks } from "@/types/umum.types";
 import { aktorDari, requestMeta } from "@/utils/konteks";
 
@@ -24,6 +24,10 @@ export const KegiatanController = {
   // POST /api/kegiatan/:id/pemeriksaan
   periksa: ({ params, body, user, request }: Konteks<PeriksaKegiatan, Id>) =>
     KegiatanService.periksa(params.id, body, aktorDari(user), requestMeta(request.headers)),
+
+  // POST /api/kegiatan/:id/selesai
+  selesaikan: ({ params, body, user, request }: Konteks<SelesaikanKegiatan, Id>) =>
+    KegiatanService.selesaikan(params.id, body, aktorDari(user), requestMeta(request.headers)),
 
   // POST /api/kegiatan/:id/batalkan
   batalkan: ({ params, body, user, request }: Konteks<BatalkanKegiatan, Id>) =>

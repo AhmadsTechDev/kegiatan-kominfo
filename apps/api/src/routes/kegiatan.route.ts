@@ -16,6 +16,8 @@ export const kegiatanRoutes = new Elysia({ prefix: "/kegiatan" })
   .post("/", KegiatanController.buat, { auth: [...PENULIS], body: KegiatanValidator.buat })
   // Ubah kegiatan
   .patch("/:id", KegiatanController.ubah, { auth: [...PENULIS], params, body: KegiatanValidator.ubah })
+  // Selesaikan kegiatan yang sedang berlangsung (waktu selesai menjadi sekarang)
+  .post("/:id/selesai", KegiatanController.selesaikan, { auth: [...PENULIS], params, body: KegiatanValidator.selesai })
   // Batalkan kegiatan
   .post("/:id/batalkan", KegiatanController.batalkan, { auth: [...PENULIS], params, body: KegiatanValidator.batalkan })
   // Periksa kegiatan: hanya pimpinan (PRD Fase 4 "Pantau Pimpinan"); admin mengelola data, bukan menilai isi kegiatan

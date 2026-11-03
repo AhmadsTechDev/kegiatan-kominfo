@@ -5,6 +5,7 @@ export type DaftarQuery = typeof KegiatanValidator.daftarQuery.static;
 export type IsiKegiatan = typeof KegiatanValidator.buat.static;
 export type UbahKegiatan = typeof KegiatanValidator.ubah.static;
 export type BatalkanKegiatan = typeof KegiatanValidator.batalkan.static;
+export type SelesaikanKegiatan = typeof KegiatanValidator.selesai.static;
 export type PeriksaKegiatan = typeof KegiatanValidator.periksa.static;
 
 // Bagian query yang dipakai bersama oleh daftar kegiatan, rekap, pantau, dan ekspor

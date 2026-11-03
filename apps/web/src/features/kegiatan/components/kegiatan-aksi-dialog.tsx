@@ -1,8 +1,8 @@
 // =============================================================================
-// DIALOG AKSI PEMBATALAN DAN PENGHAPUSAN KEGIATAN
+// DIALOG AKSI PENYELESAIAN, PEMBATALAN, DAN PENGHAPUSAN KEGIATAN
 // =============================================================================
-// Gunanya: Menyediakan modal dialog konfirmasi untuk membatalkan kegiatan dengan
-// isian alasan wajib atau menghapus data kegiatan secara permanen dari aplikasi.
+// Gunanya: Menyediakan modal dialog konfirmasi untuk menyelesaikan kegiatan yang sedang
+// berlangsung, membatalkannya dengan isian alasan wajib, atau menghapus datanya.
 //
 // Isi berkas:
 //   - BATAS_ALASAN       : konstanta panjang maksimum teks alasan (1000 karakter)
@@ -10,7 +10,8 @@
 //   - KegiatanAksiDialog : komponen dialog konfirmasi aksi pembatalan atau penghapusan
 //
 // Cara kerja:
-//   1. Menerima data target kegiatan dan jenis aksi ("batalkan" atau "hapus").
+//   1. Menerima data target kegiatan dan jenis aksi ("selesai", "batalkan", atau "hapus").
+//      "selesai" mengisi waktu selesai dengan waktu sekarang; statusnya tetap dihitung dari waktu.
 //   2. Aksi batalkan memvalidasi isian teks alasan sebelum mutasi dikirimkan.
 //   3. Aksi hapus menampilkan peringatan dampak dan mengeksekusi mutasi hapus.
 //   4. Menutup dialog saat mutasi berhasil dan memicu callback onDihapus jika ada.
@@ -33,10 +34,10 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/api-client";
-import { kegiatanKeys, useBatalkanKegiatan, useHapusKegiatan } from "../hooks/use-kegiatan";
+import { kegiatanKeys, useBatalkanKegiatan, useHapusKegiatan, useSelesaikanKegiatan } from "../hooks/use-kegiatan";
 
 export type TargetAksi = { id: number; judul: string; updatedAt: string };
-export type JenisAksi = "batalkan" | "hapus";
+export type JenisAksi = "selesai" | "batalkan" | "hapus";
 
 type Props = {
   target: TargetAksi | null;
@@ -56,6 +57,7 @@ const pesanGagal = (e: unknown) =>
 
 export function KegiatanAksiDialog({ target, aksi, onClose, onDihapus }: Props) {
   const queryClient = useQueryClient();
+  const selesaikan = useSelesaikanKegiatan();
   const batalkan = useBatalkanKegiatan();
   const hapus = useHapusKegiatan();
   const [alasan, setAlasan] = useState("");
@@ -64,6 +66,7 @@ export function KegiatanAksiDialog({ target, aksi, onClose, onDihapus }: Props) 
   const tutup = () => {
     setAlasan("");
     setGalat(null);
+    selesaikan.reset();
     batalkan.reset();
     hapus.reset();
     onClose();
@@ -75,6 +78,32 @@ export function KegiatanAksiDialog({ target, aksi, onClose, onDihapus }: Props) 
   };
 
   if (!target) return null;
+
+  if (aksi === "selesai") {
+    return (
+      <ConfirmDialog
+        open
+        onOpenChange={(v) => !v && tutup()}
+        title={`Selesaikan kegiatan "${target.judul}" sekarang?`}
+        description={galat ?? "Waktu selesai diubah menjadi sekarang."}
+        confirmLabel="Selesaikan"
+        pendingLabel="Menyimpan..."
+        pending={selesaikan.isPending}
+        onConfirm={() =>
+          selesaikan.mutate(
+            { id: target.id, expectedUpdatedAt: target.updatedAt },
+            {
+              onSuccess: () => {
+                toast.success("Kegiatan diselesaikan");
+                tutup();
+              },
+              onError: gagal,
+            },
+          )
+        }
+      />
+    );
+  }
 
   if (aksi === "batalkan") {
     return (

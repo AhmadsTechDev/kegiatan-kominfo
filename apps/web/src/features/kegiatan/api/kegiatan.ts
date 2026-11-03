@@ -12,6 +12,7 @@
 //   - getReferensi      : mengambil data opsi master (jenis, bidang, pegawai)
 //   - buatKegiatan      : mengirim data kegiatan baru (bisa melanjutkan draf)
 //   - ubahKegiatan      : memperbarui data kegiatan dengan expectedUpdatedAt
+//   - selesaikanKegiatan: menyelesaikan kegiatan yang berlangsung (waktu selesai menjadi sekarang)
 //   - batalkanKegiatan  : membatalkan kegiatan disertai alasan pembatalan
 //   - periksaKegiatan   : mencatat hasil pemeriksaan pimpinan beserta catatan
 //   - hapusKegiatan     : menghapus rekaman kegiatan secara permanen
@@ -53,6 +54,11 @@ export async function buatKegiatan(payload: KegiatanPayload & { drafId?: number 
 
 export async function ubahKegiatan(id: number, payload: KegiatanPayload & { expectedUpdatedAt: string }) {
   const { data } = await apiClient.patch<HasilSimpan>(`/kegiatan/${id}`, payload);
+  return data;
+}
+
+export async function selesaikanKegiatan(id: number, expectedUpdatedAt: string) {
+  const { data } = await apiClient.post<HasilSimpan>(`/kegiatan/${id}/selesai`, { expectedUpdatedAt });
   return data;
 }
 

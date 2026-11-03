@@ -233,6 +233,24 @@ Mengubah kegiatan. Body sama dengan `POST /api/kegiatan` (tanpa `drafId`), ditam
 | 409 | `expectedUpdatedAt` sudah tidak sama (data diubah orang lain); muat ulang |
 | 422 | Isian tidak valid |
 
+### `POST /api/kegiatan/:id/selesai`
+
+Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti menjadi waktu sekarang, sehingga status pelaksanaannya langsung `selesai`. Status tetap dihitung dari waktu, bukan disimpan terpisah. Status pemeriksaan kembali menjadi "belum diperiksa", seperti saat kegiatan diubah, dan perubahannya tercatat di audit log (`ubah`).
+
+**Akses**: PEGAWAI, ADMIN (pemilik kegiatan)
+
+**Body**: `{ "expectedUpdatedAt": "2026-11-01T22:10:53.394Z" }` (versi data)
+
+**Respons 200**: `{ "id": 1, "updatedAt": "..." }`
+
+**Galat**
+
+| Status | Kapan |
+| --- | --- |
+| 403, 404 | Bukan kegiatan milik Anda, atau di luar hak baca |
+| 409 | `expectedUpdatedAt` sudah tidak sama; muat ulang |
+| 422 | Kegiatan belum dimulai, sudah selesai, atau dibatalkan |
+
 ### `POST /api/kegiatan/:id/batalkan`
 
 **Akses**: PEGAWAI, ADMIN (pemilik kegiatan)

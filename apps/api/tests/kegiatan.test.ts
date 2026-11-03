@@ -174,6 +174,44 @@ describe("ubah, batal, periksa, hapus", () => {
     expect(lagi.status).toBe(422);
   });
 
+  test("selesaikan sekarang: hanya untuk kegiatan yang berlangsung, waktu selesai menjadi sekarang", async () => {
+    const u = await buatPengguna();
+    const berlangsung = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!, { tglMulai: jamLagi(-1), tglSelesai: jamLagi(2) }));
+    expect((await panggil(`/kegiatan/${berlangsung.id}`, { cookie: u.cookie })).data.statusPelaksanaan).toBe("berlangsung");
+
+    const lama = await panggil(`/kegiatan/${berlangsung.id}/selesai`, { cookie: u.cookie, json: { expectedUpdatedAt: "2000-01-01T00:00:00.000Z" } });
+    expect(lama.status).toBe(409);
+
+    const selesai = await panggil(`/kegiatan/${berlangsung.id}/selesai`, { cookie: u.cookie, json: { expectedUpdatedAt: berlangsung.updatedAt } });
+    expect(selesai.status).toBe(200);
+    const detail = await panggil(`/kegiatan/${berlangsung.id}`, { cookie: u.cookie });
+    expect(detail.data.statusPelaksanaan).toBe("selesai");
+    expect(new Date(detail.data.tglSelesai).getTime()).toBeLessThanOrEqual(Date.now());
+    expect(new Date(detail.data.tglSelesai).getTime()).toBeGreaterThan(Date.now() - 60_000);
+    expect((await auditUntuk("kegiatan", berlangsung.id)).map((a) => a.aksi)).toEqual(["ubah", "buat"]);
+
+    const lagi = await panggil(`/kegiatan/${berlangsung.id}/selesai`, { cookie: u.cookie, json: { expectedUpdatedAt: selesai.data.updatedAt } });
+    expect(lagi.status).toBe(422);
+    expect(lagi.data.message).toContain("sudah selesai");
+  });
+
+  test("selesaikan sekarang ditolak untuk kegiatan yang belum dimulai, dibatalkan, atau milik orang lain", async () => {
+    const u = await buatPengguna();
+    const nanti = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!));
+    const belum = await panggil(`/kegiatan/${nanti.id}/selesai`, { cookie: u.cookie, json: { expectedUpdatedAt: nanti.updatedAt } });
+    expect(belum.status).toBe(422);
+    expect(belum.data.message).toContain("belum dimulai");
+
+    const jalan = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!, { tglMulai: jamLagi(-1), tglSelesai: jamLagi(2) }));
+    const batal = await panggil(`/kegiatan/${jalan.id}/batalkan`, { cookie: u.cookie, json: { alasan: "Ditunda", expectedUpdatedAt: jalan.updatedAt } });
+    const dibatalkan = await panggil(`/kegiatan/${jalan.id}/selesai`, { cookie: u.cookie, json: { expectedUpdatedAt: batal.data.updatedAt } });
+    expect(dibatalkan.status).toBe(422);
+
+    const lain = await buatPengguna();
+    const orang = await panggil(`/kegiatan/${nanti.id}/selesai`, { cookie: lain.cookie, json: { expectedUpdatedAt: nanti.updatedAt } });
+    expect([403, 404]).toContain(orang.status);
+  });
+
   test("hapus kegiatan: 204, lalu tidak ditemukan lagi; tercatat lengkap di audit", async () => {
     const u = await buatPengguna();
     const k = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!));

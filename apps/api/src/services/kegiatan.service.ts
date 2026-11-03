@@ -6,6 +6,7 @@ import { KegiatanRepository } from "@/repositories/kegiatan.repository";
 import { ReferensiRepository } from "@/repositories/referensi.repository";
 import type {
   BatalkanKegiatan,
+  SelesaikanKegiatan,
   DaftarQuery,
   FilterDaftar,
   IsiKegiatan,
@@ -17,6 +18,7 @@ import type {
 } from "@/types/kegiatan.types";
 import type { Aktor, GalatField, MetaRequest, Rentang } from "@/types/umum.types";
 import { awalHariJakarta, parsePeriode, rentangPeriode } from "@/utils/periode";
+import { hitungStatus } from "@/utils/status-kegiatan";
 import { AuditLogService } from "./audit-log.service";
 import { ReferensiService } from "./referensi.service";
 
@@ -214,6 +216,30 @@ export const KegiatanService = {
       const sebelum = await muatUntukTulis(id, aktor, tx, expectedUpdatedAt);
       cekPenanggungJawab(aktor, nilai.penanggungJawabId, sebelum.penanggungJawabId);
       const berubah = await KegiatanRepository.updateDenganVersi(id, sebelum.updatedAt, { ...nilai, statusPemeriksaan: "terkirim" }, tx);
+      if (berubah === 0) throw Conflict();
+      const sesudah = await KegiatanRepository.findById(id, tx);
+      await AuditLogService.catat({ aktorId: aktor.id, aksi: "ubah", entitas: "kegiatan", entitasId: id, sebelum, sesudah, ...meta }, tx);
+      return { id, updatedAt: sesudah!.updatedAt };
+    });
+  },
+
+  // Menyelesaikan kegiatan yang sedang berlangsung: waktu selesai menjadi sekarang, sehingga statusnya langsung "selesai".
+  // Status tetap dihitung dari waktu, jadi tidak ada status yang bisa tidak sinkron dengan waktunya
+  async selesaikan(id: number, isi: SelesaikanKegiatan, aktor: Aktor, meta: MetaRequest) {
+    return prisma.$transaction(async (tx) => {
+      const sebelum = await muatUntukTulis(id, aktor, tx, isi.expectedUpdatedAt);
+      const sekarang = new Date();
+      const status = hitungStatus(sebelum, sekarang);
+      if (status !== "berlangsung") {
+        throw Unprocessable(
+          status === "dibatalkan"
+            ? "Kegiatan yang dibatalkan tidak dapat diselesaikan"
+            : status === "akan_datang"
+              ? "Kegiatan belum dimulai. Ubah waktunya lewat tombol Ubah"
+              : "Kegiatan ini sudah selesai",
+        );
+      }
+      const berubah = await KegiatanRepository.updateDenganVersi(id, sebelum.updatedAt, { tglSelesai: sekarang, statusPemeriksaan: "terkirim" }, tx);
       if (berubah === 0) throw Conflict();
       const sesudah = await KegiatanRepository.findById(id, tx);
       await AuditLogService.catat({ aktorId: aktor.id, aksi: "ubah", entitas: "kegiatan", entitasId: id, sebelum, sesudah, ...meta }, tx);

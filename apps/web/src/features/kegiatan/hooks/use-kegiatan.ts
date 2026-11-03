@@ -12,6 +12,7 @@
 //   - useReferensi       : hook pembaca data master (jenis, bidang, pegawai)
 //   - useBuatKegiatan    : hook mutasi pencatatan kegiatan baru
 //   - useUbahKegiatan    : hook mutasi pengubahan data kegiatan
+//   - useSelesaikanKegiatan: hook mutasi untuk menyelesaikan kegiatan yang sedang berlangsung
 //   - useBatalkanKegiatan: hook mutasi pembatalan kegiatan disertai alasan
 //   - usePeriksaKegiatan : hook mutasi pemeriksaan dan verifikasi pimpinan
 //   - useHapusKegiatan   : hook mutasi penghapusan kegiatan
@@ -39,6 +40,7 @@ import {
   getReferensi,
   hapusKegiatan,
   periksaKegiatan,
+  selesaikanKegiatan,
   ubahKegiatan,
 } from "../api/kegiatan";
 import type { FilterKegiatan, KegiatanPayload } from "../types";
@@ -89,6 +91,14 @@ export function useUbahKegiatan(id: number) {
   const segarkan = useSegarkan();
   return useMutation({
     mutationFn: (payload: KegiatanPayload & { expectedUpdatedAt: string }) => ubahKegiatan(id, payload),
+    onSuccess: segarkan,
+  });
+}
+
+export function useSelesaikanKegiatan() {
+  const segarkan = useSegarkan();
+  return useMutation({
+    mutationFn: (v: { id: number; expectedUpdatedAt: string }) => selesaikanKegiatan(v.id, v.expectedUpdatedAt),
     onSuccess: segarkan,
   });
 }

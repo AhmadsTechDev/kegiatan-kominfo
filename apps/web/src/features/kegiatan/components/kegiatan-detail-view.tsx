@@ -18,7 +18,7 @@
 //   3. Menyajikan kartu fakta waktu, lokasi tempat, bidang, dan jumlah peserta.
 //   4. Memunculkan pengingat melengkapi dokumen/hasil jika kegiatan sudah selesai.
 //   5. Menampilkan panel pemeriksaan jika pengguna memiliki peran pimpinan.
-//   6. Menyediakan menu ubah, aksi pembatalan, dan penghapusan bagi yang berhak.
+//   6. Menyediakan menu ubah, tombol selesaikan sekarang (saat berlangsung), pembatalan, dan penghapusan bagi yang berhak.
 //
 // Catatan penting:
 //   - Sesuai spesifikasi pemantauan pimpinan (features/06-pantau-pimpinan.md).
@@ -31,7 +31,7 @@
 
 "use client";
 
-import { ArrowLeft, Ban, Building2, CalendarDays, CircleAlert, ImageOff, MapPin, MapPinOff, MessageSquareWarning, Pencil, Upload, Users } from "lucide-react";
+import { ArrowLeft, Ban, Building2, CalendarDays, CircleAlert, CircleCheck, ImageOff, MapPin, MapPinOff, MessageSquareWarning, Pencil, Upload, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -220,6 +220,12 @@ export function KegiatanDetailView({ id }: { id: number }) {
             {kembali}
             {k.bisaUbah && (
               <>
+                {k.statusPelaksanaan === "berlangsung" && (
+                  <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={() => setAksi("selesai")}>
+                    <CircleCheck aria-hidden />
+                    Selesaikan sekarang
+                  </Button>
+                )}
                 <Button asChild className="h-10">
                   <Link href={`/kegiatan/${k.id}/ubah`}>
                     <Pencil aria-hidden />

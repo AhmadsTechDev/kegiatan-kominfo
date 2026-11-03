@@ -64,6 +64,7 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 | `GET /api/kegiatan`, `GET /api/kegiatan/:id` | Daftar dengan filter dan detail | Login (sesuai lingkup baca) |
 | `POST /api/kegiatan` | Catat kegiatan | `PEGAWAI`, `ADMIN` |
 | `PATCH /api/kegiatan/:id` | Ubah dan isi hasil | `PEGAWAI`, `ADMIN` (pemilik) |
+| `POST /api/kegiatan/:id/selesai` | Selesaikan kegiatan yang sedang berlangsung (waktu selesai menjadi sekarang) | `PEGAWAI`, `ADMIN` (pemilik) |
 | `POST /api/kegiatan/:id/batalkan` | Batalkan (alasan wajib) | `PEGAWAI`, `ADMIN` (pemilik) |
 | `POST /api/kegiatan/:id/pemeriksaan` | Tandai sudah diperiksa atau perlu perbaikan | `PIMPINAN` |
 | `DELETE /api/kegiatan/:id` | Hapus kegiatan | `PEGAWAI`, `ADMIN` (pemilik) |

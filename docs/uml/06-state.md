@@ -12,6 +12,7 @@ stateDiagram-v2
 
     AkanDatang --> Berlangsung : waktu mulai tiba
     Berlangsung --> Selesai : waktu selesai lewat
+    Berlangsung --> Selesai : tombol Selesaikan sekarang (waktu selesai menjadi sekarang)
     AkanDatang --> Selesai : waktu diubah ke masa lalu
     Selesai --> AkanDatang : waktu diubah ke masa depan
 

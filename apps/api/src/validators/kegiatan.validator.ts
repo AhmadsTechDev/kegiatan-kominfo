@@ -50,6 +50,7 @@ export const KegiatanValidator = {
 
   buat: t.Object({ ...isiKegiatan, drafId: t.Optional(id("Draf tidak valid")) }),
   ubah: t.Object({ ...isiKegiatan, ...versi }),
+  selesai: t.Object({ ...versi }),
   periksa: t.Object({
     status: t.Union([t.Literal("diperiksa"), t.Literal("perlu_perbaikan")], { error: "Status harus diperiksa atau perlu_perbaikan" }),
     catatan: t.Optional(t.Nullable(t.String({ maxLength: 2000, error: "Catatan maksimal 2.000 karakter" }))),
