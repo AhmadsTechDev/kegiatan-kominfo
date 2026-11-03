@@ -3,13 +3,11 @@
 // =============================================================================
 // Gunanya: Menampilkan informasi lengkap satu kegiatan dinas meliputi status,
 // waktu pelaksanaan, lokasi dan peta koordinat, uraian hasil, galeri dokumen,
-// data penanggung jawab, riwayat pemeriksaan pimpinan, serta linimasa audit log.
+// data penanggung jawab, serta riwayat pemeriksaan pimpinan.
 //
 // Isi berkas:
 //   - Paragraf           : perender pasangan label dan teks deskripsi berbaris baru
 //   - Fakta              : kartu ringkasan informasi berikon pada panel atas
-//   - gabungRiwayat      : penggabung entri riwayat berkas berturut-turut (< 10 menit)
-//   - Riwayat            : komponen linimasa riwayat aktivitas audit kegiatan
 //   - KegiatanDetailView : komponen utama tampilan rincian detail kegiatan
 //
 // Cara kerja:
@@ -22,7 +20,6 @@
 //
 // Catatan penting:
 //   - Sesuai spesifikasi pemantauan pimpinan (features/06-pantau-pimpinan.md).
-//   - Aksi unggah/hapus berkas berdekatan dipadatkan agar linimasa riwayat ringkas.
 //   - Jangkar URL #dokumentasi otomatis digulir halus begitu data selesai dimuat.
 //   - Tombol batalkan dan hapus dimasukkan ke menu dropdown demi mencegah salah klik.
 //
@@ -48,7 +45,6 @@ import { ApiError } from "@/lib/api-client";
 import { formatAngka, formatJam, formatTanggal, formatTanggalJam } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { idValid, useKegiatan } from "../hooks/use-kegiatan";
-import type { KegiatanDetail } from "../types";
 import { DokumentasiGaleri } from "./dokumentasi-galeri";
 import { KegiatanAksiDialog, type JenisAksi } from "./kegiatan-aksi-dialog";
 import { KegiatanAksiMenu } from "./kegiatan-aksi-menu";
@@ -79,97 +75,6 @@ function Fakta({ ikon: Ikon, label, children }: { ikon: typeof CalendarDays; lab
 }
 
 const jamSaja = (iso: string) => formatJam(iso).replace(" WIB", "");
-
-const LABEL_RIWAYAT: Record<string, string> = {
-  buat: "Kegiatan dibuat",
-  ubah: "Informasi diperbarui",
-  batal: "Kegiatan dibatalkan",
-  unggah: "Dokumentasi diunggah",
-  hapus_file: "Dokumentasi dihapus",
-  ganti_file: "Dokumentasi diganti",
-  periksa: "Diperiksa pimpinan",
-};
-
-type BarisRiwayat = { kunci: string; aksi: string; aktor: string; waktu: string; jumlah: number };
-
-const JEDA_GABUNG_MS = 10 * 60 * 1000;
-
-function gabungRiwayat(daftar: Omit<BarisRiwayat, "jumlah">[]): BarisRiwayat[] {
-  const hasil: BarisRiwayat[] = [];
-  for (const r of daftar) {
-    const akhir = hasil.at(-1);
-    if (
-      akhir &&
-      (r.aksi === "unggah" || r.aksi === "hapus_file") &&
-      akhir.aksi === r.aksi &&
-      akhir.aktor === r.aktor &&
-      Math.abs(new Date(akhir.waktu).getTime() - new Date(r.waktu).getTime()) < JEDA_GABUNG_MS
-    ) {
-      akhir.jumlah++;
-    } else {
-      hasil.push({ ...r, jumlah: 1 });
-    }
-  }
-  return hasil;
-}
-
-const BATAS_RIWAYAT = 5;
-
-function Riwayat({ k }: { k: KegiatanDetail }) {
-  const [semua, setSemua] = useState(false);
-  const adaBuat = k.riwayat.some((r) => r.aksi === "buat");
-  const daftar = gabungRiwayat([
-    ...k.riwayat.map((r) => ({ kunci: String(r.id), aksi: r.aksi, aktor: r.aktor ?? "Sistem", waktu: r.waktu })),
-    ...(adaBuat ? [] : [{ kunci: "buat", aksi: "buat", aktor: k.pembuat.nama, waktu: k.createdAt }]),
-  ]);
-  const tampil = semua || daftar.length <= BATAS_RIWAYAT + 1 ? daftar : [...daftar.slice(0, BATAS_RIWAYAT), daftar.at(-1)!];
-  const tersembunyi = daftar.length - tampil.length;
-
-  return (
-    <div className="flex flex-col gap-3">
-      <ol className="flex flex-col">
-        {tampil.map((r, i) => (
-          <li key={r.kunci} className="relative grid grid-cols-[1rem_1fr] gap-3 pb-4 last:pb-0">
-            {i < tampil.length - 1 && (
-              <span
-                aria-hidden
-                className={cn(
-                  "absolute top-4 bottom-0 left-[0.4375rem] w-px",
-                  tersembunyi > 0 && i === BATAS_RIWAYAT - 1 ? "border-l border-dashed border-border" : "bg-border",
-                )}
-              />
-            )}
-            <span
-              aria-hidden
-              className={cn(
-                "mt-1 size-3.5 rounded-full border-3",
-                r.aksi === "batal" || r.aksi === "hapus_file"
-                  ? "border-status-dibatalkan bg-status-dibatalkan-foreground"
-                  : r.aksi === "buat"
-                    ? "border-secondary bg-primary"
-                    : "border-status-selesai bg-status-selesai-foreground",
-              )}
-            />
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-sm font-semibold">
-                {LABEL_RIWAYAT[r.aksi] ?? r.aksi}
-                {r.jumlah > 1 && <span className="font-normal text-muted-foreground">, {r.jumlah} berkas</span>}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {r.aktor} · {formatTanggalJam(r.waktu)}
-              </span>
-            </div>
-          </li>
-        ))}
-      </ol>
-      {(tersembunyi > 0 || semua) && daftar.length > BATAS_RIWAYAT + 1 && (
-        <Button variant="ghost" size="sm" className="h-9 w-fit px-2 text-primary" onClick={() => setSemua((v) => !v)}>
-          {semua ? "Ringkas riwayat" : `Tampilkan ${tersembunyi} riwayat lainnya`}
-        </Button>
-      )}
-    </div>
-  );
-}
 
 export function KegiatanDetailView({ id }: { id: number }) {
   const router = useRouter();
@@ -394,12 +299,6 @@ export function KegiatanDetailView({ id }: { id: number }) {
             </Panel>
           )}
 
-          <Panel>
-            <PanelHeader title="Riwayat" />
-            <PanelBody>
-              <Riwayat k={k} />
-            </PanelBody>
-          </Panel>
         </div>
       </div>
 
