@@ -7,8 +7,7 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | [`apps/api/`](apps/api/README.md) | API REST: Bun, Elysia, Prisma (PostgreSQL), Better Auth. Arsitektur berlapis: route, controller, service, repository |
 | [`docs/api/`](docs/api/) dan [`docs/features/`](docs/features/) | Dokumentasi API (header, body, dan respons setiap endpoint) dan penjelasan per fitur |
 | [`apps/web/`](apps/web/README.md) | Antarmuka: Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query, MapLibre GL |
-| [`docs/uml/`](docs/uml/README.md) | Diagram UML dalam Mermaid (use case, activity, sequence, class, ERD, state, component, deployment) |
-| 
+| [`docs/uml/`](docs/uml/README.md) | Diagram UML dalam Mermaid (use case, activity, sequence, class, ERD, state, component, deployment) | 
 | `apps/web/DESIGN.md` | Spesifikasi tampilan dan perilaku UI |
 
 ## Fitur
