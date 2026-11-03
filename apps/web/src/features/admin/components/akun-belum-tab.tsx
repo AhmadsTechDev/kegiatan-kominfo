@@ -32,7 +32,7 @@ import type { FilterPegawai, PegawaiAdmin } from "../types";
 import { KartuMaster, KolomCari } from "./admin-shared";
 import { UndangDialog } from "./undang-dialog";
 
-const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun: "tanpa", page: 1 };
+export const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun: "tanpa", page: 1 };
 
 function TombolUndang({ p, onClick }: { p: PegawaiAdmin; onClick: () => void }) {
   return (

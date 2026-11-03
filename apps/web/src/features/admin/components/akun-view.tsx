@@ -46,11 +46,11 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { LABEL_ROLE, LABEL_STATUS_AKUN, type Role, type StatusAkun } from "@/types/auth";
 import { cn } from "@/lib/utils";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
-import { useAkunAdmin, useJumlahPermintaan } from "../hooks/use-admin";
+import { useAkunAdmin, useJumlahPermintaan, usePegawaiAdmin } from "../hooks/use-admin";
 import type { AkunAdmin, FilterAkun } from "../types";
 import { AdminGuard, idTab, KolomCari, PilihanTab } from "./admin-shared";
 import { AkunFormDialog, dariAdmin, ItemAksiAkun, useAksiAkun, type AkunRingkas, type JenisAksi } from "./akun-aksi";
-import { BelumPunyaAkun } from "./akun-belum-tab";
+import { BelumPunyaAkun, FILTER_BELUM } from "./akun-belum-tab";
 import { PermintaanTab } from "./permintaan-tab";
 
 const SEMUA = "semua";
@@ -331,6 +331,8 @@ function IsiAkun() {
   const pathname = usePathname();
   const tab: TabAkun = TAB_SAH.find((t) => t === searchParams.get("tab")) ?? "akun";
   const jumlah = useJumlahPermintaan();
+  // Kunci kueri sama dengan halaman pertama tab Perlu diundang, jadi tidak ada permintaan ganda
+  const belum = usePegawaiAdmin(FILTER_BELUM);
   const menunggu = jumlah.data?.menunggu ?? 0;
 
   return (
@@ -343,7 +345,7 @@ function IsiAkun() {
           onChange={(t) => router.replace(t === "akun" ? pathname : `${pathname}?tab=${t}`, { scroll: false })}
           opsi={[
             { nilai: "akun", label: "Akun" },
-            { nilai: "belum", label: "Perlu diundang" },
+            { nilai: "belum", label: "Perlu diundang", jumlah: belum.data?.total },
             { nilai: "nonaktif", label: "Nonaktif" },
             { nilai: "permintaan", label: "Permintaan akses", lencana: menunggu },
           ]}
