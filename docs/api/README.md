@@ -89,7 +89,7 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 | Metode dan jalur | Fungsi |
 | --- | --- |
 | `GET`, `POST /api/admin/bidang`, `PATCH`, `DELETE /api/admin/bidang/:id` | Bidang dan sub bidang (hapus hanya bila belum dipakai) |
-| `GET`, `POST /api/admin/pegawai`, `PATCH /api/admin/pegawai/:id` | Data kepegawaian |
+| `GET`, `POST /api/admin/pegawai`, `PATCH`, `DELETE /api/admin/pegawai/:id` | Data kepegawaian (hapus hanya yang belum punya akun dan belum dipakai) |
 | `GET`, `POST /api/admin/jenis-kegiatan`, `PATCH /api/admin/jenis-kegiatan/:id` | Jenis kegiatan |
 | `GET`, `POST /api/admin/akun`, `GET`, `PATCH`, `DELETE /api/admin/akun/:id` | Daftar, buat, detail, ubah, dan hapus akun |
 | `POST /api/admin/akun/:id/nonaktifkan`, `.../aktifkan` | Nonaktifkan dan aktifkan akun |

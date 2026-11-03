@@ -144,6 +144,16 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 
 ---
 
+### `DELETE /api/admin/pegawai/:id`
+
+Menghapus permanen pegawai yang **belum punya akun** dan belum dipakai sebagai penanggung jawab kegiatan (termasuk yang terhapus lunak) maupun permintaan akun. Dipakai untuk membersihkan data salah input di tab Perlu diundang. Tercatat di audit log (`hapus`).
+
+**Respons 200**: `{ "id": 7 }`
+
+**Galat**: 404 bila tidak ada; 422 bila sudah punya akun atau sudah dipakai (yang sudah dipakai cukup dinonaktifkan).
+
+---
+
 ## Jenis kegiatan
 
 ### `GET /api/admin/jenis-kegiatan`

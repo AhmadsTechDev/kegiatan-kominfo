@@ -63,6 +63,7 @@ export const getPegawai = (f: FilterPegawai) =>
     .then((r) => r.data);
 export const buatPegawai = (isi: IsiPegawaiBaru) => apiClient.post<HasilPegawaiBaru>("/admin/pegawai", isi).then((r) => r.data);
 export const ubahPegawai = (id: number, isi: IsiPegawai) => apiClient.patch<Hasil>(`/admin/pegawai/${id}`, isi).then((r) => r.data);
+export const hapusPegawai = (id: number) => apiClient.delete<Hasil>(`/admin/pegawai/${id}`).then((r) => r.data);
 
 export const getJenisKegiatan = () => apiClient.get<JenisKegiatanAdmin[]>("/admin/jenis-kegiatan").then((r) => r.data);
 export const buatJenisKegiatan = (isi: { nama: string }) => apiClient.post<Hasil>("/admin/jenis-kegiatan", isi).then((r) => r.data);

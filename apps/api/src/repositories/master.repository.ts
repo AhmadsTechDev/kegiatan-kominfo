@@ -167,6 +167,20 @@ export const MasterRepository = {
     await tx.user.updateMany({ where: { pegawaiId }, data: { name: nama } });
   },
 
+  // Pemakaian satu pegawai: akun tertaut, kegiatan yang ditanggungjawabi (termasuk terhapus lunak), permintaan akun
+  async pemakaianPegawai(id: number) {
+    const [akun, kegiatan, permintaan] = await Promise.all([
+      prisma.user.count({ where: { pegawaiId: id } }),
+      prisma.kegiatan.count({ where: { penanggungJawabId: id } }),
+      prisma.permintaanAkun.count({ where: { pegawaiId: id } }),
+    ]);
+    return { akun, kegiatan, permintaan };
+  },
+
+  async hapusPegawai(id: number, tx: Db) {
+    await tx.pegawai.delete({ where: { id } });
+  },
+
   // Akun tertaut pegawai (satu pegawai paling banyak satu akun)
   async akunPegawai(pegawaiId: number, tx: Db = prisma) {
     return tx.user.findFirst({ where: { pegawaiId }, select: { id: true, kontak: true } });

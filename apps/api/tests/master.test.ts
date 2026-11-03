@@ -1,7 +1,7 @@
 // Uji data master: bidang dan sub bidang (aturan induk, kode otomatis, nonaktif), jenis kegiatan, pegawai
 import { describe, expect, test } from "bun:test";
 import { prisma } from "@/lib/prisma";
-import { buatBidang, buatKegiatan, buatPengguna, formBerkas, idUnit, isiKegiatan, login, loginAdmin, nipAcak, panggil, SANDI } from "./helpers";
+import { auditUntuk, buatBidang, buatKegiatan, buatPengguna, formBerkas, idUnit, isiKegiatan, login, loginAdmin, nipAcak, panggil, SANDI } from "./helpers";
 
 const kodeAcak = () => crypto.randomUUID().slice(0, 6);
 
@@ -210,6 +210,21 @@ describe("pegawai", () => {
     // Tanpa field roleUndangan, pilihan lama tidak berubah
     await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, jabatan: "Kepala" } });
     expect((await ambil()).roleUndangan).toBe("PIMPINAN");
+  });
+
+  test("hapus pegawai: hanya yang belum punya akun dan belum dipakai kegiatan", async () => {
+    const admin = await loginAdmin();
+    const bidang = await buatBidang();
+    const baru = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Salah Input", bidangId: bidang.id } });
+    expect((await panggil(`/admin/pegawai/${baru.data.id}`, { method: "DELETE", cookie: admin })).status).toBe(200);
+    expect((await panggil(`/admin/pegawai?unit=${bidang.id}&akun=tanpa`, { cookie: admin })).data.total).toBe(0);
+    expect((await auditUntuk("pegawai", baru.data.id))[0]?.aksi).toBe("hapus");
+
+    const u = await buatPengguna({ unitId: bidang.id });
+    const berakun = await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "DELETE", cookie: admin });
+    expect(berakun.status).toBe(422);
+    expect((await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "DELETE", cookie: u.cookie })).status).toBe(403);
+    expect((await panggil("/admin/pegawai/999999", { method: "DELETE", cookie: admin })).status).toBe(404);
   });
 
   test("pegawai tanpa NIP (non-ASN) boleh", async () => {

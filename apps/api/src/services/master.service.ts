@@ -178,6 +178,24 @@ export const MasterService = {
 
   // ---------- Pegawai ----------
 
+  // Hapus permanen pegawai yang belum punya akun dan belum dipakai kegiatan atau permintaan akun.
+  // Yang sudah dipakai cukup dinonaktifkan agar riwayatnya tetap utuh
+  async hapusPegawai(id: number, aktor: Aktor, meta: MetaRequest) {
+    const sebelum = await MasterRepository.pegawaiById(id);
+    if (!sebelum) throw NotFound("Pegawai tidak ditemukan");
+    const p = await MasterRepository.pemakaianPegawai(id);
+    if (p.akun > 0) throw Unprocessable("Pegawai ini sudah punya akun. Kelola lewat tab Akun");
+    if (p.kegiatan + p.permintaan > 0) {
+      const bagian = [p.kegiatan && `${p.kegiatan} kegiatan`, p.permintaan && `${p.permintaan} permintaan akun`].filter(Boolean).join(", ");
+      throw Unprocessable(`Tidak dapat dihapus karena masih tercatat di ${bagian}. Nonaktifkan saja agar riwayatnya tetap utuh`);
+    }
+    await prisma.$transaction(async (tx) => {
+      await MasterRepository.hapusPegawai(id, tx);
+      await AuditLogService.catat({ aktorId: aktor.id, aksi: "hapus", entitas: "pegawai", entitasId: id, sebelum, ...meta }, tx);
+    });
+    return { id };
+  },
+
   // Daftar pegawai dengan filter (filter unit ikut mencakup unit turunannya)
   async daftarPegawai(query: DaftarPegawaiQuery) {
     const page = query.page ?? 1;

@@ -18,6 +18,8 @@ export const masterRoutes = new Elysia({ prefix: "/admin" })
   .get("/pegawai", MasterController.daftarPegawai, { ...ADMIN, query: MasterValidator.daftarPegawaiQuery })
   .post("/pegawai", MasterController.buatPegawai, { ...ADMIN, body: MasterValidator.buatPegawai })
   .patch("/pegawai/:id", MasterController.ubahPegawai, { ...ADMIN, params, body: MasterValidator.ubahPegawai })
+  // Hapus pegawai yang belum punya akun dan belum dipakai (mis. salah input di tab Perlu diundang)
+  .delete("/pegawai/:id", MasterController.hapusPegawai, { ...ADMIN, params })
   // Jenis kegiatan
   .get("/jenis-kegiatan", MasterController.daftarJenis, ADMIN)
   .post("/jenis-kegiatan", MasterController.buatJenis, { ...ADMIN, body: MasterValidator.buatJenis })

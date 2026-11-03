@@ -16,9 +16,10 @@
 
 "use client";
 
-import { Send, UserCheck } from "lucide-react";
+import { Send, Trash2, UserCheck } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { ErrorState } from "@/components/shared/error-state";
 import { PaginationBar } from "@/components/shared/pagination-bar";
@@ -28,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LABEL_ROLE } from "@/types/auth";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
-import { useBidangAdmin, usePegawaiAdmin, useUndangPegawai } from "../hooks/use-admin";
+import { useBidangAdmin, useHapusPegawai, usePegawaiAdmin, useUndangPegawai } from "../hooks/use-admin";
 import type { FilterPegawai, PegawaiAdmin } from "../types";
 import { KartuMaster, KolomCari, TombolUbah } from "./admin-shared";
 import { PegawaiDialog } from "./pegawai-tab";
@@ -40,6 +41,22 @@ export const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun
 function LabelRole({ role }: { role: PegawaiAdmin["roleUndangan"] }) {
   if (role === "PEGAWAI") return null;
   return <span className="mt-0.5 block text-xs font-normal text-muted-foreground">Akan diundang sebagai {LABEL_ROLE[role]}</span>;
+}
+
+// Hapus pegawai salah input; backend menolak bila sudah dipakai kegiatan atau permintaan akun
+function TombolHapus({ p, onClick }: { p: PegawaiAdmin; onClick: () => void }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className="size-8 text-muted-foreground hover:text-destructive pointer-coarse:size-11"
+      aria-label={`Hapus ${p.nama}`}
+      onClick={onClick}
+    >
+      <Trash2 aria-hidden className="size-4" />
+    </Button>
+  );
 }
 
 function TombolUndang({ p, onClick }: { p: PegawaiAdmin; onClick: () => void }) {
@@ -58,6 +75,8 @@ export function BelumPunyaAkun() {
   const kirimUndangan = useUndangPegawai();
   const [undang, setUndang] = useState<PegawaiAdmin | null>(null);
   const [ubah, setUbah] = useState<PegawaiAdmin | null>(null);
+  const [akanDihapus, setAkanDihapus] = useState<PegawaiAdmin | null>(null);
+  const hapus = useHapusPegawai();
   const unit = useBidangAdmin();
 
   const kolom = useMemo<DataTableColumn<PegawaiAdmin>[]>(
@@ -90,6 +109,7 @@ export function BelumPunyaAkun() {
           <div className="flex items-center justify-end gap-1">
             <TombolUbah nama={row.original.nama} onClick={() => setUbah(row.original)} />
             <TombolUndang p={row.original} onClick={() => setUndang(row.original)} />
+            <TombolHapus p={row.original} onClick={() => setAkanDihapus(row.original)} />
           </div>
         ),
       },
@@ -128,6 +148,7 @@ export function BelumPunyaAkun() {
                   <div className="flex items-center gap-1">
                     <TombolUbah nama={p.nama} onClick={() => setUbah(p)} />
                     <TombolUndang p={p} onClick={() => setUndang(p)} />
+                    <TombolHapus p={p} onClick={() => setAkanDihapus(p)} />
                   </div>
                 }
               >
@@ -157,6 +178,28 @@ export function BelumPunyaAkun() {
       )}
 
       {ubah && <PegawaiDialog pegawai={ubah} unit={unit.data ?? []} onClose={() => setUbah(null)} />}
+      <ConfirmDialog
+        open={akanDihapus !== null}
+        onOpenChange={(v) => !v && setAkanDihapus(null)}
+        title="Hapus pegawai?"
+        description={<span className="font-medium text-foreground">{akanDihapus?.nama}</span>}
+        confirmLabel="Hapus"
+        pendingLabel="Menghapus..."
+        pending={hapus.isPending}
+        onConfirm={() =>
+          akanDihapus &&
+          hapus.mutate(akanDihapus.id, {
+            onSuccess: () => {
+              toast.success(`${akanDihapus.nama} dihapus`);
+              setAkanDihapus(null);
+            },
+            onError: (e) => {
+              toast.error(e.message);
+              setAkanDihapus(null);
+            },
+          })
+        }
+      />
       {undang && (
         <UndangDialog
           title={`Undang ${undang.nama}`}

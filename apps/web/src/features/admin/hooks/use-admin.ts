@@ -45,6 +45,7 @@ import {
   getBidang,
   hapusAkun,
   hapusBidang,
+  hapusPegawai,
   kirimUlangUndangan,
   nonaktifkanAkun,
   resetSandiAkun,
@@ -171,6 +172,11 @@ export const useAuditDetail = (id: number | null) =>
 
 export const usePilihanAudit = () =>
   useQuery({ queryKey: adminKeys.pilihanAudit, queryFn: getPilihanAudit, staleTime: 60_000 });
+
+export function useHapusPegawai() {
+  const segarkan = useSegarkan(adminKeys.pegawai);
+  return useMutation({ mutationFn: (id: number) => hapusPegawai(id), onSuccess: segarkan });
+}
 
 export function useUndangPegawai() {
   const segarkan = useSegarkan(adminKeys.pegawai, adminKeys.akun);
