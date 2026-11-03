@@ -221,7 +221,7 @@ export function PegawaiTab() {
       {
         id: "nip",
         header: "NIP",
-        cell: ({ row }) => <span className="text-sm tabular-nums">{row.original.nip ?? <span className="text-muted-foreground">Tanpa NIP</span>}</span>,
+        cell: ({ row }) => <span className="text-sm tabular-nums">{row.original.nip ?? <span className="text-muted-foreground">-</span>}</span>,
       },
       { id: "status", header: "Status", cell: ({ row }) => <BadgeAktif aktif={row.original.aktif} /> },
       {
