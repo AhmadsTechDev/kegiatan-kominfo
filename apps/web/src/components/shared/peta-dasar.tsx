@@ -8,6 +8,7 @@
 //   - PUSAT_AWAL, ZOOM_AWAL, KEMIRINGAN_3D : konstanta koordinat default Palembang
 //   - WARNA_STATUS, LABEL_STATUS          : pemetaan visual status pelaksanaan
 //   - usePetaGelap                        : hook pelacak tema gelap yang aman hidrasi
+//   - amankanFilter                       : penambal filter Liberty yang membandingkan nilai kosong
 //   - buatPeta                            : pembangun instans peta MapLibre lengkap
 //   - tambahGedung3d                      : penambah lapisan ekstrusi gedung 3D
 //   - aturMode3d                          : pengatur animasi kamera antara 2D dan 3D
@@ -156,6 +157,22 @@ function aktifkanGulirSaatDiklik(peta: PetaGL, wadah: HTMLElement) {
   peta.getCanvasContainer().addEventListener("mouseleave", () => atur(false));
 }
 
+// Filter Liberty membandingkan angka (rank POI, ref_length) yang di sebagian ubin kosong, sehingga
+// MapLibre menulis "Expected value to be of type number, but found null" berulang di konsol.
+// Nilai kosong diganti 99: POI tanpa rank masuk kelompok prioritas terendah, perisai tanpa nomor tidak tampil
+const PEMBANDING = new Set(["<", "<=", ">", ">="]);
+type Ekspresi = unknown;
+function amankanFilter(f: Ekspresi): Ekspresi {
+  if (!Array.isArray(f)) return f;
+  if (PEMBANDING.has(f[0]))
+    return [f[0], ...f.slice(1).map((a) => (Array.isArray(a) && a[0] === "get" && a.length === 2 ? ["coalesce", a, 99] : amankanFilter(a)))];
+  return f.map(amankanFilter);
+}
+
+// Sprite OpenFreeMap tidak memuat semua ikon POI (office, atm, gate, ...); ikon yang hilang diganti
+// gambar transparan 1x1 agar labelnya tetap tampil tanpa peringatan di konsol
+const IKON_KOSONG = { width: 1, height: 1, data: new Uint8Array(4) };
+
 type OpsiPeta = {
   gelap: boolean;
   pusat?: [number, number];
@@ -182,9 +199,17 @@ export function buatPeta(
     attributionControl: { compact: true },
     locale: LOKAL,
   });
+  peta.on("styleimagemissing", (e: { id: string }) => {
+    if (!peta.hasImage(e.id)) peta.addImage(e.id, IKON_KOSONG);
+  });
   peta.once("style.load", () => {
     // Ekstrusi gedung bawaan Liberty diganti lapisan gedung-3d sendiri (hanya tampil di mode 3D)
     if (peta.getLayer("building-3d")) peta.setLayoutProperty("building-3d", "visibility", "none");
+    for (const l of peta.getStyle().layers) {
+      if (!("filter" in l) || !l.filter) continue;
+      const aman = amankanFilter(l.filter);
+      if (JSON.stringify(aman) !== JSON.stringify(l.filter)) peta.setFilter(l.id, aman as typeof l.filter);
+    }
     if (!gelap) return;
     for (const l of peta.getStyle().layers) {
       // Pola isian (rawa, area jalan) tidak bisa diwarnai ulang; disembunyikan di tema gelap

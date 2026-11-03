@@ -13,7 +13,6 @@
 //   - buatKegiatan      : mengirim data kegiatan baru (bisa melanjutkan draf)
 //   - ubahKegiatan      : memperbarui data kegiatan dengan expectedUpdatedAt
 //   - selesaikanKegiatan: menyelesaikan kegiatan yang berlangsung (waktu selesai menjadi sekarang)
-//   - batalkanKegiatan  : membatalkan kegiatan disertai alasan pembatalan
 //   - periksaKegiatan   : mencatat hasil pemeriksaan pimpinan beserta catatan
 //   - hapusKegiatan     : menghapus rekaman kegiatan secara permanen
 //
@@ -59,11 +58,6 @@ export async function ubahKegiatan(id: number, payload: KegiatanPayload & { expe
 
 export async function selesaikanKegiatan(id: number, expectedUpdatedAt: string) {
   const { data } = await apiClient.post<HasilSimpan>(`/kegiatan/${id}/selesai`, { expectedUpdatedAt });
-  return data;
-}
-
-export async function batalkanKegiatan(id: number, alasan: string, expectedUpdatedAt: string) {
-  const { data } = await apiClient.post<HasilSimpan>(`/kegiatan/${id}/batalkan`, { alasan, expectedUpdatedAt });
   return data;
 }
 

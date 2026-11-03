@@ -2,7 +2,7 @@
 // HOOK PENGELOLA DATA KEGIATAN (TANSTACK QUERY)
 // =============================================================================
 // Gunanya: Menyediakan kumpulan hook kueri dan mutasi TanStack Query untuk membaca,
-// menambah, memperbarui, membatalkan, memeriksa, dan menghapus kegiatan serta draf.
+// menambah, memperbarui, memeriksa, dan menghapus kegiatan serta draf.
 //
 // Isi berkas:
 //   - kegiatanKeys       : hierarki kunci cache data kegiatan, referensi, dan draf
@@ -13,7 +13,6 @@
 //   - useBuatKegiatan    : hook mutasi pencatatan kegiatan baru
 //   - useUbahKegiatan    : hook mutasi pengubahan data kegiatan
 //   - useSelesaikanKegiatan: hook mutasi untuk menyelesaikan kegiatan yang sedang berlangsung
-//   - useBatalkanKegiatan: hook mutasi pembatalan kegiatan disertai alasan
 //   - usePeriksaKegiatan : hook mutasi pemeriksaan dan verifikasi pimpinan
 //   - useHapusKegiatan   : hook mutasi penghapusan kegiatan
 //
@@ -33,7 +32,6 @@ import { rekapKeys } from "@/features/rekap/hooks/use-rekap";
 import { hapusDokumentasi } from "../api/dokumentasi";
 import { getDaftarDraf, getDraf, hapusDraf, simpanDraf } from "../api/draf";
 import {
-  batalkanKegiatan,
   buatKegiatan,
   getDaftarKegiatan,
   getKegiatan,
@@ -103,15 +101,6 @@ export function useSelesaikanKegiatan() {
   });
 }
 
-export function useBatalkanKegiatan() {
-  const segarkan = useSegarkan();
-  return useMutation({
-    mutationFn: (v: { id: number; alasan: string; expectedUpdatedAt: string }) =>
-      batalkanKegiatan(v.id, v.alasan, v.expectedUpdatedAt),
-    onSuccess: segarkan,
-  });
-}
-
 export function usePeriksaKegiatan() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -128,9 +117,12 @@ export function useHapusKegiatan() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: hapusKegiatan,
-    onSuccess: () =>
+    onSuccess: (_, id) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: [...kegiatanKeys.all, "daftar"] }),
+        // Detail hanya ditandai usang (tanpa ambil ulang) agar halaman tidak berkedip sebelum pindah;
+        // bila pengguna menekan Kembali, detail diambil ulang dan tampil "tidak ditemukan"
+        queryClient.invalidateQueries({ queryKey: kegiatanKeys.detail(id), refetchType: "none" }),
         queryClient.invalidateQueries({ queryKey: dashboardKeys.all }),
         queryClient.invalidateQueries({ queryKey: rekapKeys.all }),
       ]),

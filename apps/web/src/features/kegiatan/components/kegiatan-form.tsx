@@ -73,7 +73,7 @@ import {
   type KegiatanFormValues,
 } from "../schemas/kegiatan.schema";
 import type { Draf, KegiatanDetail, Referensi } from "../types";
-import { DokumentasiGaleri } from "./dokumentasi-galeri";
+import { DokumentasiGaleri, type StatusAntrean } from "./dokumentasi-galeri";
 import { LokasiKegiatan } from "./lokasi-kegiatan";
 
 type Props = {
@@ -162,6 +162,9 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
   const [langkah, setLangkah] = useState(0);
   const awalSelesai = kegiatan?.statusPelaksanaan === "selesai";
   const [semuaKolom, setSemuaKolom] = useState(!awalSelesai);
+  // Simpan ditahan selama berkas dokumentasi masih dipilih tapi belum diunggah, atau sedang diunggah
+  const [antrean, setAntrean] = useState<StatusAntrean>("kosong");
+  const tahanSimpan = antrean !== "kosong";
 
   const form = useForm<KegiatanFormValues>({
     resolver: zodResolver(kegiatanSchema),
@@ -216,6 +219,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
 
   const onSubmit = handleSubmit(
     (nilai) => {
+      if (tahanSimpan) return;
       setGalatUmum(null);
       const payload = keKegiatanPayload(nilai);
       if (kegiatan) {
@@ -467,9 +471,9 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
           <section className="p-4 md:p-6">
             <div className="mb-5 flex flex-col gap-0.5">
               <h2 className="font-heading text-base font-bold">Dokumentasi</h2>
-              <p className="text-xs text-muted-foreground">Pilih berkas lalu tekan Unggah. Tidak perlu menekan Simpan perubahan.</p>
+              <p className="text-xs text-muted-foreground">Pilih berkas lalu tekan Unggah; berkas langsung tersimpan.</p>
             </div>
-            <DokumentasiGaleri kegiatan={kegiatan} />
+            <DokumentasiGaleri kegiatan={kegiatan} onAntreanBerubah={setAntrean} />
           </section>
         )}
         {kegiatan && awalSelesai && semuaKolom && bagianInfo}
@@ -489,7 +493,12 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
         </p>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2 border-t bg-card p-3 md:static md:justify-end md:border-0 md:bg-transparent md:p-0">
+      <div className="fixed inset-x-0 bottom-0 z-20 flex flex-wrap gap-2 border-t bg-card p-3 md:static md:justify-end md:border-0 md:bg-transparent md:p-0">
+        {tahanSimpan && (
+          <p id="tahan-simpan" aria-live="polite" className="basis-full text-xs text-muted-foreground md:text-right">
+            {antrean === "mengunggah" ? "Tunggu sampai unggahan selesai." : "Tekan Unggah dulu untuk berkas yang dipilih, atau hapus dari daftar."}
+          </p>
+        )}
         {bertahap && langkah > 0 ? (
           <Button type="button" variant="outline" className="h-11 flex-1 md:h-10 md:flex-none" onClick={() => setLangkah(langkah - 1)} disabled={sibuk}>
             <ArrowLeft aria-hidden />
@@ -507,7 +516,13 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
           </Button>
         )}
         {langkahTerakhir ? (
-          <Button key="simpan" type="submit" className="h-11 flex-1 md:h-10 md:flex-none" disabled={sibuk}>
+          <Button
+            key="simpan"
+            type="submit"
+            className="h-11 flex-1 md:h-10 md:flex-none"
+            disabled={sibuk || tahanSimpan}
+            aria-describedby={tahanSimpan ? "tahan-simpan" : undefined}
+          >
             {sibuk ? <Spinner /> : <Check aria-hidden />}
             {sibuk ? "Menyimpan..." : kegiatan ? "Simpan perubahan" : "Simpan kegiatan"}
           </Button>

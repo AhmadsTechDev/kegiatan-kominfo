@@ -16,19 +16,19 @@
 //   3. Menyajikan kartu fakta waktu, lokasi tempat, bidang, dan jumlah peserta.
 //   4. Memunculkan pengingat melengkapi dokumen/hasil jika kegiatan sudah selesai.
 //   5. Menampilkan panel pemeriksaan jika pengguna memiliki peran pimpinan.
-//   6. Menyediakan menu ubah, tombol selesaikan sekarang (saat berlangsung), pembatalan, dan penghapusan bagi yang berhak.
+//   6. Menyediakan tombol Ubah kegiatan, Selesaikan sekarang (saat berlangsung), dan Hapus bagi yang berhak.
 //
 // Catatan penting:
 //   - Sesuai spesifikasi pemantauan pimpinan (features/06-pantau-pimpinan.md).
 //   - Jangkar URL #dokumentasi otomatis digulir halus begitu data selesai dimuat.
-//   - Tombol batalkan dan hapus dimasukkan ke menu dropdown demi mencegah salah klik.
+//   - Hapus berupa tombol ikon terpisah dan selalu meminta konfirmasi, jadi tidak mudah salah klik.
 //
 // Dipakai oleh: app/(app)/kegiatan/[id]/page.tsx
 // =============================================================================
 
 "use client";
 
-import { ArrowLeft, Ban, Building2, CalendarDays, CircleAlert, CircleCheck, ImageOff, MapPin, MapPinOff, MessageSquareWarning, Pencil, Users } from "lucide-react";
+import { ArrowLeft, Ban, Building2, CalendarDays, CircleAlert, CircleCheck, ImageOff, MapPin, MapPinOff, MessageSquareWarning, Pencil, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -47,7 +47,6 @@ import { cn } from "@/lib/utils";
 import { idValid, useKegiatan } from "../hooks/use-kegiatan";
 import { DokumentasiGaleri } from "./dokumentasi-galeri";
 import { KegiatanAksiDialog, type JenisAksi } from "./kegiatan-aksi-dialog";
-import { KegiatanAksiMenu } from "./kegiatan-aksi-menu";
 import { KegiatanDetailSkeleton, KegiatanTidakDitemukan } from "./kegiatan-states";
 import { PeriksaAksi } from "./periksa-aksi";
 
@@ -131,13 +130,22 @@ export function KegiatanDetailView({ id }: { id: number }) {
                     Selesaikan sekarang
                   </Button>
                 )}
-                <Button asChild className="h-10">
+                <Button asChild className="h-10 pointer-coarse:min-h-11">
                   <Link href={`/kegiatan/${k.id}/ubah`}>
                     <Pencil aria-hidden />
-                    Ubah
+                    Ubah kegiatan
                   </Link>
                 </Button>
-                <KegiatanAksiMenu kegiatan={k} tanpaUbah onAksi={setAksi} />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-10 text-destructive hover:text-destructive pointer-coarse:size-11"
+                  aria-label="Hapus kegiatan"
+                  title="Hapus kegiatan"
+                  onClick={() => setAksi("hapus")}
+                >
+                  <Trash2 aria-hidden />
+                </Button>
               </>
             )}
           </>

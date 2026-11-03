@@ -2,7 +2,7 @@
 // PANEL DOKUMENTASI KEGIATAN (DARI TABEL KEGIATAN)
 // =============================================================================
 // Gunanya: Menampilkan dokumentasi (foto/berkas) dan hasil satu kegiatan tanpa
-// meninggalkan daftar kegiatan, lengkap dengan tombol Ubah dan Periksa.
+// meninggalkan daftar kegiatan, lengkap dengan tombol ubah hasil/dokumentasi dan Periksa.
 //
 // Isi berkas:
 //   - KegiatanDokumentasiSheet : panel samping (layar penuh di HP) per ID kegiatan
@@ -14,6 +14,8 @@
 //      Hasil disimpan lewat PATCH /kegiatan/:id dengan isian lain apa adanya.
 //   4. Periksa (hanya bila bisaPeriksa): tombol pemeriksaan pimpinan/admin.
 //   5. Setelah simpan, cache detail dan daftar disegarkan sehingga data terbaru langsung tampil.
+//   6. Tombol utama mengikuti keadaan: "Simpan hasil" bila hasil diubah, "Selesai" bila hanya
+//      dokumentasi (berkas tersimpan saat diunggah). Keduanya ditahan selama unggahan belum beres.
 //
 // Catatan penting:
 //   - Tidak ada endpoint baru: memakai endpoint kegiatan, dokumentasi, dan pemeriksaan yang sudah ada.
@@ -40,7 +42,7 @@ import { formatTanggalJam } from "@/lib/format";
 import { useKegiatan, useUbahKegiatan } from "../hooks/use-kegiatan";
 import { keKegiatanPayload, nilaiAwalForm } from "../schemas/kegiatan.schema";
 import type { KegiatanDetail } from "../types";
-import { DokumentasiGaleri } from "./dokumentasi-galeri";
+import { DokumentasiGaleri, type StatusAntrean } from "./dokumentasi-galeri";
 import { PeriksaAksi } from "./periksa-aksi";
 
 type Target = { id: number; judul: string };
@@ -58,7 +60,10 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
   const [hasil, setHasil] = useState(k.hasil ?? "");
   const [galat, setGalat] = useState<string | null>(null);
   const simpan = useUbahKegiatan(k.id);
+  const [antrean, setAntrean] = useState<StatusAntrean>("kosong");
   const catatanTerakhir = k.catatanPemeriksaan[0];
+  const hasilBerubah = hasil !== (k.hasil ?? "");
+  const tahan = antrean !== "kosong";
 
   const kirim = () => {
     setGalat(null);
@@ -118,7 +123,7 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
 
         <Bagian judul={`Dokumentasi (${k.dokumentasi.length})`}>
           {mengubah ? (
-            <DokumentasiGaleri kegiatan={k} />
+            <DokumentasiGaleri kegiatan={k} onAntreanBerubah={setAntrean} />
           ) : k.dokumentasi.length === 0 ? (
             <p className="text-sm text-muted-foreground">Belum ada dokumentasi.</p>
           ) : (
@@ -136,12 +141,26 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
       <div className="flex flex-col-reverse gap-2 border-t bg-muted/50 p-4 sm:flex-row sm:items-center sm:justify-end">
         {mengubah ? (
           <>
-            <Button type="button" variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={onGantiMode} disabled={simpan.isPending}>
-              Batal
-            </Button>
-            <Button type="button" className="h-10 pointer-coarse:min-h-11" onClick={kirim} disabled={simpan.isPending || hasil === (k.hasil ?? "")}>
+            {tahan && (
+              <p id="tahan-simpan-dok" aria-live="polite" className="order-last text-xs text-muted-foreground sm:order-none sm:mr-auto">
+                {antrean === "mengunggah" ? "Tunggu sampai unggahan selesai." : "Tekan Unggah dulu untuk berkas yang dipilih."}
+              </p>
+            )}
+            {/* Batal hanya bila ada isian hasil yang bisa dibuang; tanpa itu, Selesai sudah cukup */}
+            {hasilBerubah && (
+              <Button type="button" variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={onGantiMode} disabled={simpan.isPending || antrean === "mengunggah"}>
+                Batal
+              </Button>
+            )}
+            <Button
+              type="button"
+              className="h-10 pointer-coarse:min-h-11"
+              onClick={hasilBerubah ? kirim : onGantiMode}
+              disabled={simpan.isPending || tahan}
+              aria-describedby={tahan ? "tahan-simpan-dok" : undefined}
+            >
               {simpan.isPending && <Spinner />}
-              {simpan.isPending ? "Menyimpan..." : "Simpan hasil"}
+              {simpan.isPending ? "Menyimpan..." : hasilBerubah ? "Simpan hasil" : "Selesai"}
             </Button>
           </>
         ) : (
@@ -153,7 +172,7 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
               </Link>
             </Button>
             {k.bisaPeriksa && <PeriksaAksi kegiatan={k} className="w-full sm:w-auto" />}
-            {k.bisaUbah && <TombolUbah onClick={onGantiMode} />}
+            {k.bisaUbah && <TombolUbah kosong={!k.hasil && k.dokumentasi.length === 0} onClick={onGantiMode} />}
           </>
         )}
       </div>
@@ -161,11 +180,12 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
   );
 }
 
-function TombolUbah({ onClick }: { onClick: () => void }) {
+// Nama tombol menyebut apa yang diubah di panel ini: hasil dan dokumentasi, bukan seluruh kegiatan
+function TombolUbah({ kosong, onClick }: { kosong: boolean; onClick: () => void }) {
   return (
     <Button type="button" className="h-10 pointer-coarse:min-h-11" onClick={onClick}>
       <Pencil aria-hidden />
-      Ubah
+      {kosong ? "Isi hasil dan dokumentasi" : "Ubah hasil dan dokumentasi"}
     </Button>
   );
 }

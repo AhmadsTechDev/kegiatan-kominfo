@@ -30,7 +30,7 @@
 
 import { ChevronLeft, ChevronRight, Download, ExternalLink, FileText, RefreshCw, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ACCEPT, FileDropzone } from "@/components/shared/file-dropzone";
@@ -91,16 +91,29 @@ function AksiBerkas({
   );
 }
 
+export type StatusAntrean = "kosong" | "menunggu" | "mengunggah";
+
 // bacaSaja: hanya tampilan dan pratinjau (halaman detail); unggah, ganti, dan hapus ada di halaman ubah
+// onAntreanBerubah: induk menahan tombol Simpan selama ada berkas yang belum diunggah atau sedang diunggah
 export function DokumentasiGaleri({
   kegiatan,
   bacaSaja = false,
+  onAntreanBerubah,
 }: {
   kegiatan: Pick<KegiatanDetail, "id" | "dokumentasi" | "bisaUbah" | "statusPelaksanaan">;
   bacaSaja?: boolean;
+  onAntreanBerubah?: (status: StatusAntrean) => void;
 }) {
   const bisaUbah = kegiatan.bisaUbah && !bacaSaja;
   const antrean = useAntreanUnggah(kegiatan.dokumentasi.length);
+  const statusAntrean: StatusAntrean = antrean.berjalan
+    ? "mengunggah"
+    : antrean.items.some((it) => it.status === "menunggu")
+      ? "menunggu"
+      : "kosong";
+  useEffect(() => {
+    onAntreanBerubah?.(statusAntrean);
+  }, [statusAntrean, onAntreanBerubah]);
   const hapus = useHapusDokumentasi(kegiatan.id);
   const ganti = useGantiDokumentasi(kegiatan.id);
   const inputGanti = useRef<HTMLInputElement>(null);
