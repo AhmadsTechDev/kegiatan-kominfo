@@ -19,7 +19,7 @@
 //
 // Catatan penting:
 //   - Mengacu pada kebutuhan pengelolaan akun di features/07-masuk-kelola-akun.md.
-//   - Nama, NIP, jabatan, dan bidang bersifat read-only (dikelola admin).
+//   - Nama, NIP, dan bidang bersifat read-only (dikelola admin).
 //
 // Dipakai oleh: frontend/src/app/(app)/pengaturan/page.tsx
 // =============================================================================

@@ -77,7 +77,7 @@ Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai
 
 | Field | Tipe | Keterangan |
 | --- | --- | --- |
-| `q` | string | Cari nama, NIP, atau jabatan |
+| `q` | string | Cari nama atau NIP |
 | `unit` | angka | Id unit; sub-unit ikut tercakup |
 | `aktif` | `1` \| `0` | |
 | `akun` | `tanpa` \| `ada` | `tanpa`: belum punya akun (tab Perlu diundang); `ada`: sudah punya akun (Master data > Pegawai) |
@@ -92,7 +92,6 @@ Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai
       "id": 1,
       "nip": "198702152011012002",
       "nama": "Andi Saputra",
-      "jabatan": "Analis Data",
       "bidang": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
       "aktif": true,
       "roleUndangan": "PEGAWAI",
@@ -119,12 +118,11 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 | `nama` | string | ya | 1–150 karakter |
 | `bidangId` | angka | ya | Bidang aktif |
 | `nip` | string \| null | tidak | 18 digit, sah, dan belum terdaftar. Kosongkan untuk non-ASN |
-| `jabatan` | string \| null | tidak | Maks. 150 karakter |
 | `email` | string \| null | tidak | Bila diisi, langsung dikirimi undangan akun |
 | `role` | `PEGAWAI` \| `PIMPINAN` | tidak | Role akun undangan, bawaan `PEGAWAI` |
 
 ```json
-{ "nip": "198702152011012002", "nama": "Andi Saputra", "jabatan": "Analis", "bidangId": 10, "email": "andi@diskominfo.local" }
+{ "nip": "198702152011012002", "nama": "Andi Saputra", "bidangId": 10, "email": "andi@diskominfo.local" }
 ```
 
 **Respons 201**
@@ -138,7 +136,7 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 
 ### `PATCH /api/admin/pegawai/:id`
 
-**Body**: `nip`, `nama`, `jabatan`, `bidangId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional), `roleUndangan` (opsional, `PEGAWAI`, `PIMPINAN`, atau `ADMIN`, bawaan untuk dialog Undang), dan `kontak` (opsional, nomor telepon; disimpan di akun sehingga hanya bisa diisi bila pegawai sudah punya akun, selain itu 422). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
+**Body**: `nip`, `nama`, `bidangId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional), `roleUndangan` (opsional, `PEGAWAI`, `PIMPINAN`, atau `ADMIN`, bawaan untuk dialog Undang), dan `kontak` (opsional, nomor telepon; disimpan di akun sehingga hanya bisa diisi bila pegawai sudah punya akun, selain itu 422). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
 
 **Respons 200**: `{ "id": 1 }`
 
@@ -180,7 +178,7 @@ Menghapus permanen pegawai yang **belum punya akun** dan belum dipakai sebagai p
 
 ## Manajemen akun
 
-Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi pemilik akun; pemiliknya membuat kata sandi sendiri. Admin tidak pernah menentukan, melihat, atau mengirim kata sandi. Setiap akun tertaut ke data pegawai (jabatan dan bidang wajib, NIP opsional). Status akun dijelaskan di [api-auth.md](api-auth.md#status-akun).
+Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi pemilik akun; pemiliknya membuat kata sandi sendiri. Admin tidak pernah menentukan, melihat, atau mengirim kata sandi. Setiap akun tertaut ke data pegawai (bidang wajib, NIP opsional). Status akun dijelaskan di [api-auth.md](api-auth.md#status-akun).
 
 ### `GET /api/admin/akun`
 
@@ -214,8 +212,7 @@ Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi p
         "id": 1,
         "nama": "Andi Saputra",
         "nip": "198702152011012002",
-        "jabatan": "Analis Data",
-        "bidangId": 10,
+          "bidangId": 10,
         "bidang": "Seksi Pengelolaan Data dan Persediaan",
         "unitInduk": "Bidang Teknologi Informasi dan Persandian"
       },
@@ -253,13 +250,12 @@ Membuat akun beserta data pegawainya dalam satu transaksi, lalu mengirim email a
 | `name` | string | ya | Nama lengkap, 1–150 karakter |
 | `email` | string | ya | Email pribadi, unik. Menjadi identitas login |
 | `nip` | string \| null | tidak | 18 digit. Bila milik pegawai terdaftar yang belum punya akun, data pegawai itu dipakai (tidak diduplikasi) |
-| `jabatan` | string | ya | 1–150 karakter |
 | `bidangId` | angka | ya | Bidang aktif |
 | `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | ya | |
 | `pegawaiId` | angka \| null | tidak | Pakai pegawai tertentu dari Master data |
 
 ```json
-{ "name": "Andi Saputra", "email": "andi@contoh.com", "nip": null, "jabatan": "Analis Data", "bidangId": 10, "role": "PEGAWAI" }
+{ "name": "Andi Saputra", "email": "andi@contoh.com", "nip": null, "bidangId": 10, "role": "PEGAWAI" }
 ```
 
 **Respons 201**
@@ -270,7 +266,7 @@ Membuat akun beserta data pegawainya dalam satu transaksi, lalu mengirim email a
 
 Bila email gagal dikirim, akun tetap tersimpan dan `undangan.galat` berisi pesannya; kirim ulang lewat `kirim-ulang-undangan`.
 
-**Galat**: 422 (email/NIP sudah dipakai, pegawai sudah tertaut ke akun lain, jabatan kosong, unit tidak ada/nonaktif).
+**Galat**: 422 (email/NIP sudah dipakai, pegawai sudah tertaut ke akun lain, unit tidak ada/nonaktif).
 
 ### `PATCH /api/admin/akun/:id`
 
@@ -391,7 +387,7 @@ Permintaan yang diajukan dari halaman login (lihat [api-auth.md](api-auth.md#men
 }
 ```
 
-`pegawai` (`{ id, nip, nama, jabatan }`) dan `bidang` terisi bila pemohon mengisi NIP yang terdaftar.
+`pegawai` (`{ id, nip, nama }`) dan `bidang` terisi bila pemohon mengisi NIP yang terdaftar.
 
 ### `GET /api/admin/permintaan-akun/jumlah`
 
@@ -401,7 +397,7 @@ Untuk badge di menu admin.
 
 ### `POST /api/admin/permintaan-akun/:id/setujui`
 
-Menyetujui permintaan setelah identitas pemohon diverifikasi: akun dibuat dan email aktivasi dikirim. Bila pemohon tidak punya data pegawai, data pegawai baru dibuat dari `bidangId` dan `jabatan` (keduanya wajib dalam kasus ini).
+Menyetujui permintaan setelah identitas pemohon diverifikasi: akun dibuat dan email aktivasi dikirim. Bila pemohon tidak punya data pegawai, data pegawai baru dibuat dari `bidangId` (wajib dalam kasus ini).
 
 **Body**
 
@@ -410,7 +406,6 @@ Menyetujui permintaan setelah identitas pemohon diverifikasi: akun dibuat dan em
 | `role` | `PEGAWAI` \| `PIMPINAN` \| `ADMIN` | ya | |
 | `email` | string | tidak | Ganti email pemohon bila perlu |
 | `bidangId` | angka | bila tanpa data pegawai | Bidang pegawai baru |
-| `jabatan` | string | bila tanpa data pegawai | Jabatan pegawai baru |
 
 **Respons 200**: sama dengan undangan, `{ "userId": "...", "email": "...", "kirimUlang": false }`
 

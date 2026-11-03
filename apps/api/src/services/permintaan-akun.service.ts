@@ -109,15 +109,11 @@ export const PermintaanAkunService = {
       const email = isi.email ?? permintaan.email;
       let pegawaiId = permintaan.pegawaiId;
       if (!pegawaiId) {
-        // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa NIP terdaftar wajib diberi bidang dan jabatan
-        const galat = [
-          ...(isi.bidangId ? [] : [{ field: "bidangId", message: "Bidang wajib dipilih" }]),
-          ...(isi.jabatan?.trim() ? [] : [{ field: "jabatan", message: "Jabatan wajib diisi" }]),
-        ];
-        if (galat.length) throw Unprocessable("Lengkapi data pegawai pemohon", galat);
+        // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa NIP terdaftar wajib diberi bidang
+        if (!isi.bidangId) throw Unprocessable("Lengkapi data pegawai pemohon", [{ field: "bidangId", message: "Bidang wajib dipilih" }]);
         pegawaiId = (
           await MasterService.buatPegawai(
-            { nip: null, nama: permintaan.nama, jabatan: isi.jabatan!, bidangId: isi.bidangId! },
+            { nip: null, nama: permintaan.nama, bidangId: isi.bidangId },
             { id: admin.id, role: "ADMIN", pegawaiId: null },
             admin.meta,
           )

@@ -141,7 +141,7 @@ export const KegiatanRepository = {
         alasanBatal: true,
         jenis: { select: { id: true, nama: true } },
         bidang: { select: { id: true, nama: true, parent: { select: { id: true, nama: true } } } },
-        penanggungJawab: { select: { id: true, nama: true, jabatan: true } },
+        penanggungJawab: { select: { id: true, nama: true } },
         pembuat: { select: { id: true, name: true } },
         statusPemeriksaan: true,
         createdAt: true,

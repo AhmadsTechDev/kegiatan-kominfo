@@ -12,7 +12,6 @@ const bidang = {
 const pegawai = {
   nip: t.Optional(t.Nullable(t.String({ pattern: "^\\d{18}$", error: "NIP harus 18 digit angka" }))),
   nama: t.String({ minLength: 1, maxLength: 150, error: "Nama wajib diisi, maksimal 150 karakter" }),
-  jabatan: t.Optional(t.Nullable(t.String({ maxLength: 150, error: "Jabatan maksimal 150 karakter" }))),
   bidangId: t.Integer({ minimum: 1, error: "Bidang wajib dipilih" }),
 };
 

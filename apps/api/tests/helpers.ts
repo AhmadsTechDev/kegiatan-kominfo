@@ -71,7 +71,7 @@ export async function aktifkan(email: string, password = SANDI) {
 
 // Isian form Buat akun yang sah
 export async function isiAkun(ubah: Record<string, unknown> = {}) {
-  return { name: `Akun Uji ${crypto.randomUUID().slice(0, 4)}`, email: emailAcak(), jabatan: "Staf", bidangId: await idUnit("SEKSI-DATA"), role: "PEGAWAI", ...ubah };
+  return { name: `Akun Uji ${crypto.randomUUID().slice(0, 4)}`, email: emailAcak(), bidangId: await idUnit("SEKSI-DATA"), role: "PEGAWAI", ...ubah };
 }
 
 let cookieAdmin: string | undefined;

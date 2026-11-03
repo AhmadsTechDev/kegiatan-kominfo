@@ -97,7 +97,7 @@ export async function validasiPegawai(
   if (!unit) galat.push({ field: "bidangId", message: "Bidang tidak ditemukan" });
   else if (!unit.aktif && unit.id !== unitLamaId) galat.push({ field: "bidangId", message: "Bidang sedang nonaktif" });
   if (galat.length) throw Unprocessable("Periksa kembali isian pegawai", galat);
-  return { nip, nama: isi.nama.trim(), jabatan: teks(isi.jabatan), bidangId: isi.bidangId };
+  return { nip, nama: isi.nama.trim(), bidangId: isi.bidangId };
 }
 
 // Nama jenis kegiatan wajib diisi

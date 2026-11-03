@@ -109,7 +109,6 @@ export const AuthRepository = {
             id: true,
             nip: true,
             nama: true,
-            jabatan: true,
             bidang: { select: { id: true, kode: true, nama: true, parent: { select: { id: true, nama: true } } } },
           },
         },

@@ -8,7 +8,7 @@ const token = t.String({ minLength: 10, maxLength: 100, pattern: "^[A-Za-z0-9_-]
 
 // Aturan isian untuk akun sendiri (/me) dan alur tautan email tanpa login
 export const AuthValidator = {
-  // Nama, NIP, jabatan, dan bidang dikelola admin; pemilik akun hanya boleh mengubah kontak
+  // Nama, NIP, dan bidang dikelola admin; pemilik akun hanya boleh mengubah kontak
   ubahProfil: t.Object({
     kontak: t.Nullable(t.String({ maxLength: 50, pattern: "^[0-9+()\\-\\s]*$", error: "Kontak berupa nomor telepon, maksimal 50 karakter" })),
   }),

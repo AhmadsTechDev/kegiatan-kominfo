@@ -35,7 +35,7 @@ export const PermintaanAkunRepository = {
           diprosesAt: true,
           pemroses: { select: { name: true } },
           createdAt: true,
-          pegawai: { select: { id: true, nip: true, nama: true, jabatan: true, bidang: { select: { nama: true } } } },
+          pegawai: { select: { id: true, nip: true, nama: true, bidang: { select: { nama: true } } } },
         },
         orderBy: { id: "desc" },
         take: halaman.pageSize,
@@ -46,7 +46,7 @@ export const PermintaanAkunRepository = {
     const items = baris.map(({ pemroses, pegawai, ...p }) => ({
       ...p,
       diprosesOleh: pemroses?.name ?? null,
-      pegawai: pegawai ? { id: pegawai.id, nip: pegawai.nip, nama: pegawai.nama, jabatan: pegawai.jabatan } : null,
+      pegawai: pegawai ? { id: pegawai.id, nip: pegawai.nip, nama: pegawai.nama } : null,
       bidang: pegawai?.bidang.nama ?? null,
     }));
     return { items, total };

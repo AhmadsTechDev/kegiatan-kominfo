@@ -32,7 +32,6 @@ export type Profil = {
     id: number;
     nip: string | null;
     nama: string;
-    jabatan: string | null;
     bidang: { id: number; kode: string; nama: string; parent: { id: number; nama: string } | null };
   } | null;
 };

@@ -91,11 +91,6 @@ export function BelumPunyaAkun() {
           </span>
         ),
       },
-      {
-        id: "jabatan",
-        header: "Jabatan",
-        cell: ({ row }) => <span className="block max-w-56 min-w-36 text-sm whitespace-normal">{row.original.jabatan ?? <span className="text-muted-foreground">-</span>}</span>,
-      },
       { id: "unit", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-72 whitespace-normal">{row.original.bidang.nama}</UnitChip> },
       {
         id: "nip",
@@ -141,7 +136,6 @@ export function BelumPunyaAkun() {
                   <>
                     {p.nama}
                     <LabelRole role={p.roleUndangan} />
-                    <span className="block text-xs font-normal text-muted-foreground">{p.jabatan ?? "Jabatan belum diisi"}</span>
                   </>
                 }
                 aksi={

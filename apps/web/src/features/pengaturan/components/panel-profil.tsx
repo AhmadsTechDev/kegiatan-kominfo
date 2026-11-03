@@ -6,11 +6,11 @@
 //
 // Isi berkas:
 //   - Baris, Kosong      : baris label-nilai dan penanda nilai kosong (dipakai panel lain)
-//   - PanelKepegawaian   : nama, NIP, jabatan, dan bidang (read-only)
+//   - PanelKepegawaian   : nama, NIP, dan bidang (read-only)
 //   - PanelKontak        : formulir nomor kontak (PATCH /me)
 //
 // Catatan penting:
-//   - Nama, NIP, jabatan, dan bidang hanya bisa diubah admin; backend menolak perubahan dari pemilik akun.
+//   - Nama, NIP, dan bidang hanya bisa diubah admin; backend menolak perubahan dari pemilik akun.
 //   - Foto profil diubah dari kartu profil di bagian atas halaman Pengaturan.
 //
 // Dipakai oleh: frontend/src/features/pengaturan/components/pengaturan-view.tsx
@@ -66,7 +66,6 @@ export function PanelKepegawaian({ p }: { p: Profil }) {
         <dl className="divide-y divide-muted border-t border-muted">
           <Baris label="Nama lengkap">{p.pegawai.nama}</Baris>
           <Baris label="NIP">{p.pegawai.nip ? <span className="tabular-nums">{p.pegawai.nip}</span> : <Kosong teks="Tanpa NIP" />}</Baris>
-          <Baris label="Jabatan">{p.pegawai.jabatan ?? <Kosong />}</Baris>
           <Baris label="Bidang">
             {unit?.nama}
             {unit?.parent && <span className="block text-xs font-normal text-muted-foreground">di bawah {unit.parent.nama}</span>}
@@ -78,9 +77,9 @@ export function PanelKepegawaian({ p }: { p: Profil }) {
             <IdCard aria-hidden className="size-5" />
           </span>
           <div className="text-sm">
-            <p className="font-medium">Jabatan dan bidang belum diisi</p>
+            <p className="font-medium">Bidang belum diisi</p>
             <p className="mt-0.5 text-muted-foreground">
-              {admin ? "Lengkapi lewat tombol Kelola di atas." : "Minta administrator melengkapi jabatan dan bidang akun Anda."}
+              {admin ? "Lengkapi lewat tombol Kelola di atas." : "Minta administrator melengkapi bidang akun Anda."}
             </p>
           </div>
         </PanelBody>

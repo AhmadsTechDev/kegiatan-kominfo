@@ -24,20 +24,20 @@ function nip(urut: number) {
   return `${lahir}${bln}${tgl}${tmt}${1 + Math.floor(acak() * 2)}${String(urut).padStart(3, "0")}`;
 }
 
-type Orang = { nama: string; jabatan: string; unit: string; akun?: { role: "PEGAWAI" | "PIMPINAN"; status: "AKTIF" | "MENUNGGU" | "NONAKTIF" }; nip?: boolean };
+type Orang = { nama: string; unit: string; akun?: { role: "PEGAWAI" | "PIMPINAN"; status: "AKTIF" | "MENUNGGU" | "NONAKTIF" }; nip?: boolean };
 
 const ORANG: Orang[] = [
-  { nama: "Sri Wahyuni", jabatan: "Kepala Bidang Teknologi Informasi dan Persandian", unit: "BID-TIP", akun: { role: "PIMPINAN", status: "AKTIF" }, nip: true },
-  { nama: "Andi Saputra", jabatan: "Pranata Komputer Ahli Muda", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Dewi Lestari", jabatan: "Analis Data", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Budi Santoso", jabatan: "Sandiman", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Fitri Handayani", jabatan: "Pranata Humas", unit: "BID-KOMPUB", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Yoga Pratama", jabatan: "Pengelola Informasi Publik", unit: "BID-OPINI", akun: { role: "PEGAWAI", status: "AKTIF" } },
-  { nama: "Nurul Aini", jabatan: "Pranata Komputer Ahli Pertama", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Hendra Wijaya", jabatan: "Staf Umum", unit: "BID-OPINI", akun: { role: "PEGAWAI", status: "MENUNGGU" } },
-  { nama: "Siti Rohani", jabatan: "Bendahara", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "NONAKTIF" }, nip: true },
-  { nama: "Agus Setiawan", jabatan: "Teknisi Jaringan", unit: "BID-TIP", nip: true },
-  { nama: "Rina Marlina", jabatan: "Perencana", unit: "BID-APTIKA" },
+  { nama: "Sri Wahyuni", unit: "BID-TIP", akun: { role: "PIMPINAN", status: "AKTIF" }, nip: true },
+  { nama: "Andi Saputra", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
+  { nama: "Dewi Lestari", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
+  { nama: "Budi Santoso", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
+  { nama: "Fitri Handayani", unit: "BID-KOMPUB", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
+  { nama: "Yoga Pratama", unit: "BID-OPINI", akun: { role: "PEGAWAI", status: "AKTIF" } },
+  { nama: "Nurul Aini", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
+  { nama: "Hendra Wijaya", unit: "BID-OPINI", akun: { role: "PEGAWAI", status: "MENUNGGU" } },
+  { nama: "Siti Rohani", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "NONAKTIF" }, nip: true },
+  { nama: "Agus Setiawan", unit: "BID-TIP", nip: true },
+  { nama: "Rina Marlina", unit: "BID-APTIKA" },
 ];
 
 // Lokasi di Palembang (koordinat perkiraan untuk peta demo)
@@ -89,7 +89,7 @@ let pimpinanId = admin.id;
 for (const [i, o] of ORANG.entries()) {
   const unitId = unit.get(o.unit);
   if (!unitId) throw new Error(`Unit ${o.unit} tidak ada`);
-  const p = await prisma.pegawai.create({ data: { nama: o.nama, jabatan: o.jabatan, bidangId: unitId, nip: o.nip ? nip(i + 1) : null } });
+  const p = await prisma.pegawai.create({ data: { nama: o.nama, bidangId: unitId, nip: o.nip ? nip(i + 1) : null } });
   if (!o.akun) continue;
   const email = `${o.nama.toLowerCase().replace(/\s+/g, ".")}@${DOMAIN}`;
   const id = crypto.randomUUID();

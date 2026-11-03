@@ -134,7 +134,7 @@ export function MintaAkunForm() {
           <Field data-invalid={!!formState.errors.catatan}>
             <FieldLabel htmlFor="minta-catatan">Catatan untuk administrator</FieldLabel>
             <Textarea id="minta-catatan" rows={3} maxLength={500} {...register("catatan")} />
-            <FieldDescription>Tulis bidang dan jabatan Anda agar mudah diperiksa.</FieldDescription>
+            <FieldDescription>Tulis bidang Anda agar mudah diperiksa.</FieldDescription>
             <FieldError errors={[formState.errors.catatan]} />
           </Field>
         </FieldGroup>

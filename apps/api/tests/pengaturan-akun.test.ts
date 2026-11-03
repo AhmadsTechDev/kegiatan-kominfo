@@ -16,13 +16,13 @@ describe("profil", () => {
     expect(JSON.stringify(me.data)).not.toMatch(/password|token|failedLogin|lockedUntil/i);
   });
 
-  test("hanya kontak yang bisa diubah; nama, NIP, jabatan, unit, dan role dikelola admin", async () => {
+  test("hanya kontak yang bisa diubah; nama, NIP, unit, dan role dikelola admin", async () => {
     const u = await buatPengguna();
     const sebelum = (await panggil("/me", { cookie: u.cookie })).data;
     const res = await panggil("/me", {
       method: "PATCH",
       cookie: u.cookie,
-      json: { kontak: "0812-3456", nama: "Nama Palsu", name: "Nama Palsu", jabatan: "Kepala Dinas", nip: "199001012022211001", role: "ADMIN", bidangId: 1 },
+      json: { kontak: "0812-3456", nama: "Nama Palsu", name: "Nama Palsu", nip: "199001012022211001", role: "ADMIN", bidangId: 1 },
     });
     expect(res.status).toBe(200);
     expect(res.data.kontak).toBe("0812-3456");

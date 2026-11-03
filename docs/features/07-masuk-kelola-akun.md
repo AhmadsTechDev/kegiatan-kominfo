@@ -11,7 +11,7 @@ Menyediakan akun pegawai yang aman dan terkelola agar setiap orang masuk dengan 
 - Pengguna tidak bisa membuka data kegiatan sebelum berhasil masuk dengan akun kantor.
 - Setelah masuk, nama pengguna dan perannya terlihat jelas di aplikasi.
 - Admin dapat mengatur peran pengguna sebagai pegawai, pimpinan, atau admin, dan akses menu menyesuaikan peran tersebut.
-- Setiap pengguna dapat memperbarui nama, jabatan, dan info kontaknya sendiri.
+- Setiap pengguna dapat memperbarui nama dan info kontaknya sendiri.
 - Perubahan profil langsung tampil pada identitas pengguna di aplikasi.
 
 ## Sub-fitur: Masuk Akun
@@ -42,14 +42,14 @@ Memungkinkan admin mengatur pengguna dan perannya agar setiap pegawai hanya bisa
 
 ## Sub-fitur: Atur Profil
 
-Perbarui nama, jabatan, dan info kontak pemilik akun.
+Perbarui nama dan info kontak pemilik akun.
 
 ### Tujuan
 Memungkinkan setiap pemilik akun memperbarui data dirinya agar identitas pada catatan kegiatan selalu akurat.
 
 ### Selesai bila
-- Halaman profil menampilkan nama, jabatan, dan info kontak yang tersimpan saat ini.
-- Pengguna dapat mengubah nama, jabatan, dan info kontak lalu menyimpannya.
+- Halaman profil menampilkan nama dan info kontak yang tersimpan saat ini.
+- Pengguna dapat mengubah nama dan info kontak lalu menyimpannya.
 - Setelah disimpan, muncul konfirmasi bahwa profil berhasil diperbarui.
 - Perubahan profil langsung tercermin pada identitas pengguna di aplikasi.
 

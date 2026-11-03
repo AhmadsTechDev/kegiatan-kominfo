@@ -40,7 +40,7 @@ Data untuk pilihan di formulir dan filter.
     { "id": 10, "parentId": 4, "kode": "SEKSI-DATA", "nama": "Seksi Pengelolaan Data dan Persediaan", "aktif": true }
   ],
   "jenisKegiatan": [{ "id": 1, "nama": "Rapat" }],
-  "pegawai": [{ "id": 1, "nama": "Andi Saputra", "jabatan": "Analis Data", "bidangId": 10 }]
+  "pegawai": [{ "id": 1, "nama": "Andi Saputra", "bidangId": 10 }]
 }
 ```
 
@@ -131,7 +131,7 @@ Detail kegiatan.
   "jenis": { "id": 1, "nama": "Rapat" },
   "bidang": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
   "unitInduk": { "id": 4, "nama": "Bidang Teknologi Informasi dan Persandian" },
-  "penanggungJawab": { "id": 1, "nama": "Andi Saputra", "jabatan": "Analis Data" },
+  "penanggungJawab": { "id": 1, "nama": "Andi Saputra" },
   "pembuat": { "id": "07747c26-fd62-4ab6-8584-ebf7b244fc3a", "nama": "Andi Saputra" },
   "statusPelaksanaan": "selesai",
   "statusPemeriksaan": "perlu_perbaikan",

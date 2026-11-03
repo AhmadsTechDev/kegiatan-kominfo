@@ -93,7 +93,7 @@ export function LaporanView() {
   }, [referensi.data, cakupan.unit, terbatas, unitBoleh]);
   const opsiPegawai = useMemo<OpsiCari[]>(() => {
     const namaUnit = new Map((referensi.data?.bidang ?? []).map((u) => [u.id, u.nama]));
-    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.bidangId)].filter(Boolean).join(" · ") }));
+    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: namaUnit.get(p.bidangId) ?? "" }));
   }, [pegawaiPilihan, referensi.data]);
 
   const kosong = pratinjau.data?.baris.length === 0;
@@ -173,7 +173,7 @@ export function LaporanView() {
               onChange={(v) => setFilter({ pegawai: v })}
               opsi={opsiPegawai}
               labelSemua="Semua pegawai"
-              placeholderCari="Ketik nama, jabatan, atau bidang..."
+              placeholderCari="Ketik nama atau bidang..."
             />
           </div>
           <p className="text-sm sm:col-span-2 lg:col-span-1 lg:pb-2.5" aria-live="polite">

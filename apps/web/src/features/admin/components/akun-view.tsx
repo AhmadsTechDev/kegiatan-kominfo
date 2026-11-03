@@ -105,7 +105,7 @@ function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: B
             </span>
           )}
         </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">{p ? [p.bidang, p.jabatan].filter(Boolean).join(" · ") : "Belum ada data kepegawaian"}</p>
+        <p className="mt-1.5 text-xs text-muted-foreground">{p ? p.bidang : "Belum ada data kepegawaian"}</p>
       </div>
       <TombolAksi akun={dariAdmin(a)} idSaya={idSaya} buka={buka} />
     </div>
@@ -170,7 +170,7 @@ function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
               <span className="flex max-w-64 min-w-44 flex-col gap-0.5 whitespace-normal">
                 <span className="text-sm font-medium">{p.bidang}</span>
                 <span className="text-xs text-muted-foreground">
-                  {[p.jabatan, p.nip ? `NIP ${p.nip}` : "Tanpa NIP"].filter(Boolean).join(" · ")}
+                  {p.nip ? `NIP ${p.nip}` : "Tanpa NIP"}
                 </span>
               </span>
             );
@@ -183,7 +183,7 @@ function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
                 onClick={() => buka("ubah", dariAdmin(a))}
                 className="inline-flex items-center rounded text-xs font-semibold text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11"
               >
-                Lengkapi jabatan dan unit
+                Lengkapi bidang
               </button>
             </span>
           );

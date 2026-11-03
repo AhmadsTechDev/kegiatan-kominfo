@@ -175,7 +175,6 @@ Semua endpoint di bawah butuh login (semua role).
     "id": 1,
     "nip": "198702152011012002",
     "nama": "Andi Saputra",
-    "jabatan": "Analis Data",
     "bidang": { "id": 10, "kode": "SEKSI-DATA", "nama": "Seksi Pengelolaan Data dan Persediaan", "parent": { "id": 4, "nama": "Bidang Teknologi Informasi dan Persandian" } }
   },
   "foto": "/api/me/foto/07747c26-...?v=e2e12a91-..."
@@ -184,7 +183,7 @@ Semua endpoint di bawah butuh login (semua role).
 
 ### `PATCH /api/me`
 
-Hanya nomor kontak yang bisa diubah. Nama, NIP, jabatan, bidang, dan role dikelola admin; field lain di body diabaikan.
+Hanya nomor kontak yang bisa diubah. Nama, NIP, bidang, dan role dikelola admin; field lain di body diabaikan.
 
 **Body**: `{ "kontak": "0812-3456" }` (`null` untuk mengosongkan; angka, `+`, `(`, `)`, `-`, spasi; maks. 50)
 

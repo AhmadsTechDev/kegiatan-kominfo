@@ -46,7 +46,7 @@ flowchart TD
     notif --> tinjau{Admin meninjau}
     tinjau -- Tolak --> tolak[(Permintaan DITOLAK + alasan)] --> akhirTolak([Selesai])
     tinjau -- Setujui --> buat
-    jalur -- Admin --> buat["Admin membuat akun: nama, email pribadi,<br/>NIP opsional, jabatan, bidang, role"]
+    jalur -- Admin --> buat["Admin membuat akun: nama, email pribadi,<br/>NIP opsional, bidang, role"]
     buat --> token["Buat token aktivasi<br/>(disimpan sebagai hash SHA-256)"]
     token --> kirim[Kirim email undangan lewat Brevo]
     kirim --> terkirim{Email terkirim?}

@@ -204,10 +204,10 @@ export function PantauView() {
     }
     return (referensi.data?.pegawai ?? []).filter((p) => ids.has(p.bidangId));
   }, [penyaring.unit, referensi.data, bidang]);
-  // Jabatan dan bidang ikut ditampilkan dan dicari: membedakan pegawai bernama sama dan memudahkan mencari per bidang
+  // Bidang ikut ditampilkan dan dicari: membedakan pegawai bernama sama dan memudahkan mencari per bidang
   const opsiPegawai = useMemo<OpsiCari[]>(() => {
     const namaUnit = new Map(bidang.map((u) => [u.id, u.nama]));
-    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.bidangId)].filter(Boolean).join(" · ") }));
+    return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: namaUnit.get(p.bidangId) ?? "" }));
   }, [pegawaiPilihan, bidang]);
 
   if (user && user.role !== "PIMPINAN" && user.role !== "ADMIN") {
@@ -268,7 +268,7 @@ export function PantauView() {
               onChange={(v) => ubah({ pegawai: v })}
               opsi={opsiPegawai}
               labelSemua={penyaring.unit ? "Semua pegawai di bidang ini" : "Semua pegawai"}
-              placeholderCari="Ketik nama, jabatan, atau bidang..."
+              placeholderCari="Ketik nama atau bidang..."
             />
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">

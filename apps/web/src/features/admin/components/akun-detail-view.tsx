@@ -233,7 +233,6 @@ function IsiDetail({ id }: { id: string }) {
             <dl className="divide-y divide-muted border-t border-muted">
               <Baris label="Nama pegawai">{a.pegawai.nama}</Baris>
               <Baris label="NIP">{a.pegawai.nip ? <span className="tabular-nums">{a.pegawai.nip}</span> : <Kosong teks="Tanpa NIP" />}</Baris>
-              <Baris label="Jabatan">{a.pegawai.jabatan ?? <Kosong />}</Baris>
               <Baris label="Bidang">
                 {unit?.nama}
                 {unit?.parent && <span className="block text-xs font-normal text-muted-foreground">di bawah {unit.parent.nama}</span>}
@@ -241,7 +240,7 @@ function IsiDetail({ id }: { id: string }) {
             </dl>
           ) : (
             <PanelBody className="flex flex-col items-start gap-3 border-t border-muted pt-4 text-sm md:pt-5">
-              <p className="text-muted-foreground">Akun ini belum punya jabatan dan bidang.</p>
+              <p className="text-muted-foreground">Akun ini belum punya bidang.</p>
               <Button variant="outline" size="sm" className="h-9 pointer-coarse:min-h-11" onClick={() => buka("ubah", dariDetail(a))}>
                 Lengkapi data kepegawaian
               </Button>

@@ -42,7 +42,6 @@ export type PegawaiAdmin = {
   id: number;
   nip: string | null;
   nama: string;
-  jabatan: string | null;
   bidang: { id: number; nama: string };
   aktif: boolean;
   kontak: string | null;
@@ -56,7 +55,6 @@ export type PegawaiAdmin = {
 export type IsiPegawai = {
   nip: string | null;
   nama: string;
-  jabatan: string | null;
   bidangId: number;
   aktif?: boolean;
   kontak?: string | null;
@@ -88,8 +86,7 @@ export type AkunAdmin = {
     id: number;
     nama: string;
     nip: string | null;
-    jabatan: string | null;
-    bidangId: number;
+      bidangId: number;
     bidang: string;
     unitInduk: string | null;
   } | null;
@@ -106,8 +103,7 @@ export type AkunDetail = Omit<AkunAdmin, "pegawai"> & {
     id: number;
     nip: string | null;
     nama: string;
-    jabatan: string | null;
-    aktif: boolean;
+      aktif: boolean;
     bidang: { id: number; nama: string; parent: { id: number; nama: string } | null };
   } | null;
   undangan: { kedaluwarsa: string | null } | null;
@@ -115,8 +111,8 @@ export type AkunDetail = Omit<AkunAdmin, "pegawai"> & {
   riwayat: AuditItem[];
 };
 
-// Isian form Buat/Ubah akun. NIP opsional; jabatan dan bidang wajib (akun selalu tertaut ke data pegawai)
-export type IsiAkun = { name: string; email: string; nip: string | null; jabatan: string; bidangId: number; role: Role };
+// Isian form Buat/Ubah akun. NIP opsional; bidang wajib (akun selalu tertaut ke data pegawai)
+export type IsiAkun = { name: string; email: string; nip: string | null; bidangId: number; role: Role };
 
 export type HasilSimpanAkun = { id: string; undangan: { email: string; galat: string | null } | null };
 
@@ -158,9 +154,9 @@ export type PermintaanAkun = {
   diprosesAt: string | null;
   diprosesOleh: string | null;
   createdAt: string;
-  pegawai: { id: number; nip: string | null; nama: string; jabatan: string | null } | null;
+  pegawai: { id: number; nip: string | null; nama: string } | null;
   bidang: string | null;
 };
 
-export type IsiUndangan = { email: string; role: Role; bidangId?: number; jabatan?: string | null };
+export type IsiUndangan = { email: string; role: Role; bidangId?: number };
 

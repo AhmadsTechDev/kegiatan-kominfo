@@ -12,13 +12,12 @@ const statusFilter = t.Union(
   { error: "Status akun tidak valid" },
 );
 
-// Isian form Buat/Ubah akun. Akun selalu tertaut ke data pegawai: jabatan dan bidang wajib, NIP opsional.
+// Isian form Buat/Ubah akun. Akun selalu tertaut ke data pegawai: bidang wajib, NIP opsional.
 // pegawaiId diisi bila admin memilih pegawai yang sudah terdaftar di Master data
 const isiAkun = {
   name: t.String({ minLength: 1, maxLength: 150, error: "Nama wajib diisi, maksimal 150 karakter" }),
   email: t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }),
   nip: t.Optional(t.Nullable(t.String({ pattern: "^(\\d{18})?$", error: "NIP harus 18 digit angka" }))),
-  jabatan: t.String({ minLength: 1, maxLength: 150, error: "Jabatan wajib diisi, maksimal 150 karakter" }),
   bidangId: t.Integer({ minimum: 1, error: "Bidang wajib dipilih" }),
   role,
   pegawaiId: t.Optional(t.Nullable(t.Integer({ minimum: 1, error: "Pegawai tidak valid" }))),

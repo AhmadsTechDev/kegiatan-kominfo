@@ -62,7 +62,7 @@ export type KegiatanDetail = {
   jenis: Ref;
   bidang: Ref;
   unitInduk: Ref | null;
-  penanggungJawab: Ref & { jabatan: string | null };
+  penanggungJawab: Ref;
   pembuat: { id: string; nama: string };
   statusPelaksanaan: StatusPelaksanaan;
   statusPemeriksaan: StatusPemeriksaanKegiatan;
@@ -79,7 +79,7 @@ export type KegiatanDetail = {
 export type Referensi = {
   bidang: { id: number; parentId: number | null; kode: string; nama: string; aktif: boolean }[];
   jenisKegiatan: Ref[];
-  pegawai: { id: number; nama: string; jabatan: string | null; bidangId: number }[];
+  pegawai: { id: number; nama: string; bidangId: number }[];
 };
 
 export type FilterKegiatan = {

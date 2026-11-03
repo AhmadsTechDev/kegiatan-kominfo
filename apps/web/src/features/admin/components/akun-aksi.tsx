@@ -7,7 +7,7 @@
 // Isi berkas:
 //   - AkunRingkas      : bentuk data akun minimum yang dibutuhkan formulir dan aksi
 //   - dariAdmin, dariDetail : mengubah data daftar/detail menjadi AkunRingkas
-//   - AkunFormDialog   : formulir Buat/Ubah akun (nama, email pribadi, NIP opsional, jabatan, unit, role)
+//   - AkunFormDialog   : formulir Buat/Ubah akun (nama, email pribadi, NIP opsional, unit, role)
 //   - useAksiAkun      : membuka aksi (ubah, kirim ulang undangan, reset sandi, cabut sesi,
 //                        nonaktifkan, pulihkan, hapus) dan merender dialog konfirmasinya
 //   - ItemAksiAkun     : butir menu dropdown sesuai status akun
@@ -52,7 +52,6 @@ export type AkunRingkas = {
   status: StatusAkun;
   bisaDihapus: boolean;
   nip: string | null;
-  jabatan: string | null;
   bidangId: number | null;
 };
 
@@ -64,7 +63,6 @@ export const dariAdmin = (a: AkunAdmin): AkunRingkas => ({
   status: a.status,
   bisaDihapus: a.bisaDihapus,
   nip: a.pegawai?.nip ?? null,
-  jabatan: a.pegawai?.jabatan ?? null,
   bidangId: a.pegawai?.bidangId ?? null,
 });
 
@@ -76,7 +74,6 @@ export const dariDetail = (a: AkunDetail): AkunRingkas => ({
   status: a.status,
   bisaDihapus: a.bisaDihapus,
   nip: a.pegawai?.nip ?? null,
-  jabatan: a.pegawai?.jabatan ?? null,
   bidangId: a.pegawai?.bidang.id ?? null,
 });
 
@@ -94,7 +91,6 @@ const schemaAkun = z.object({
     .string()
     .trim()
     .refine((v) => v === "" || /^\d{18}$/.test(v), "NIP harus 18 digit angka"),
-  jabatan: z.string().trim().min(1, "Jabatan wajib diisi").max(150, "Jabatan maksimal 150 karakter"),
   bidangId: z.string().min(1, "Bidang wajib dipilih"),
   role: z.enum(["PEGAWAI", "PIMPINAN", "ADMIN"]),
 });
@@ -154,7 +150,6 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
       name: awal?.name ?? "",
       email: awal?.email ?? "",
       nip: awal?.nip ?? "",
-      jabatan: awal?.jabatan ?? "",
       bidangId: awal?.bidangId ? String(awal.bidangId) : "",
       role: awal?.role ?? "PEGAWAI",
     },
@@ -166,7 +161,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
   const kirim = handleSubmit((v) => {
     setGalat(null);
     simpan.mutate(
-      { id: awal?.id, isi: { name: v.name, email: v.email.toLowerCase(), nip: v.nip || null, jabatan: v.jabatan, bidangId: Number(v.bidangId), role: v.role } },
+      { id: awal?.id, isi: { name: v.name, email: v.email.toLowerCase(), nip: v.nip || null, bidangId: Number(v.bidangId), role: v.role } },
       {
         onSuccess: (h) => {
           beriTahu(h, !awal);
@@ -174,7 +169,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
         },
         onError: (e) =>
           setGalat(
-            terapkanGalatServer(e, setError, { name: "name", nama: "name", email: "email", nip: "nip", pegawaiId: "nip", jabatan: "jabatan", bidangId: "bidangId", role: "role" }) ||
+            terapkanGalatServer(e, setError, { name: "name", nama: "name", email: "email", nip: "nip", pegawaiId: "nip", bidangId: "bidangId", role: "role" }) ||
               null,
           ),
       },
@@ -224,13 +219,6 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
           </FieldLabel>
           <Input id="akun-nip" inputMode="numeric" maxLength={18} placeholder="Opsional, 18 digit" className="h-10 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
           <FieldError errors={[formState.errors.nip]} />
-        </Field>
-        <Field data-invalid={!!formState.errors.jabatan}>
-          <FieldLabel htmlFor="akun-jabatan">
-            Jabatan <Wajib />
-          </FieldLabel>
-          <Input id="akun-jabatan" maxLength={150} className="h-10" aria-required aria-invalid={!!formState.errors.jabatan} {...register("jabatan")} />
-          <FieldError errors={[formState.errors.jabatan]} />
         </Field>
       </div>
 

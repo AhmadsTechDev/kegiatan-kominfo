@@ -24,7 +24,6 @@ classDiagram
         +Int id
         +String nip  «opsional, 18 digit»
         +String nama
-        +String jabatan
         +Boolean aktif
     }
     class Bidang {

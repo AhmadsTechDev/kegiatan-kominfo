@@ -1,7 +1,7 @@
 // =============================================================================
 // TAB PENGELOLAAN MASTER DATA PEGAWAI
 // =============================================================================
-// Gunanya: mengelola data pegawai ASN dan non-ASN: nama, NIP, jabatan, bidang, dan status.
+// Gunanya: mengelola data pegawai ASN dan non-ASN: nama, NIP, bidang, dan status.
 // Akun login (undangan, nonaktif, hapus) dikelola di halaman Manajemen akun.
 //
 // Isi berkas:
@@ -55,7 +55,6 @@ const schema = z.object({
   nip: z.union([z.literal(""), zNip()]),
   nama: z.string().trim().min(1, "Nama wajib diisi").max(150, "Nama maksimal 150 karakter"),
   bidangId: z.string().min(1, "Bidang wajib dipilih"),
-  jabatan: z.string().trim().max(150, "Jabatan maksimal 150 karakter"),
   kontak: z
     .string()
     .trim()
@@ -77,7 +76,6 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
     defaultValues: {
       nip: awal?.nip ?? "",
       nama: awal?.nama ?? "",
-      jabatan: awal?.jabatan ?? "",
       kontak: awal?.kontak ?? "",
       role: awal?.roleUndangan ?? "PEGAWAI",
       bidangId: awal ? String(awal.bidang.id) : "",
@@ -93,7 +91,6 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
         isi: {
           nip: v.nip || null,
           nama: v.nama,
-          jabatan: v.jabatan || null,
           bidangId: Number(v.bidangId),
           aktif: awal ? v.status === "aktif" : undefined,
           kontak: awal?.akun ? v.kontak || null : undefined,
@@ -111,7 +108,7 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
           onClose();
         },
         onError: (e) =>
-          setGalat(terapkanGalatServer(e, setError, { nip: "nip", nama: "nama", jabatan: "jabatan", bidangId: "bidangId", kontak: "kontak" }) || null),
+          setGalat(terapkanGalatServer(e, setError, { nip: "nip", nama: "nama", bidangId: "bidangId", kontak: "kontak" }) || null),
       },
     );
   });
@@ -162,13 +159,6 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
           </Field>
         )}
       </div>
-      <Field data-invalid={!!formState.errors.jabatan}>
-        <FieldLabel htmlFor="pegawai-jabatan">
-          Jabatan
-        </FieldLabel>
-        <Input id="pegawai-jabatan" maxLength={150} className="h-10" placeholder="Opsional, mis. Pranata Komputer Ahli Muda" aria-invalid={!!formState.errors.jabatan} {...register("jabatan")} />
-        <FieldError errors={[formState.errors.jabatan]} />
-      </Field>
       <Field data-invalid={!!formState.errors.bidangId}>
         <FieldLabel htmlFor="pegawai-unit">
           Bidang <Wajib />
@@ -249,13 +239,6 @@ export function PegawaiTab() {
         header: "Pegawai",
         cell: ({ row }) => <span className={cn("block max-w-64 min-w-40 font-semibold whitespace-normal", !row.original.aktif && "text-muted-foreground")}>{row.original.nama}</span>,
       },
-      {
-        id: "jabatan",
-        header: "Jabatan",
-        cell: ({ row }) => (
-          <span className="block max-w-56 min-w-36 text-sm whitespace-normal">{row.original.jabatan ?? <span className="text-muted-foreground">-</span>}</span>
-        ),
-      },
       { id: "unit", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-72 whitespace-normal">{row.original.bidang.nama}</UnitChip> },
       {
         id: "kontak",
@@ -326,10 +309,7 @@ export function PegawaiTab() {
             renderMobileCard={(p) => (
               <KartuMaster
                 judul={
-                  <>
-                    <span className={cn(!p.aktif && "text-muted-foreground")}>{p.nama}</span>
-                    <span className="block text-xs font-normal text-muted-foreground">{p.jabatan ?? "Jabatan belum diisi"}</span>
-                  </>
+                  <span className={cn(!p.aktif && "text-muted-foreground")}>{p.nama}</span>
                 }
                 aksi={<TombolUbah nama={p.nama} onClick={() => setDialog(p)} />}
               >

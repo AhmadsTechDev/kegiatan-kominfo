@@ -46,10 +46,9 @@ async function siapkanPegawai(isi: IsiAkun, akun?: { id: string; pegawaiId: numb
   if (lain) galat.push({ field: isi.pegawaiId ? "pegawaiId" : "nip", message: `Pegawai ini sudah tertaut ke akun ${lain.email}` });
   if (galat.length) throw Unprocessable("Periksa kembali isian akun", galat);
 
-  const nilai = await validasiPegawai({ nip, nama: isi.name, jabatan: isi.jabatan, bidangId: isi.bidangId }, lama?.bidangId, lama?.nip, {
+  const nilai = await validasiPegawai({ nip, nama: isi.name, bidangId: isi.bidangId }, lama?.bidangId, lama?.nip, {
     pegawaiId: lama?.id,
   });
-  if (!nilai.jabatan) throw Unprocessable("Periksa kembali isian akun", [{ field: "jabatan", message: "Jabatan wajib diisi" }]);
   return { pegawaiId: lama?.id ?? null, nilai: { ...nilai, aktif: true } };
 }
 

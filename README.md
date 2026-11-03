@@ -65,7 +65,7 @@ Ada dua status yang berbeda, dan sering tertukar:
 
 ### Akun
 
-Tidak ada pendaftaran mandiri. Admin membuat akun (nama, email pribadi, NIP opsional, jabatan, bidang, role), lalu sistem mengirim tautan aktivasi ke email pemiliknya. Pemilik membuat kata sandi sendiri; admin tidak pernah menentukan atau melihat kata sandi. Karena itu **pengiriman email wajib berfungsi** sebelum aplikasi dipakai. Alur lengkapnya ada di [diagram sequence](docs/uml/03-sequence.md#32-aktivasi-akun-lewat-email).
+Tidak ada pendaftaran mandiri. Admin membuat akun (nama, email pribadi, NIP opsional, bidang, role), lalu sistem mengirim tautan aktivasi ke email pemiliknya. Pemilik membuat kata sandi sendiri; admin tidak pernah menentukan atau melihat kata sandi. Karena itu **pengiriman email wajib berfungsi** sebelum aplikasi dipakai. Alur lengkapnya ada di [diagram sequence](docs/uml/03-sequence.md#32-aktivasi-akun-lewat-email).
 
 ## API
 

@@ -6,7 +6,7 @@ import type { Halaman } from "@/types/umum.types";
 function kondisiPegawai(f: FilterPegawai): Prisma.PegawaiWhereInput {
   const cari = f.q ? ({ contains: f.q, mode: "insensitive" } as const) : undefined;
   return {
-    OR: cari ? [{ nama: cari }, { nip: cari }, { jabatan: cari }] : undefined,
+    OR: cari ? [{ nama: cari }, { nip: cari }] : undefined,
     bidangId: f.unitIds ? { in: f.unitIds } : undefined,
     aktif: f.aktif,
     users: f.akun === "tanpa" ? { none: {} } : f.akun === "ada" ? { some: {} } : undefined,
@@ -103,7 +103,6 @@ export const MasterRepository = {
       id: true,
       nip: true,
       nama: true,
-      jabatan: true,
       bidang: { select: { id: true, nama: true } },
       aktif: true,
       roleUndangan: true,

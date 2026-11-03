@@ -5,7 +5,7 @@
 // akun baru kepada calon pengguna (role PEGAWAI atau PIMPINAN).
 //
 // Isi berkas:
-//   - UndangDialog : dialog formulir email pribadi, role, serta bidang dan jabatan (bila belum ada data pegawai)
+//   - UndangDialog : dialog formulir email pribadi, role, serta bidang (bila belum ada data pegawai)
 //
 // Cara kerja:
 //   1. Administrator menentukan surel tujuan dan role hak akses calon pengguna.
@@ -43,7 +43,6 @@ const schema = z.object({
   email: z.email("Email tidak valid").max(255),
   role: z.enum(["PEGAWAI", "PIMPINAN", "ADMIN"]),
   bidangId: z.string(),
-  jabatan: z.string().trim().max(150, "Jabatan maksimal 150 karakter"),
 });
 type Nilai = z.infer<typeof schema>;
 
@@ -64,18 +63,16 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
   const [galat, setGalat] = useState<string | null>(null);
   const { register, control, handleSubmit, setError, formState } = useForm<Nilai>({
     resolver: zodResolver(schema),
-    defaultValues: { email: defaultEmail, role: defaultRole, bidangId: "", jabatan: "" },
+    defaultValues: { email: defaultEmail, role: defaultRole, bidangId: "" },
   });
 
   const kirim = handleSubmit((v) => {
     setGalat(null);
-    // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa data pegawai wajib diberi bidang dan jabatan
-    if (pilihUnit && !v.bidangId) setError("bidangId", { message: "Bidang wajib dipilih" });
-    if (pilihUnit && !v.jabatan) setError("jabatan", { message: "Jabatan wajib diisi" });
-    if (pilihUnit && (!v.bidangId || !v.jabatan)) return;
+    // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa data pegawai wajib diberi bidang
+    if (pilihUnit && !v.bidangId) return setError("bidangId", { message: "Bidang wajib dipilih" });
     const isi: IsiUndangan = { email: v.email.trim().toLowerCase(), role: v.role };
-    if (pilihUnit) Object.assign(isi, { bidangId: Number(v.bidangId), jabatan: v.jabatan });
-    onSubmit(isi, (e) => setGalat(terapkanGalatServer(e, setError, { email: "email", role: "role", bidangId: "bidangId", jabatan: "jabatan" }) || null));
+    if (pilihUnit) Object.assign(isi, { bidangId: Number(v.bidangId) });
+    onSubmit(isi, (e) => setGalat(terapkanGalatServer(e, setError, { email: "email", role: "role", bidangId: "bidangId" }) || null));
   });
 
   return (
@@ -137,13 +134,6 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
       </Field>
       {pilihUnit && (
         <>
-          <Field data-invalid={!!formState.errors.jabatan}>
-            <FieldLabel htmlFor="undang-jabatan">
-              Jabatan <Wajib />
-            </FieldLabel>
-            <Input id="undang-jabatan" maxLength={150} className="h-10" aria-required aria-invalid={!!formState.errors.jabatan} {...register("jabatan")} />
-            <FieldError errors={[formState.errors.jabatan]} />
-          </Field>
           <Field data-invalid={!!formState.errors.bidangId}>
             <FieldLabel htmlFor="undang-unit">
               Bidang <Wajib />
@@ -155,7 +145,7 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
                 <PilihUnit id="undang-unit" unit={unit.data ?? []} value={field.value} onChange={field.onChange} invalid={!!formState.errors.bidangId} required />
               )}
             />
-            <FieldDescription>Data pegawainya dibuat otomatis dengan unit dan jabatan ini, tanpa NIP.</FieldDescription>
+            <FieldDescription>Data pegawainya dibuat otomatis di bidang ini, tanpa NIP.</FieldDescription>
             <FieldError errors={[formState.errors.bidangId]} />
           </Field>
         </>

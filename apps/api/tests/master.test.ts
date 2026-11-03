@@ -208,7 +208,7 @@ describe("pegawai", () => {
     expect((await ambil()).roleUndangan).toBe("ADMIN");
     await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, roleUndangan: "PIMPINAN" } });
     // Tanpa field roleUndangan, pilihan lama tidak berubah
-    await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, jabatan: "Kepala" } });
+    await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, nip: null } });
     expect((await ambil()).roleUndangan).toBe("PIMPINAN");
   });
 

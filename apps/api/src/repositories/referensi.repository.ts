@@ -18,7 +18,7 @@ export const ReferensiRepository = {
   pegawaiAktif() {
     return prisma.pegawai.findMany({
       where: { aktif: true },
-      select: { id: true, nama: true, jabatan: true, bidangId: true },
+      select: { id: true, nama: true, bidangId: true },
       orderBy: { nama: "asc" },
     });
   },

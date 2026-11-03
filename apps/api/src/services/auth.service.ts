@@ -97,7 +97,7 @@ export const AuthService = {
     return { ...profil, status: statusAkun({ banned, punyaKredensial }), foto: urlFoto(userId, image) };
   },
 
-  // Mengubah nomor kontak. Nama, NIP, jabatan, dan bidang hanya bisa diubah admin
+  // Mengubah nomor kontak. Nama, NIP, dan bidang hanya bisa diubah admin
   async ubahProfil(userId: string, isi: UbahProfil, meta: MetaRequest) {
     const sebelum = await AuthRepository.findProfil(userId);
     if (!sebelum) throw NotFound("Pengguna tidak ditemukan");
