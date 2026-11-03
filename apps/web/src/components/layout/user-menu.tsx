@@ -39,7 +39,6 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useProfil } from "@/features/auth/hooks/use-profil";
 import { cn } from "@/lib/utils";
-import { KETERANGAN_ROLE } from "@/types/auth";
 
 function useUnitSaya() {
   const { data } = useProfil();
@@ -66,10 +65,8 @@ export function UserMenu() {
             <AvatarInisial nama={user.name} src={foto} />
             <span className="hidden flex-col items-start leading-tight md:flex">
               <span className="text-sm font-semibold">{user.name}</span>
-              <span className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground">
-                {user.role === "PIMPINAN" && <span aria-hidden className="size-1.5 rounded-full bg-aksen-peran" />}
-                {KETERANGAN_ROLE[user.role] ?? user.role}
-              </span>
+              {/* Email lebih berguna daripada keterangan role: membedakan akun yang sedang dipakai */}
+              <span className="max-w-48 truncate text-xs font-normal text-muted-foreground">{user.email}</span>
             </span>
             <ChevronDown aria-hidden className="hidden size-4 text-muted-foreground md:block" />
           </Button>
@@ -111,7 +108,6 @@ export function UserMenu() {
 export function SidebarAccount({ hideTextClassName, className }: { hideTextClassName: string; className?: string }) {
   const { user, isPending } = useCurrentUser();
   const { logout, pending } = useLogout();
-  const unitSaya = useUnitSaya();
   const foto = useFotoSaya();
 
   if (isPending || !user) return <Skeleton className="h-14 w-full rounded-[22px] bg-sidebar-group" />;
@@ -121,8 +117,8 @@ export function SidebarAccount({ hideTextClassName, className }: { hideTextClass
       <AvatarInisial nama={user.name} src={foto} className="size-10 bg-sidebar-primary/15 text-sidebar-primary" />
       <div className={cn("min-w-0 flex-1 flex-col", hideTextClassName)}>
         <p className="truncate text-sm font-semibold text-sidebar-strong">{user.name}</p>
-        <p className="truncate text-xs text-sidebar-foreground" title={unitSaya?.unit}>
-          {unitSaya?.unit ?? KETERANGAN_ROLE[user.role] ?? user.role}
+        <p className="truncate text-xs text-sidebar-foreground" title={user.email}>
+          {user.email}
         </p>
       </div>
       <Button
