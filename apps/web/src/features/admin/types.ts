@@ -50,7 +50,8 @@ export type PegawaiAdmin = {
   updatedAt: string;
 };
 
-export type IsiPegawai = { nip: string | null; nama: string; jabatan: string | null; bidangId: number; aktif?: boolean };
+// kontak: nomor telepon akun tertaut; hanya dikirim saat mengubah pegawai yang sudah punya akun
+export type IsiPegawai = { nip: string | null; nama: string; jabatan: string | null; bidangId: number; aktif?: boolean; kontak?: string | null };
 export type IsiPegawaiBaru = IsiPegawai & { email?: string | null; role?: "PEGAWAI" | "PIMPINAN" };
 export type HasilPegawaiBaru = { id: number; undangan: { email: string; galat: string | null } | null };
 

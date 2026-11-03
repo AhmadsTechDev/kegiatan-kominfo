@@ -166,6 +166,15 @@ export const MasterRepository = {
     await tx.user.updateMany({ where: { pegawaiId }, data: { name: nama } });
   },
 
+  // Akun tertaut pegawai (satu pegawai paling banyak satu akun)
+  async akunPegawai(pegawaiId: number, tx: Db = prisma) {
+    return tx.user.findFirst({ where: { pegawaiId }, select: { id: true, kontak: true } });
+  },
+
+  async ubahKontakAkun(userId: string, kontak: string | null, tx: Db) {
+    await tx.user.update({ where: { id: userId }, data: { kontak } });
+  },
+
   // ---------- Jenis kegiatan ----------
 
   // Semua jenis kegiatan, urut nama

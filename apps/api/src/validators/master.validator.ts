@@ -38,7 +38,12 @@ export const MasterValidator = {
     email: t.Optional(t.Nullable(t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }))),
     role: t.Optional(t.Union([t.Literal("PEGAWAI"), t.Literal("PIMPINAN")], { error: "Role tidak valid" })),
   }),
-  ubahPegawai: t.Object({ ...pegawai, ...aktif }),
+  ubahPegawai: t.Object({
+    ...pegawai,
+    ...aktif,
+    // Nomor telepon disimpan di akun; hanya bisa diisi bila pegawai sudah punya akun
+    kontak: t.Optional(t.Nullable(t.String({ maxLength: 50, pattern: "^[0-9+()\\-\\s]*$", error: "Nomor telepon hanya angka, spasi, +, -, atau tanda kurung, maksimal 50 karakter" }))),
+  }),
 
   buatJenis: t.Object(jenisKegiatan),
   ubahJenis: t.Object({ ...jenisKegiatan, ...aktif }),

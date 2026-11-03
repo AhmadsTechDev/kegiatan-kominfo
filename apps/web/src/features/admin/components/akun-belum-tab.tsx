@@ -6,7 +6,7 @@
 //
 // Isi berkas:
 //   - FILTER_BELUM : filter tetap untuk pegawai aktif yang belum punya akun
-//   - BelumPunyaAkun : tabel pegawai belum berakun dengan pencarian, paginasi, dan dialog undangan
+//   - BelumPunyaAkun : tabel pegawai belum berakun dengan pencarian, paginasi, dialog ubah data, dan dialog undangan
 //
 // Catatan penting:
 //   - Akun yang sudah diundang muncul di tab Akun dengan status Menunggu aktivasi, bukan di sini.
@@ -27,9 +27,10 @@ import { UnitChip } from "@/components/shared/unit-chip";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
-import { usePegawaiAdmin, useUndangPegawai } from "../hooks/use-admin";
+import { useBidangAdmin, usePegawaiAdmin, useUndangPegawai } from "../hooks/use-admin";
 import type { FilterPegawai, PegawaiAdmin } from "../types";
-import { KartuMaster, KolomCari } from "./admin-shared";
+import { KartuMaster, KolomCari, TombolUbah } from "./admin-shared";
+import { PegawaiDialog } from "./pegawai-tab";
 import { UndangDialog } from "./undang-dialog";
 
 export const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun: "tanpa", page: 1 };
@@ -49,6 +50,8 @@ export function BelumPunyaAkun() {
   const daftar = usePegawaiAdmin(filter);
   const kirimUndangan = useUndangPegawai();
   const [undang, setUndang] = useState<PegawaiAdmin | null>(null);
+  const [ubah, setUbah] = useState<PegawaiAdmin | null>(null);
+  const unit = useBidangAdmin();
 
   const kolom = useMemo<DataTableColumn<PegawaiAdmin>[]>(
     () => [
@@ -68,7 +71,8 @@ export function BelumPunyaAkun() {
         id: "aksi",
         header: () => <span className="block text-right">Aksi</span>,
         cell: ({ row }) => (
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-1">
+            <TombolUbah nama={row.original.nama} onClick={() => setUbah(row.original)} />
             <TombolUndang p={row.original} onClick={() => setUndang(row.original)} />
           </div>
         ),
@@ -103,7 +107,12 @@ export function BelumPunyaAkun() {
                     <span className="block text-xs font-normal text-muted-foreground">{p.jabatan ?? "Jabatan belum diisi"}</span>
                   </>
                 }
-                aksi={<TombolUndang p={p} onClick={() => setUndang(p)} />}
+                aksi={
+                  <div className="flex items-center gap-1">
+                    <TombolUbah nama={p.nama} onClick={() => setUbah(p)} />
+                    <TombolUndang p={p} onClick={() => setUndang(p)} />
+                  </div>
+                }
               >
                 <UnitChip className="max-w-full self-start whitespace-normal">{p.bidang.nama}</UnitChip>
                 <span className="text-xs text-muted-foreground tabular-nums">NIP {p.nip ?? "-"}</span>
@@ -130,6 +139,7 @@ export function BelumPunyaAkun() {
         </>
       )}
 
+      {ubah && <PegawaiDialog pegawai={ubah} unit={unit.data ?? []} onClose={() => setUbah(null)} />}
       {undang && (
         <UndangDialog
           title={`Undang ${undang.nama}`}

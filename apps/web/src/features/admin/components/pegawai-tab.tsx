@@ -51,11 +51,16 @@ const schema = z.object({
   nama: z.string().trim().min(1, "Nama wajib diisi").max(150, "Nama maksimal 150 karakter"),
   bidangId: z.string().min(1, "Bidang wajib dipilih"),
   jabatan: z.string().trim().max(150, "Jabatan maksimal 150 karakter"),
+  kontak: z
+    .string()
+    .trim()
+    .max(50, "Nomor telepon maksimal 50 karakter")
+    .regex(/^[0-9+()\-\s]*$/, "Nomor telepon hanya angka, spasi, +, -, atau tanda kurung"),
   status: z.enum(["aktif", "nonaktif"]),
 });
 type Nilai = z.infer<typeof schema>;
 
-function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "baru"; unit: BidangAdmin[]; onClose: () => void }) {
+export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "baru"; unit: BidangAdmin[]; onClose: () => void }) {
   const simpan = useSimpanPegawai();
   const [galat, setGalat] = useState<string | null>(null);
   const awal = pegawai === "baru" ? null : pegawai;
@@ -65,6 +70,7 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
       nip: awal?.nip ?? "",
       nama: awal?.nama ?? "",
       jabatan: awal?.jabatan ?? "",
+      kontak: awal?.kontak ?? "",
       bidangId: awal ? String(awal.bidang.id) : "",
       status: awal && !awal.aktif ? "nonaktif" : "aktif",
     },
@@ -81,6 +87,7 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
           jabatan: v.jabatan || null,
           bidangId: Number(v.bidangId),
           aktif: awal ? v.status === "aktif" : undefined,
+          kontak: awal?.akun ? v.kontak || null : undefined,
         },
       },
       {
@@ -89,7 +96,7 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
           onClose();
         },
         onError: (e) =>
-          setGalat(terapkanGalatServer(e, setError, { nip: "nip", nama: "nama", jabatan: "jabatan", bidangId: "bidangId" }) || null),
+          setGalat(terapkanGalatServer(e, setError, { nip: "nip", nama: "nama", jabatan: "jabatan", bidangId: "bidangId", kontak: "kontak" }) || null),
       },
     );
   });
@@ -111,7 +118,7 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
         <Input id="pegawai-nama" maxLength={150} className="h-10" autoFocus aria-invalid={!!formState.errors.nama} {...register("nama")} />
         <FieldError errors={[formState.errors.nama]} />
       </Field>
-      <div className="grid gap-4">
+      <div className={cn("grid gap-4", awal && "sm:grid-cols-2")}>
         <Field data-invalid={!!formState.errors.nip}>
           <FieldLabel htmlFor="pegawai-nip">
             NIP <span className="font-normal text-muted-foreground">(opsional)</span>
@@ -119,6 +126,27 @@ function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "ba
           <Input id="pegawai-nip" inputMode="numeric" maxLength={18} className="h-10 tabular-nums" aria-invalid={!!formState.errors.nip} {...register("nip")} />
           <FieldError errors={[formState.errors.nip]} />
         </Field>
+        {awal && (
+          // Nomor telepon tersimpan di akun, jadi baru bisa diisi setelah pegawai diundang
+          <Field data-invalid={!!formState.errors.kontak} data-disabled={!awal.akun || undefined}>
+            <FieldLabel htmlFor="pegawai-kontak">
+              No. telp <span className="font-normal text-muted-foreground">(opsional)</span>
+            </FieldLabel>
+            <Input
+              id="pegawai-kontak"
+              type="tel"
+              inputMode="tel"
+              maxLength={50}
+              className="h-10 tabular-nums"
+              placeholder={awal.akun ? "Mis. 0812-3456-7890" : undefined}
+              disabled={!awal.akun}
+              aria-invalid={!!formState.errors.kontak}
+              {...register("kontak")}
+            />
+            {!awal.akun && <FieldDescription>Bisa diisi setelah pegawai punya akun.</FieldDescription>}
+            <FieldError errors={[formState.errors.kontak]} />
+          </Field>
+        )}
       </div>
       <Field data-invalid={!!formState.errors.jabatan}>
         <FieldLabel htmlFor="pegawai-jabatan">

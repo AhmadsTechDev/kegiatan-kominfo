@@ -174,6 +174,24 @@ describe("pegawai", () => {
     expect(hal2.data.items.map((p: { id: number }) => p.id)).toEqual([tanpaTelp.pegawaiId]);
   });
 
+  test("admin mengubah nomor telepon pegawai berakun; pegawai tanpa akun ditolak 422", async () => {
+    const admin = await loginAdmin();
+    const bidang = await buatBidang();
+    const u = await buatPengguna({ unitId: bidang.id });
+    const isi = { nama: "Punya Telp", bidangId: bidang.id };
+    expect((await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: { ...isi, kontak: "0812 3333 4444" } })).status).toBe(200);
+    expect((await panggil("/me", { cookie: u.cookie })).data.kontak).toBe("0812 3333 4444");
+    expect((await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: { ...isi, kontak: "telp-ku" } })).status).toBe(422);
+    // Tanpa field kontak, nomor lama tetap
+    await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: isi });
+    expect((await panggil("/me", { cookie: u.cookie })).data.kontak).toBe("0812 3333 4444");
+
+    const tanpaAkun = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Belum Berakun", bidangId: bidang.id } });
+    const tolak = await panggil(`/admin/pegawai/${tanpaAkun.data.id}`, { method: "PATCH", cookie: admin, json: { nama: "Belum Berakun", bidangId: bidang.id, kontak: "0812" } });
+    expect(tolak.status).toBe(422);
+    expect(tolak.data.details[0].field).toBe("kontak");
+  });
+
   test("pegawai tanpa NIP (non-ASN) boleh", async () => {
     const admin = await loginAdmin();
     const res = await panggil("/admin/pegawai", { cookie: admin, json: { nama: "Honorer", bidangId: await idUnit("SEKSI-DATA") } });

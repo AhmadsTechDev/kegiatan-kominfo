@@ -207,17 +207,35 @@ export const MasterService = {
     );
   },
 
-  // Mengubah atau (non)aktifkan pegawai; bila nama berubah, nama akun tertaut ikut disamakan
+  // Mengubah atau (non)aktifkan pegawai; bila nama berubah, nama akun tertaut ikut disamakan.
+  // Nomor telepon (kontak) disimpan di akun tertaut, jadi hanya bisa diisi bila akunnya ada
   async ubahPegawai(id: number, isi: IsiPegawai, aktor: Aktor, meta: MetaRequest) {
     const sebelum = await MasterRepository.pegawaiById(id);
     if (!sebelum) throw NotFound("Pegawai tidak ditemukan");
     const nilai = await validasiPegawai(isi, sebelum.bidangId, sebelum.nip, { pegawaiId: id });
+    const akun = await MasterRepository.akunPegawai(id);
+    const kontak = isi.kontak === undefined ? undefined : isi.kontak?.trim() || null;
+    if (kontak && !akun) {
+      throw Unprocessable("Nomor telepon bisa diisi setelah pegawai punya akun", [{ field: "kontak", message: "Undang pegawai ini dulu, lalu isi nomor teleponnya" }]);
+    }
     return denganCekDuplikat("nip", "NIP sudah terdaftar", () =>
       prisma.$transaction(async (tx) => {
         await MasterRepository.updatePegawai(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif }, tx);
         if (nilai.nama !== sebelum.nama) await MasterRepository.samakanNamaAkun(id, nilai.nama, tx);
+        if (akun && kontak !== undefined && kontak !== akun.kontak) await MasterRepository.ubahKontakAkun(akun.id, kontak, tx);
         const sesudah = await MasterRepository.pegawaiById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: aksiUbah(sebelum, isi.aktif), entitas: "pegawai", entitasId: id, sebelum, sesudah, ...meta }, tx);
+        await AuditLogService.catat(
+          {
+            aktorId: aktor.id,
+            aksi: aksiUbah(sebelum, isi.aktif),
+            entitas: "pegawai",
+            entitasId: id,
+            sebelum: { ...sebelum, kontak: akun?.kontak ?? null },
+            sesudah: { ...sesudah, kontak: akun ? (kontak === undefined ? akun.kontak : kontak) : null },
+            ...meta,
+          },
+          tx,
+        );
         return { id };
       }),
     );
