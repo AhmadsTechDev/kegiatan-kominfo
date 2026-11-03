@@ -10,7 +10,7 @@
 // Cara kerja:
 //   1. Menampilkan ikon titik tiga sebagai pemicu menu dropdown.
 //   2. Menampilkan opsi Ubah data kecuali dinonaktifkan oleh prop tanpaUbah.
-//   3. Menyembunyikan opsi Batalkan apabila kegiatan sudah berstatus dibatalkan.
+//   3. Menyembunyikan opsi Batalkan apabila kegiatan sudah selesai atau dibatalkan.
 //   4. Opsi Hapus ditandai dengan gaya visual destruktif (merah) untuk peringatan.
 //   5. Memilih Batalkan atau Hapus meneruskan jenis aksi ke fungsi onAksi induk.
 //
@@ -43,6 +43,7 @@ type Props = {
 };
 
 export function KegiatanAksiMenu({ kegiatan, onAksi, tanpaUbah }: Props) {
+  const bisaBatal = kegiatan.statusPelaksanaan !== "dibatalkan" && kegiatan.statusPelaksanaan !== "selesai";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -59,13 +60,13 @@ export function KegiatanAksiMenu({ kegiatan, onAksi, tanpaUbah }: Props) {
             </Link>
           </DropdownMenuItem>
         )}
-        {kegiatan.statusPelaksanaan !== "dibatalkan" && (
+        {bisaBatal && (
           <DropdownMenuItem onSelect={() => onAksi("batalkan")}>
             <Ban aria-hidden />
             Batalkan
           </DropdownMenuItem>
         )}
-        {(!tanpaUbah || kegiatan.statusPelaksanaan !== "dibatalkan") && <DropdownMenuSeparator />}
+        {(!tanpaUbah || bisaBatal) && <DropdownMenuSeparator />}
         <DropdownMenuItem variant="destructive" onSelect={() => onAksi("hapus")}>
           <Trash2 aria-hidden />
           Hapus

@@ -109,14 +109,19 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
   function TooltipKustom({ active, payload }: any) {
     if (!active || !payload?.length) return null;
     const b = payload[0].payload as Baris;
+    // Bidang bernilai 0 disembunyikan di layar sentuh agar tooltip tidak menutupi grafik
     return (
-      <div className="min-w-52 rounded-xl border bg-popover px-3 py-2.5 text-xs text-popover-foreground shadow-xl">
-        <p className="mb-2 font-semibold text-muted-foreground">{formatPeriode(b.kode, true)}</p>
+      <div className="rounded-xl border bg-popover px-3 py-2.5 text-xs text-popover-foreground shadow-xl pointer-fine:min-w-52 pointer-coarse:max-w-48 pointer-coarse:px-2.5 pointer-coarse:py-2">
+        <p className="mb-2 font-semibold text-muted-foreground pointer-coarse:mb-1">{formatPeriode(b.kode, true)}</p>
         <div className="flex flex-col gap-1">
           {[...tampil].reverse().map((u) => (
             <div
               key={u.kode}
-              className={cn("flex items-center justify-between gap-5", fokus && fokus !== u.kode && "opacity-45")}
+              className={cn(
+                "flex items-center justify-between gap-5 pointer-coarse:gap-3",
+                fokus && fokus !== u.kode && "opacity-45",
+                Number(b[u.kode] ?? 0) === 0 && "pointer-coarse:hidden",
+              )}
             >
               <span className="flex min-w-0 items-center gap-1.5">
                 <span aria-hidden className="size-2.5 shrink-0 rounded-sm" style={{ backgroundColor: config[u.kode]!.color }} />
@@ -126,7 +131,7 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
             </div>
           ))}
         </div>
-        <div className="mt-2 flex items-center justify-between border-t pt-2 font-bold">
+        <div className="mt-2 flex items-center justify-between border-t pt-2 font-bold pointer-coarse:mt-1 pointer-coarse:pt-1">
           <span>Total</span>
           <span className="tabular-nums">{formatAngka(b.total)}</span>
         </div>

@@ -174,6 +174,14 @@ describe("ubah, batal, periksa, hapus", () => {
     expect(lagi.status).toBe(422);
   });
 
+  test("kegiatan yang sudah selesai tidak bisa dibatalkan", async () => {
+    const u = await buatPengguna();
+    const k = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!, { tglMulai: jamLagi(-3), tglSelesai: jamLagi(-1) }));
+    const batal = await panggil(`/kegiatan/${k.id}/batalkan`, { cookie: u.cookie, json: { alasan: "Salah catat", expectedUpdatedAt: k.updatedAt } });
+    expect(batal.status).toBe(422);
+    expect(batal.data.message).toContain("sudah selesai");
+  });
+
   test("selesaikan sekarang: hanya untuk kegiatan yang berlangsung, waktu selesai menjadi sekarang", async () => {
     const u = await buatPengguna();
     const berlangsung = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!, { tglMulai: jamLagi(-1), tglSelesai: jamLagi(2) }));

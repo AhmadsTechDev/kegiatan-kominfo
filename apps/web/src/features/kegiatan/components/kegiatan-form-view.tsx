@@ -109,7 +109,7 @@ export function KegiatanUbahView({ id }: { id: number }) {
   const header = (
     <PageHeader
       eyebrow="Operasional / Kegiatan"
-      title="Ubah kegiatan"
+      title={kegiatan.data?.statusPelaksanaan === "selesai" ? "Hasil dan dokumentasi" : "Ubah kegiatan"}
       description={kegiatan.data?.judul}
       actions={<TombolKembali href={`/kegiatan/${id}`} />}
     />

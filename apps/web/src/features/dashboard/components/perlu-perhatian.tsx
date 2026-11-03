@@ -53,9 +53,6 @@ export function PerluPerhatian({
           </span>
         }
       />
-      <p className="mx-4 mb-2 rounded-lg bg-status-berlangsung px-3 py-2.5 text-xs text-status-berlangsung-foreground md:mx-5">
-        Dokumentasi bersifat opsional; daftar ini membantu memantau kelengkapan data.
-      </p>
       <ul className="flex flex-1 flex-col divide-y divide-muted px-4 md:px-5">
         {data.items.map((k, i) => {
           const masuk = animasiBaris(animasi, i);

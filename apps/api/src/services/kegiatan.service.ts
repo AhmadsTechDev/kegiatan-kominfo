@@ -281,6 +281,7 @@ export const KegiatanService = {
     return prisma.$transaction(async (tx) => {
       const sebelum = await muatUntukTulis(id, aktor, tx, isi.expectedUpdatedAt);
       if (sebelum.dibatalkanAt) throw Unprocessable("Kegiatan ini sudah dibatalkan");
+      if (hitungStatus(sebelum, new Date()) === "selesai") throw Unprocessable("Kegiatan yang sudah selesai tidak dapat dibatalkan");
       const berubah = await KegiatanRepository.updateDenganVersi(id, sebelum.updatedAt, { dibatalkanAt: new Date(), alasanBatal: alasan }, tx);
       if (berubah === 0) throw Conflict();
       const sesudah = await KegiatanRepository.findById(id, tx);

@@ -25,7 +25,7 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { FileText, Loader2, Printer } from "lucide-react";
-import { useId, useMemo } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { ErrorState } from "@/components/shared/error-state";
@@ -192,7 +192,7 @@ export function LaporanView() {
       <Panel>
         <PanelHeader
           title="Pratinjau"
-          description={pratinjau.data ? `${jumlahHalaman} halaman · A4 mendatar · susunan sama dengan hasil cetak dan PDF` : undefined}
+          description={pratinjau.data ? `${jumlahHalaman} halaman · A4 mendatar` : undefined}
         />
         <PanelBody className="bg-muted/40">
           {pratinjau.isError ? (
@@ -200,7 +200,9 @@ export function LaporanView() {
           ) : !pratinjau.data ? (
             <Skeleton className="mx-auto aspect-[297/210] w-full max-w-[1123px]" />
           ) : (
-            <HalamanLaporan data={pratinjau.data} className={cn("transition-opacity", pratinjau.isPlaceholderData && "opacity-60")} />
+            <SkalaPratinjau>
+              <HalamanLaporan data={pratinjau.data} className={cn("transition-opacity", pratinjau.isPlaceholderData && "opacity-60")} />
+            </SkalaPratinjau>
           )}
         </PanelBody>
       </Panel>
@@ -214,5 +216,45 @@ export function LaporanView() {
           document.body,
         )}
     </>
+  );
+}
+
+// Lebar halaman A4 mendatar di layar (px). Di layar sempit halaman diperkecil
+// utuh, bukan dilipat, agar susunannya tetap sama dengan hasil cetak.
+const LEBAR_HALAMAN = 1123;
+
+function SkalaPratinjau({ children }: { children: React.ReactNode }) {
+  const luar = useRef<HTMLDivElement>(null);
+  const dalam = useRef<HTMLDivElement>(null);
+  const [ukuran, setUkuran] = useState({ skala: 1, tinggi: 0 });
+
+  useEffect(() => {
+    const l = luar.current;
+    const d = dalam.current;
+    if (!l || !d) return;
+    const hitung = () => {
+      const skala = Math.min(1, l.clientWidth / LEBAR_HALAMAN);
+      setUkuran({ skala, tinggi: d.offsetHeight * skala });
+    };
+    const ro = new ResizeObserver(hitung);
+    ro.observe(l);
+    ro.observe(d);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div ref={luar} className="overflow-hidden" style={{ height: ukuran.tinggi || undefined }}>
+      <div
+        ref={dalam}
+        style={{
+          width: LEBAR_HALAMAN,
+          transform: `scale(${ukuran.skala})`,
+          transformOrigin: "top left",
+          marginInline: ukuran.skala === 1 ? "auto" : 0,
+        }}
+      >
+        {children}
+      </div>
+    </div>
   );
 }

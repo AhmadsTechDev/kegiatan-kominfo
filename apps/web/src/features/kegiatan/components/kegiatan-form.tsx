@@ -21,6 +21,8 @@
 //   - Sesuai alur pencatatan kegiatan dinas dan ringkasan awal (features/01-catat-kegiatan.md).
 //   - Penanggung jawab ditentukan otomatis dari akun pegawai yang sedang aktif login.
 //   - Dokumentasi dan hasil diisi setelah kegiatan selesai melalui halaman detail.
+//   - Kegiatan yang sudah selesai hanya menampilkan hasil dan dokumentasi; data
+//     lainnya dibuka lewat tombol "Ubah data kegiatan" atau otomatis bila ada galat.
 //   - Konflik pembaruan (409) diselesaikan dengan memuat ulang data terbaru ke form.
 //
 // Dipakai oleh: components/kegiatan-form-view.tsx
@@ -30,7 +32,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, Check, CircleAlert, FileClock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown, CircleAlert, FileClock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -153,6 +155,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
   const [memuatUlang, setMemuatUlang] = useState(false);
   const bertahap = !kegiatan;
   const [langkah, setLangkah] = useState(0);
+  const [semuaKolom, setSemuaKolom] = useState(kegiatan?.statusPelaksanaan !== "selesai");
 
   const form = useForm<KegiatanFormValues>({
     resolver: zodResolver(kegiatanSchema),
@@ -187,6 +190,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
       for (const d of e.details) {
         const kolom = d.field ? KOLOM_SERVER[d.field] : undefined;
         if (kolom) {
+          if (kolom !== "hasil") setSemuaKolom(true);
           if (!adaKolom && bertahap) setLangkah(KOLOM_LANGKAH_1.includes(kolom) ? 0 : 1);
           adaKolom = true;
           setError(kolom as FieldPath<KegiatanFormValues>, { message: d.message }, { shouldFocus: true });
@@ -215,6 +219,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
       }
     },
     (galat) => {
+      if (Object.keys(galat).some((k) => k !== "hasil")) setSemuaKolom(true);
       if (bertahap && KOLOM_LANGKAH_1.some((k) => k in galat)) setLangkah(0);
     },
   );
@@ -264,8 +269,8 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
     }
   };
 
-  const tampilInfo = !bertahap || langkah === 0;
-  const tampilWaktu = !bertahap || langkah === 1;
+  const tampilInfo = bertahap ? langkah === 0 : semuaKolom;
+  const tampilWaktu = bertahap ? langkah === 1 : semuaKolom;
   const langkahTerakhir = !bertahap || langkah === LANGKAH.length - 1;
 
   const bagianInfo = (
@@ -347,21 +352,26 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
           <FieldError errors={[errors.uraian]} />
         </Field>
 
-        {kegiatan && (
-          <Field data-invalid={!!errors.hasil} className="md:col-span-2">
-            <FieldLabel htmlFor="hasil">Hasil kegiatan</FieldLabel>
-            <Textarea
-              id="hasil"
-              rows={3}
-              maxLength={5000}
-              placeholder="Hasil atau tindak lanjut..."
-              aria-invalid={!!errors.hasil}
-              {...register("hasil")}
-            />
-            <FieldError errors={[errors.hasil]} />
-          </Field>
-        )}
       </div>
+    </section>
+  );
+
+  const bagianHasil = (
+    <section className="p-4 md:p-6">
+      <Field data-invalid={!!errors.hasil}>
+        <FieldLabel htmlFor="hasil" className="font-heading text-base font-bold">
+          Hasil kegiatan
+        </FieldLabel>
+        <Textarea
+          id="hasil"
+          rows={4}
+          maxLength={5000}
+          placeholder="Hasil atau tindak lanjut..."
+          aria-invalid={!!errors.hasil}
+          {...register("hasil")}
+        />
+        <FieldError errors={[errors.hasil]} />
+      </Field>
     </section>
   );
 
@@ -430,8 +440,10 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
             </div>
           </div>
         )}
+        {kegiatan && !semuaKolom && bagianHasil}
         {tampilInfo && bagianInfo}
         {tampilWaktu && bagianWaktu}
+        {kegiatan && semuaKolom && bagianHasil}
         {bertahap && langkah === LANGKAH.length - 1 && (
           <section className="p-4 md:p-6" aria-labelledby="judul-ringkasan">
             <h2 id="judul-ringkasan" className="mb-2 font-heading text-base font-bold">
@@ -453,6 +465,14 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
             </div>
             <DokumentasiGaleri kegiatan={kegiatan} />
           </section>
+        )}
+        {kegiatan && !semuaKolom && (
+          <div className="p-2 md:px-4">
+            <Button type="button" variant="ghost" className="h-10 w-full justify-between text-muted-foreground pointer-coarse:min-h-11" onClick={() => setSemuaKolom(true)}>
+              Ubah data kegiatan
+              <ChevronDown aria-hidden />
+            </Button>
+          </div>
         )}
       </Panel>
       {errors.penanggungJawabId && (
