@@ -5,11 +5,10 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | Folder | Isi |
 | --- | --- |
 | [`apps/api/`](apps/api/README.md) | API REST: Bun, Elysia, Prisma (PostgreSQL), Better Auth. Arsitektur berlapis: route, controller, service, repository |
-| [`docs/`](docs/README.md) | Dokumentasi API: header, body, dan respons setiap endpoint |
+| [`docs/api/`](docs/api/) dan [`docs/features/`](docs/features/) | Dokumentasi API (header, body, dan respons setiap endpoint) dan penjelasan per fitur |
 | [`apps/web/`](apps/web/README.md) | Antarmuka: Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query, MapLibre GL |
-| [`uml/`](uml/README.md) | Diagram UML (use case, activity, sequence, class, ERD, state, component, deployment) |
-| [`PANDUAN-KODE.md`](PANDUAN-KODE.md) | **Mulai di sini bila baru membaca kode:** kamus istilah, alur login dan tambah kegiatan, pertanyaan penguji |
-| `PRD.md` | Kebutuhan produk (FR, NFR, kriteria penerimaan) |
+| [`docs/uml/`](docs/uml/README.md) | Diagram UML dalam Mermaid (use case, activity, sequence, class, ERD, state, component, deployment) |
+| 
 | `apps/web/DESIGN.md` | Spesifikasi tampilan dan perilaku UI |
 
 ## Fitur
@@ -17,7 +16,7 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | Kebutuhan | Fitur |
 | --- | --- |
 | FR-01 | Login hanya dengan email pribadi, penguncian 15 menit setelah 5 kali salah. Tanpa pendaftaran mandiri: akun dibuat admin lalu diaktivasi pemiliknya lewat tautan email. Lupa/atur ulang sandi, ganti email terverifikasi, sesi aktif, dan preferensi di Pengaturan |
-| FR-02 | Master pegawai (NIP opsional untuk non-ASN), bidang dan sub bagian/seksi, jenis unit, jenis kegiatan, dan akun beserta bidangnya. Akun yang belum pernah dipakai (mis. salah email) bisa dihapus; yang sudah dipakai dinonaktifkan |
+| FR-02 | Master pegawai (NIP opsional untuk non-ASN), bidang dan sub bagian/seksi, jenis unit, jenis kegiatan, dan akun beserta bidangnya. Akun yang belum membuat kegiatan, mengunggah dokumentasi, atau memeriksa kegiatan (mis. salah email, atau hanya pernah login) bisa dihapus; selebihnya dinonaktifkan agar jejak kegiatannya tetap utuh |
 | FR-03 | Audit log append-only (dijaga sampai hak basis data) dengan filter dan nilai sebelum/sesudah |
 | FR-04, FR-05 | Catat kegiatan dalam 2 langkah, ubah, isi hasil, batalkan (alasan wajib), dan hapus; status pelaksanaan dihitung otomatis; pengubahan bersamaan dijawab 409 |
 | FR-06 | Unggah foto/PDF maks. 20 MB (dicek lewat magic bytes, foto dikompres dan EXIF/GPS dibuang), maks. 10 berkas per kegiatan, unduhan hanya untuk yang login |
@@ -121,13 +120,14 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
 ### Langkah 2: siapkan Brevo (email)
 
 1. Daftar gratis di Brevo.
-2. Buka **Senders, Domains & Dedicated IPs → Senders → Add a sender**, isi email yang akan menjadi pengirim (mis. alamat Zoho dinas), lalu verifikasi lewat email yang masuk ke kotak Zoho tersebut.
-3. Buka **SMTP & API → API Keys → Generate a new API key**, lalu salin kuncinya. Simpan, karena hanya ditampilkan sekali.
+2. Buka **Senders, Domains & Dedicated IPs → Senders → Add a sender**, isi email yang akan menjadi pengirim (mis. alamat Zoho dinas), lalu verifikasi lewat email yang masuk ke kotak tersebut. Alamat gratis seperti Gmail bisa dipakai untuk uji coba (pilih **Add this sender anyway**), tetapi emailnya lebih mudah masuk spam atau ditolak. Untuk pemakaian sebenarnya pakai alamat dinas atau domain sendiri.
+3. Buka **SMTP & API → tab API keys & MCP → Generate a new API key** (bukan tab SMTP; kunci SMTP tidak dipakai). Beri akses **Restricted** dan ubah **Transactional email** menjadi **All**, biarkan izin lain **None**. Salin kuncinya (berawalan `xkeysib-`). Simpan, karena hanya ditampilkan sekali. Kunci mati sendiri bila 90 hari tidak dipakai; bila itu terjadi, buat kunci baru dan ganti di Railway.
+4. Buka **Security → Authorized IPs**, lalu klik **Deactivate for API keys**. Railway memakai alamat IP yang berubah-ubah, sehingga tanpa ini panggilan API Brevo diblokir. Aktifkan **Two-factor authentication** di halaman yang sama untuk mengamankan akun.
 
 ### Langkah 2b: siapkan Cloudinary (penyimpanan berkas)
 
 1. Daftar gratis di Cloudinary.
-2. Di **Dashboard** (atau **Settings → API Keys**), salin **API environment variable**. Bentuknya `cloudinary://API_KEY:API_SECRET@CLOUD_NAME`. Bagian `CLOUDINARY_URL=` di depannya tidak ikut disalin.
+2. Di **Settings → API Keys**, klik **Generate New API Key** dengan nama khusus aplikasi ini (mis. `app-kegiatan`) dan peran **Master Admin** (peran lain tidak cukup untuk unggah dan hapus lewat API). Susun `cloudinary://API_KEY:API_SECRET@CLOUD_NAME`, dengan API Key dan API Secret dari kunci baru itu. `CLOUD_NAME` adalah yang tertulis setelah "Cloud name:" di halaman itu (bukan nama environment). Tanpa awalan `CLOUDINARY_URL=`, tanpa tanda kutip, spasi, atau tanda `<` `>`.
 3. Buka **Settings → Security**, centang **Allow delivery of PDF and ZIP files**, lalu simpan. Tanpa ini dokumen PDF tidak bisa dibuka.
 
 ### Langkah 3: backend dan PostgreSQL di Railway
@@ -135,29 +135,31 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
 1. Masuk ke Railway dengan akun GitHub, lalu **New Project → Deploy from GitHub repo** dan pilih repository tadi.
 2. Klik layanan yang terbentuk, buka **Settings → Root Directory**, isi `apps/api`. Railway mengenali proyek Bun dari `package.json` dan `bun.lock`.
 3. Di kanvas proyek klik **+ Create → Database → PostgreSQL**.
-4. Buka tab **Variables** layanan backend, lalu tambahkan (volume tidak diperlukan lagi karena berkas disimpan di Cloudinary):
+4. Buka tab **Variables** layanan backend. Railway membaca `apps/api/.env.example` dan menyodorkan semuanya sebagai *Suggested Variables*; hapus (klik ✕) yang tidak dipakai (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `APP_DB_USER`, `APP_DB_PASSWORD`, `STORAGE_DIR`, `PORT`, `DATABASE_POOL_MAX`), dan isi yang berikut (volume tidak diperlukan karena berkas disimpan di Cloudinary). Di **Settings**, matikan **Wait for CI** karena repository tidak punya GitHub Actions; bila dibiarkan menyala, deploy bisa tertahan:
 
    | Variable | Isi |
    | --- | --- |
    | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (diketik persis begitu; Railway mengisinya otomatis. Sesuaikan `Postgres` bila nama layanan database Anda berbeda) |
    | `NODE_ENV` | `production` |
    | `BETTER_AUTH_SECRET` | Teks acak minimal 32 karakter, buat di Git Bash dengan `openssl rand -hex 32` |
-   | `BETTER_AUTH_URL` | Sementara `https://contoh.vercel.app`, diganti di langkah 5 |
+   | `BETTER_AUTH_URL` | **Alamat Vercel** (bukan alamat Railway), karena pengguna hanya melihat alamat itu. Sementara `https://contoh.vercel.app`, diganti di langkah 5. Variabel ini wajib; bila kosong, backend berhenti menyala |
    | `FRONTEND_URL` | Sama dengan `BETTER_AUTH_URL` |
    | `CLOUDINARY_URL` | Nilai dari langkah 2b.2 (`cloudinary://...`) |
    | `SEED_ADMIN_EMAIL` | Email admin pertama |
    | `SEED_ADMIN_PASSWORD` | Sandi admin pertama: minimal 10 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin |
    | `BREVO_API_KEY` | Kunci dari langkah 2 |
-   | `SMTP_FROM` | `Aplikasi Pendataan Kegiatan <alamat-zoho-yang-diverifikasi-di-brevo@domain.go.id>` |
+   | `SMTP_FROM` | `Aplikasi Pendataan Kegiatan <alamat-yang-diverifikasi-di-brevo@domain>` (harus sama persis dengan sender yang aktif di Brevo) |
 
-5. Buka **Settings → Networking → Generate Domain**. Anda mendapat alamat seperti `https://xxx.up.railway.app`. Buka `https://xxx.up.railway.app/api/health`; bila tampil `{"status":"ok"}`, backend sudah jalan dan tersambung ke PostgreSQL.
+   Variabel lain di `.env.example` (`PENGINGAT_AKTIF`, `CLOUDINARY_FOLDER`, dan seterusnya) opsional dan punya nilai bawaan.
+
+5. Buka **Settings → Networking → Generate Domain**. Anda mendapat alamat seperti `https://xxx.up.railway.app`. **Port domain harus sama dengan port yang dipakai backend.** Railway menyuntikkan `PORT` sendiri (mis. 8080), padahal Dockerfile menetapkan 3001. Cek **Deploy Logs**: baris `API berjalan di http://localhost:XXXX/api` menunjukkan port yang dipakai; samakan port domain dengan angka itu lewat ikon pensil di domain (atau isi variabel `PORT` agar sama dengan port domain). Bila tidak sama, Vercel akan menerima 502 "Application failed to respond". Setelah itu buka `https://xxx.up.railway.app/api/health`; bila tampil `{"status":"ok"}`, backend sudah jalan dan tersambung ke PostgreSQL.
 
 ### Langkah 4: frontend di Vercel
 
 1. Masuk ke Vercel dengan akun GitHub, lalu **Add New → Project** dan impor repository yang sama.
 2. Isi **Root Directory** dengan `apps/web`. Framework terdeteksi otomatis sebagai Next.js.
-3. Di **Environment Variables** tambahkan `API_URL` dengan alamat Railway dari langkah 3.5, tanpa garis miring di akhir.
-4. Klik **Deploy**. Setelah selesai Anda mendapat alamat seperti `https://nama-proyek.vercel.app`.
+3. Di **Environment Variables** tambahkan `API_URL` dengan alamat Railway dari langkah 3.5, tanpa garis miring di akhir. Variabel Vercel baru berlaku pada deployment berikutnya, jadi lakukan **Redeploy** bila Anda mengubahnya setelah deploy pertama.
+4. Klik **Deploy**. Setelah selesai Anda mendapat alamat seperti `https://web-xxxx.vercel.app`. Untuk alamat yang lebih rapi, buka **Settings → Domains → Add Domain** dan tambahkan nama sendiri, mis. `kegiatan-diskominfo-plg.vercel.app` (alamat lama otomatis dialihkan). Tentukan alamat final sebelum langkah 5.
 
 ### Langkah 5: sambungkan keduanya
 
@@ -165,9 +167,15 @@ Kembali ke Railway, ubah `BETTER_AUTH_URL` dan `FRONTEND_URL` menjadi alamat Ver
 
 Sebelum membuat akun pegawai, uji email: buat satu akun dengan email Anda sendiri di **Manajemen akun → Buat akun**, lalu pastikan tautan aktivasinya sampai dan bisa dibuka. Bila email gagal, akun tetap tersimpan dan halaman admin menampilkan pesan galatnya; setelah pengaturan email diperbaiki, pakai **Kirim ulang undangan**.
 
+Setelah admin pertama bisa masuk, ganti sandinya lewat **Pengaturan → Keamanan**, lalu hapus `SEED_ADMIN_PASSWORD` dari Railway.
+
+**Cara kerja akun seed.** Seed berjalan setiap kali backend menyala. Bila email di `SEED_ADMIN_EMAIL` sudah ada, akunnya dilewati dan sandi tidak ditimpa; bila belum ada, akun admin baru dibuat. Jadi mengganti `SEED_ADMIN_PASSWORD` tidak mengubah sandi admin yang sudah ada (ganti lewat aplikasi), dan setelah email admin diganti lewat Pengaturan, `SEED_ADMIN_PASSWORD` lama harus dihapus agar seed tidak membuat admin baru dengan email lama.
+
 ### Memperbarui aplikasi
 
-Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala.
+Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala (`prisma migrate deploy`).
+
+**Mengubah skema database.** Ubah `apps/api/prisma/schema.prisma`, lalu di komputer sendiri jalankan `bun run db:migrate` (membuat folder migrasi baru dan menerapkannya ke database lokal). Periksa `migration.sql`, jalankan tes, lalu commit folder migrasinya bersama kodenya dan `git push`. Jangan mengedit migrasi yang sudah ter-deploy dan jangan mengubah skema langsung di database Railway. Menambah tabel atau kolom aman bagi data lama (kolom wajib baru butuh nilai bawaan). **Menghapus atau mengganti nama kolom dan tabel menghilangkan datanya**; buat cadangan lebih dulu (Railway → Postgres → Backups) dan ubah penggantian nama menjadi `RENAME` manual di SQL migrasi.
 
 ### Bila ada masalah
 
@@ -175,6 +183,9 @@ Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel 
 | --- | --- |
 | Halaman Vercel terbuka tapi login gagal atau "server tidak dapat dihubungi" | `API_URL` di Vercel, dan `BETTER_AUTH_URL`/`FRONTEND_URL` di Railway harus persis alamat Vercel (`https://`, tanpa garis miring di akhir) |
 | Backend Railway gagal menyala | Tab **Deployments → View logs**; biasanya ada variable wajib yang belum diisi (pesannya menyebut namanya) |
+| Login dijawab 502 "Application failed to respond" padahal log backend sehat | Port domain di **Settings → Networking** tidak sama dengan port di baris `API berjalan di http://localhost:XXXX/api` |
+| Backend berhenti dengan "Invalid CLOUDINARY_URL protocol" | Nilai `CLOUDINARY_URL` tidak diawali `cloudinary://` (biasanya awalan `CLOUDINARY_URL=` ikut tersalin) |
+| Email gagal dengan galat soal alamat IP atau 401 dari Brevo | **Security → Authorized IPs** belum dinonaktifkan untuk API keys, atau `BREVO_API_KEY` salah (bukan kunci SMTP) |
 | Email tidak sampai | `BREVO_API_KEY` dan `SMTP_FROM` (harus sender yang sudah diverifikasi). Periksa juga folder spam |
 | Tautan di email mengarah ke alamat yang salah | `FRONTEND_URL` di Railway harus alamat publik frontend |
 | Simpan data atau login dijawab 403 `ASAL_DITOLAK` | `FRONTEND_URL`/`BETTER_AUTH_URL` tidak sama dengan alamat yang dibuka di peramban |
@@ -204,14 +215,3 @@ HTTPS wajib, karena di produksi cookie login hanya dikirim lewat HTTPS. Caddy me
 
 Data PostgreSQL, berkas dokumentasi, dan sertifikat tersimpan di volume Docker, sehingga tetap aman saat container dibuat ulang. Jangan jalankan `docker compose down -v`, karena perintah itu menghapus volume.
 
-## Keputusan yang masih menunggu dinas
-
-- Bagan organisasi resmi (O5) dan daftar jenis kegiatan resmi (O6): data seed masih contoh dari situs dinas.
-- Alamat dan format kop surat untuk ekspor PDF.
-- Lokasi hosting dan domain produksi (O4). Railway dan Vercel tidak punya server di Indonesia, padahal NFR-07 mensyaratkannya; cocok untuk demo, perlu diputuskan sebelum dipakai resmi.
-
-## Catatan rilis: autentikasi dan manajemen akun
-
-- Login dengan NIP sudah dihapus. Migrasi `1_akun_dan_autentikasi` berjalan otomatis saat backend menyala; umumkan ke pegawai bahwa mereka masuk dengan email.
-- Undangan aktivasi yang terkirim sebelum migrasi tetap berlaku sampai kedaluwarsa (tokennya diubah menjadi hash oleh migrasi).
-- Kata sandi lama tetap bisa dipakai dan otomatis disimpan ulang dengan Argon2id saat pemiliknya login.
