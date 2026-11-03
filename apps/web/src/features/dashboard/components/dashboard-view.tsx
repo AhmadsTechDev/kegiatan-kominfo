@@ -20,8 +20,8 @@
 //   - Pimpinan hanya memiliki izin membaca data; tombol tambah kegiatan hanya
 //     dirender bagi Administrator (backend tetap memvalidasi hak akses ini).
 //   - Pemilih periode dan tombol muat ulang berada di baris aksi header.
-//   - Panel "Perlu perhatian" hanya dirender bila ada kegiatan selesai tanpa
-//     dokumentasi; bila tidak ada, peta tampil lebar penuh.
+//   - Dokumentasi bersifat opsional, jadi dashboard tidak lagi menampilkan
+//     panel kegiatan selesai tanpa dokumentasi.
 //
 // Dipakai oleh: app/(app)/dashboard/page.tsx
 // =============================================================================
@@ -47,12 +47,11 @@ import { DashboardPegawai } from "./dashboard-pegawai";
 import { KegiatanAkanDatang } from "./kegiatan-akan-datang";
 import { KpiCards } from "./kpi-cards";
 import { PeriodePicker } from "./periode-picker";
-import { PerluPerhatian } from "./perlu-perhatian";
 import { PetaKegiatan } from "./peta-kegiatan";
 
-function TombolTambah() {
+function TombolTambah({ className }: { className?: string }) {
   return (
-    <Button asChild className="h-10">
+    <Button asChild className={cn("h-10", className)}>
       <Link href="/kegiatan/baru">
         <Plus aria-hidden />
         Tambah kegiatan
@@ -97,7 +96,6 @@ function DashboardDinas({ bisaMenambah, namaDepan }: { bisaMenambah: boolean; na
   const { periode, setPeriode } = usePeriode();
   const { data, isPending, isError, error, refetch, isRefetching, isFetching, dataUpdatedAt } = useDashboard(periode);
   const animasi = useAnimasiPertama(data);
-  const adaPerhatian = (data?.perluPerhatian.total ?? 0) > 0;
   const menunggu = data?.admin?.menungguAktivasi ?? 0;
 
   return (
@@ -105,27 +103,32 @@ function DashboardDinas({ bisaMenambah, namaDepan }: { bisaMenambah: boolean; na
       <PageHeader
         eyebrow="Ringkasan dinas"
         title={`${sapaan}, ${namaDepan}`}
-        description="Kegiatan seluruh bidang, kelengkapan dokumentasi, dan agenda terdekat dalam satu tempat."
+        description="Kegiatan seluruh bidang dan agenda terdekat dalam satu tempat."
         actions={
-          <>
-            {data && <PeriodePicker value={data.periode} periodeSekarang={data.periodeSekarang} onChange={setPeriode} />}
+          // HP: periode + muat ulang sebaris, Tambah selebar layar, waktu pembaruan di bawah
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             {dataUpdatedAt > 0 && (
-              <span className="text-xs text-muted-foreground" aria-live="polite">
+              <span className="order-last text-xs text-muted-foreground sm:order-first" aria-live="polite">
                 Diperbarui {formatJam(new Date(dataUpdatedAt))}
               </span>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-10"
-              onClick={() => refetch()}
-              disabled={isFetching}
-              aria-label="Muat ulang data dashboard"
-            >
-              <RefreshCw className={cn(isFetching && "animate-spin")} />
-            </Button>
-            {bisaMenambah && <TombolTambah />}
-          </>
+            <div className="flex items-center gap-2">
+              {data && (
+                <PeriodePicker value={data.periode} periodeSekarang={data.periodeSekarang} onChange={setPeriode} className="flex-1 sm:w-48 sm:flex-none" />
+              )}
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-10 shrink-0 pointer-coarse:size-11"
+                onClick={() => refetch()}
+                disabled={isFetching}
+                aria-label="Muat ulang data dashboard"
+              >
+                <RefreshCw className={cn(isFetching && "animate-spin")} />
+              </Button>
+            </div>
+            {bisaMenambah && <TombolTambah className="w-full sm:w-auto pointer-coarse:h-11" />}
+          </div>
         }
       />
 
@@ -140,10 +143,7 @@ function DashboardDinas({ bisaMenambah, namaDepan }: { bisaMenambah: boolean; na
           <KpiCards data={data} />
           <ChartUnitBulanan data={data.trenUnitBulanan} animasi={animasi} className="col-span-2 md:col-span-6 lg:col-span-7" />
           <div className="col-span-2 flex min-w-0 flex-col gap-4 md:col-span-6 lg:col-span-5 lg:gap-5">
-            <ChartJenis data={data.sebaranJenis} animasi={animasi} />
-            {adaPerhatian && (
-              <PerluPerhatian data={data.perluPerhatian} periode={data.periode} animasi={animasi} className="flex-1" />
-            )}
+            <ChartJenis data={data.sebaranJenis} animasi={animasi} className="flex-1" />
           </div>
           <PetaKegiatan data={data.peta} periode={data.periode} className="col-span-2 md:col-span-6 lg:col-span-12" />
           <KegiatanAkanDatang data={data.akanDatang} animasi={animasi} className="col-span-2 md:col-span-6 lg:col-span-12" />

@@ -6,17 +6,16 @@
 //
 // Isi berkas:
 //   - Selisih : Komponen label pembanding tren jumlah kegiatan dengan bulan lalu.
-//   - KeteranganSelesai : Keterangan kartu Selesai (jumlah tanpa dokumentasi).
 //   - KpiCards : Komponen baris penyusun empat kartu indikator utama dinas.
 //
 // Cara kerja:
 //   1. Menerima objek data KPI dan kode periode aktif dari properti dashboard.
 //   2. Menghitung selisih total kegiatan terhadap capaian bulan sebelumnya.
 //   3. Merender kartu metrik total kegiatan, kegiatan berlangsung, agenda akan
-//      datang, serta kegiatan selesai beserta jumlah yang belum berdokumentasi.
+//      datang, serta kegiatan selesai.
 //
 // Catatan penting:
-//   - Kartu Selesai tidak menulis "semua berdokumentasi" bila belum ada kegiatan selesai.
+//   - Dokumentasi opsional, jadi kartu Selesai tidak menghitung yang belum berdokumentasi.
 //   - Status tren kenaikan atau penurunan selalu dituliskan dalam bentuk teks
 //     eksplisit ("Naik", "Turun") agar aksesibel dan tidak bergantung warna semata.
 //
@@ -47,15 +46,6 @@ function Selisih({ sekarang, sebelumnya, periode }: { sekarang: number; sebelumn
       </span>
       dibanding {bulanLalu}
     </span>
-  );
-}
-
-// Keterangan kartu "Selesai": tidak mengklaim "semua berdokumentasi" bila belum ada yang selesai
-function KeteranganSelesai({ selesai, tanpaDokumentasi }: { selesai: number; tanpaDokumentasi: number }) {
-  if (selesai === 0) return "Belum ada yang selesai";
-  if (tanpaDokumentasi === 0) return "Semua sudah berdokumentasi";
-  return (
-    <span className="font-semibold text-status-berlangsung-foreground">{formatAngka(tanpaDokumentasi)} tanpa dokumentasi</span>
   );
 }
 
@@ -92,7 +82,7 @@ export function KpiCards({ data }: { data: DashboardData }) {
         value={kpi.selesai}
         icon={CheckCircle2}
         nada="selesai"
-        keterangan={<KeteranganSelesai selesai={kpi.selesai} tanpaDokumentasi={kpi.selesaiTanpaDokumentasi} />}
+        keterangan={kpi.selesai === 0 ? "Belum ada yang selesai" : "Tuntas pada periode ini"}
       />
     </>
   );

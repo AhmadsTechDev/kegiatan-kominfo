@@ -120,6 +120,8 @@ export function ItemSidebar({ label, icon: Icon, aktif, mode, collapsed, lencana
     <Link
       href={href}
       onClick={onNavigate}
+      // Dari menu HP: halaman tujuan menggantikan entri riwayat menu, jadi Kembali langsung ke halaman asal
+      replace={!!onNavigate}
       aria-current={aktif ? "page" : undefined}
       aria-label={lencana > 0 ? `${label}, ${lencana} menunggu` : label}
       className={kelas}

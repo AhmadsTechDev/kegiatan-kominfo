@@ -13,9 +13,12 @@ import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
+import { useOpenTerkendali } from "@/hooks/use-tutup-lewat-kembali"
 
-function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />
+// Tombol Kembali di HP menutup sheet (mis. menu samping), bukan meninggalkan halaman
+function Sheet({ open, defaultOpen, onOpenChange, ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
+  const [terbuka, ubah] = useOpenTerkendali(open, defaultOpen, onOpenChange)
+  return <SheetPrimitive.Root data-slot="sheet" open={terbuka} onOpenChange={ubah} {...props} />
 }
 
 function SheetTrigger({

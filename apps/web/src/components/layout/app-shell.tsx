@@ -26,6 +26,7 @@
 
 import { ChevronRight, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
+import { lepasLapisan } from "@/hooks/use-tutup-lewat-kembali";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -199,7 +200,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <SheetDescription className="sr-only">Navigasi utama aplikasi</SheetDescription>
               <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-sidebar-border bg-sidebar shadow-xl">
-                <IsiSidebar groups={groups} lencana={lencana} isLoading={isPending} mode="full" onNavigate={() => setDrawerOpen(false)} />
+                <IsiSidebar groups={groups} lencana={lencana} isLoading={isPending} mode="full" onNavigate={() => {
+                    lepasLapisan();
+                    setDrawerOpen(false);
+                  }} />
               </div>
             </SheetContent>
           </Sheet>

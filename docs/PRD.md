@@ -175,7 +175,7 @@ Prinsip data: akun terpisah dari data pegawai; status akun diturunkan, tidak dis
 
 ## 12. Keputusan dan batasan
 
-- **Tanpa persetujuan bertingkat.** Kegiatan langsung sah saat dicatat. Pemeriksaan pimpinan opsional. Karena itu kelengkapan dokumentasi menjadi indikator kualitas data, dan dashboard menampilkan daftar *Perlu perhatian* (kegiatan selesai tanpa dokumentasi).
+- **Tanpa persetujuan bertingkat.** Kegiatan langsung sah saat dicatat. Pemeriksaan pimpinan opsional. Dokumentasi juga opsional; pengingat melengkapinya cukup muncul di halaman detail kegiatan yang sudah selesai, tidak di dashboard.
 - **Tanpa Excel.** Ekspor Excel dihapus; laporan hanya PDF berkop dinas.
 - **Tanpa pendaftaran mandiri.** Akun dibuat admin atau disetujui dari permintaan akun; admin tidak pernah menentukan atau melihat kata sandi.
 - **Email wajib berfungsi.** Tanpa email, akun baru tidak bisa diaktivasi dan lupa sandi tidak bisa dipakai.

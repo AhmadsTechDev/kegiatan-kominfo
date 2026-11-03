@@ -13,6 +13,7 @@
 "use client";
 
 import { CalendarDays } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatPeriode, periodeSebelumnya } from "@/lib/format";
 
@@ -20,17 +21,18 @@ type PeriodePickerProps = {
   value: string;
   periodeSekarang: string;
   onChange: (periode: string) => void;
+  className?: string;
 };
 
 const JUMLAH_PILIHAN = 12;
 
-export function PeriodePicker({ value, periodeSekarang, onChange }: PeriodePickerProps) {
+export function PeriodePicker({ value, periodeSekarang, onChange, className }: PeriodePickerProps) {
   const pilihan = periodeSebelumnya(periodeSekarang, JUMLAH_PILIHAN);
   if (!pilihan.includes(value)) pilihan.push(value);
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-10 w-48" aria-label="Periode">
+      <SelectTrigger className={cn("h-10 w-48", className)} aria-label="Periode">
         <CalendarDays aria-hidden className="text-muted-foreground" />
         <SelectValue />
       </SelectTrigger>
