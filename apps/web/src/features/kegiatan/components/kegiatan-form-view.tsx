@@ -63,11 +63,12 @@ export function KegiatanBaruView({ drafId = null }: { drafId?: number | null }) 
     />
   );
 
-  if (user?.role === "PIMPINAN") {
+  // Hanya pegawai yang mencatat kegiatan; pimpinan dan admin melihat dan memeriksa (backend juga menolak 403)
+  if (user && user.role !== "PEGAWAI") {
     return (
       <>
         {header}
-        <KegiatanTanpaAkses pesan="Pimpinan dapat melihat seluruh kegiatan, tetapi tidak mencatat kegiatan." />
+        <KegiatanTanpaAkses pesan="Kegiatan dicatat oleh pegawai. Pimpinan dan admin dapat melihat dan memeriksanya." />
       </>
     );
   }
@@ -89,11 +90,7 @@ export function KegiatanBaruView({ drafId = null }: { drafId?: number | null }) 
         <KegiatanFormSkeleton />
       ) : !profil.data?.pegawai ? (
         <KegiatanTanpaAkses
-          pesan={
-            user?.role === "ADMIN"
-              ? "Akun Anda belum terhubung ke data pegawai. Atur bidang Anda di Manajemen akun agar bisa mencatat kegiatan."
-              : "Akun Anda belum terhubung ke data pegawai, jadi belum dapat mencatat kegiatan. Hubungi administrator."
-          }
+          pesan="Akun Anda belum terhubung ke data pegawai, jadi belum dapat mencatat kegiatan. Hubungi administrator."
         />
       ) : (
         <KegiatanForm key={drafId ?? "baru"} referensi={referensi.data} penanggungJawabBawaan={profil.data.pegawai.id} draf={draf.data} />

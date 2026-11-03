@@ -163,7 +163,7 @@ Detail kegiatan.
 
 Mencatat kegiatan baru. Bidang kegiatan otomatis mengikuti bidang penanggung jawab.
 
-**Akses**: PEGAWAI, ADMIN
+**Akses**: PEGAWAI; ADMIN dan PIMPINAN ditolak 403
 
 **Header**: `Cookie`, `Content-Type: application/json`
 
@@ -216,7 +216,7 @@ Mengubah kegiatan. Body sama dengan `POST /api/kegiatan` (tanpa `drafId`), ditam
 | --- | --- | --- | --- |
 | `expectedUpdatedAt` | string | ya | Nilai `updatedAt` saat data dibuka |
 
-**Akses**: PEGAWAI, ADMIN (pemilik kegiatan)
+**Akses**: PEGAWAI (pemilik kegiatan); ADMIN dan PIMPINAN ditolak 403
 
 **Respons 200**
 
@@ -237,7 +237,7 @@ Mengubah kegiatan. Body sama dengan `POST /api/kegiatan` (tanpa `drafId`), ditam
 
 Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti menjadi waktu sekarang, sehingga status pelaksanaannya langsung `selesai`. Status tetap dihitung dari waktu, bukan disimpan terpisah. Status pemeriksaan kembali menjadi "belum diperiksa", seperti saat kegiatan diubah, dan perubahannya tercatat di audit log (`ubah`).
 
-**Akses**: PEGAWAI, ADMIN (pemilik kegiatan)
+**Akses**: PEGAWAI (pemilik kegiatan); ADMIN dan PIMPINAN ditolak 403
 
 **Body**: `{ "expectedUpdatedAt": "2026-11-01T22:10:53.394Z" }` (versi data)
 
@@ -253,7 +253,7 @@ Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti men
 
 ### `POST /api/kegiatan/:id/batalkan`
 
-**Akses**: PEGAWAI, ADMIN (pemilik kegiatan)
+**Akses**: PEGAWAI (pemilik kegiatan); ADMIN dan PIMPINAN ditolak 403
 
 **Body**
 
@@ -274,7 +274,7 @@ Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti men
 
 Pimpinan/admin menandai kegiatan sudah diperiksa atau perlu perbaikan. Versi data (`updatedAt`) tidak berubah.
 
-**Akses**: PIMPINAN (admin ditolak 403; pemeriksaan isi kegiatan adalah tugas pimpinan)
+**Akses**: PIMPINAN, ADMIN. Membuat catatan di riwayat pemeriksaan, audit log (`periksa`), dan notifikasi untuk pegawai pembuat dan penanggung jawab (kecuali pemeriksa sendiri). Status pelaksanaan tidak berubah.
 
 **Body**
 
@@ -297,7 +297,7 @@ Pimpinan/admin menandai kegiatan sudah diperiksa atau perlu perbaikan. Versi dat
 
 Menghapus kegiatan (hapus lunak: tidak tampil lagi di daftar dan rekap, tetapi tetap ada di basis data).
 
-**Akses**: PEGAWAI, ADMIN (pemilik kegiatan)
+**Akses**: PEGAWAI (pemilik kegiatan); ADMIN dan PIMPINAN ditolak 403
 
 **Respons**: `204 No Content`
 
@@ -370,7 +370,7 @@ Mengganti seluruh isi draf. Body sama dengan `POST`.
 
 ### `POST /api/kegiatan/:id/dokumentasi`
 
-**Akses**: PEGAWAI, ADMIN (pemilik kegiatan)
+**Akses**: PEGAWAI (pemilik kegiatan); ADMIN dan PIMPINAN ditolak 403
 
 **Header**: `Cookie`, `Content-Type: multipart/form-data`
 
@@ -422,6 +422,6 @@ Menampilkan atau mengunduh berkas.
 
 ### `DELETE /api/dokumentasi/:id`
 
-**Akses**: PEGAWAI, ADMIN (pemilik kegiatan)
+**Akses**: PEGAWAI (pemilik kegiatan); ADMIN dan PIMPINAN ditolak 403
 
 **Respons**: `204 No Content`

@@ -89,7 +89,7 @@ export function PencarianCepat() {
 
   const cocok = (s: string) => s.toLowerCase().includes(teks.trim().toLowerCase());
   const halaman: Hasil[] = [
-    ...(user?.role === "PEGAWAI" || user?.role === "ADMIN"
+    ...(user?.role === "PEGAWAI"
       ? [{ jenis: "halaman" as const, kunci: "baru", label: "Tambah kegiatan", keterangan: "Aksi", href: "/kegiatan/baru", icon: Plus }]
       : []),
     ...navUntukRole(user?.role).flatMap((g) =>

@@ -161,7 +161,7 @@ describe("hak akses role", () => {
     expect((await panggil("/me", { cookie: pegawai.cookie })).data.role).toBe("PEGAWAI");
   });
 
-  test("dashboard dinas untuk PIMPINAN dan ADMIN; pantau hanya untuk PIMPINAN", async () => {
+  test("dashboard dinas dan pantau untuk PIMPINAN dan ADMIN, bukan PEGAWAI", async () => {
     const pegawai = await buatPengguna();
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
     expect((await panggil("/dashboard", { cookie: pegawai.cookie })).status).toBe(403);
@@ -171,7 +171,7 @@ describe("hak akses role", () => {
     // Hitungan akun hanya dikirim ke admin
     expect(dashPimpinan.data.admin).toBeNull();
     expect((await panggil("/pantau/ringkasan", { cookie: pimpinan.cookie })).status).toBe(200);
-    expect((await panggil("/pantau/ringkasan", { cookie: await loginAdmin() })).status).toBe(403);
+    expect((await panggil("/pantau/ringkasan", { cookie: await loginAdmin() })).status).toBe(200);
   });
 });
 

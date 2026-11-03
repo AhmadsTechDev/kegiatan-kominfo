@@ -1,7 +1,7 @@
 // =============================================================================
 // TOMBOL AKSI PEMERIKSAAN PIMPINAN
 // =============================================================================
-// Gunanya: Menyediakan tombol tindakan verifikasi bagi pimpinan untuk menandai
+// Gunanya: Menyediakan tombol tindakan verifikasi bagi pimpinan dan admin untuk menandai
 // kegiatan telah diperiksa atau meminta perbaikan disertai catatan wajib.
 //
 // Isi berkas:

@@ -210,11 +210,11 @@ export function PantauView() {
     return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: [p.jabatan, namaUnit.get(p.bidangId)].filter(Boolean).join(" · ") }));
   }, [pegawaiPilihan, bidang]);
 
-  if (user && user.role !== "PIMPINAN") {
+  if (user && user.role !== "PIMPINAN" && user.role !== "ADMIN") {
     return (
       <>
         <PageHeader eyebrow="Pemantauan" title="Pantau pimpinan" />
-        <KegiatanTanpaAkses pesan="Halaman ini khusus pimpinan. Ringkasan seluruh kegiatan tersedia di Dashboard dan daftar Kegiatan." />
+        <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin. Kegiatan Anda tersedia di daftar Kegiatan." />
       </>
     );
   }

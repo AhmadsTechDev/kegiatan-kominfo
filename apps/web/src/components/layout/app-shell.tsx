@@ -36,6 +36,7 @@ import { navAktif, navUntukRole, type NavGroup } from "@/config/navigation";
 import { site } from "@/config/site";
 import { useJumlahPermintaan } from "@/features/admin/hooks/use-admin";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { LoncengNotifikasi } from "@/features/notifikasi/components/lonceng-notifikasi";
 import { PencarianCepat } from "@/features/pencarian/components/pencarian-cepat";
 import { SinkronTema } from "@/features/pengaturan/hooks/use-akun-saya";
 import { cn } from "@/lib/utils";
@@ -212,6 +213,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Suspense>
           <div className="ml-auto flex items-center gap-2">
             <PencarianCepat />
+            {/* Notifikasi hasil pemeriksaan hanya untuk pegawai (pencatat kegiatan) */}
+            {user?.role === "PEGAWAI" && <LoncengNotifikasi />}
             <ThemeToggle />
             <span aria-hidden className="hidden h-6 w-px bg-border md:block" />
             <UserMenu />

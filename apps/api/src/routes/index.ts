@@ -9,6 +9,7 @@ import { healthRoutes } from "./health.route";
 import { kalenderRoutes } from "./kalender.route";
 import { kegiatanRoutes } from "./kegiatan.route";
 import { masterRoutes } from "./master.route";
+import { notifikasiRoutes } from "./notifikasi.route";
 import { pantauRoutes } from "./pantau.route";
 import { permintaanAkunRoutes } from "./permintaan-akun.route";
 import { referensiRoutes } from "./referensi.route";
@@ -34,4 +35,5 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
   .use(userRoutes)
   .use(auditLogRoutes)
   .use(undanganRoutes)
-  .use(permintaanAkunRoutes);
+  .use(permintaanAkunRoutes)
+  .use(notifikasiRoutes);

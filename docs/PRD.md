@@ -34,11 +34,12 @@ Dokumen kebutuhan produk, diselaraskan dengan aplikasi yang sudah berjalan. Nomo
 
 | Peran | Kode | Lingkup baca kegiatan | Tindakan |
 | --- | --- | --- | --- |
-| Pegawai | `PEGAWAI` | Kegiatan bidangnya (termasuk sub bidang) dan kegiatan miliknya | Mencatat dan mengubah kegiatan miliknya, draf, unggah dokumentasi |
-| Pimpinan | `PIMPINAN` | Seluruh dinas | Hanya membaca, dan memeriksa kegiatan |
-| Admin | `ADMIN` | Seluruh dinas | Semua tindakan pegawai untuk seluruh dinas, ditambah akun, permintaan akun, master data, dan audit log |
+| Pegawai | `PEGAWAI` | Kegiatan bidangnya (termasuk sub bidang) dan kegiatan miliknya | Satu-satunya peran yang mencatat, mengubah, membatalkan, dan menghapus kegiatan (miliknya), draf, unggah dokumentasi, isi hasil; menerima notifikasi pemeriksaan |
+| Pimpinan | `PIMPINAN` | Seluruh dinas | Membaca kegiatan, dokumentasi, hasil, rekap, laporan; memeriksa dan memberi catatan perbaikan |
+| Admin | `ADMIN` | Seluruh dinas | Membaca dan memeriksa kegiatan (memberi catatan perbaikan), mengelola akun, permintaan akun, master data, dan audit log. Tidak menulis kegiatan |
 
-- Pemeriksaan kegiatan dan halaman Pantau khusus Pimpinan. Admin tidak ikut memeriksa.
+- Pemeriksaan dan halaman Pantau untuk Pimpinan dan Admin. Status pemeriksaan terpisah dari status pelaksanaan; setiap pemeriksaan tercatat di riwayat pemeriksaan dan audit log, dan pegawai pembuat serta penanggung jawab mendapat notifikasi dalam aplikasi (lonceng).
+- Pembatasan ditegakkan di backend (403), bukan hanya dengan menyembunyikan tombol.
 - Kegiatan di luar lingkup baca dijawab 404 (bukan 403), agar keberadaannya tidak bocor.
 - Di antarmuka, `PEGAWAI` ditampilkan sebagai "Pegawai".
 

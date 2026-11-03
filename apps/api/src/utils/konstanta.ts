@@ -8,8 +8,15 @@ export const STATUS_AKUN = ["MENUNGGU_AKTIVASI", "AKTIF", "NONAKTIF"] as const;
 
 export const TEMA = ["light", "dark", "system"] as const;
 
-// Role yang boleh membuat/mengubah kegiatan, draf, dan dokumentasi
-export const PENULIS = ["PEGAWAI", "ADMIN"] as const;
+// Role yang boleh membuat/mengubah kegiatan, draf, dokumentasi, dan hasil kegiatan.
+// ADMIN tidak termasuk: admin mengelola akun dan master data, serta memeriksa kegiatan
+export const PENULIS = ["PEGAWAI"] as const;
+
+// Role yang boleh memeriksa dokumentasi dan hasil kegiatan, serta memberi catatan perbaikan
+export const PEMERIKSA = ["PIMPINAN", "ADMIN"] as const;
+
+// Jenis notifikasi dalam aplikasi
+export const JENIS_NOTIFIKASI = ["diperiksa", "perlu_perbaikan"] as const;
 
 export const STATUS_PELAKSANAAN = ["akan_datang", "berlangsung", "selesai", "dibatalkan"] as const;
 

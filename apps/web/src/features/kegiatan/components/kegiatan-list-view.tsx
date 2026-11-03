@@ -28,17 +28,30 @@
 
 "use client";
 
-import { ChevronRight, ClipboardList, Plus, SearchX, X } from "lucide-react";
+import {
+  ChevronRight,
+  ClipboardList,
+  Images,
+  Plus,
+  SearchX,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AvatarInisial } from "@/components/shared/avatar-inisial";
-import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
+import {
+  DataTable,
+  type DataTableColumn,
+} from "@/components/shared/data-table";
 import { ErrorState } from "@/components/shared/error-state";
 import { FilterBar } from "@/components/shared/filter-bar";
 import { PageHeader } from "@/components/shared/page-header";
 import { PaginationBar } from "@/components/shared/pagination-bar";
 import { Panel, PanelFooter } from "@/components/shared/panel";
-import { StatusBadge, StatusPemeriksaanBadge } from "@/components/shared/status-badge";
+import {
+  StatusBadge,
+  StatusPemeriksaanBadge,
+} from "@/components/shared/status-badge";
 import { UnitChip } from "@/components/shared/unit-chip";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
@@ -50,17 +63,54 @@ import { useDaftarKegiatan, useReferensi } from "../hooks/use-kegiatan";
 import { useKegiatanFilter } from "../hooks/use-kegiatan-filter";
 import type { FilterKegiatan, KegiatanItem } from "../types";
 import { DrafSaya } from "./draf-saya";
+import { KegiatanDokumentasiSheet } from "./kegiatan-dokumentasi-sheet";
 
 type Lingkup = "semua" | "unit" | "saya";
 
-function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanItem>[] {
+type BukaDokumentasi = (k: KegiatanItem) => void;
+
+// Tombol Dokumentasi: membuka panel dokumentasi dan hasil tanpa meninggalkan daftar
+function TombolDokumentasi({
+  k,
+  onBuka,
+  className,
+}: {
+  k: KegiatanItem;
+  onBuka: BukaDokumentasi;
+  className?: string;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className={cn("h-8 gap-1 px-3 text-xs pointer-coarse:h-11", className)}
+      onClick={() => onBuka(k)}
+      aria-label={`Dokumentasi ${k.judul}`}
+    >
+      <Images aria-hidden className="size-3.5" />
+      Dokumentasi
+    </Button>
+  );
+}
+
+function buatKolom({
+  tanpaPj,
+  onDokumentasi,
+}: {
+  tanpaPj: boolean;
+  onDokumentasi: BukaDokumentasi;
+}): DataTableColumn<KegiatanItem>[] {
   const kolom: DataTableColumn<KegiatanItem>[] = [
     {
       id: "judul",
       header: "Kegiatan",
       cell: ({ row }) => (
         <div className="flex max-w-80 min-w-52 flex-col gap-0.5 whitespace-normal">
-          <Link href={`/kegiatan/${row.original.id}`} className="font-semibold text-foreground hover:text-primary hover:underline">
+          <Link
+            href={`/kegiatan/${row.original.id}`}
+            className="font-semibold text-foreground hover:text-primary hover:underline"
+          >
             {row.original.judul}
           </Link>
           <span className="text-xs text-muted-foreground">
@@ -73,7 +123,11 @@ function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanI
     {
       id: "bidang",
       header: "Bidang",
-      cell: ({ row }) => <UnitChip className="max-w-48 min-w-32 whitespace-normal">{row.original.bidang.nama}</UnitChip>,
+      cell: ({ row }) => (
+        <UnitChip className="max-w-48 min-w-32 whitespace-normal">
+          {row.original.bidang.nama}
+        </UnitChip>
+      ),
     },
     {
       id: "tanggal",
@@ -81,7 +135,9 @@ function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanI
       cell: ({ row }) => (
         <span className="whitespace-nowrap tabular-nums">
           {formatRentangTanggal(row.original.tglMulai, row.original.tglSelesai)}
-          <span className="block text-xs text-muted-foreground">{formatJam(row.original.tglMulai)}</span>
+          <span className="block text-xs text-muted-foreground">
+            {formatJam(row.original.tglMulai)}
+          </span>
         </span>
       ),
     },
@@ -91,7 +147,9 @@ function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanI
       cell: ({ row }) => (
         <div className="flex flex-col items-start gap-1">
           <StatusBadge status={row.original.statusPelaksanaan} />
-          {row.original.statusPemeriksaan !== "terkirim" && <StatusPemeriksaanBadge status={row.original.statusPemeriksaan} />}
+          {row.original.statusPemeriksaan !== "terkirim" && (
+            <StatusPemeriksaanBadge status={row.original.statusPemeriksaan} />
+          )}
         </div>
       ),
     },
@@ -100,7 +158,10 @@ function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanI
       header: "Penanggung jawab",
       cell: ({ row }) => (
         <span className="flex items-center gap-2">
-          <AvatarInisial nama={row.original.penanggungJawab.nama} className="size-7" />
+          <AvatarInisial
+            nama={row.original.penanggungJawab.nama}
+            className="size-7"
+          />
           {row.original.penanggungJawab.nama}
         </span>
       ),
@@ -109,9 +170,18 @@ function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanI
       id: "aksi",
       header: () => <span className="sr-only">Aksi</span>,
       cell: ({ row }) => (
-        <div className="flex justify-end">
-          <Button asChild variant="outline" size="sm" className="h-8 gap-1 px-3 text-xs">
-            <Link href={`/kegiatan/${row.original.id}`} aria-label={`Detail ${row.original.judul}`}>
+        <div className="flex justify-end gap-2">
+          <TombolDokumentasi k={row.original} onBuka={onDokumentasi} />
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1 px-3 text-xs"
+          >
+            <Link
+              href={`/kegiatan/${row.original.id}`}
+              aria-label={`Detail ${row.original.judul}`}
+            >
               Detail
               <ChevronRight aria-hidden className="size-3.5" />
             </Link>
@@ -123,30 +193,47 @@ function buatKolom({ tanpaPj }: { tanpaPj: boolean }): DataTableColumn<KegiatanI
   return tanpaPj ? kolom.filter((k) => k.id !== "pj") : kolom;
 }
 
-function KartuKegiatan({ k }: { k: KegiatanItem }) {
+function KartuKegiatan({
+  k,
+  onDokumentasi,
+}: {
+  k: KegiatanItem;
+  onDokumentasi: BukaDokumentasi;
+}) {
   return (
-    <Link
-      href={`/kegiatan/${k.id}`}
-      className="flex items-center gap-2 rounded-lg border bg-card p-3 transition-colors duration-120 ease-out hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-    >
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-sm font-semibold">{k.judul}</span>
-          <StatusBadge status={k.statusPelaksanaan} className="shrink-0" />
+    <div className="flex flex-col overflow-hidden rounded-lg border bg-card">
+      <Link
+        href={`/kegiatan/${k.id}`}
+        className="flex items-center gap-2 p-3 transition-colors duration-120 ease-out hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
+      >
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-sm font-semibold">{k.judul}</span>
+            <StatusBadge status={k.statusPelaksanaan} className="shrink-0" />
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {formatRentangTanggal(k.tglMulai, k.tglSelesai)} ·{" "}
+            {formatJam(k.tglMulai)}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {k.bidang.nama} · {k.penanggungJawab.nama}
+          </span>
         </div>
-        <span className="text-xs text-muted-foreground">
-          {formatRentangTanggal(k.tglMulai, k.tglSelesai)} · {formatJam(k.tglMulai)}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {k.bidang.nama} · {k.penanggungJawab.nama}
-        </span>
+        <ChevronRight
+          aria-hidden
+          className="size-4 shrink-0 text-muted-foreground"
+        />
+      </Link>
+      <div className="border-t border-muted px-3 py-2">
+        <TombolDokumentasi k={k} onBuka={onDokumentasi} className="w-full" />
       </div>
-      <ChevronRight aria-hidden className="size-4 shrink-0 text-muted-foreground" />
-    </Link>
+    </div>
   );
 }
 
-type KosongTabel = React.ComponentProps<typeof DataTable<KegiatanItem>>["empty"];
+type KosongTabel = React.ComponentProps<
+  typeof DataTable<KegiatanItem>
+>["empty"];
 
 function TabelKegiatan({
   filter,
@@ -156,6 +243,7 @@ function TabelKegiatan({
   onPageChange,
   satuan,
   header,
+  onDokumentasi,
 }: {
   filter: FilterKegiatan;
   kolom: DataTableColumn<KegiatanItem>[];
@@ -164,6 +252,7 @@ function TabelKegiatan({
   onPageChange: (page: number) => void;
   satuan?: string;
   header?: (total: number | null) => React.ReactNode;
+  onDokumentasi: BukaDokumentasi;
 }) {
   const daftar = useDaftarKegiatan(filter);
   return (
@@ -171,7 +260,11 @@ function TabelKegiatan({
       {header?.(daftar.data?.total ?? null)}
       {daftar.isError ? (
         <div className="px-4 pb-4 md:px-5">
-          <ErrorState message={daftar.error.message} onRetry={() => daftar.refetch()} retrying={daftar.isRefetching} />
+          <ErrorState
+            message={daftar.error.message}
+            onRetry={() => daftar.refetch()}
+            retrying={daftar.isRefetching}
+          />
         </div>
       ) : (
         <>
@@ -183,8 +276,13 @@ function TabelKegiatan({
             bleed
             caption={caption}
             getRowKey={(k) => String(k.id)}
-            renderMobileCard={(k) => <KartuKegiatan k={k} />}
-            className={cn("transition-opacity duration-150", daftar.isPlaceholderData && "opacity-60")}
+            renderMobileCard={(k) => (
+              <KartuKegiatan k={k} onDokumentasi={onDokumentasi} />
+            )}
+            className={cn(
+              "transition-opacity duration-150",
+              daftar.isPlaceholderData && "opacity-60",
+            )}
             empty={empty}
           />
           {daftar.data && daftar.data.total > 0 && (
@@ -209,17 +307,38 @@ export function KegiatanListView() {
   const { user } = useCurrentUser();
   const { filter, setFilter, resetFilter, adaFilter } = useKegiatanFilter();
   const { terbatas: pegawai, unit: unitSaya, saringUnit } = useLingkupPegawai();
-  const lingkup: Lingkup = !pegawai ? "semua" : filter.milik === "saya" ? "saya" : "unit";
+  const lingkup: Lingkup = !pegawai
+    ? "semua"
+    : filter.milik === "saya"
+      ? "saya"
+      : "unit";
   const judul: Record<Lingkup, { title: string; description: string }> = {
     semua: { title: "Kegiatan", description: "Seluruh kegiatan dinas." },
-    unit: { title: "Kegiatan bidang saya", description: unitSaya?.nama ?? "Kegiatan bidang Anda." },
-    saya: { title: "Kegiatan saya", description: "Kegiatan yang Anda catat atau tangani." },
+    unit: {
+      title: "Kegiatan bidang saya",
+      description: unitSaya?.nama ?? "Kegiatan bidang Anda.",
+    },
+    saya: {
+      title: "Kegiatan saya",
+      description: "Kegiatan yang Anda catat atau tangani.",
+    },
   };
   const referensi = useReferensi();
   const tanpaPj = lingkup === "saya";
-  const kolom = useMemo(() => buatKolom({ tanpaPj }), [tanpaPj]);
+  const [dokumentasi, setDokumentasi] = useState<{
+    id: number;
+    judul: string;
+  } | null>(null);
+  const kolom = useMemo(
+    () =>
+      buatKolom({
+        tanpaPj,
+        onDokumentasi: (k) => setDokumentasi({ id: k.id, judul: k.judul }),
+      }),
+    [tanpaPj],
+  );
 
-  const bisaMenambah = user?.role === "PEGAWAI" || user?.role === "ADMIN";
+  const bisaMenambah = user?.role === "PEGAWAI";
   const tombolTambah = bisaMenambah && (
     <Button asChild className="h-10">
       <Link href="/kegiatan/baru">
@@ -251,14 +370,25 @@ export function KegiatanListView() {
         onChange={setFilter}
         onReset={resetFilter}
         adaFilter={adaFilter}
-        bidang={lingkup === "saya" ? [] : saringUnit(referensi.data?.bidang ?? [])}
+        bidang={
+          lingkup === "saya" ? [] : saringUnit(referensi.data?.bidang ?? [])
+        }
         jenisKegiatan={referensi.data?.jenisKegiatan ?? []}
       />
       {filter.pegawai && (
         <div className="mt-3 flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">Penanggung jawab:</span>
-          <span className="font-semibold">{referensi.data?.pegawai.find((p) => String(p.id) === filter.pegawai)?.nama ?? "Pegawai terpilih"}</span>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setFilter({ pegawai: null })}>
+          <span className="font-semibold">
+            {referensi.data?.pegawai.find(
+              (p) => String(p.id) === filter.pegawai,
+            )?.nama ?? "Pegawai terpilih"}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => setFilter({ pegawai: null })}
+          >
             <X aria-hidden className="size-3.5" />
             Lepas
           </Button>
@@ -269,7 +399,12 @@ export function KegiatanListView() {
 
   return (
     <>
-      <PageHeader eyebrow="Operasional" title={judul[lingkup].title} description={judul[lingkup].description} actions={tombolTambah} />
+      <PageHeader
+        eyebrow="Operasional"
+        title={judul[lingkup].title}
+        description={judul[lingkup].description}
+        actions={tombolTambah}
+      />
 
       {bisaMenambah && <DrafSaya />}
 
@@ -280,19 +415,37 @@ export function KegiatanListView() {
           kolom={kolom}
           caption="Daftar kegiatan"
           onPageChange={keHalaman}
+          onDokumentasi={(k) => setDokumentasi({ id: k.id, judul: k.judul })}
           empty={
-            [filter.q, filter.dari, filter.sampai, filter.unit, filter.jenis, filter.status, filter.pegawai].some(Boolean)
+            [
+              filter.q,
+              filter.dari,
+              filter.sampai,
+              filter.unit,
+              filter.jenis,
+              filter.status,
+              filter.pegawai,
+            ].some(Boolean)
               ? kosongFilter
               : {
                   icon: ClipboardList,
-                  title: lingkup === "saya" ? "Belum ada kegiatan Anda." : "Belum ada kegiatan.",
-                  description: bisaMenambah ? "Tambahkan kegiatan pertama." : undefined,
+                  title:
+                    lingkup === "saya"
+                      ? "Belum ada kegiatan Anda."
+                      : "Belum ada kegiatan.",
+                  description: bisaMenambah
+                    ? "Tambahkan kegiatan pertama."
+                    : undefined,
                   action: tombolTambah || undefined,
                 }
           }
         />
       </Panel>
 
+      <KegiatanDokumentasiSheet
+        target={dokumentasi}
+        onClose={() => setDokumentasi(null)}
+      />
     </>
   );
 }

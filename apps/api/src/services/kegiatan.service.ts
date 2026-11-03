@@ -19,7 +19,9 @@ import type {
 import type { Aktor, GalatField, MetaRequest, Rentang } from "@/types/umum.types";
 import { awalHariJakarta, parsePeriode, rentangPeriode } from "@/utils/periode";
 import { hitungStatus } from "@/utils/status-kegiatan";
+import { PEMERIKSA } from "@/utils/konstanta";
 import { AuditLogService } from "./audit-log.service";
+import { NotifikasiService } from "./notifikasi.service";
 import { ReferensiService } from "./referensi.service";
 
 type PemilikKegiatan = { bidangId: number; dibuatOleh: string; penanggungJawabId: number };
@@ -32,9 +34,9 @@ const teks = (nilai: string | null | undefined) => nilai?.trim() || null;
 
 // ---------- Aturan hak akses kegiatan (dipakai juga oleh modul lain) ----------
 
-// ADMIN boleh mengubah semua kegiatan; PEGAWAI hanya kegiatan yang dibuatnya atau yang dia tanggung jawabi
+// Hanya PEGAWAI yang menulis kegiatan, dan hanya kegiatan yang dibuatnya atau yang dia tanggung jawabi.
+// ADMIN dan PIMPINAN membaca dan memeriksa, tidak mengubah
 export function bisaUbah(aktor: Aktor, k: { dibuatOleh: string; penanggungJawabId: number }) {
-  if (aktor.role === "ADMIN") return true;
   if (aktor.role !== "PEGAWAI") return false;
   return k.dibuatOleh === aktor.id || (aktor.pegawaiId != null && k.penanggungJawabId === aktor.pegawaiId);
 }
@@ -190,7 +192,7 @@ export const KegiatanService = {
       pengubahTerakhir,
       riwayat,
       catatanPemeriksaan,
-      bisaPeriksa: aktor.role === "PIMPINAN",
+      bisaPeriksa: (PEMERIKSA as readonly string[]).includes(aktor.role),
       bisaUbah: bisaUbah(aktor, pemilik),
     };
   },
@@ -247,7 +249,9 @@ export const KegiatanService = {
     });
   },
 
-  // Pimpinan memeriksa kegiatan: tandai "diperiksa" atau "perlu_perbaikan" (wajib catatan)
+  // Pimpinan atau admin memeriksa dokumentasi dan hasil kegiatan: tandai "diperiksa" atau
+  // "perlu_perbaikan" (wajib catatan). Status pemeriksaan terpisah dari status pelaksanaan.
+  // Pegawai pembuat dan penanggung jawab mendapat notifikasi dalam aplikasi
   async periksa(id: number, isi: PeriksaKegiatan, aktor: Aktor, meta: MetaRequest) {
     const catatan = isi.catatan?.trim() || null;
     if (isi.status === "perlu_perbaikan" && !catatan) {
@@ -258,6 +262,7 @@ export const KegiatanService = {
       if (!sebelum) throw NotFound("Kegiatan tidak ditemukan");
       await KegiatanRepository.setPemeriksaan(id, isi.status, sebelum.updatedAt, tx);
       await KegiatanRepository.insertCatatan({ kegiatanId: id, pemeriksaId: aktor.id, status: isi.status, isi: catatan }, tx);
+      await NotifikasiService.hasilPemeriksaan({ ...sebelum, status: isi.status, catatan, pemeriksaId: aktor.id }, tx);
       await AuditLogService.catat(
         {
           aktorId: aktor.id,

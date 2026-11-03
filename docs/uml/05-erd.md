@@ -96,6 +96,15 @@ erDiagram
         varchar status
         text isi
     }
+    notifikasi {
+        int id PK
+        varchar user_id FK
+        varchar jenis
+        varchar judul
+        text isi
+        int kegiatan_id FK
+        timestamptz dibaca_at
+    }
     dokumentasi {
         int id PK
         int kegiatan_id FK
@@ -156,6 +165,8 @@ erDiagram
     user ||--o{ dokumentasi : "pengunggah (RESTRICT)"
     kegiatan ||--o{ catatan_pemeriksaan : "CASCADE"
     user ||--o{ catatan_pemeriksaan : "pemeriksa (RESTRICT)"
+    user ||--o{ notifikasi : "penerima (CASCADE)"
+    kegiatan ||--o{ notifikasi : "CASCADE"
     user ||--o{ draf_kegiatan : "CASCADE"
     pegawai |o--o{ permintaan_akun : "RESTRICT"
     user |o--o{ permintaan_akun : "pemroses (SET NULL)"

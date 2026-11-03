@@ -2,7 +2,7 @@
 // batal, periksa, hapus, filter daftar, audit log, dan draf kegiatan
 import { describe, expect, test } from "bun:test";
 import { prisma } from "@/lib/prisma";
-import { auditUntuk, buatKegiatan, buatPengguna, idJenis, idUnit, isiKegiatan, jamLagi, loginAdmin, panggil } from "./helpers";
+import { auditUntuk, buatKegiatan, buatPengguna, formBerkas, idJenis, idUnit, isiKegiatan, jamLagi, loginAdmin, panggil, PNG } from "./helpers";
 
 describe("mencatat kegiatan", () => {
   test("PEGAWAI mencatat kegiatannya sendiri; bidang mengikuti penanggung jawab", async () => {
@@ -57,12 +57,21 @@ describe("mencatat kegiatan", () => {
     expect(res.data.details[0].field).toBe("penanggungJawabId");
   });
 
-  test("ADMIN boleh mencatat atas nama pegawai mana pun; PIMPINAN tidak boleh mencatat", async () => {
+  test("ADMIN dan PIMPINAN tidak boleh mencatat, mengubah, menghapus kegiatan, atau mengunggah dokumentasi", async () => {
     const u = await buatPengguna();
+    const k = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!));
     const admin = await loginAdmin();
-    expect((await panggil("/kegiatan", { cookie: admin, json: await isiKegiatan(u.pegawaiId!) })).status).toBe(201);
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
-    expect((await panggil("/kegiatan", { cookie: pimpinan.cookie, json: await isiKegiatan(u.pegawaiId!) })).status).toBe(403);
+    for (const cookie of [admin, pimpinan.cookie]) {
+      expect((await panggil("/kegiatan", { cookie, json: await isiKegiatan(u.pegawaiId!) })).status).toBe(403);
+      expect((await panggil(`/kegiatan/${k.id}`, { method: "PATCH", cookie, json: { ...(await isiKegiatan(u.pegawaiId!)), expectedUpdatedAt: k.updatedAt } })).status).toBe(403);
+      expect((await panggil(`/kegiatan/${k.id}/batalkan`, { cookie, json: { alasan: "uji", expectedUpdatedAt: k.updatedAt } })).status).toBe(403);
+      expect((await panggil(`/kegiatan/${k.id}`, { method: "DELETE", cookie })).status).toBe(403);
+      expect((await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie, form: formBerkas(PNG) })).status).toBe(403);
+      expect((await panggil("/draf-kegiatan", { cookie, json: { isi: { judul: "x" } } })).status).toBe(403);
+      // Tetap bisa membaca
+      expect((await panggil(`/kegiatan/${k.id}`, { cookie })).data).toMatchObject({ id: k.id, bisaUbah: false, bisaPeriksa: true });
+    }
   });
 
   test("jenis kegiatan yang dinonaktifkan tidak bisa dipilih", async () => {
@@ -119,12 +128,40 @@ describe("lingkup baca dan hak ubah", () => {
     expect(ubah.status).toBe(403);
   });
 
-  test("ADMIN tidak memeriksa kegiatan: tombol tidak ditawarkan dan endpoint menolak 403", async () => {
+  test("ADMIN memeriksa kegiatan; PEGAWAI tidak boleh memeriksa", async () => {
     const pemilik = await buatPengguna();
     const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!));
     const admin = await loginAdmin();
-    expect((await panggil(`/kegiatan/${k.id}`, { cookie: admin })).data.bisaPeriksa).toBe(false);
-    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "diperiksa" } })).status).toBe(403);
+    expect((await panggil(`/kegiatan/${k.id}`, { cookie: admin })).data.bisaPeriksa).toBe(true);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "diperiksa" } })).status).toBe(200);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pemilik.cookie, json: { status: "diperiksa" } })).status).toBe(403);
+  });
+
+  test("hasil pemeriksaan masuk ke notifikasi pegawai, terpisah dari status pelaksanaan, dan tercatat di riwayat", async () => {
+    const pemilik = await buatPengguna();
+    const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!));
+    const admin = await loginAdmin();
+    const pimpinan = await buatPengguna({ role: "PIMPINAN" });
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "perlu_perbaikan" } })).status).toBe(422);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "perlu_perbaikan", catatan: "Foto belum ada" } })).status).toBe(200);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pimpinan.cookie, json: { status: "diperiksa" } })).status).toBe(200);
+
+    const detail = await panggil(`/kegiatan/${k.id}`, { cookie: pemilik.cookie });
+    expect(detail.data).toMatchObject({ statusPelaksanaan: "akan_datang", statusPemeriksaan: "diperiksa" });
+    expect(detail.data.catatanPemeriksaan.map((c: { status: string }) => c.status)).toEqual(["diperiksa", "perlu_perbaikan"]);
+
+    const notif = await panggil("/notifikasi", { cookie: pemilik.cookie });
+    expect(notif.data.belumDibaca).toBe(2);
+    expect(notif.data.items[1]).toMatchObject({ jenis: "perlu_perbaikan", isi: "Foto belum ada", kegiatanId: k.id, dibacaAt: null });
+    // Pemeriksa tidak menerima notifikasinya sendiri
+    expect((await panggil("/notifikasi", { cookie: admin })).data.items.some((n: { kegiatanId: number }) => n.kegiatanId === k.id)).toBe(false);
+
+    // Hanya pemilik yang bisa menandai dibaca
+    const id = notif.data.items[1].id;
+    expect((await panggil(`/notifikasi/${id}/baca`, { cookie: pimpinan.cookie, json: {} })).data.jumlah).toBe(0);
+    expect((await panggil(`/notifikasi/${id}/baca`, { cookie: pemilik.cookie, json: {} })).data.jumlah).toBe(1);
+    expect((await panggil("/notifikasi/baca-semua", { cookie: pemilik.cookie, json: {} })).data.jumlah).toBe(1);
+    expect((await panggil("/notifikasi", { cookie: pemilik.cookie })).data.belumDibaca).toBe(0);
   });
 });
 

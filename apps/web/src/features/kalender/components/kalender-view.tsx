@@ -331,7 +331,7 @@ export function KalenderView() {
     }
   };
 
-  const bisaMenambah = user?.role === "PEGAWAI" || user?.role === "ADMIN";
+  const bisaMenambah = user?.role === "PEGAWAI";
   const bulanKosong = !!data && data.items.length === 0;
 
   return (

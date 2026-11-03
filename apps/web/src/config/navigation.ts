@@ -48,7 +48,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Kalender", href: "/kalender", icon: CalendarDays, roles: ["PEGAWAI", "PIMPINAN", "ADMIN"] },
       { label: "Rekap", href: "/rekap", icon: FileBarChart2, roles: ["PEGAWAI", "PIMPINAN", "ADMIN"] },
       { label: "Laporan", href: "/laporan", icon: FileText, roles: ["PEGAWAI", "PIMPINAN", "ADMIN"] },
-      { label: "Pantau", href: "/pantau", icon: ClipboardCheck, roles: ["PIMPINAN"] },
+      { label: "Pantau", href: "/pantau", icon: ClipboardCheck, roles: ["PIMPINAN", "ADMIN"] },
     ],
   },
   {

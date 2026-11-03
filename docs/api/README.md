@@ -29,9 +29,9 @@ Kembali ke [README utama](../../README.md). Diagram alurnya ada di [UML](../uml/
 
 | Peran | Lingkup baca kegiatan | Tindakan |
 | --- | --- | --- |
-| `PEGAWAI` | Kegiatan bidangnya (termasuk sub bidang) dan kegiatan miliknya | Catat dan ubah kegiatan miliknya, draf, unggah dokumentasi |
-| `PIMPINAN` | Seluruh dinas | Hanya membaca, dan memeriksa kegiatan. Tidak mengubah data kegiatan |
-| `ADMIN` | Seluruh dinas | Semua tindakan pegawai untuk seluruh dinas, ditambah master data, akun, permintaan akun, dan audit log |
+| `PEGAWAI` | Kegiatan bidangnya (termasuk sub bidang) dan kegiatan miliknya | Satu-satunya peran yang menulis kegiatan: catat dan ubah kegiatan miliknya, draf, unggah dokumentasi, isi hasil |
+| `PIMPINAN` | Seluruh dinas | Membaca, memeriksa kegiatan, dan memberi catatan perbaikan. Tidak mengubah data kegiatan |
+| `ADMIN` | Seluruh dinas | Membaca dan memeriksa kegiatan, ditambah master data, akun, permintaan akun, dan audit log. Tidak menulis kegiatan (403) |
 
 ## Ringkasan endpoint
 
@@ -62,16 +62,16 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 | --- | --- | --- |
 | `GET /api/referensi` | Pilihan formulir (jenis, bidang, pegawai) | Login |
 | `GET /api/kegiatan`, `GET /api/kegiatan/:id` | Daftar dengan filter dan detail | Login (sesuai lingkup baca) |
-| `POST /api/kegiatan` | Catat kegiatan | `PEGAWAI`, `ADMIN` |
-| `PATCH /api/kegiatan/:id` | Ubah dan isi hasil | `PEGAWAI`, `ADMIN` (pemilik) |
-| `POST /api/kegiatan/:id/selesai` | Selesaikan kegiatan yang sedang berlangsung (waktu selesai menjadi sekarang) | `PEGAWAI`, `ADMIN` (pemilik) |
-| `POST /api/kegiatan/:id/batalkan` | Batalkan (alasan wajib) | `PEGAWAI`, `ADMIN` (pemilik) |
-| `POST /api/kegiatan/:id/pemeriksaan` | Tandai sudah diperiksa atau perlu perbaikan | `PIMPINAN` |
-| `DELETE /api/kegiatan/:id` | Hapus kegiatan | `PEGAWAI`, `ADMIN` (pemilik) |
-| `GET`, `POST /api/draf-kegiatan`, `GET`, `PUT`, `DELETE /api/draf-kegiatan/:id` | Draf milik sendiri | `PEGAWAI`, `ADMIN` |
-| `POST /api/kegiatan/:id/dokumentasi` | Unggah foto atau PDF (maks. 20 MB, 10 berkas per kegiatan) | `PEGAWAI`, `ADMIN` (pemilik) |
+| `POST /api/kegiatan` | Catat kegiatan | `PEGAWAI` |
+| `PATCH /api/kegiatan/:id` | Ubah dan isi hasil | `PEGAWAI` (pemilik) |
+| `POST /api/kegiatan/:id/selesai` | Selesaikan kegiatan yang sedang berlangsung (waktu selesai menjadi sekarang) | `PEGAWAI` (pemilik) |
+| `POST /api/kegiatan/:id/batalkan` | Batalkan (alasan wajib) | `PEGAWAI` (pemilik) |
+| `POST /api/kegiatan/:id/pemeriksaan` | Tandai sudah diperiksa atau perlu perbaikan | `PIMPINAN`, `ADMIN` |
+| `DELETE /api/kegiatan/:id` | Hapus kegiatan | `PEGAWAI` (pemilik) |
+| `GET`, `POST /api/draf-kegiatan`, `GET`, `PUT`, `DELETE /api/draf-kegiatan/:id` | Draf milik sendiri | `PEGAWAI` |
+| `POST /api/kegiatan/:id/dokumentasi` | Unggah foto atau PDF (maks. 20 MB, 10 berkas per kegiatan) | `PEGAWAI` (pemilik) |
 | `GET /api/dokumentasi/:id` | Unduh atau lihat berkas | Login (sesuai lingkup baca) |
-| `PUT`, `DELETE /api/dokumentasi/:id` | Ganti atau hapus berkas | `PEGAWAI`, `ADMIN` (pemilik) |
+| `PUT`, `DELETE /api/dokumentasi/:id` | Ganti atau hapus berkas | `PEGAWAI` (pemilik) |
 
 ### Dashboard, kalender, rekap, pantau, ekspor ([api-laporan.md](api-laporan.md))
 
@@ -81,7 +81,7 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 | `GET /api/dashboard/saya` | Dashboard tugas pribadi | Login |
 | `GET /api/kalender` | Kegiatan per bulan | Login (sesuai lingkup baca) |
 | `GET /api/rekap` | Rekap jumlah per unit induk dan jenis | Login (sesuai lingkup baca) |
-| `GET /api/pantau/ringkasan` | Ringkasan status pemeriksaan | `PIMPINAN` (admin ditolak 403) |
+| `GET /api/pantau/ringkasan` | Ringkasan status pemeriksaan | `PIMPINAN`, `ADMIN` |
 | `GET /api/ekspor/kegiatan.pdf`, `GET /api/ekspor/pratinjau` | Ekspor PDF berkop dinas dan jumlah barisnya | Login (sesuai lingkup baca) |
 
 ### Administrasi ([api-admin.md](api-admin.md)), semuanya `ADMIN`
@@ -98,6 +98,16 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 | `GET /api/admin/permintaan-akun`, `.../jumlah` | Daftar dan jumlah permintaan akun |
 | `POST /api/admin/permintaan-akun/:id/setujui`, `.../tolak` | Setujui atau tolak permintaan |
 | `GET /api/audit-log`, `GET /api/audit-log/pilihan`, `GET /api/audit-log/:id` | Audit log dengan filter dan nilai sebelum/sesudah |
+
+### Notifikasi (semua role, hanya milik sendiri)
+
+| Metode dan jalur | Fungsi | Akses |
+| --- | --- | --- |
+| `GET /api/notifikasi` | 20 notifikasi terbaru (`id`, `jenis` = `diperiksa` atau `perlu_perbaikan`, `judul`, `isi` = catatan pemeriksa, `kegiatanId`, `dibacaAt`, `createdAt`) dan jumlah `belumDibaca` | Login |
+| `POST /api/notifikasi/:id/baca` | Tandai satu notifikasi dibaca; balasan `{ "jumlah": 0 }` bila bukan milik sendiri | Login |
+| `POST /api/notifikasi/baca-semua` | Tandai semua notifikasi sendiri dibaca | Login |
+
+Notifikasi dibuat otomatis saat `POST /api/kegiatan/:id/pemeriksaan`, untuk akun `PEGAWAI` pembuat kegiatan dan penanggung jawabnya (kecuali pemeriksa sendiri).
 
 ### Lainnya
 

@@ -5,7 +5,6 @@
 // data dan tata letak berdasarkan peran pengguna di Aplikasi Pendataan Kegiatan.
 //
 // Isi berkas:
-//   - TombolTambah : Tombol aksi cepat pembuatan kegiatan baru.
 //   - DashboardView : Komponen pemilah tampilan berdasarkan peran pengguna.
 //   - AkunMenunggu : Baris pemberitahuan akun menunggu aktivasi (khusus admin).
 //   - DashboardDinas : Tampilan ringkasan statistik dinas untuk admin dan pimpinan.
@@ -17,8 +16,8 @@
 //   4. Mengambil data ringkasan periode aktif dan menyajikan seluruh widget panel.
 //
 // Catatan penting:
-//   - Pimpinan hanya memiliki izin membaca data; tombol tambah kegiatan hanya
-//     dirender bagi Administrator (backend tetap memvalidasi hak akses ini).
+//   - Pimpinan dan admin tidak mencatat kegiatan, jadi tidak ada tombol tambah
+//     di dashboard dinas (backend juga menolak 403).
 //   - Pemilih periode dan tombol muat ulang berada di baris aksi header.
 //   - Dokumentasi bersifat opsional, jadi dashboard tidak lagi menampilkan
 //     panel kegiatan selesai tanpa dokumentasi.
@@ -28,7 +27,7 @@
 
 "use client";
 
-import { ArrowRight, Hourglass, Plus, RefreshCw } from "lucide-react";
+import { ArrowRight, Hourglass, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { ErrorState } from "@/components/shared/error-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -49,24 +48,13 @@ import { KpiCards } from "./kpi-cards";
 import { PeriodePicker } from "./periode-picker";
 import { PetaKegiatan } from "./peta-kegiatan";
 
-function TombolTambah({ className }: { className?: string }) {
-  return (
-    <Button asChild className={cn("h-10", className)}>
-      <Link href="/kegiatan/baru">
-        <Plus aria-hidden />
-        Tambah kegiatan
-      </Link>
-    </Button>
-  );
-}
-
 export function DashboardView() {
   const { user, isPending } = useCurrentUser();
   if (isPending || !user) return <DashboardSkeleton />;
   return user.role === "PEGAWAI" ? (
     <DashboardPegawai />
   ) : (
-    <DashboardDinas bisaMenambah={user.role === "ADMIN"} namaDepan={user.name.split(" ")[0] ?? user.name} />
+    <DashboardDinas namaDepan={user.name.split(" ")[0] ?? user.name} />
   );
 }
 
@@ -91,7 +79,7 @@ function AkunMenunggu({ jumlah }: { jumlah: number }) {
   );
 }
 
-function DashboardDinas({ bisaMenambah, namaDepan }: { bisaMenambah: boolean; namaDepan: string }) {
+function DashboardDinas({ namaDepan }: { namaDepan: string }) {
   const sapaan = useSapaan();
   const { periode, setPeriode } = usePeriode();
   const { data, isPending, isError, error, refetch, isRefetching, isFetching, dataUpdatedAt } = useDashboard(periode);
@@ -127,7 +115,6 @@ function DashboardDinas({ bisaMenambah, namaDepan }: { bisaMenambah: boolean; na
                 <RefreshCw className={cn(isFetching && "animate-spin")} />
               </Button>
             </div>
-            {bisaMenambah && <TombolTambah className="w-full sm:w-auto pointer-coarse:h-11" />}
           </div>
         }
       />

@@ -18,11 +18,11 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 
 | Peran | Yang bisa dilakukan | Menu yang terlihat |
 | --- | --- | --- |
-| **Pegawai** | Mencatat kegiatan dan dokumentasinya, mengubah kegiatan miliknya, melihat kegiatan bidangnya | Dashboard, Kegiatan bidang saya, Kegiatan saya, Kalender, Rekap, Laporan, Pengaturan |
-| **Pimpinan** | Melihat seluruh dinas tanpa mengubah data, dan memeriksa kegiatan | Dashboard, Kegiatan, Kalender, Rekap, Laporan, Pantau, Pengaturan |
-| **Admin** | Semua yang dilakukan pegawai untuk seluruh dinas, ditambah pengelolaan akun, master data, dan audit log | Semua menu pegawai, ditambah Manajemen akun, Master data, Audit log |
+| **Pegawai** | Satu-satunya peran yang mencatat, mengubah, membatalkan, dan menghapus kegiatan (miliknya), mengunggah dokumentasi, mengisi hasil, serta menerima notifikasi catatan perbaikan | Dashboard, Kegiatan bidang saya, Kegiatan saya, Kalender, Rekap, Laporan, Pengaturan, lonceng notifikasi |
+| **Pimpinan** | Melihat seluruh kegiatan, dokumentasi, hasil, rekap, dan laporan; memeriksa dan memberi catatan perbaikan. Tidak mengubah data | Dashboard, Kegiatan, Kalender, Rekap, Laporan, Pantau, Pengaturan |
+| **Admin** | Melihat seluruh kegiatan, memeriksa dan memberi catatan perbaikan, mengelola akun, master data, dan audit log. Tidak menambah, mengubah, atau menghapus kegiatan | Dashboard, Kegiatan, Kalender, Rekap, Laporan, Pantau, Manajemen akun, Master data, Audit log, Pengaturan |
 
-Aturan hak akses ditegakkan di backend pada setiap permintaan. Kegiatan di luar lingkup baca dijawab 404 (bukan 403), agar keberadaannya tidak bocor. Pemeriksaan kegiatan khusus pimpinan; admin tidak ikut memeriksa.
+Aturan hak akses ditegakkan di backend pada setiap permintaan. Kegiatan di luar lingkup baca dijawab 404 (bukan 403), agar keberadaannya tidak bocor. Pemeriksaan (status terpisah dari status pelaksanaan) dilakukan pimpinan atau admin; setiap pemeriksaan tercatat di riwayat dan audit log, dan pegawai terkait mendapat notifikasi di lonceng.
 
 ### Alur kerja singkat
 
