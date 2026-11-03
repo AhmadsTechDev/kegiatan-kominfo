@@ -69,11 +69,12 @@ function AksiBerkas({
       </Button>
       {bisaUbah && (
         <>
-          <Button variant="ghost" size="sm" className={kelas} onClick={onGanti} disabled={sedangDiganti} aria-label={`Ganti ${d.namaAsli}`}>
+          <Button type="button" variant="ghost" size="sm" className={kelas} onClick={onGanti} disabled={sedangDiganti} aria-label={`Ganti ${d.namaAsli}`}>
             {sedangDiganti ? <Spinner className="size-3.5" /> : <RefreshCw aria-hidden className="size-3.5" />}
             <span className="hidden sm:inline">Ganti</span>
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             className={`${kelas} text-destructive hover:text-destructive`}
@@ -109,9 +110,9 @@ export function DokumentasiGaleri({
   const [akanDihapus, setAkanDihapus] = useState<Dokumentasi | null>(null);
   const dipratinjau = indeksPratinjau === null ? null : foto[indeksPratinjau];
 
-  const tambah = async (berkas: File[]) => {
-    const baru = antrean.tambah(berkas);
-    const { berhasil, gagal } = await antrean.unggah(kegiatan.id, baru);
+  // Berkas yang dipilih masuk daftar dulu; baru diunggah setelah tombol Unggah ditekan
+  const unggahAntrean = async () => {
+    const { berhasil, gagal } = await antrean.unggah(kegiatan.id);
     if (berhasil > 0) toast.success(`${berhasil} berkas dokumentasi diunggah`);
     if (gagal === 0) antrean.bersihkanBerhasil();
   };
@@ -211,7 +212,7 @@ export function DokumentasiGaleri({
       )}
 
       {bisaUbah ? (
-        <FileDropzone items={antrean.items} onTambah={tambah} onHapus={antrean.hapus} sisa={antrean.sisa} disabled={antrean.berjalan} />
+        <FileDropzone items={antrean.items} onTambah={antrean.tambah} onHapus={antrean.hapus} onUnggah={unggahAntrean} sisa={antrean.sisa} disabled={antrean.berjalan} />
       ) : (
         kegiatan.dokumentasi.length === 0 && (
           <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed bg-background px-4 py-8 text-center">
@@ -234,6 +235,7 @@ export function DokumentasiGaleri({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1">
                 <Button
+                  type="button"
                   variant="outline"
                   size="icon"
                   className="size-10"
@@ -247,6 +249,7 @@ export function DokumentasiGaleri({
                   {(indeksPratinjau ?? 0) + 1} dari {foto.length}
                 </span>
                 <Button
+                  type="button"
                   variant="outline"
                   size="icon"
                   className="size-10"
@@ -266,11 +269,11 @@ export function DokumentasiGaleri({
                 </Button>
                 {bisaUbah && (
                   <>
-                    <Button variant="outline" className="h-10" onClick={() => pilihGanti(dipratinjau)} disabled={sedangDiganti(dipratinjau)}>
+                    <Button type="button" variant="outline" className="h-10" onClick={() => pilihGanti(dipratinjau)} disabled={sedangDiganti(dipratinjau)}>
                       {sedangDiganti(dipratinjau) ? <Spinner /> : <RefreshCw aria-hidden />}
                       Ganti
                     </Button>
-                    <Button variant="destructive" className="h-10" onClick={() => setAkanDihapus(dipratinjau)}>
+                    <Button type="button" variant="destructive" className="h-10" onClick={() => setAkanDihapus(dipratinjau)}>
                       <Trash2 aria-hidden />
                       Hapus
                     </Button>

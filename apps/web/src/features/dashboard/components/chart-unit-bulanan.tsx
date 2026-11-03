@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { formatAngka, formatPeriode } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
 import type { DashboardData } from "../types";
 
 const JUMLAH_WARNA = 6;
@@ -71,6 +72,7 @@ function Ringkasan({ label, nilai, keterangan }: { label: string; nilai: string;
 export function ChartUnitBulanan({ data, animasi, className }: Props) {
   const [fokus, setFokus] = useState<string | null>(null);
   const [sembunyi, setSembunyi] = useState<Set<string>>(() => new Set());
+  const sentuh = useLayarSentuh();
 
   const config = useMemo(
     () =>
@@ -173,6 +175,8 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
               // lg: grafik mengisi sisa tinggi kartu bila kolom sebelahnya lebih tinggi
               className="aspect-auto h-72 w-full lg:h-auto lg:min-h-72 lg:flex-1"
               role="img"
+              // HP: menggulir melewati grafik tidak memunculkan tooltip; tooltip dibuka dengan ketukan
+              {...(sentuh ? redamGeserGrafik : {})}
               aria-label={`Grafik batang bertumpuk jumlah kegiatan per bidang, total ${totalTampil} kegiatan dalam enam bulan`}
             >
               <BarChart data={baris} accessibilityLayer barCategoryGap="28%" margin={{ top: 22, right: 4, left: 0, bottom: 0 }} onMouseLeave={() => setFokus(null)}>
@@ -210,7 +214,7 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
                   width={28}
                   tick={{ fontSize: 11, fill: "var(--color-muted-foreground)", fontFamily: "inherit" }}
                 />
-                <ChartTooltip cursor={{ fill: "var(--color-muted)", opacity: 0.6, radius: 8 }} content={TooltipKustom} />
+                <ChartTooltip trigger={sentuh ? "click" : "hover"} cursor={{ fill: "var(--color-muted)", opacity: 0.6, radius: 8 }} content={TooltipKustom} />
                 {tampil.map((u) => (
                   <Bar
                     key={u.kode}

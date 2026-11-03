@@ -463,7 +463,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
           <section className="p-4 md:p-6">
             <div className="mb-5 flex flex-col gap-0.5">
               <h2 className="font-heading text-base font-bold">Dokumentasi</h2>
-              <p className="text-xs text-muted-foreground">Foto atau PDF langsung tersimpan begitu dipilih, tanpa perlu menekan Simpan.</p>
+              <p className="text-xs text-muted-foreground">Pilih berkas lalu tekan Unggah. Tidak perlu menekan Simpan perubahan.</p>
             </div>
             <DokumentasiGaleri kegiatan={kegiatan} />
           </section>

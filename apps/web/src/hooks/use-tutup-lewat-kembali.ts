@@ -30,6 +30,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // Kunci entri riwayat milik lapisan yang sedang terbuka
 const aktif = new Set<string>();
 
+// Membuang entri riwayat sisa lapisan yang sudah tertutup (mis. pratinjau lalu konfirmasi, keduanya
+// ditutup bersamaan) supaya satu kali Kembali langsung meninggalkan halaman, bukan "tidak terjadi apa-apa"
+function buangSisa() {
+  const kunci = window.history.state?.__lapisan;
+  if (!kunci || aktif.has(kunci)) return;
+  window.history.back();
+  setTimeout(buangSisa, 60);
+}
+
 export function useTutupLewatKembali(open: boolean, tutup: () => void) {
   const tutupRef = useRef(tutup);
   useEffect(() => {
@@ -56,11 +65,9 @@ export function useTutupLewatKembali(open: boolean, tutup: () => void) {
       window.removeEventListener("popstate", onPop);
       aktif.delete(kunci);
       if (lewatKembali) return;
-      // Ditunda: bila lapisan langsung dipasang ulang (React StrictMode) atau lapisan lain terbuka,
-      // entri teratas sudah bukan milik kita sehingga back() tidak ikut menutup lapisan baru itu
-      setTimeout(() => {
-        if (window.history.state?.__lapisan === kunci) window.history.back();
-      }, 0);
+      // Ditunda: bila lapisan langsung dipasang ulang (React StrictMode) atau lapisan lain masih
+      // terbuka, entri teratas milik lapisan yang aktif sehingga tidak ikut dibuang
+      setTimeout(buangSisa, 0);
     };
   }, [open]);
 }

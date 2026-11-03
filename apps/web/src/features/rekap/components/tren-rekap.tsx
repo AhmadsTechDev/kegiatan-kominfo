@@ -30,6 +30,7 @@ import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { formatAngka, formatPeriode, formatTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
 import type { RekapData, SatuanRekap } from "../types";
 
 const config = { jumlah: { label: "Kegiatan", color: "var(--chart-1)" } } satisfies ChartConfig;
@@ -61,6 +62,7 @@ export function TrenRekap({ data, animasi, className }: Props) {
   const { tren, satuan } = data;
   const baris = tren.map((t) => ({ ...t, label: labelPeriode(t.periode, satuan, true) }));
   const kosong = tren.every((t) => t.jumlah === 0);
+  const sentuh = useLayarSentuh();
 
   return (
     <Panel className={className}>
@@ -74,13 +76,15 @@ export function TrenRekap({ data, animasi, className }: Props) {
               config={config}
               className="aspect-auto h-72 w-full"
               role="img"
+              // HP: menggulir melewati grafik tidak memunculkan tooltip; tooltip dibuka dengan ketukan
+              {...(sentuh ? redamGeserGrafik : {})}
               aria-label={`Grafik batang jumlah kegiatan ${NAMA_SATUAN[satuan]}, ${tren.length} periode, total ${data.total.total} kegiatan. Angka per periode tersedia di daftar di sampingnya.`}
             >
               <BarChart data={baris} accessibilityLayer barCategoryGap={tren.length > 20 ? "12%" : "28%"} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="4 4" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={8} fontSize={11} />
                 <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} fontSize={11} />
-                <ChartTooltip cursor={{ fill: "var(--color-muted)", opacity: 0.6 }} content={<TooltipTren satuan={satuan} />} />
+                <ChartTooltip trigger={sentuh ? "click" : "hover"} cursor={{ fill: "var(--color-muted)", opacity: 0.6 }} content={<TooltipTren satuan={satuan} />} />
                 <Bar dataKey="jumlah" fill="var(--color-jumlah)" radius={RADIUS_ATAS} isAnimationActive={animasi} />
               </BarChart>
             </ChartContainer>

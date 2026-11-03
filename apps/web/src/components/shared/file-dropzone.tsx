@@ -12,6 +12,8 @@
 //   1. Menerima berkas melalui aksi seret-lepas atau tombol pemilih berkas.
 //   2. Menampilkan daftar antrean unggah lengkap dengan pratinjau foto atau ikon PDF.
 //   3. Memperlihatkan bilah progres animasi dan tombol penghapusan item antrean.
+//   4. Bila onUnggah diisi, berkas menunggu di daftar dan baru diunggah setelah
+//      tombol Unggah ditekan. Di layar sentuh teks "seret berkas" disembunyikan.
 //
 // Catatan penting:
 //   - Sesuai DESIGN.md bagian 7 dan 8, komponen menangani tampilan dan masukan,
@@ -27,6 +29,7 @@ import { CheckCircle2, CircleAlert, FileText, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { formatUkuran } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +50,8 @@ type FileDropzoneProps = {
   items: ItemUnggah[];
   onTambah: (berkas: File[]) => void;
   onHapus: (id: string) => void;
+  /** Bila diisi, berkas tidak langsung diunggah: tombol Unggah muncul setelah ada berkas yang menunggu */
+  onUnggah?: () => void;
   sisa: number;
   disabled?: boolean;
   accept?: string;
@@ -55,11 +60,12 @@ type FileDropzoneProps = {
 
 export const ACCEPT = "image/jpeg,image/png,image/webp,application/pdf";
 
-export function FileDropzone({ items, onTambah, onHapus, sisa, disabled, accept = ACCEPT, className }: FileDropzoneProps) {
+export function FileDropzone({ items, onTambah, onHapus, onUnggah, sisa, disabled, accept = ACCEPT, className }: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [diseret, setDiseret] = useState(false);
   const idKeterangan = useId();
   const nonaktif = disabled || sisa <= 0;
+  const menunggu = items.filter((it) => it.status === "menunggu").length;
 
   const terima = (daftar: FileList | null) => {
     if (daftar && daftar.length > 0) onTambah([...daftar]);
@@ -87,7 +93,8 @@ export function FileDropzone({ items, onTambah, onHapus, sisa, disabled, accept 
         <span aria-hidden className="flex size-10 items-center justify-center rounded-lg bg-secondary text-primary">
           <Upload className="size-5" />
         </span>
-        <p className="text-sm font-semibold">Seret berkas ke sini atau pilih berkas</p>
+        {/* Layar sentuh tidak bisa menyeret berkas, cukup tombol Pilih berkas */}
+        <p className="text-sm font-semibold pointer-coarse:hidden">Seret berkas ke sini atau pilih berkas</p>
         <p id={idKeterangan} className="text-xs text-muted-foreground">
           JPEG, PNG, WebP, atau PDF · Maksimal 20 MB per berkas ·{" "}
           {sisa > 0 ? `${sisa} berkas lagi` : "Kuota 10 berkas sudah penuh"}
@@ -156,7 +163,7 @@ export function FileDropzone({ items, onTambah, onHapus, sisa, disabled, accept 
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     {it.status === "berhasil" && <CheckCircle2 aria-hidden className="size-3.5 text-status-selesai-foreground" />}
                     {formatUkuran(it.ukuran)}
-                    {it.status === "berhasil" ? " · Terunggah" : " · Menunggu"}
+                    {it.status === "berhasil" ? " · Terunggah" : onUnggah ? " · Siap diunggah" : " · Menunggu"}
                   </span>
                 )}
               </div>
@@ -175,6 +182,13 @@ export function FileDropzone({ items, onTambah, onHapus, sisa, disabled, accept 
             </li>
           ))}
         </ul>
+      )}
+
+      {onUnggah && menunggu > 0 && (
+        <Button type="button" className="h-10 self-start pointer-coarse:min-h-11 max-sm:w-full" onClick={onUnggah} disabled={disabled}>
+          {disabled ? <Spinner /> : <Upload aria-hidden />}
+          {disabled ? "Mengunggah..." : `Unggah ${menunggu} berkas`}
+        </Button>
       )}
     </div>
   );
