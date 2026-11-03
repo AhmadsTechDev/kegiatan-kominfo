@@ -30,6 +30,8 @@
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
+// Diimpor eksplisit (bukan namespace global GeoJSON) agar editor dan tsc sama-sama menemukannya
+import type { FeatureCollection, Point } from "geojson";
 import { type GeoJSONSource, LngLatBounds, type LngLatBoundsLike, type Map as PetaGL, type MapLayerMouseEvent, Popup } from "maplibre-gl";
 import { Maximize } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -96,7 +98,7 @@ function gambarPin(warna: string, tepi: string) {
 }
 
 
-function keGeoJson(titik: TitikPeta[]): GeoJSON.FeatureCollection<GeoJSON.Point> {
+function keGeoJson(titik: TitikPeta[]): FeatureCollection<Point> {
   return {
     type: "FeatureCollection",
     features: titik.map((t) => ({
@@ -269,14 +271,14 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
       const f = e.features?.[0];
       if (!f) return;
       const zoom = await (p.getSource("kegiatan") as GeoJSONSource).getClusterExpansionZoom(Number(f.properties.cluster_id));
-      p.easeTo({ center: (f.geometry as GeoJSON.Point).coordinates as [number, number], zoom, duration: geraknyaDikurangi() ? 0 : 600 });
+      p.easeTo({ center: (f.geometry as Point).coordinates as [number, number], zoom, duration: geraknyaDikurangi() ? 0 : 600 });
     });
     p.on("click", "titik", (e: MapLayerMouseEvent) => {
       const f = e.features?.[0];
       if (!f) return;
       const props = f.properties as PropsTitik;
       tooltip.remove();
-      const titikPin = (f.geometry as GeoJSON.Point).coordinates as [number, number];
+      const titikPin = (f.geometry as Point).coordinates as [number, number];
       // Popup (~220 px di atas ujung pin) tidak boleh tertutup tombol 2D/3D di tepi atas: geser peta bila perlu
       const yPin = p.project(titikPin).y;
       const yAman = Math.min(290, p.getContainer().clientHeight - 40);
@@ -294,7 +296,7 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
       p.on("mousemove", "titik", (e: MapLayerMouseEvent) => {
         const f = e.features?.[0];
         if (!f || popup.isOpen()) return;
-        tooltip.setLngLat((f.geometry as GeoJSON.Point).coordinates as [number, number]).setText(String(f.properties.judul)).addTo(p);
+        tooltip.setLngLat((f.geometry as Point).coordinates as [number, number]).setText(String(f.properties.judul)).addTo(p);
       });
       p.on("mouseleave", "titik", () => tooltip.remove());
     }
