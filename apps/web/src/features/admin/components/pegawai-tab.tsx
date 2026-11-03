@@ -21,6 +21,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, SearchX, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -68,6 +69,7 @@ type Nilai = z.infer<typeof schema>;
 // Pegawai yang belum punya akun juga bisa diberi role bawaan; role itu dipakai saat pegawai diundang
 export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "baru"; unit: BidangAdmin[]; onClose: () => void }) {
   const simpan = useSimpanPegawai();
+  const router = useRouter();
   const [galat, setGalat] = useState<string | null>(null);
   const awal = pegawai === "baru" ? null : pegawai;
   const { register, control, handleSubmit, setError, formState } = useForm<Nilai>({
@@ -102,7 +104,10 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
         onSuccess: () => {
           if (awal) toast.success("Data pegawai diperbarui");
           // Pegawai baru belum punya akun, jadi tampil di Manajemen akun > Perlu diundang, bukan di daftar ini
-          else toast.success("Pegawai ditambahkan", { description: "Undang dari Manajemen akun, tab Perlu diundang." });
+          else {
+            toast.success("Pegawai ditambahkan", { description: "Undang dari tab Perlu diundang." });
+            router.push("/admin/akun?tab=belum");
+          }
           onClose();
         },
         onError: (e) =>
