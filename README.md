@@ -5,28 +5,95 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | Folder | Isi |
 | --- | --- |
 | [`apps/api/`](apps/api/README.md) | API REST: Bun, Elysia, Prisma (PostgreSQL), Better Auth. Arsitektur berlapis: route, controller, service, repository |
-| [`docs/api/`](docs/api/) dan [`docs/features/`](docs/features/) | Dokumentasi API (header, body, dan respons setiap endpoint) dan penjelasan per fitur |
 | [`apps/web/`](apps/web/README.md) | Antarmuka: Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query, MapLibre GL |
-| [`docs/uml/`](docs/uml/README.md) | Diagram UML dalam Mermaid (use case, activity, sequence, class, ERD, state, component, deployment) | 
-| `apps/web/DESIGN.md` | Spesifikasi tampilan dan perilaku UI |
+| [`docs/api/`](docs/api/README.md) | Dokumentasi API: ringkasan semua endpoint, aturan umum, hak akses, serta rincian header, body, dan respons |
+| [`docs/features/`](docs/features/README.md) | Spesifikasi per fitur: tujuan, kriteria selesai, dan daftar tugas |
+| [`docs/uml/`](docs/uml/README.md) | Diagram UML dalam Mermaid (use case, activity, sequence, class, ERD, state, component, deployment) |
+| [`PRD.md`](PRD.md) | Kebutuhan produk (FR, NFR, kriteria penerimaan) |
+| [`apps/web/DESIGN.md`](apps/web/DESIGN.md) | Spesifikasi tampilan dan perilaku UI |
 
 ## Fitur
 
-| Kebutuhan | Fitur |
+### Peran pengguna
+
+| Peran | Yang bisa dilakukan | Menu yang terlihat |
+| --- | --- | --- |
+| **Pegawai** | Mencatat kegiatan dan dokumentasinya, mengubah kegiatan miliknya, melihat kegiatan bidangnya | Dashboard, Kegiatan bidang saya, Kegiatan saya, Kalender, Rekap, Laporan, Pengaturan |
+| **Pimpinan** | Melihat seluruh dinas tanpa mengubah data, dan memeriksa kegiatan | Dashboard, Kegiatan, Kalender, Rekap, Laporan, Pantau, Pengaturan |
+| **Admin** | Semua yang dilakukan pegawai untuk seluruh dinas, ditambah pengelolaan akun, master data, dan audit log | Semua menu pegawai, ditambah Manajemen akun, Master data, Audit log |
+
+Aturan hak akses ditegakkan di backend pada setiap permintaan. Kegiatan di luar lingkup baca dijawab 404 (bukan 403), agar keberadaannya tidak bocor. Pemeriksaan kegiatan khusus pimpinan; admin tidak ikut memeriksa.
+
+### Alur kerja singkat
+
+1. **Admin menyiapkan master data:** bidang dan sub bidang, jenis kegiatan, lalu data pegawai.
+2. **Admin membuat akun** (atau menyetujui permintaan akun dari halaman login). Sistem mengirim tautan aktivasi ke email pemiliknya, yang lalu membuat kata sandinya sendiri.
+3. **Pegawai mencatat kegiatan** dalam dua langkah (boleh disimpan sebagai draf), lalu mengunggah dokumentasi dan mengisi hasil setelah kegiatan selesai. Pengingat email dikirim otomatis.
+4. **Pimpinan memantau** lewat dashboard, kalender, dan rekap, serta boleh memeriksa kegiatan: *Sudah diperiksa* atau *Perlu perbaikan* (dengan catatan untuk pegawai).
+5. **Siapa pun mengunduh laporan PDF** berkop dinas sesuai lingkup bacanya.
+
+Alurnya digambar lengkap di [diagram activity](docs/uml/02-activity.md), dan perubahan statusnya di [diagram state](docs/uml/06-state.md).
+
+### Daftar fitur
+
+| Kebutuhan | Fitur | Dipakai oleh | Halaman |
+| --- | --- | --- | --- |
+| FR-01 | **Masuk dan keamanan akun.** Login hanya dengan email pribadi; akun terkunci 15 menit setelah 5 kali salah sandi. Lupa dan atur ulang sandi, ganti email dengan verifikasi, melihat dan mencabut sesi aktif, foto profil, dan preferensi (tema, notifikasi) | Semua peran | `/login`, `/pengaturan` |
+| FR-02 | **Akun dan permintaan akun.** Tanpa pendaftaran mandiri: akun dibuat admin atau dari permintaan akun, lalu diaktivasi pemiliknya lewat email. Akun bisa dinonaktifkan atau dihapus; akun yang sudah membuat kegiatan, mengunggah dokumentasi, atau memeriksa hanya bisa dinonaktifkan agar jejaknya utuh | Admin | `/admin/akun` |
+| FR-02 | **Master data.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, jenis unit, dan jenis kegiatan. Data master tidak dihapus, cukup dinonaktifkan | Admin | `/admin/master` |
+| FR-03 | **Audit log** append-only (dijaga sampai hak basis data) dengan filter serta nilai sebelum dan sesudah | Admin | `/admin/audit-log` |
+| FR-04, FR-05 | **Kegiatan.** Catat dalam dua langkah, simpan draf, ubah, isi hasil, batalkan (alasan wajib), dan hapus. Status pelaksanaan (akan datang, berlangsung, selesai, dibatalkan) dihitung otomatis dari waktu. Pengubahan bersamaan oleh dua orang dijawab 409 | Pegawai, Admin | `/kegiatan`, `/kegiatan/baru` |
+| FR-06 | **Dokumentasi.** Unggah foto atau PDF maksimal 20 MB (jenis berkas dicek lewat magic bytes, foto dikompres, EXIF dan GPS dibuang), maksimal 10 berkas per kegiatan. Unduhan hanya untuk yang login dan berhak membaca kegiatannya | Pegawai, Admin (lihat: semua peran) | Detail kegiatan |
+| FR-07 | **Peta dan lokasi.** Peta 2D dan 3D (MapLibre GL dengan OpenFreeMap), pencarian tempat, nama lokasi terisi otomatis dari titik peta, atau koordinat manual. Lokasi opsional | Pegawai, Admin | Formulir dan detail kegiatan |
+| FR-08, FR-10 | **Rekap dan laporan.** Rekap jumlah kegiatan per unit induk dan jenis, serta ekspor PDF berkop dinas dengan pratinjau | Semua peran | `/rekap`, `/laporan` |
+| FR-09 | **Dashboard.** Dashboard dinas untuk pimpinan dan admin; dashboard tugas pribadi untuk pegawai | Semua peran | `/dashboard` |
+| Tambahan | **Kalender** bulanan dengan penyaringan per bidang | Semua peran | `/kalender` |
+| Tambahan | **Pantau pemeriksaan.** Daftar kegiatan menurut status pemeriksaan, dengan pencarian dan penyaring pegawai | Pimpinan | `/pantau` |
+| Tambahan | **Pengingat email otomatis:** H-1 sebelum kegiatan, dan pengingat dokumentasi bagi kegiatan yang sudah selesai. Dijalankan setiap 15 menit; penerima bisa mematikannya di Pengaturan | Penanggung jawab kegiatan | Email |
+| Tambahan | Pencarian cepat **Ctrl+K**, mode gelap, dan tampilan yang menyesuaikan layar ponsel | Semua peran | Seluruh aplikasi |
+
+Spesifikasi dan kriteria selesai tiap fitur ada di [docs/features](docs/features/README.md).
+
+### Status pada kegiatan
+
+Ada dua status yang berbeda, dan sering tertukar:
+
+| Status | Arti | Cara berubah |
+| --- | --- | --- |
+| **Pelaksanaan** (Akan datang, Berlangsung, Selesai, Dibatalkan) | Posisi kegiatan terhadap waktu | Otomatis dari waktu mulai dan selesai. Tidak bisa dipilih manual; untuk membuat kegiatan langsung *Selesai*, ubah waktu selesainya. *Dibatalkan* hanya lewat tombol Batalkan |
+| **Pemeriksaan** (Sudah diperiksa, Perlu perbaikan) | Penilaian pimpinan | Ditandai pimpinan. Bersifat **opsional**: kegiatan yang tidak pernah diperiksa tetap sah dan tidak menampilkan lencana pemeriksaan. Mengubah kegiatan mengembalikannya menjadi *Belum diperiksa* agar pimpinan tahu ada perubahan |
+
+### Akun
+
+Tidak ada pendaftaran mandiri. Admin membuat akun (nama, email pribadi, NIP opsional, jabatan, bidang, role), lalu sistem mengirim tautan aktivasi ke email pemiliknya. Pemilik membuat kata sandi sendiri; admin tidak pernah menentukan atau melihat kata sandi. Karena itu **pengiriman email wajib berfungsi** sebelum aplikasi dipakai. Alur lengkapnya ada di [diagram sequence](docs/uml/03-sequence.md#32-aktivasi-akun-lewat-email).
+
+## API
+
+API REST di `apps/api` (Bun, Elysia, Prisma, Better Auth), alamat dasar `/api`. Ringkasan semua endpoint, aturan umum (cookie sesi, perlindungan CSRF, format galat, batas laju), dan hak akses per endpoint ada di [docs/api/README.md](docs/api/README.md).
+
+| Kelompok | Contoh endpoint | Rincian |
+| --- | --- | --- |
+| Autentikasi dan akun sendiri | `POST /api/auth/sign-in/email`, `/api/aktivasi`, `/api/lupa-sandi`, `/api/me/*` | [api-auth.md](docs/api/api-auth.md) |
+| Kegiatan, draf, dokumentasi | `/api/kegiatan`, `/api/draf-kegiatan`, `/api/kegiatan/:id/dokumentasi` | [api-kegiatan.md](docs/api/api-kegiatan.md) |
+| Dashboard, kalender, rekap, pantau, ekspor | `/api/dashboard`, `/api/kalender`, `/api/rekap`, `/api/ekspor/kegiatan.pdf` | [api-laporan.md](docs/api/api-laporan.md) |
+| Administrasi | `/api/admin/akun`, `/api/admin/pegawai`, `/api/admin/unit-kerja`, `/api/audit-log` | [api-admin.md](docs/api/api-admin.md) |
+
+Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses, audit) → **repository** (query Prisma). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram class](docs/uml/04-class.md#42-lapisan-backend).
+
+## Diagram UML
+
+Delapan diagram Mermaid di [docs/uml](docs/uml/README.md), tampil langsung di GitHub dan di VS Code:
+
+| Diagram | Menjawab pertanyaan |
 | --- | --- |
-| FR-01 | Login hanya dengan email pribadi, penguncian 15 menit setelah 5 kali salah. Tanpa pendaftaran mandiri: akun dibuat admin lalu diaktivasi pemiliknya lewat tautan email. Lupa/atur ulang sandi, ganti email terverifikasi, sesi aktif, dan preferensi di Pengaturan |
-| FR-02 | Master pegawai (NIP opsional untuk non-ASN), bidang dan sub bagian/seksi, jenis unit, jenis kegiatan, dan akun beserta bidangnya. Akun yang belum membuat kegiatan, mengunggah dokumentasi, atau memeriksa kegiatan (mis. salah email, atau hanya pernah login) bisa dihapus; selebihnya dinonaktifkan agar jejak kegiatannya tetap utuh |
-| FR-03 | Audit log append-only (dijaga sampai hak basis data) dengan filter dan nilai sebelum/sesudah |
-| FR-04, FR-05 | Catat kegiatan dalam 2 langkah, ubah, isi hasil, batalkan (alasan wajib), dan hapus; status pelaksanaan dihitung otomatis; pengubahan bersamaan dijawab 409 |
-| FR-06 | Unggah foto/PDF maks. 20 MB (dicek lewat magic bytes, foto dikompres dan EXIF/GPS dibuang), maks. 10 berkas per kegiatan, unduhan hanya untuk yang login |
-| FR-07 | Peta 2D/3D (MapLibre GL + OpenFreeMap), pencarian tempat, nama lokasi terisi otomatis dari titik peta, atau koordinat manual |
-| FR-08, FR-10 | Rekap per unit induk dan jenis, ekspor PDF berkop dinas |
-| FR-09 | Dashboard dinas untuk pimpinan dan admin, dashboard tugas untuk pegawai |
-| Tambahan | Kalender, pencarian cepat Ctrl+K, mode gelap, foto profil dan halaman Pengaturan, pengingat email otomatis (H-1 dan dokumentasi) |
-
-**Hak akses.** Pegawai (role `PEGAWAI`) melihat kegiatan bidangnya dan mengubah kegiatan miliknya. Pimpinan melihat seluruh dinas tanpa mengubah data. Admin mengelola semuanya. Aturan ditegakkan di backend pada setiap permintaan; kegiatan di luar lingkup dijawab 404.
-
-**Akun.** Tidak ada pendaftaran mandiri. Admin membuat akun (nama, email pribadi, NIP opsional, jabatan, bidang, role), lalu sistem mengirim tautan aktivasi ke email pribadi pemiliknya. Pemilik akun membuat kata sandi sendiri; admin tidak pernah menentukan atau melihat kata sandi. Karena itu **pengiriman email wajib berfungsi** sebelum aplikasi dipakai.
+| [Use case](docs/uml/01-use-case.md) | Siapa saja penggunanya, dan apa yang bisa dilakukan masing-masing? |
+| [Activity](docs/uml/02-activity.md) | Bagaimana alur mencatat kegiatan sampai dokumentasi, dan alur akun sampai aktif? |
+| [Sequence](docs/uml/03-sequence.md) | Apa yang terjadi antar komponen saat login, aktivasi akun, dan unggah dokumentasi? |
+| [Class](docs/uml/04-class.md) | Apa saja kelas domainnya, dan bagaimana lapisan backend tersusun? |
+| [ERD](docs/uml/05-erd.md) | Apa saja tabel database dan relasinya? |
+| [State](docs/uml/06-state.md) | Bagaimana status kegiatan, akun, dan permintaan akun berubah? |
+| [Component](docs/uml/07-component.md) | Apa saja bagian sistem dan layanan luar yang dipakai? |
+| [Deployment](docs/uml/08-deployment.md) | Bagaimana aplikasi dipasang di Railway dan Vercel, atau di VPS? |
 
 ## Menjalankan untuk pengembangan
 
