@@ -60,6 +60,7 @@ erDiagram
         varchar jabatan
         int bidang_id FK
         boolean aktif
+        varchar role_undangan
     }
     jenis_kegiatan {
         int id PK

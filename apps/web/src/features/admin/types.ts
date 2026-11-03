@@ -46,12 +46,22 @@ export type PegawaiAdmin = {
   bidang: { id: number; nama: string };
   aktif: boolean;
   kontak: string | null;
+  /** Role bawaan saat diundang; role sebenarnya ada di akun */
+  roleUndangan: "PEGAWAI" | "PIMPINAN";
   akun: { id: string; email: string; aktif: boolean } | null;
   updatedAt: string;
 };
 
 // kontak: nomor telepon akun tertaut; hanya dikirim saat mengubah pegawai yang sudah punya akun
-export type IsiPegawai = { nip: string | null; nama: string; jabatan: string | null; bidangId: number; aktif?: boolean; kontak?: string | null };
+export type IsiPegawai = {
+  nip: string | null;
+  nama: string;
+  jabatan: string | null;
+  bidangId: number;
+  aktif?: boolean;
+  kontak?: string | null;
+  roleUndangan?: "PEGAWAI" | "PIMPINAN";
+};
 export type IsiPegawaiBaru = IsiPegawai & { email?: string | null; role?: "PEGAWAI" | "PIMPINAN" };
 export type HasilPegawaiBaru = { id: number; undangan: { email: string; galat: string | null } | null };
 

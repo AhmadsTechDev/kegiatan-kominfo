@@ -26,6 +26,7 @@ import { PanelFooter } from "@/components/shared/panel";
 import { UnitChip } from "@/components/shared/unit-chip";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { LABEL_ROLE } from "@/types/auth";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
 import { useBidangAdmin, usePegawaiAdmin, useUndangPegawai } from "../hooks/use-admin";
 import type { FilterPegawai, PegawaiAdmin } from "../types";
@@ -34,6 +35,12 @@ import { PegawaiDialog } from "./pegawai-tab";
 import { UndangDialog } from "./undang-dialog";
 
 export const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun: "tanpa", page: 1 };
+
+// Role bawaan adalah Pegawai; hanya Pimpinan yang perlu ditandai
+function LabelRole({ role }: { role: PegawaiAdmin["roleUndangan"] }) {
+  if (role !== "PIMPINAN") return null;
+  return <span className="mt-0.5 block text-xs font-normal text-muted-foreground">Akan diundang sebagai {LABEL_ROLE.PIMPINAN}</span>;
+}
 
 function TombolUndang({ p, onClick }: { p: PegawaiAdmin; onClick: () => void }) {
   return (
@@ -55,7 +62,16 @@ export function BelumPunyaAkun() {
 
   const kolom = useMemo<DataTableColumn<PegawaiAdmin>[]>(
     () => [
-      { id: "nama", header: "Pegawai", cell: ({ row }) => <span className="block max-w-64 min-w-40 font-semibold whitespace-normal">{row.original.nama}</span> },
+      {
+        id: "nama",
+        header: "Pegawai",
+        cell: ({ row }) => (
+          <span className="block max-w-64 min-w-40 font-semibold whitespace-normal">
+            {row.original.nama}
+            <LabelRole role={row.original.roleUndangan} />
+          </span>
+        ),
+      },
       {
         id: "jabatan",
         header: "Jabatan",
@@ -104,6 +120,7 @@ export function BelumPunyaAkun() {
                 judul={
                   <>
                     {p.nama}
+                    <LabelRole role={p.roleUndangan} />
                     <span className="block text-xs font-normal text-muted-foreground">{p.jabatan ?? "Jabatan belum diisi"}</span>
                   </>
                 }
@@ -143,6 +160,7 @@ export function BelumPunyaAkun() {
       {undang && (
         <UndangDialog
           title={`Undang ${undang.nama}`}
+          defaultRole={undang.roleUndangan}
           penerima={
             <>
               <p className="truncate font-semibold">{undang.nama}</p>

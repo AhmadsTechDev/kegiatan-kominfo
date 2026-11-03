@@ -94,6 +94,7 @@ Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai
       "jabatan": "Analis Data",
       "bidang": { "id": 10, "nama": "Seksi Pengelolaan Data dan Persediaan" },
       "aktif": true,
+      "roleUndangan": "PEGAWAI",
       "updatedAt": "2026-11-01T22:10:53.770Z",
       "akun": { "id": "07747c26-fd62-4ab6-8584-ebf7b244fc3a", "email": "andi@diskominfo.local", "aktif": true }
     }
@@ -104,7 +105,7 @@ Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai
 }
 ```
 
-`akun` bernilai `null` bila pegawai belum punya akun. `akun.aktif: false` berarti undangan sudah dikirim tetapi belum diaktivasi.
+`akun` bernilai `null` bila pegawai belum punya akun. `akun.aktif: false` berarti undangan sudah dikirim tetapi belum diaktivasi. `roleUndangan` (`PEGAWAI` atau `PIMPINAN`) adalah role bawaan saat pegawai diundang; role sebenarnya ada di akun.
 
 ### `POST /api/admin/pegawai`
 
@@ -136,7 +137,7 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 
 ### `PATCH /api/admin/pegawai/:id`
 
-**Body**: `nip`, `nama`, `jabatan`, `bidangId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
+**Body**: `nip`, `nama`, `jabatan`, `bidangId` seperti `POST` (tanpa `email`/`role`), ditambah `aktif` (opsional), `roleUndangan` (opsional, `PEGAWAI` atau `PIMPINAN`, bawaan untuk dialog Undang), dan `kontak` (opsional, nomor telepon; disimpan di akun sehingga hanya bisa diisi bila pegawai sudah punya akun, selain itu 422). Bila nama berubah, nama akun tertaut ikut berubah. NIP tidak dipakai untuk login.
 
 **Respons 200**: `{ "id": 1 }`
 

@@ -159,14 +159,16 @@ model Bidang {
 }
 
 model Pegawai {
-  id        Int      @id @default(autoincrement())
-  nip       String?  @unique(map: "pegawai_nip_unique") @db.VarChar(18)
-  nama      String   @db.VarChar(150)
-  jabatan   String?  @db.VarChar(150)
-  bidangId  Int      @map("bidang_id")
-  aktif     Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id           Int      @id @default(autoincrement())
+  nip          String?  @unique(map: "pegawai_nip_unique") @db.VarChar(18)
+  nama         String   @db.VarChar(150)
+  jabatan      String?  @db.VarChar(150)
+  bidangId     Int      @map("bidang_id")
+  aktif        Boolean  @default(true)
+  // Role bawaan saat pegawai diundang (PEGAWAI atau PIMPINAN); role sebenarnya ada di akun
+  roleUndangan String   @default("PEGAWAI") @map("role_undangan") @db.VarChar(20)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   bidang             Bidang           @relation(fields: [bidangId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "pegawai_bidang_id_bidang_id_fk")
   users              User[]

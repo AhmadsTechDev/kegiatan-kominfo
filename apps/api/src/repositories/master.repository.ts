@@ -106,6 +106,7 @@ export const MasterRepository = {
       jabatan: true,
       bidang: { select: { id: true, nama: true } },
       aktif: true,
+      roleUndangan: true,
       users: { select: { id: true, email: true, kontak: true, accounts: { where: { providerId: "credential" }, select: { id: true } } }, take: 1 },
       updatedAt: true,
     } satisfies Prisma.PegawaiSelect;

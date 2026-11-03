@@ -37,6 +37,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { formatTelp } from "@/lib/format";
+import { LABEL_ROLE } from "@/types/auth";
+
 import { zNip } from "@/lib/nip";
 import { cn } from "@/lib/utils";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
@@ -57,9 +59,11 @@ const schema = z.object({
     .max(50, "Nomor telepon maksimal 50 karakter")
     .regex(/^[0-9+()\-\s]*$/, "Nomor telepon hanya angka, spasi, +, -, atau tanda kurung"),
   status: z.enum(["aktif", "nonaktif"]),
+  role: z.enum(["PEGAWAI", "PIMPINAN"]),
 });
 type Nilai = z.infer<typeof schema>;
 
+// Pegawai yang belum punya akun juga bisa diberi role bawaan; role itu dipakai saat pegawai diundang
 export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmin | "baru"; unit: BidangAdmin[]; onClose: () => void }) {
   const simpan = useSimpanPegawai();
   const [galat, setGalat] = useState<string | null>(null);
@@ -71,6 +75,7 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
       nama: awal?.nama ?? "",
       jabatan: awal?.jabatan ?? "",
       kontak: awal?.kontak ?? "",
+      role: awal?.roleUndangan ?? "PEGAWAI",
       bidangId: awal ? String(awal.bidang.id) : "",
       status: awal && !awal.aktif ? "nonaktif" : "aktif",
     },
@@ -88,6 +93,7 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
           bidangId: Number(v.bidangId),
           aktif: awal ? v.status === "aktif" : undefined,
           kontak: awal?.akun ? v.kontak || null : undefined,
+          roleUndangan: awal && !awal.akun ? v.role : undefined,
         },
       },
       {
@@ -168,6 +174,27 @@ export function PegawaiDialog({ pegawai, unit, onClose }: { pegawai: PegawaiAdmi
         />
         <FieldError errors={[formState.errors.bidangId]} />
       </Field>
+      {awal && !awal.akun && (
+        <Field>
+          <FieldLabel htmlFor="pegawai-role">Role</FieldLabel>
+          <Controller
+            control={control}
+            name="role"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="pegawai-role" className="h-10 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PEGAWAI">{LABEL_ROLE.PEGAWAI}</SelectItem>
+                  <SelectItem value="PIMPINAN">{LABEL_ROLE.PIMPINAN}</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+          <FieldDescription>Dipakai saat pegawai ini diundang.</FieldDescription>
+        </Field>
+      )}
       {awal && (
         <Field>
           <FieldLabel htmlFor="pegawai-status">Status</FieldLabel>

@@ -220,7 +220,7 @@ export const MasterService = {
     }
     return denganCekDuplikat("nip", "NIP sudah terdaftar", () =>
       prisma.$transaction(async (tx) => {
-        await MasterRepository.updatePegawai(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif }, tx);
+        await MasterRepository.updatePegawai(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif, ...(isi.roleUndangan ? { roleUndangan: isi.roleUndangan } : {}) }, tx);
         if (nilai.nama !== sebelum.nama) await MasterRepository.samakanNamaAkun(id, nilai.nama, tx);
         if (akun && kontak !== undefined && kontak !== akun.kontak) await MasterRepository.ubahKontakAkun(akun.id, kontak, tx);
         const sesudah = await MasterRepository.pegawaiById(id, tx);
