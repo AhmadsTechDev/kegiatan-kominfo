@@ -26,11 +26,11 @@ import { useForm } from "react-hook-form";
 import { Wajib } from "@/components/shared/form-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/api-client";
-import { skemaSandiBaru, SYARAT_SANDI, type NilaiSandiBaru } from "@/lib/sandi";
+import { skemaSandiBaru, type NilaiSandiBaru } from "@/lib/sandi";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 
 export function Keadaan({ ikon: Ikon, nada, judul, children }: { ikon: typeof CircleCheck; nada: string; judul: string; children: React.ReactNode }) {
@@ -128,7 +128,6 @@ export function FormSandiBaru({
               {tampil ? <EyeOff /> : <Eye />}
             </Button>
           </div>
-          <FieldDescription>{SYARAT_SANDI}</FieldDescription>
           <FieldError errors={[formState.errors.password]} />
         </Field>
         <Field data-invalid={!!formState.errors.ulang}>

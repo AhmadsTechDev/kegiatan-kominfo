@@ -5,7 +5,6 @@
 // (apps/api/src/utils/kebijakan-sandi.ts) agar galat tampil sebelum dikirim.
 //
 // Isi berkas:
-//   - SYARAT_SANDI : teks ringkas syarat kata sandi untuk keterangan input
 //   - periksaSandi : mengembalikan pesan galat atau null bila kata sandi sah
 //   - skemaSandiBaru : skema Zod kata sandi baru + ulangi, dengan konteks email
 //
@@ -19,7 +18,6 @@ import { z } from "zod";
 
 export const SANDI_MIN = 8;
 export const SANDI_MAKS = 128;
-export const SYARAT_SANDI = `Minimal ${SANDI_MIN} karakter, berisi huruf dan angka, dan tidak memuat alamat email Anda.`;
 
 export function periksaSandi(sandi: string, email?: string | null): string | null {
   if (sandi.length < SANDI_MIN) return `Kata sandi minimal ${SANDI_MIN} karakter`;

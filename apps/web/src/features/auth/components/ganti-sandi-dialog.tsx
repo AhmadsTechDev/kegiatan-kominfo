@@ -27,11 +27,11 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { FormDialog, Wajib } from "@/components/shared/form-dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useGantiSandi } from "@/features/pengaturan/hooks/use-akun-saya";
 import { ApiError } from "@/lib/api-client";
-import { periksaSandi, SYARAT_SANDI } from "@/lib/sandi";
+import { periksaSandi } from "@/lib/sandi";
 import { useCurrentUser } from "../hooks/use-current-user";
 
 const schema = (email?: string) =>
@@ -104,7 +104,6 @@ export function GantiSandiDialog({ open, onOpenChange }: { open: boolean; onOpen
           Kata sandi baru <Wajib />
         </FieldLabel>
         <Input id="sandi-baru" type="password" aria-required autoComplete="new-password" className="h-10" aria-invalid={!!formState.errors.sandiBaru} {...register("sandiBaru")} />
-        <FieldDescription>{SYARAT_SANDI}</FieldDescription>
         <FieldError errors={[formState.errors.sandiBaru]} />
       </Field>
       <Field data-invalid={!!formState.errors.ulang}>

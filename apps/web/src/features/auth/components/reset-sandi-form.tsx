@@ -36,6 +36,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { authClient } from "@/lib/auth-client";
 import { getInfoReset, mintaResetSandi, resetSandi, tautanRusak, tokenTidakBerlaku } from "../api/akun-publik";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { KepalaKartu } from "./kartu-publik";
@@ -95,7 +96,14 @@ const PESAN_TIDAK_BERLAKU = "Tautan atur ulang kata sandi sudah kedaluwarsa, sud
 export function ResetSandiForm() {
   const token = useSearchParams().get("token") ?? "";
   const info = useQuery({ queryKey: ["reset-sandi", token], queryFn: () => getInfoReset(token), enabled: token.length > 0, retry: false });
-  const simpan = useMutation({ mutationFn: (password: string) => resetSandi(token, password) });
+  const simpan = useMutation({
+    mutationFn: async (password: string) => {
+      const hasil = await resetSandi(token, password);
+      // Sesi akun lain di browser ini dikeluarkan agar "Masuk" tidak dialihkan ke dashboard akun tersebut
+      await authClient.signOut().catch(() => undefined);
+      return hasil;
+    },
+  });
   const mintaBaru = { label: "Minta tautan baru", href: "/lupa-sandi" };
 
   if (!token || tautanRusak(info.error) || tokenTidakBerlaku(simpan.error)) return <TautanTidakBerlaku pesan={PESAN_TIDAK_BERLAKU} aksi={mintaBaru} />;

@@ -28,7 +28,7 @@ import { useSearchParams } from "next/navigation";
 import { ErrorState } from "@/components/shared/error-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatTanggalJam } from "@/lib/format";
+import { authClient } from "@/lib/auth-client";
 import { aktifkanAkun, getInfoAktivasi, tautanRusak, tokenTidakBerlaku } from "../api/akun-publik";
 import { KepalaKartu } from "./kartu-publik";
 import { FormSandiBaru, Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
@@ -38,7 +38,15 @@ const PESAN_TIDAK_BERLAKU = "Tautan aktivasi sudah kedaluwarsa, sudah pernah dip
 export function AktivasiForm() {
   const token = useSearchParams().get("token") ?? "";
   const info = useQuery({ queryKey: ["aktivasi", token], queryFn: () => getInfoAktivasi(token), enabled: token.length > 0, retry: false });
-  const aktifkan = useMutation({ mutationFn: (password: string) => aktifkanAkun(token, password) });
+  const aktifkan = useMutation({
+    mutationFn: async (password: string) => {
+      const hasil = await aktifkanAkun(token, password);
+      // Bila browser ini masih login sebagai akun lain (mis. admin yang mengundang), keluarkan dulu.
+      // Tanpa ini "Masuk sekarang" langsung dialihkan ke dashboard akun lama
+      await authClient.signOut().catch(() => undefined);
+      return hasil;
+    },
+  });
 
   if (!token || tautanRusak(info.error) || tokenTidakBerlaku(aktifkan.error)) return <TautanTidakBerlaku pesan={PESAN_TIDAK_BERLAKU} />;
 
@@ -59,14 +67,9 @@ export function AktivasiForm() {
   return (
     <div className="flex flex-col gap-5">
       <KepalaKartu judul="Buat kata sandi" deskripsi="Langkah terakhir sebelum Anda dapat masuk ke aplikasi." />
-      <div className="rounded-xl bg-muted/70 p-3 text-sm">
-        <p>
-          Halo, <span className="font-semibold">{info.data.nama}</span>
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Akun untuk {info.data.email} · tautan berlaku sampai {formatTanggalJam(info.data.kedaluwarsa)}
-        </p>
-      </div>
+      <p className="rounded-xl bg-muted/70 p-3 text-sm">
+        Halo, <span className="font-semibold">{info.data.nama}</span>
+      </p>
       <FormSandiBaru
         email={info.data.email}
         submitLabel="Aktifkan akun"
