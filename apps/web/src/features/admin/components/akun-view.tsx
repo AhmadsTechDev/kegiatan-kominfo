@@ -82,7 +82,6 @@ function TombolAksi({ akun, idSaya, buka }: { akun: AkunRingkas; idSaya?: string
 
 // Tampilan kartu di bawah md (DESIGN.md bagian 10): kolom aksi tidak tersembunyi di balik gulir menyamping
 function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: Buka }) {
-  const p = a.pegawai;
   return (
     <div className="flex items-start gap-3 rounded-xl border bg-card p-3">
       <AvatarInisial nama={a.name} src={a.foto} className="size-10" />
@@ -105,7 +104,6 @@ function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: B
             </span>
           )}
         </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">{p ? p.bidang : "Belum ada data kepegawaian"}</p>
       </div>
       <TombolAksi akun={dariAdmin(a)} idSaya={idSaya} buka={buka} />
     </div>
@@ -158,36 +156,6 @@ function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
         id: "role",
         header: "Role",
         cell: ({ row }) => <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-semibold text-primary">{LABEL_ROLE[row.original.role]}</span>,
-      },
-      {
-        id: "unit",
-        header: "Kepegawaian",
-        cell: ({ row }) => {
-          const a = row.original;
-          const p = a.pegawai;
-          if (p) {
-            return (
-              <span className="flex max-w-64 min-w-44 flex-col gap-0.5 whitespace-normal">
-                <span className="text-sm font-medium">{p.bidang}</span>
-                <span className="text-xs text-muted-foreground">
-                  {p.nip ? `NIP ${p.nip}` : "Tanpa NIP"}
-                </span>
-              </span>
-            );
-          }
-          return (
-            <span className="flex flex-col items-start gap-1">
-              <span className="text-xs font-semibold text-status-berlangsung-foreground">Belum ada data kepegawaian</span>
-              <button
-                type="button"
-                onClick={() => buka("ubah", dariAdmin(a))}
-                className="inline-flex items-center rounded text-xs font-semibold text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11"
-              >
-                Lengkapi bidang
-              </button>
-            </span>
-          );
-        },
       },
       {
         id: "status",
