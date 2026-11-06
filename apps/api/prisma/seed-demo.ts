@@ -37,7 +37,7 @@ const ORANG: Orang[] = [
   { nama: "Hendra Wijaya", unit: "BID-OPINI", akun: { role: "PEGAWAI", status: "MENUNGGU" } },
   { nama: "Siti Rohani", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "NONAKTIF" }, nip: true },
   { nama: "Agus Setiawan", unit: "BID-TIP", nip: true },
-  { nama: "Rina Marlina", unit: "BID-APTIKA" },
+  { nama: "Rina Marlina", unit: "SUBBAG-UMPEG" },
 ];
 
 // Lokasi di Palembang (koordinat perkiraan untuk peta demo)

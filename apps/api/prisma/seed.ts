@@ -1,15 +1,21 @@
-// Mengisi data awal: bidang Diskominfo, jenis kegiatan, dan akun admin pertama.
-// Sekretariat dan sub bidang sengaja tidak dibuat; admin menambahkannya sendiri di Master data.
+// Mengisi data awal: unit sesuai bagan struktur organisasi Diskominfo, jenis kegiatan, dan akun admin pertama.
+// Kepala Dinas tidak dibuat sebagai unit; perannya dijalankan akun ber-role PIMPINAN.
 // Aman dijalankan berulang kali; data yang sudah ada dilewati. Jalankan: bun run db:seed
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const DATA_UNIT: { kode: string; nama: string; induk?: string }[] = [
+  { kode: "SEKRETARIAT", nama: "Sekretariat" },
+  { kode: "SUBBAG-UMPEG", nama: "Sub Bagian Umum dan Kepegawaian", induk: "SEKRETARIAT" },
+  { kode: "SUBBAG-KEU", nama: "Sub Bagian Keuangan", induk: "SEKRETARIAT" },
+  { kode: "SUBBAG-RENLAP", nama: "Sub Bagian Perencanaan dan Pelaporan", induk: "SEKRETARIAT" },
   { kode: "BID-OPINI", nama: "Bidang Pengelolaan Opini dan Pelayanan Informasi Publik" },
   { kode: "BID-KOMPUB", nama: "Bidang Pengelolaan Komunikasi Publik" },
   { kode: "BID-TIP", nama: "Bidang Teknologi Informasi dan Persandian" },
+  { kode: "SEKSI-DATA", nama: "Seksi Pengelolaan Data dan Statistik", induk: "BID-TIP" },
+  { kode: "SEKSI-SANDI", nama: "Seksi Persandian dan Keamanan Informasi", induk: "BID-TIP" },
   { kode: "BID-EGOV", nama: "Bidang Pengelolaan E-Government" },
-  { kode: "BID-APTIKA", nama: "Bidang Aplikasi Informatika" },
+  { kode: "KJF", nama: "Kelompok Jabatan Fungsional" },
 ];
 
 const DATA_JENIS_KEGIATAN = ["Rapat", "Sosialisasi", "Liputan", "Bimtek", "Pemeliharaan"];

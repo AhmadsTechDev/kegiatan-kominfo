@@ -250,7 +250,7 @@ describe("pegawai", () => {
     const lewatInduk = await panggil(`/admin/pegawai?unit=${await idUnit("BID-TIP")}&q=${u.nip}`, { cookie: admin });
     expect(lewatInduk.data.total).toBe(1);
     expect(lewatInduk.data.items[0].akun).toMatchObject({ email: u.email, aktif: true });
-    const unitLain = await panggil(`/admin/pegawai?unit=${await idUnit("BID-APTIKA")}&q=${u.nip}`, { cookie: admin });
+    const unitLain = await panggil(`/admin/pegawai?unit=${await idUnit("BID-EGOV")}&q=${u.nip}`, { cookie: admin });
     expect(unitLain.data.total).toBe(0);
   });
 });
