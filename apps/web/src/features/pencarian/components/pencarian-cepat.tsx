@@ -12,6 +12,7 @@ import { navUntukRole } from "@/config/navigation";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { getDaftarKegiatan } from "@/features/kegiatan/api/kegiatan";
 import type { KegiatanItem } from "@/features/kegiatan/types";
+import { lepasLapisan } from "@/hooks/use-tutup-lewat-kembali";
 import { formatRentangTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -84,10 +85,16 @@ export function PencarianCepat() {
     setAktif(0);
   };
 
-  const pilih = (h: Hasil | undefined) => {
-    if (!h) return;
+  // Entri riwayat milik dialog dilepas lalu diganti halaman tujuan. Tanpa ini, penutupan dialog
+  // memanggil history.back() yang membatalkan perpindahan halaman
+  const pindahKe = (href: string) => {
+    lepasLapisan();
     tutup();
-    router.push(h.href);
+    router.replace(href);
+  };
+
+  const pilih = (h: Hasil | undefined) => {
+    if (h) pindahKe(h.href);
   };
 
   const geser = (arah: 1 | -1) => {
@@ -217,10 +224,7 @@ export function PencarianCepat() {
               <li role="presentation" className="px-1 pt-1">
                 <button
                   type="button"
-                  onClick={() => {
-                    tutup();
-                    router.push(`/kegiatan?q=${encodeURIComponent(kata)}`);
-                  }}
+                  onClick={() => pindahKe(`/kegiatan?q=${encodeURIComponent(kata)}`)}
                   className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-primary hover:bg-secondary"
                 >
                   Lihat semua {kegiatan.data?.total} hasil di daftar kegiatan
