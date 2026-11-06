@@ -107,7 +107,7 @@ Komponen → hook (TanStack Query) → features/<fitur>/api → lib/api-client (
 
 - **Otorisasi di backend.** Menyembunyikan tombol hanya kemudahan; setiap aksi diperiksa ulang API. Petunjuk seperti `bisaUbah` dan `bisaPeriksa` datang dari backend.
 - **Waktu selalu WIB.** Semua format lewat `lib/format.ts` dengan zona Asia/Jakarta; form mengirim waktu ISO berzona `+07:00`.
-- **Status tidak dihitung di klien.** Status pelaksanaan dan status akun datang dari backend. Lencana pemeriksaan "Belum diperiksa" tidak ditampilkan di daftar dan detail kegiatan, karena pemeriksaan pimpinan bersifat opsional.
+- **Status tidak dihitung di klien.** Status pelaksanaan dan status akun datang dari backend. Lencana pemeriksaan hanya tampil untuk "Perlu perbaikan"; kegiatan biasa tidak diberi lencana.
 - **Empat keadaan.** Setiap layar data menangani memuat (skeleton), kosong, galat (dengan "Coba lagi"), dan berhasil (toast).
 - **Gerak** hanya `transform` dan `opacity`, dan menghormati `prefers-reduced-motion`.
 - **Teks seperlunya.** Hindari kalimat penjelas yang tidak menambah informasi; judul dan label sudah cukup.

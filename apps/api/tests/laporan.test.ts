@@ -66,7 +66,7 @@ describe("angka laporan konsisten", () => {
 
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
     const pantau = await panggil(`/pantau/ringkasan?unit=${bidang.id}&dari=2031-03-01&sampai=2031-03-31`, { cookie: pimpinan.cookie });
-    expect(pantau.data).toEqual({ total: 3, draf: 0, terkirim: 3, diperiksa: 0, perluPerbaikan: 0 });
+    expect(pantau.data).toEqual({ total: 3, draf: 0, perluPerbaikan: 0 });
   });
 
   test("ekspor tercatat di audit log beserta filter dan jumlahnya", async () => {

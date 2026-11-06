@@ -127,7 +127,7 @@ for (let i = 0; i < 48; i++) {
   const batal = acak() < 0.07;
   const lokasi = pilih(LOKASI);
   const judul = pilih(JUDUL[j.nama] ?? [`Kegiatan ${j.nama}`]);
-  const pemeriksaan = !lewat || batal ? "terkirim" : pilih(["terkirim", "diperiksa", "diperiksa", "perlu_perbaikan"] as const);
+  const pemeriksaan = !lewat || batal ? "terkirim" : pilih(["terkirim", "terkirim", "terkirim", "perlu_perbaikan"] as const);
 
   const k = await prisma.kegiatan.create({
     data: {
@@ -151,7 +151,7 @@ for (let i = 0; i < 48; i++) {
   });
   if (pemeriksaan !== "terkirim") {
     await prisma.catatanPemeriksaan.create({
-      data: { kegiatanId: k.id, pemeriksaId: pimpinanId, status: pemeriksaan, isi: pemeriksaan === "perlu_perbaikan" ? "Mohon lengkapi foto kegiatan dan jumlah peserta." : null },
+      data: { kegiatanId: k.id, pemeriksaId: pimpinanId, status: pemeriksaan, isi: "Mohon lengkapi foto kegiatan dan jumlah peserta." },
     });
   }
   jumlah++;

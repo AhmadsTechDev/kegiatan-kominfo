@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { CheckCheck, ClipboardList, MessageSquareWarning, RotateCcw, SearchX, Send } from "lucide-react";
+import { ClipboardList, MessageSquareWarning, RotateCcw, SearchX } from "lucide-react";
 import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { AvatarInisial } from "@/components/shared/avatar-inisial";
@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 // Pemantauan kegiatan seluruh pegawai untuk pimpinan dan admin, termasuk pemeriksaan
 
-type Ringkasan = { total: number; draf: number; terkirim: number; diperiksa: number; perluPerbaikan: number };
+type Ringkasan = { total: number; draf: number; perluPerbaikan: number };
 type Penyaring = { q: string; unit: string | null; pegawai: string | null; dari: string | null; sampai: string | null };
 
 const SEMUA = "semua";
@@ -117,7 +117,7 @@ function KartuStatus({
 }: {
   label: string;
   nilai: number | undefined;
-  ikon: typeof Send;
+  ikon: typeof ClipboardList;
   aktif?: boolean;
   onPilih?: () => void;
   keterangan?: string;
@@ -278,11 +278,9 @@ export function PantauView() {
       {ringkasan.isError ? (
         <ErrorState message={ringkasan.error.message} onRetry={() => ringkasan.refetch()} retrying={ringkasan.isRefetching} />
       ) : (
-        <div className={cn("grid grid-cols-2 gap-3 md:grid-cols-4", ringkasan.isPlaceholderData && "opacity-60")}>
+        <div className={cn("grid grid-cols-2 gap-3", ringkasan.isPlaceholderData && "opacity-60")}>
           <KartuStatus label="Total kegiatan" nilai={r?.total} ikon={ClipboardList} keterangan="Sudah dicatat" />
-          <KartuStatus label="Belum diperiksa" nilai={r?.terkirim} ikon={Send} aktif={status === "terkirim"} onPilih={() => pilihStatus("terkirim")} />
           <KartuStatus label="Perlu perbaikan" nilai={r?.perluPerbaikan} ikon={MessageSquareWarning} aktif={status === "perlu_perbaikan"} onPilih={() => pilihStatus("perlu_perbaikan")} />
-          <KartuStatus label="Sudah diperiksa" nilai={r?.diperiksa} ikon={CheckCheck} aktif={status === "diperiksa"} onPilih={() => pilihStatus("diperiksa")} />
         </div>
       )}
 

@@ -27,7 +27,7 @@ flowchart LR
         uc_rekap(["Lihat rekap dan ekspor PDF"])
 
         uc_pantau(["Pantau pemeriksaan kegiatan"])
-        uc_periksa(["Periksa kegiatan<br/>(sudah diperiksa / perlu perbaikan)"])
+        uc_periksa(["Periksa kegiatan<br/>(tandai perlu perbaikan)"])
 
         uc_akun(["Kelola akun: buat/undang, ubah role,<br/>nonaktifkan, hapus, reset sandi, cabut sesi"])
         uc_tinjau(["Setujui / tolak permintaan akun"])

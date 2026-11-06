@@ -66,7 +66,7 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 | `PATCH /api/kegiatan/:id` | Ubah dan isi hasil | `PEGAWAI` (pemilik) |
 | `POST /api/kegiatan/:id/selesai` | Selesaikan kegiatan yang sedang berlangsung (waktu selesai menjadi sekarang) | `PEGAWAI` (pemilik) |
 | `POST /api/kegiatan/:id/batalkan` | Batalkan (alasan wajib) | `PEGAWAI` (pemilik) |
-| `POST /api/kegiatan/:id/pemeriksaan` | Tandai sudah diperiksa atau perlu perbaikan | `PIMPINAN`, `ADMIN` |
+| `POST /api/kegiatan/:id/pemeriksaan` | Tandai perlu perbaikan (catatan wajib) | `PIMPINAN`, `ADMIN` |
 | `DELETE /api/kegiatan/:id` | Hapus kegiatan | `PEGAWAI` (pemilik) |
 | `GET`, `POST /api/draf-kegiatan`, `GET`, `PUT`, `DELETE /api/draf-kegiatan/:id` | Draf milik sendiri | `PEGAWAI` |
 | `POST /api/kegiatan/:id/dokumentasi` | Unggah foto atau PDF (maks. 20 MB, 10 berkas per kegiatan) | `PEGAWAI` (pemilik) |
@@ -103,7 +103,7 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 
 | Metode dan jalur | Fungsi | Akses |
 | --- | --- | --- |
-| `GET /api/notifikasi` | 20 notifikasi terbaru (`id`, `jenis` = `diperiksa` atau `perlu_perbaikan`, `judul`, `isi` = catatan pemeriksa, `kegiatanId`, `dibacaAt`, `createdAt`) dan jumlah `belumDibaca` | Login |
+| `GET /api/notifikasi` | 20 notifikasi terbaru (`id`, `jenis` = `perlu_perbaikan`, `judul`, `isi` = catatan pemeriksa, `kegiatanId`, `dibacaAt`, `createdAt`) dan jumlah `belumDibaca` | Login |
 | `POST /api/notifikasi/:id/baca` | Tandai satu notifikasi dibaca; balasan `{ "jumlah": 0 }` bila bukan milik sendiri | Login |
 | `POST /api/notifikasi/baca-semua` | Tandai semua notifikasi sendiri dibaca | Login |
 

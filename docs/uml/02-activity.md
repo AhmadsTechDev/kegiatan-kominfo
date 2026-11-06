@@ -27,7 +27,6 @@ flowchart TD
     unggah --> lengkap
     lengkap -- Ya --> periksa{Pimpinan memeriksa?}
     periksa -- Tidak --> akhir([Selesai])
-    periksa -- "Sudah diperiksa" --> akhir
     periksa -- "Perlu perbaikan (catatan wajib)" --> ubah[Pemilik mengubah kegiatan] --> periksa
 ```
 

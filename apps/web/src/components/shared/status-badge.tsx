@@ -35,18 +35,16 @@ export function StatusBadge({ status, className }: { status: StatusPelaksanaan; 
   );
 }
 
-export type StatusPemeriksaan = "draf" | "terkirim" | "diperiksa" | "perlu_perbaikan";
+// "terkirim" adalah keadaan biasa kegiatan yang sudah dikirim, jadi tidak diberi lencana
+export type StatusPemeriksaan = "draf" | "terkirim" | "perlu_perbaikan";
 
-const PEMERIKSAAN: Record<StatusPemeriksaan, { label: string; kelas: string }> = {
+const PEMERIKSAAN: Record<Exclude<StatusPemeriksaan, "terkirim">, { label: string; kelas: string }> = {
   draf: { label: "Draf", kelas: "border-dashed border-muted-foreground/50 bg-transparent text-muted-foreground" },
-  terkirim: { label: "Belum diperiksa", kelas: "border-transparent bg-muted text-muted-foreground" },
-  diperiksa: { label: "Sudah diperiksa", kelas: "border-transparent bg-status-selesai text-status-selesai-foreground" },
   perlu_perbaikan: { label: "Perlu perbaikan", kelas: "border-transparent bg-status-dibatalkan text-status-dibatalkan-foreground" },
 };
 
-export const labelPemeriksaan = (status: StatusPemeriksaan) => PEMERIKSAAN[status].label;
-
 export function StatusPemeriksaanBadge({ status, className }: { status: StatusPemeriksaan; className?: string }) {
+  if (status === "terkirim") return null;
   const { label, kelas } = PEMERIKSAAN[status];
   return (
     <Badge variant="outline" className={cn("rounded-md font-medium", kelas, className)}>

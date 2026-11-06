@@ -29,7 +29,7 @@ Aturan hak akses ditegakkan di backend pada setiap permintaan. Kegiatan di luar 
 1. **Admin menyiapkan master data:** bidang dan sub bidang, jenis kegiatan, lalu data pegawai.
 2. **Admin membuat akun** (atau menyetujui permintaan akun dari halaman login). Sistem mengirim tautan aktivasi ke email pemiliknya, yang lalu membuat kata sandinya sendiri.
 3. **Pegawai mencatat kegiatan** dalam dua langkah (boleh disimpan sebagai draf), lalu mengunggah dokumentasi dan mengisi hasil setelah kegiatan selesai. Pengingat email dikirim otomatis.
-4. **Pimpinan memantau** lewat dashboard, kalender, dan rekap, serta boleh memeriksa kegiatan: *Sudah diperiksa* atau *Perlu perbaikan* (dengan catatan untuk pegawai).
+4. **Pimpinan memantau** lewat dashboard, kalender, dan rekap, serta boleh menandai kegiatan *Perlu perbaikan* (dengan catatan untuk pegawai).
 5. **Siapa pun mengunduh laporan PDF** berkop dinas sesuai lingkup bacanya.
 
 Alurnya digambar lengkap di [diagram activity](docs/uml/02-activity.md), dan perubahan statusnya di [diagram state](docs/uml/06-state.md).
@@ -61,7 +61,7 @@ Ada dua status yang berbeda, dan sering tertukar:
 | Status | Arti | Cara berubah |
 | --- | --- | --- |
 | **Pelaksanaan** (Akan datang, Berlangsung, Selesai, Dibatalkan) | Posisi kegiatan terhadap waktu | Otomatis dari waktu mulai dan selesai. Tidak bisa dipilih manual; untuk membuat kegiatan langsung *Selesai*, ubah waktu selesainya. *Dibatalkan* hanya lewat tombol Batalkan |
-| **Pemeriksaan** (Sudah diperiksa, Perlu perbaikan) | Penilaian pimpinan | Ditandai pimpinan. Bersifat **opsional**: kegiatan yang tidak pernah diperiksa tetap sah dan tidak menampilkan lencana pemeriksaan. Mengubah kegiatan mengembalikannya menjadi *Belum diperiksa* agar pimpinan tahu ada perubahan |
+| **Pemeriksaan** (Perlu perbaikan) | Catatan pimpinan | Ditandai pimpinan dengan catatan wajib. Bersifat **opsional**: kegiatan yang tidak ditandai tetap sah dan tidak menampilkan lencana. Mengubah kegiatan menghapus tanda *Perlu perbaikan* |
 
 ### Akun
 

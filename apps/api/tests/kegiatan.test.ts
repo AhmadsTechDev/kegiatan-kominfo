@@ -133,32 +133,33 @@ describe("lingkup baca dan hak ubah", () => {
     const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!));
     const admin = await loginAdmin();
     expect((await panggil(`/kegiatan/${k.id}`, { cookie: admin })).data.bisaPeriksa).toBe(false);
-    const res = await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "diperiksa" } });
+    const res = await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { catatan: "Lengkapi foto" } });
     expect(res.status).toBe(422);
     expect(res.data.message).toContain("belum dimulai");
   });
 
-  test("ADMIN memeriksa kegiatan; PEGAWAI tidak boleh memeriksa", async () => {
+  test("ADMIN menandai perlu perbaikan; PEGAWAI tidak boleh", async () => {
     const pemilik = await buatPengguna();
     const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!, { tglMulai: jamLagi(-3), tglSelesai: jamLagi(-1) }));
     const admin = await loginAdmin();
     expect((await panggil(`/kegiatan/${k.id}`, { cookie: admin })).data.bisaPeriksa).toBe(true);
-    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "diperiksa" } })).status).toBe(200);
-    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pemilik.cookie, json: { status: "diperiksa" } })).status).toBe(403);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { catatan: "Lengkapi foto" } })).status).toBe(200);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pemilik.cookie, json: { catatan: "Lengkapi foto" } })).status).toBe(403);
   });
 
-  test("hasil pemeriksaan masuk ke notifikasi pegawai, terpisah dari status pelaksanaan, dan tercatat di riwayat", async () => {
+  test("catatan perbaikan masuk ke notifikasi pegawai, terpisah dari status pelaksanaan, dan tercatat di riwayat", async () => {
     const pemilik = await buatPengguna();
     const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!, { tglMulai: jamLagi(-3), tglSelesai: jamLagi(-1) }));
     const admin = await loginAdmin();
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
-    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "perlu_perbaikan" } })).status).toBe(422);
-    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { status: "perlu_perbaikan", catatan: "Foto belum ada" } })).status).toBe(200);
-    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pimpinan.cookie, json: { status: "diperiksa" } })).status).toBe(200);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: {} })).status).toBe(422);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { catatan: "  " } })).status).toBe(422);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: admin, json: { catatan: "Foto belum ada" } })).status).toBe(200);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pimpinan.cookie, json: { catatan: "Jumlah peserta belum diisi" } })).status).toBe(200);
 
     const detail = await panggil(`/kegiatan/${k.id}`, { cookie: pemilik.cookie });
-    expect(detail.data).toMatchObject({ statusPelaksanaan: "selesai", statusPemeriksaan: "diperiksa" });
-    expect(detail.data.catatanPemeriksaan.map((c: { status: string }) => c.status)).toEqual(["diperiksa", "perlu_perbaikan"]);
+    expect(detail.data).toMatchObject({ statusPelaksanaan: "selesai", statusPemeriksaan: "perlu_perbaikan" });
+    expect(detail.data.catatanPemeriksaan.map((c: { isi: string }) => c.isi)).toEqual(["Jumlah peserta belum diisi", "Foto belum ada"]);
 
     const notif = await panggil("/notifikasi", { cookie: pemilik.cookie });
     expect(notif.data.belumDibaca).toBe(2);
@@ -195,9 +196,9 @@ describe("ubah, batal, periksa, hapus", () => {
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
     const k = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!, { tglMulai: jamLagi(-3), tglSelesai: jamLagi(-1) }));
 
-    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pimpinan.cookie, json: { status: "perlu_perbaikan" } })).status).toBe(422);
-    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: u.cookie, json: { status: "diperiksa" } })).status).toBe(403);
-    const periksa = await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pimpinan.cookie, json: { status: "perlu_perbaikan", catatan: "Lengkapi hasil" } });
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pimpinan.cookie, json: { catatan: "" } })).status).toBe(422);
+    expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: u.cookie, json: { catatan: "Lengkapi hasil" } })).status).toBe(403);
+    const periksa = await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pimpinan.cookie, json: { catatan: "Lengkapi hasil" } });
     expect(periksa.data).toEqual({ id: k.id, statusPemeriksaan: "perlu_perbaikan" });
 
     const detail = await panggil(`/kegiatan/${k.id}`, { cookie: u.cookie });

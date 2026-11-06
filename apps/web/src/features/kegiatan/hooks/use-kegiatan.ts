@@ -80,7 +80,7 @@ export function useSelesaikanKegiatan() {
 export function usePeriksaKegiatan() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (v: { id: number; status: "diperiksa" | "perlu_perbaikan"; catatan: string | null }) => periksaKegiatan(v.id, v.status, v.catatan),
+    mutationFn: (v: { id: number; catatan: string }) => periksaKegiatan(v.id, v.catatan),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: kegiatanKeys.all }),

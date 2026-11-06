@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCheck, MessageSquareWarning } from "lucide-react";
+import { MessageSquareWarning } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { usePeriksaKegiatan } from "../hooks/use-kegiatan";
 import type { StatusPelaksanaan } from "@/components/shared/status-badge";
 import type { StatusPemeriksaanKegiatan } from "../types";
 
-// Tombol periksa untuk pimpinan/admin: tandai diperiksa atau minta perbaikan (catatan wajib)
+// Tombol periksa untuk pimpinan/admin: tandai perlu perbaikan dengan catatan wajib
 
 type Props = {
   kegiatan: { id: number; judul: string; statusPemeriksaan: StatusPemeriksaanKegiatan; statusPelaksanaan: StatusPelaksanaan };
@@ -26,19 +26,12 @@ export function PeriksaAksi({ kegiatan, ringkas, className }: Props) {
   const [buka, setBuka] = useState(false);
   const [catatan, setCatatan] = useState("");
   const [galat, setGalat] = useState<string | null>(null);
-  const sibukDiperiksa = periksa.isPending && periksa.variables?.status === "diperiksa";
-
-  const tandaiDiperiksa = () =>
-    periksa.mutate(
-      { id: kegiatan.id, status: "diperiksa", catatan: null },
-      { onSuccess: () => toast.success(`"${kegiatan.judul}" ditandai sudah diperiksa`), onError: (e) => toast.error(e.message) },
-    );
 
   const kirimPerbaikan = () => {
     if (!catatan.trim()) return setGalat("Catatan perbaikan wajib diisi");
     setGalat(null);
     periksa.mutate(
-      { id: kegiatan.id, status: "perlu_perbaikan", catatan: catatan.trim() },
+      { id: kegiatan.id, catatan: catatan.trim() },
       {
         onSuccess: () => {
           toast.success(`"${kegiatan.judul}" ditandai perlu perbaikan`);
@@ -56,19 +49,6 @@ export function PeriksaAksi({ kegiatan, ringkas, className }: Props) {
   const ukuran = ringkas ? "h-8 px-2.5 text-xs pointer-coarse:h-11" : "h-10 pointer-coarse:min-h-11";
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
-      {/* Yang sudah diperiksa cukup ditandai lencana statusnya; tombolnya tidak perlu tampil lagi */}
-      {kegiatan.statusPemeriksaan !== "diperiksa" && (
-        <Button
-          variant="outline"
-          className={ukuran}
-          onClick={tandaiDiperiksa}
-          disabled={periksa.isPending}
-          aria-label={ringkas ? `Tandai "${kegiatan.judul}" sudah diperiksa` : undefined}
-        >
-          {sibukDiperiksa ? <Spinner /> : <CheckCheck aria-hidden />}
-          <span className={cn(ringkas && "hidden xl:inline")}>Tandai diperiksa</span>
-        </Button>
-      )}
       <Button
         variant="outline"
         className={ukuran}
@@ -90,7 +70,7 @@ export function PeriksaAksi({ kegiatan, ringkas, className }: Props) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Perlu perbaikan: &ldquo;{kegiatan.judul}&rdquo;</DialogTitle>
-            <DialogDescription>Catatan ini terlihat oleh pencatat di halaman detail kegiatan. Status kembali &ldquo;belum diperiksa&rdquo; setelah kegiatan diubah.</DialogDescription>
+            <DialogDescription>Catatan ini terlihat oleh pencatat di halaman detail kegiatan. Tanda perlu perbaikan hilang setelah kegiatan diubah oleh pencatat.</DialogDescription>
           </DialogHeader>
           <Field data-invalid={!!galat}>
             <FieldLabel htmlFor={`catatan-${kegiatan.id}`}>

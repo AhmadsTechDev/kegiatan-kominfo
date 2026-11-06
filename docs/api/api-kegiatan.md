@@ -19,7 +19,7 @@ Semua endpoint di sini butuh header `Cookie` (sudah login).
 | `selesai` | Sudah lewat waktu selesai |
 | `dibatalkan` | Dibatalkan (tetap tersimpan) |
 
-**Status pemeriksaan** (`statusPemeriksaan`): `terkirim` (belum diperiksa), `diperiksa`, `perlu_perbaikan`. Setiap kali kegiatan diubah, statusnya kembali `terkirim`.
+**Status pemeriksaan** (`statusPemeriksaan`): `terkirim` (keadaan biasa, tidak ditandai) atau `perlu_perbaikan`. Setiap kali kegiatan diubah, statusnya kembali `terkirim`.
 
 ---
 
@@ -64,7 +64,7 @@ Daftar kegiatan, terbaru (tanggal mulai) di atas.
 | `jenis` | angka | Id jenis kegiatan |
 | `pegawai` | angka | Id pegawai penanggung jawab |
 | `status` | `akan_datang` \| `berlangsung` \| `selesai` \| `dibatalkan` | Status pelaksanaan |
-| `pemeriksaan` | `terkirim` \| `diperiksa` \| `perlu_perbaikan` | Status pemeriksaan |
+| `pemeriksaan` | `terkirim` \| `perlu_perbaikan` | Status pemeriksaan |
 | `periode` | `YYYY-MM` | Kegiatan yang mulai di bulan ini (WIB) |
 | `dari` | `YYYY-MM-DD` | Mulai pada/setelah tanggal ini. Bila `dari`/`sampai` diisi, `periode` diabaikan |
 | `sampai` | `YYYY-MM-DD` | Mulai pada/sebelum tanggal ini |
@@ -235,7 +235,7 @@ Mengubah kegiatan. Body sama dengan `POST /api/kegiatan` (tanpa `drafId`), ditam
 
 ### `POST /api/kegiatan/:id/selesai`
 
-Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti menjadi waktu sekarang, sehingga status pelaksanaannya langsung `selesai`. Status tetap dihitung dari waktu, bukan disimpan terpisah. Status pemeriksaan kembali menjadi "belum diperiksa", seperti saat kegiatan diubah, dan perubahannya tercatat di audit log (`ubah`).
+Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti menjadi waktu sekarang, sehingga status pelaksanaannya langsung `selesai`. Status tetap dihitung dari waktu, bukan disimpan terpisah. Tanda "perlu perbaikan" ikut hilang (status pemeriksaan kembali `terkirim`), seperti saat kegiatan diubah, dan perubahannya tercatat di audit log (`ubah`).
 
 **Akses**: PEGAWAI (pemilik kegiatan); ADMIN dan PIMPINAN ditolak 403
 
@@ -272,7 +272,7 @@ Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti men
 
 ### `POST /api/kegiatan/:id/pemeriksaan`
 
-Pimpinan/admin menandai kegiatan sudah diperiksa atau perlu perbaikan. Versi data (`updatedAt`) tidak berubah.
+Pimpinan/admin menandai kegiatan perlu perbaikan beserta catatannya. Versi data (`updatedAt`) tidak berubah.
 
 **Akses**: PIMPINAN, ADMIN. Membuat catatan di riwayat pemeriksaan, audit log (`periksa`), dan notifikasi untuk pegawai pembuat dan penanggung jawab (kecuali pemeriksa sendiri). Status pelaksanaan tidak berubah. Hanya untuk kegiatan yang sedang berlangsung atau selesai; kegiatan yang belum dimulai atau dibatalkan dijawab 422.
 
@@ -280,11 +280,10 @@ Pimpinan/admin menandai kegiatan sudah diperiksa atau perlu perbaikan. Versi dat
 
 | Field | Tipe | Wajib | Keterangan |
 | --- | --- | --- | --- |
-| `status` | `diperiksa` \| `perlu_perbaikan` | ya | |
-| `catatan` | string \| null | wajib bila `perlu_perbaikan` | Maks. 2.000 karakter |
+| `catatan` | string | ya | Tidak boleh kosong, maks. 2.000 karakter |
 
 ```json
-{ "status": "perlu_perbaikan", "catatan": "Lengkapi hasil rapat" }
+{ "catatan": "Lengkapi hasil rapat" }
 ```
 
 **Respons 200**

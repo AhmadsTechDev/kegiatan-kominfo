@@ -29,20 +29,16 @@ stateDiagram-v2
 
 ## 6.2 Status pemeriksaan kegiatan
 
-Disimpan di `kegiatan.status_pemeriksaan`. Pemeriksaan oleh pimpinan bersifat opsional: kegiatan yang tidak pernah diperiksa tetap sah. Setiap perubahan kegiatan mengembalikan status ke `terkirim` agar pimpinan tahu ada perubahan sejak pemeriksaan terakhir. Di daftar dan detail kegiatan, `terkirim` tidak ditampilkan; di halaman Pantau tampil sebagai *Belum diperiksa*.
+Disimpan di `kegiatan.status_pemeriksaan`. Pimpinan hanya menandai kegiatan yang perlu perbaikan; kegiatan yang tidak ditandai tetap sah. `terkirim` adalah keadaan biasa dan tidak ditampilkan. Setiap perubahan kegiatan oleh pemiliknya mengembalikan status ke `terkirim`.
 
 ```mermaid
 stateDiagram-v2
     [*] --> terkirim : kegiatan disimpan
-    terkirim --> diperiksa : pimpinan menandai Sudah diperiksa
     terkirim --> perlu_perbaikan : pimpinan menandai Perlu perbaikan (catatan wajib)
-    diperiksa --> perlu_perbaikan : pimpinan mengubah penilaian
-    perlu_perbaikan --> diperiksa : pimpinan mengubah penilaian
-    diperiksa --> terkirim : kegiatan diubah
+    perlu_perbaikan --> perlu_perbaikan : pimpinan menambah catatan
     perlu_perbaikan --> terkirim : kegiatan diperbaiki pemiliknya
 
-    terkirim : Belum diperiksa
-    diperiksa : Sudah diperiksa
+    terkirim : Terkirim (tanpa tanda)
     perlu_perbaikan : Perlu perbaikan
 ```
 

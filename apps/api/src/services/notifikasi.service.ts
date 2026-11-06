@@ -1,13 +1,12 @@
 import { type Db } from "@/lib/prisma";
 import { NotifikasiRepository } from "@/repositories/notifikasi.repository";
 
-type HasilPemeriksaan = {
+type KegiatanPerluPerbaikan = {
   id: number;
   judul: string;
   dibuatOleh: string;
   penanggungJawabId: number;
-  status: "diperiksa" | "perlu_perbaikan";
-  catatan: string | null;
+  catatan: string;
   pemeriksaId: string;
 };
 
@@ -21,11 +20,11 @@ export const NotifikasiService = {
   },
 
   // Dipanggil di dalam transaksi pemeriksaan: kabari pegawai pembuat dan penanggung jawab
-  async hasilPemeriksaan(k: HasilPemeriksaan, tx: Db) {
+  async perluPerbaikan(k: KegiatanPerluPerbaikan, tx: Db) {
     const penerima = await NotifikasiRepository.penerimaKegiatan(k, k.pemeriksaId, tx);
-    const judul = k.status === "perlu_perbaikan" ? `Perlu perbaikan: ${k.judul}` : `Sudah diperiksa: ${k.judul}`;
+    const judul = `Perlu perbaikan: ${k.judul}`;
     await NotifikasiRepository.buatBanyak(
-      penerima.map((u) => ({ userId: u.id, jenis: k.status, judul: judul.slice(0, 200), isi: k.catatan, kegiatanId: k.id })),
+      penerima.map((u) => ({ userId: u.id, jenis: "perlu_perbaikan", judul: judul.slice(0, 200), isi: k.catatan, kegiatanId: k.id })),
       tx,
     );
   },

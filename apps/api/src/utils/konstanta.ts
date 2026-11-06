@@ -15,12 +15,10 @@ export const PENULIS = ["PEGAWAI"] as const;
 // Role yang boleh memeriksa dokumentasi dan hasil kegiatan, serta memberi catatan perbaikan
 export const PEMERIKSA = ["PIMPINAN", "ADMIN"] as const;
 
-// Jenis notifikasi dalam aplikasi
-export const JENIS_NOTIFIKASI = ["diperiksa", "perlu_perbaikan"] as const;
-
 export const STATUS_PELAKSANAAN = ["akan_datang", "berlangsung", "selesai", "dibatalkan"] as const;
 
-export const STATUS_PEMERIKSAAN = ["terkirim", "diperiksa", "perlu_perbaikan"] as const;
+// "terkirim" adalah keadaan biasa (tidak ditandai); pimpinan hanya menandai kegiatan yang perlu perbaikan
+export const STATUS_PEMERIKSAAN = ["terkirim", "perlu_perbaikan"] as const;
 
 export const STATUS_PERMINTAAN = ["MENUNGGU", "DISETUJUI", "DITOLAK"] as const;
 

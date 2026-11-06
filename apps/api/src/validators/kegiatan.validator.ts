@@ -52,8 +52,7 @@ export const KegiatanValidator = {
   ubah: t.Object({ ...isiKegiatan, ...versi }),
   selesai: t.Object({ ...versi }),
   periksa: t.Object({
-    status: t.Union([t.Literal("diperiksa"), t.Literal("perlu_perbaikan")], { error: "Status harus diperiksa atau perlu_perbaikan" }),
-    catatan: t.Optional(t.Nullable(t.String({ maxLength: 2000, error: "Catatan maksimal 2.000 karakter" }))),
+    catatan: t.String({ maxLength: 2000, error: "Catatan maksimal 2.000 karakter" }),
   }),
   batalkan: t.Object({
     alasan: t.String({ minLength: 1, maxLength: 1000, error: "Alasan pembatalan wajib diisi" }),

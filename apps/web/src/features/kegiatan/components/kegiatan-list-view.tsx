@@ -122,9 +122,7 @@ function buatKolom({
       cell: ({ row }) => (
         <div className="flex flex-col items-start gap-1">
           <StatusBadge status={row.original.statusPelaksanaan} />
-          {row.original.statusPemeriksaan !== "terkirim" && (
-            <StatusPemeriksaanBadge status={row.original.statusPemeriksaan} />
-          )}
+          <StatusPemeriksaanBadge status={row.original.statusPemeriksaan} />
         </div>
       ),
     },

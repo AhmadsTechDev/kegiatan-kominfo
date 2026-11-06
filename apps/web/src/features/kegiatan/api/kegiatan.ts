@@ -38,8 +38,9 @@ export async function selesaikanKegiatan(id: number, expectedUpdatedAt: string) 
   return data;
 }
 
-export async function periksaKegiatan(id: number, status: "diperiksa" | "perlu_perbaikan", catatan: string | null) {
-  const { data } = await apiClient.post<{ id: number; statusPemeriksaan: string }>(`/kegiatan/${id}/pemeriksaan`, { status, catatan });
+// Pimpinan/admin menandai kegiatan perlu perbaikan beserta catatannya
+export async function periksaKegiatan(id: number, catatan: string) {
+  const { data } = await apiClient.post<{ id: number; statusPemeriksaan: string }>(`/kegiatan/${id}/pemeriksaan`, { catatan });
   return data;
 }
 

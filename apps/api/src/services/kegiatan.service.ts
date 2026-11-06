@@ -252,24 +252,25 @@ export const KegiatanService = {
     });
   },
 
-  // Pimpinan atau admin memeriksa dokumentasi dan hasil kegiatan: tandai "diperiksa" atau
-  // "perlu_perbaikan" (wajib catatan). Status pemeriksaan terpisah dari status pelaksanaan.
+  // Pimpinan atau admin menandai kegiatan "perlu_perbaikan" dengan catatan wajib.
+  // Status pemeriksaan terpisah dari status pelaksanaan.
   // Pegawai pembuat dan penanggung jawab mendapat notifikasi dalam aplikasi
   async periksa(id: number, isi: PeriksaKegiatan, aktor: Aktor, meta: MetaRequest) {
-    const catatan = isi.catatan?.trim() || null;
-    if (isi.status === "perlu_perbaikan" && !catatan) {
+    const status = "perlu_perbaikan";
+    const catatan = isi.catatan.trim();
+    if (!catatan) {
       throw Unprocessable("Tuliskan catatan perbaikan untuk pegawai", [{ field: "catatan", message: "Catatan perbaikan wajib diisi" }]);
     }
     return prisma.$transaction(async (tx) => {
       const sebelum = await KegiatanRepository.kunciAktif(id, tx);
       if (!sebelum) throw NotFound("Kegiatan tidak ditemukan");
-      const status = hitungStatus(sebelum, new Date());
-      if (!sudahTerlaksana(status)) {
-        throw Unprocessable(status === "dibatalkan" ? "Kegiatan yang dibatalkan tidak diperiksa" : "Kegiatan belum dimulai, belum bisa diperiksa");
+      const pelaksanaan = hitungStatus(sebelum, new Date());
+      if (!sudahTerlaksana(pelaksanaan)) {
+        throw Unprocessable(pelaksanaan === "dibatalkan" ? "Kegiatan yang dibatalkan tidak diperiksa" : "Kegiatan belum dimulai, belum bisa diperiksa");
       }
-      await KegiatanRepository.setPemeriksaan(id, isi.status, sebelum.updatedAt, tx);
-      await KegiatanRepository.insertCatatan({ kegiatanId: id, pemeriksaId: aktor.id, status: isi.status, isi: catatan }, tx);
-      await NotifikasiService.hasilPemeriksaan({ ...sebelum, status: isi.status, catatan, pemeriksaId: aktor.id }, tx);
+      await KegiatanRepository.setPemeriksaan(id, status, sebelum.updatedAt, tx);
+      await KegiatanRepository.insertCatatan({ kegiatanId: id, pemeriksaId: aktor.id, status, isi: catatan }, tx);
+      await NotifikasiService.perluPerbaikan({ ...sebelum, catatan, pemeriksaId: aktor.id }, tx);
       await AuditLogService.catat(
         {
           aktorId: aktor.id,
@@ -277,12 +278,12 @@ export const KegiatanService = {
           entitas: "kegiatan",
           entitasId: id,
           sebelum: { statusPemeriksaan: sebelum.statusPemeriksaan },
-          sesudah: { statusPemeriksaan: isi.status, catatan },
+          sesudah: { statusPemeriksaan: status, catatan },
           ...meta,
         },
         tx,
       );
-      return { id, statusPemeriksaan: isi.status };
+      return { id, statusPemeriksaan: status };
     });
   },
 

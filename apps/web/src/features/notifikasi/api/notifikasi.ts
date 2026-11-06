@@ -4,7 +4,7 @@ import { apiClient } from "@/lib/api-client";
 
 export type Notifikasi = {
   id: number;
-  jenis: "diperiksa" | "perlu_perbaikan";
+  jenis: "perlu_perbaikan";
   judul: string;
   isi: string | null;
   kegiatanId: number | null;

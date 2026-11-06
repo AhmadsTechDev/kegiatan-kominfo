@@ -57,7 +57,7 @@ Dokumen kebutuhan produk, diselaraskan dengan aplikasi yang sudah berjalan. Nomo
 | FR-08 | **Rekap otomatis.** Jumlah kegiatan per periode (hari, bulan, tahun), per unit induk, dan per jenis | Angka rekap sama dengan angka dashboard dan ekspor untuk filter yang sama |
 | FR-09 | **Dashboard.** Dashboard dinas untuk pimpinan dan admin; dashboard tugas untuk pegawai | Dashboard dinas menampilkan total, berlangsung, akan datang, dan selesai; dashboard pegawai mengingatkan kegiatannya yang selesai tanpa dokumentasi |
 | FR-10 | **Laporan PDF.** Pilih rentang dan cakupan, pratinjau jumlah, lalu unduh PDF berkop dinas | Isi mengikuti lingkup baca pengguna; maks. 10 ekspor per menit per akun |
-| FR-11 | **Pantau dan pemeriksaan.** Pimpinan melihat kegiatan dinas, menyaring per pegawai, dan menandai *Sudah diperiksa* atau *Perlu perbaikan* | Catatan wajib untuk *Perlu perbaikan*; pemeriksaan opsional dan tidak menghalangi kegiatan |
+| FR-11 | **Pantau dan pemeriksaan.** Pimpinan melihat kegiatan dinas, menyaring per pegawai, dan menandai *Perlu perbaikan* | Catatan wajib; pemeriksaan opsional dan tidak menghalangi kegiatan |
 | FR-12 | **Kalender.** Kegiatan per bulan dengan penyaringan per bidang | Hanya kegiatan dalam lingkup baca |
 | FR-13 | **Pengingat email otomatis.** H-1 sebelum kegiatan, dan pengingat dokumentasi bagi kegiatan yang sudah selesai | Setiap pengingat terkirim sekali per kegiatan dan penerima; bisa dimatikan di Pengaturan |
 | FR-14 | **Pencarian cepat** (Ctrl+K), tema gelap, dan Pengaturan akun (profil, foto, kontak) | Pencarian mengikuti lingkup baca peran |
@@ -72,7 +72,7 @@ Dokumen kebutuhan produk, diselaraskan dengan aplikasi yang sudah berjalan. Nomo
 3. Simpan. Kegiatan tampil di daftar, kalender, dan rekap.
 4. Setelah kegiatan, unggah foto atau PDF dan isi hasil.
 
-**C. Pimpinan memantau.** Membuka Dashboard, Kalender, dan Rekap, lalu **Pantau** untuk menyaring per pegawai dan menandai kegiatan sudah diperiksa atau perlu perbaikan.
+**C. Pimpinan memantau.** Membuka Dashboard, Kalender, dan Rekap, lalu **Pantau** untuk menyaring per pegawai dan menandai kegiatan yang perlu perbaikan.
 
 **D. Siapa pun membuat laporan.** Buka **Laporan**, pilih rentang, pratinjau jumlah, lalu unduh PDF.
 
@@ -103,7 +103,7 @@ Ada dua status yang berbeda:
 | Status | Nilai | Cara berubah |
 | --- | --- | --- |
 | **Pelaksanaan** | Akan datang, Berlangsung, Selesai, Dibatalkan | **Dihitung di backend** dari waktu mulai, waktu selesai, dan pembatalan, lalu dikirim sebagai `statusPelaksanaan`. Antarmuka tidak menghitung sendiri. Tidak bisa dipilih manual; *Dibatalkan* hanya lewat tombol Batalkan |
-| **Pemeriksaan** | Belum diperiksa (`terkirim`), Sudah diperiksa, Perlu perbaikan | Ditandai pimpinan. Opsional: kegiatan yang tidak diperiksa tetap sah. Setiap perubahan kegiatan mengembalikannya ke *Belum diperiksa* |
+| **Pemeriksaan** | Biasa (`terkirim`), Perlu perbaikan | Ditandai pimpinan dengan catatan. Opsional: kegiatan yang tidak ditandai tetap sah. Setiap perubahan kegiatan menghapus tanda *Perlu perbaikan* |
 
 Diagram perubahannya ada di [docs/uml/06-state.md](uml/06-state.md).
 

@@ -194,7 +194,7 @@ Jumlah kegiatan menurut periode, pegawai, unit, dan jenis.
 
 ### `GET /api/pantau/ringkasan`
 
-Jumlah kegiatan per status pemeriksaan, untuk pimpinan.
+Jumlah kegiatan dan yang perlu perbaikan, untuk pimpinan.
 
 **Akses**: PIMPINAN (admin ditolak 403)
 
@@ -203,7 +203,7 @@ Jumlah kegiatan per status pemeriksaan, untuk pimpinan.
 **Respons 200**
 
 ```json
-{ "total": 1, "draf": 0, "terkirim": 0, "diperiksa": 0, "perluPerbaikan": 1 }
+{ "total": 1, "draf": 0, "perluPerbaikan": 1 }
 ```
 
 `draf` = jumlah draf yang belum dikirim pegawai pada filter yang sama.

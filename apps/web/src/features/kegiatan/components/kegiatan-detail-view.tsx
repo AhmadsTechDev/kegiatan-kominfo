@@ -129,7 +129,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
       <Panel className="gap-4 p-4 md:p-5">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={k.statusPelaksanaan} />
-          {k.statusPemeriksaan !== "terkirim" && <StatusPemeriksaanBadge status={k.statusPemeriksaan} />}
+          <StatusPemeriksaanBadge status={k.statusPemeriksaan} />
           <span className="text-xs text-muted-foreground">
             Dicatat {formatTanggal(k.createdAt)} oleh {k.pembuat.nama}
           </span>
@@ -272,17 +272,14 @@ export function KegiatanDetailView({ id }: { id: number }) {
 
           {k.catatanPemeriksaan.length > 0 && (
             <Panel>
-              <PanelHeader title="Riwayat pemeriksaan" />
+              <PanelHeader title="Riwayat catatan perbaikan" />
               <PanelBody>
                 <ol className="flex flex-col gap-3 text-sm">
                   {k.catatanPemeriksaan.map((c) => (
                     <li key={c.id} className="flex flex-col gap-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <StatusPemeriksaanBadge status={c.status} />
-                        <span className="text-xs text-muted-foreground">
-                          {c.pemeriksa}, {formatTanggalJam(c.waktu)}
-                        </span>
-                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {c.pemeriksa}, {formatTanggalJam(c.waktu)}
+                      </span>
                       {c.isi && <p className="whitespace-pre-line">{c.isi}</p>}
                     </li>
                   ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CircleAlert, CircleCheck } from "lucide-react";
+import { Bell, CircleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/shared/error-state";
@@ -77,8 +77,6 @@ export function LoncengNotifikasi() {
           ) : (
             <ul className="divide-y divide-muted">
               {daftar.data.items.map((n) => {
-                const perbaikan = n.jenis === "perlu_perbaikan";
-                const Ikon = perbaikan ? CircleAlert : CircleCheck;
                 return (
                   <li key={n.id}>
                     <button
@@ -89,9 +87,9 @@ export function LoncengNotifikasi() {
                         !n.dibacaAt && "bg-secondary/60",
                       )}
                     >
-                      <Ikon
+                      <CircleAlert
                         aria-hidden
-                        className={cn("mt-0.5 size-4 shrink-0", perbaikan ? "text-status-berlangsung-foreground" : "text-status-selesai-foreground")}
+                        className="mt-0.5 size-4 shrink-0 text-status-berlangsung-foreground"
                       />
                       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className={cn("text-sm [overflow-wrap:anywhere]", !n.dibacaAt ? "font-semibold" : "font-medium")}>{n.judul}</span>
