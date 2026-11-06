@@ -19,15 +19,18 @@ function Kop({ data }: { data: PratinjauLaporan }) {
   return (
     <>
       <div className="flex items-center gap-4 pb-2">
-        <Image src={site.logo} alt="" width={46} height={51} className="h-[51px] w-auto object-contain" />
-        <div className="flex-1 pr-[46px] text-center">
-          <p className="text-[15px] font-bold">{data.kop.pemerintah}</p>
-          <p className="text-[18px] font-bold">{data.kop.dinas}</p>
-          {data.kop.alamat && <p className="text-[11px] text-slate-500">{data.kop.alamat}</p>}
+        <Image src={site.logo} alt="" width={90} height={100} className="h-[100px] w-auto object-contain" />
+        <div className="flex-1 pr-[90px] text-center leading-snug text-black">
+          <p className="text-[18px]">{data.kop.pemerintah}</p>
+          <p className="text-[21px] font-bold">{data.kop.dinas}</p>
+          <div className="mt-1 text-[11px]">
+            {data.kop.alamat.map((baris) => (
+              <p key={baris}>{baris}</p>
+            ))}
+          </div>
         </div>
       </div>
-      <div className="border-b-2 border-black" />
-      <div className="mt-[2px] mb-4 border-b border-black" />
+      <div className="mb-4 border-b-4 border-black" />
       <p className="text-center text-[15px] font-bold">{data.judul}</p>
       <p className="mt-1 mb-3 text-center text-[11px] text-slate-500">{data.subjudul}</p>
       <div className="mb-3 flex gap-2">

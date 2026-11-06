@@ -8,7 +8,11 @@ import { LABEL_STATUS, formatRentang, formatWaktu } from "./format-waktu";
 export const KOP = {
   pemerintah: "PEMERINTAH KOTA PALEMBANG",
   dinas: "DINAS KOMUNIKASI DAN INFORMATIKA",
-  alamat: null as string | null,
+  alamat: [
+    "Jalan Nyoman Ratu No. 1271 Palembang, Provinsi Sumatera Selatan 30129",
+    "Telp. (0711) 352271, Faksimile (0711) 353262",
+    "Laman : www.kominfo.palembang.go.id  Pos El : kominfo@palembang.go.id",
+  ],
 };
 
 const LOGO = { data: readFileSync(join(import.meta.dir, "../../assets/logo-palembang.png")), format: "png" as const };
@@ -22,13 +26,12 @@ const GARIS = "#cbd5e1";
 const s = StyleSheet.create({
   page: { paddingTop: 28, paddingBottom: 40, paddingHorizontal: 32, fontSize: 8.5, fontFamily: "Helvetica", color: "#0f172a" },
   kop: { flexDirection: "row", alignItems: "center", paddingBottom: 8 },
-  logo: { width: 46, height: 51 },
-  kopTeks: { flex: 1, alignItems: "center", marginRight: 46 },
-  kopPemerintah: { fontSize: 12, fontFamily: "Helvetica-Bold" },
-  kopDinas: { fontSize: 14, fontFamily: "Helvetica-Bold", marginTop: 2 },
-  kopAlamat: { fontSize: 8, color: ABU, marginTop: 2 },
-  garisTebal: { borderBottomWidth: 2, borderBottomColor: "#000" },
-  garisTipis: { borderBottomWidth: 0.6, borderBottomColor: "#000", marginTop: 1.5, marginBottom: 12 },
+  logo: { width: 72, height: 80 },
+  kopTeks: { flex: 1, alignItems: "center", marginRight: 72, color: "#000" },
+  kopPemerintah: { fontSize: 14 },
+  kopDinas: { fontSize: 16, fontFamily: "Helvetica-Bold", marginTop: 1 },
+  kopAlamat: { fontSize: 8.5, marginTop: 1.5 },
+  garisKop: { borderBottomWidth: 3, borderBottomColor: "#000", marginBottom: 12 },
   judul: { fontSize: 12, fontFamily: "Helvetica-Bold", textAlign: "center" },
   subjudul: { fontSize: 9, textAlign: "center", color: ABU, marginTop: 3, marginBottom: 10 },
   ringkasan: { flexDirection: "row", marginBottom: 10, gap: 6 },
@@ -107,11 +110,14 @@ function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
           <View style={s.kopTeks}>
             <Text style={s.kopPemerintah}>{KOP.pemerintah}</Text>
             <Text style={s.kopDinas}>{KOP.dinas}</Text>
-            {KOP.alamat && <Text style={s.kopAlamat}>{KOP.alamat}</Text>}
+            {KOP.alamat.map((baris, i) => (
+              <Text key={baris} style={i === 0 ? [s.kopAlamat, { marginTop: 3 }] : s.kopAlamat}>
+                {baris}
+              </Text>
+            ))}
           </View>
         </View>
-        <View style={s.garisTebal} />
-        <View style={s.garisTipis} />
+        <View style={s.garisKop} />
 
         <Text style={s.judul}>{JUDUL_LAPORAN}</Text>
         <Text style={s.subjudul}>{subjudul(info)}</Text>

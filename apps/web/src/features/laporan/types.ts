@@ -1,7 +1,7 @@
 // Tipe data pratinjau laporan dan parameter cakupan
 
 export type PratinjauLaporan = {
-  kop: { pemerintah: string; dinas: string; alamat: string | null };
+  kop: { pemerintah: string; dinas: string; alamat: string[] };
   judul: string;
   subjudul: string;
   ringkasan: { label: string; nilai: number }[];
