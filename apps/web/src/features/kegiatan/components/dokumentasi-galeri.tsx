@@ -32,20 +32,20 @@ function AksiBerkas({
   onGanti: () => void;
   onHapus: () => void;
 }) {
-  const kelas = "h-8 flex-1 px-2 text-xs";
+  const kelas = "h-8 min-w-0 flex-1 px-2 text-xs";
   return (
     <div className="mt-1.5 flex gap-1">
       <Button asChild variant="ghost" size="sm" className={kelas}>
-        <a href={urlDokumentasi(d, true)} download aria-label={`Unduh ${d.namaAsli}`}>
+        <a href={urlDokumentasi(d, true)} download aria-label={`Unduh ${d.namaAsli}`} title="Unduh">
           <Download aria-hidden className="size-3.5" />
-          <span className="hidden sm:inline">Unduh</span>
+          <span className="hidden @[15rem]:inline">Unduh</span>
         </a>
       </Button>
       {bisaUbah && (
         <>
-          <Button type="button" variant="ghost" size="sm" className={kelas} onClick={onGanti} disabled={sedangDiganti} aria-label={`Ganti ${d.namaAsli}`}>
+          <Button type="button" variant="ghost" size="sm" className={kelas} onClick={onGanti} disabled={sedangDiganti} aria-label={`Ganti ${d.namaAsli}`} title="Ganti">
             {sedangDiganti ? <Spinner className="size-3.5" /> : <RefreshCw aria-hidden className="size-3.5" />}
-            <span className="hidden sm:inline">Ganti</span>
+            <span className="hidden @[15rem]:inline">Ganti</span>
           </Button>
           <Button
             type="button"
@@ -55,9 +55,10 @@ function AksiBerkas({
             onClick={onHapus}
             disabled={sedangDiganti}
             aria-label={`Hapus ${d.namaAsli}`}
+            title="Hapus"
           >
             <Trash2 aria-hidden className="size-3.5" />
-            <span className="hidden sm:inline">Hapus</span>
+            <span className="hidden @[15rem]:inline">Hapus</span>
           </Button>
         </>
       )}
@@ -97,11 +98,13 @@ export function DokumentasiGaleri({
   const [akanDihapus, setAkanDihapus] = useState<Dokumentasi | null>(null);
   const dipratinjau = indeksPratinjau === null ? null : foto[indeksPratinjau];
 
-  // Berkas yang dipilih masuk daftar dulu; baru diunggah setelah tombol Unggah ditekan
-  const unggahAntrean = async () => {
-    const { berhasil, gagal } = await antrean.unggah(kegiatan.id);
+  // Berkas langsung diunggah begitu dipilih; yang berhasil pindah ke galeri, yang gagal tetap di daftar dengan pesannya
+  const tambahDanUnggah = async (berkas: File[]) => {
+    const baru = antrean.tambah(berkas);
+    if (!baru.some((it) => it.status === "menunggu")) return;
+    const { berhasil } = await antrean.unggah(kegiatan.id, baru);
     if (berhasil > 0) toast.success(`${berhasil} berkas dokumentasi diunggah`);
-    if (gagal === 0) antrean.bersihkanBerhasil();
+    antrean.bersihkanBerhasil();
   };
 
   const pilihGanti = (d: Dokumentasi) => {
@@ -142,11 +145,22 @@ export function DokumentasiGaleri({
           if (berkas && targetGanti) kirimGanti(targetGanti, berkas);
         }}
       />
+      {bisaUbah ? (
+        <FileDropzone items={antrean.items} onTambah={tambahDanUnggah} onHapus={antrean.hapus} sisa={antrean.sisa} disabled={antrean.berjalan} />
+      ) : (
+        kegiatan.dokumentasi.length === 0 && (
+          <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed bg-background px-4 py-8 text-center">
+            <FileText aria-hidden className="size-6 text-muted-foreground" />
+            <p className="text-sm font-semibold">Belum ada dokumentasi</p>
+          </div>
+        )
+      )}
+
       {kegiatan.dokumentasi.length > 0 && (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Berkas dokumentasi">
+        <ul className="@container grid grid-cols-2 gap-3 @lg:grid-cols-3" aria-label="Berkas dokumentasi">
           {kegiatan.dokumentasi.map((d) =>
             adalahFoto(d) ? (
-              <li key={d.id}>
+              <li key={d.id} className="@container min-w-0">
                 <button
                   type="button"
                   onClick={() => setIndeksPratinjau(foto.indexOf(d))}
@@ -171,7 +185,7 @@ export function DokumentasiGaleri({
                 />
               </li>
             ) : (
-              <li key={d.id}>
+              <li key={d.id} className="@container min-w-0">
                 <a
                   href={urlDokumentasi(d)}
                   target="_blank"
@@ -196,17 +210,6 @@ export function DokumentasiGaleri({
             ),
           )}
         </ul>
-      )}
-
-      {bisaUbah ? (
-        <FileDropzone items={antrean.items} onTambah={antrean.tambah} onHapus={antrean.hapus} onUnggah={unggahAntrean} sisa={antrean.sisa} disabled={antrean.berjalan} />
-      ) : (
-        kegiatan.dokumentasi.length === 0 && (
-          <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed bg-background px-4 py-8 text-center">
-            <FileText aria-hidden className="size-6 text-muted-foreground" />
-            <p className="text-sm font-semibold">Belum ada dokumentasi</p>
-          </div>
-        )
       )}
 
       <Dialog open={dipratinjau != null} onOpenChange={(v) => !v && setIndeksPratinjau(null)}>

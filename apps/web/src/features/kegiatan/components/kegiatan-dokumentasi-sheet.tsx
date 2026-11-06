@@ -118,7 +118,7 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
           <>
             {tahan && (
               <p id="tahan-simpan-dok" aria-live="polite" className="order-last text-xs text-muted-foreground sm:order-none sm:mr-auto">
-                {antrean === "mengunggah" ? "Tunggu sampai unggahan selesai." : "Tekan Unggah dulu untuk berkas yang dipilih."}
+                Tunggu sampai unggahan selesai.
               </p>
             )}
             {/* Batal hanya bila ada isian hasil yang bisa dibuang; tanpa itu, Selesai sudah cukup */}

@@ -1,6 +1,7 @@
 import { EksporService } from "@/services/ekspor.service";
 import type { FormatEkspor } from "@/types/ekspor.types";
-import type { RekapQuery } from "@/types/rekap.types";
+import type { DokumentasiZipQuery, RekapQuery } from "@/types/rekap.types";
+import { disposisi } from "@/utils/berkas";
 import type { Konteks } from "@/types/umum.types";
 import { aktorDari, requestMeta } from "@/utils/konteks";
 
@@ -27,6 +28,19 @@ const unduh = (format: FormatEkspor) => async ({ query, user, request }: Konteks
 export const EksporController = {
   // GET /api/ekspor/kegiatan.pdf
   pdf: unduh("pdf"),
+
+  // GET /api/ekspor/dokumentasi.zip — semua dokumentasi pada cakupan, atau satu kegiatan bila ?kegiatan= diisi
+  dokumentasiZip: async ({ query, user, request }: Konteks<unknown, unknown, DokumentasiZipQuery>) => {
+    const hasil = await EksporService.dokumentasiZip(query, { ...aktorDari(user), nama: user.name }, requestMeta(request.headers));
+    return new Response(hasil.aliran, {
+      headers: {
+        "Content-Type": "application/zip",
+        "Content-Disposition": disposisi("attachment", hasil.nama),
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "no-store",
+      },
+    });
+  },
 
   // GET /api/ekspor/dokumentasi
   dokumentasi: ({ query, user }: KonteksEkspor) => EksporService.dokumentasi(query, aktorDari(user)),

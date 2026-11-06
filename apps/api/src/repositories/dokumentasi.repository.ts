@@ -16,7 +16,7 @@ export const DokumentasiRepository = {
   untukKegiatan(kegiatanIds: number[]) {
     return prisma.dokumentasi.findMany({
       where: { kegiatanId: { in: kegiatanIds } },
-      select: { id: true, kegiatanId: true, namaAsli: true, mime: true, ukuran: true, createdAt: true },
+      select: { id: true, kegiatanId: true, path: true, namaAsli: true, mime: true, ukuran: true, createdAt: true },
       orderBy: { id: "asc" },
     });
   },

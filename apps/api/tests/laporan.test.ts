@@ -88,6 +88,7 @@ describe("angka laporan konsisten", () => {
     expect((await panggil("/rekap?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
     expect((await panggil("/ekspor/pratinjau?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
     expect((await panggil("/ekspor/dokumentasi?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
+    expect((await panggil("/ekspor/dokumentasi.zip?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
     expect((await panggil("/ekspor/kegiatan.pdf?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
   });
 

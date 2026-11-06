@@ -231,6 +231,7 @@ function LaporanIsi() {
           ) : (
             <PanelBody className="pt-4 md:pt-5">
               <LaporanDokumentasi
+                cakupan={cakupan}
                 data={dokumentasi.data}
                 galat={dokumentasi.error}
                 onUlang={() => dokumentasi.refetch()}

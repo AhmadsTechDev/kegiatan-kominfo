@@ -434,7 +434,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
           <section className="p-4 md:p-6">
             <div className="mb-5 flex flex-col gap-0.5">
               <h2 className="font-heading text-base font-bold">Dokumentasi</h2>
-              <p className="text-xs text-muted-foreground">Pilih berkas lalu tekan Unggah; berkas langsung tersimpan.</p>
+              <p className="text-xs text-muted-foreground">Berkas langsung diunggah dan tersimpan begitu dipilih.</p>
             </div>
             <DokumentasiGaleri kegiatan={kegiatan} onAntreanBerubah={setAntrean} />
           </section>
@@ -459,7 +459,7 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
       <div className="fixed inset-x-0 bottom-0 z-20 flex flex-wrap gap-2 border-t bg-card p-3 md:static md:justify-end md:border-0 md:bg-transparent md:p-0">
         {tahanSimpan && (
           <p id="tahan-simpan" aria-live="polite" className="basis-full text-xs text-muted-foreground md:text-right">
-            {antrean === "mengunggah" ? "Tunggu sampai unggahan selesai." : "Tekan Unggah dulu untuk berkas yang dipilih, atau hapus dari daftar."}
+            Tunggu sampai unggahan selesai.
           </p>
         )}
         {bertahap && langkah > 0 ? (
