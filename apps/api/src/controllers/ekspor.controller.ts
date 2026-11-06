@@ -28,6 +28,9 @@ export const EksporController = {
   // GET /api/ekspor/kegiatan.pdf
   pdf: unduh("pdf"),
 
+  // GET /api/ekspor/dokumentasi
+  dokumentasi: ({ query, user }: KonteksEkspor) => EksporService.dokumentasi(query, aktorDari(user)),
+
   // GET /api/ekspor/pratinjau
   pratinjau: ({ query, user }: KonteksEkspor) => EksporService.pratinjau(query, { ...aktorDari(user), nama: user.name }),
 };

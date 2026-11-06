@@ -50,7 +50,10 @@ describe("angka laporan konsisten", () => {
     expect(pratinjau.data.baris).toHaveLength(3);
     expect(pratinjau.data.ringkasan[0]).toEqual({ label: "Total kegiatan", nilai: 3 });
     expect(pratinjau.data.subjudul).toContain("Maret 2031");
-    expect(pratinjau.data.cakupan).toContainEqual({ label: "Bidang", nilai: bidang.nama });
+
+    const dokumentasi = await panggil(`/ekspor/dokumentasi?${filter}`, { cookie: admin });
+    expect(dokumentasi.data).toHaveLength(3);
+    expect(dokumentasi.data.every((k: { dokumentasi: unknown[] }) => Array.isArray(k.dokumentasi))).toBe(true);
 
     const dashboard = await panggil("/dashboard?periode=2031-03", { cookie: admin });
     expect(dashboard.data.kpi).toMatchObject({ total: 3, akanDatang: 2, berlangsung: 0, totalPeriodeSebelumnya: 0 });
@@ -84,6 +87,7 @@ describe("angka laporan konsisten", () => {
     const { u } = await siapkanMaret2031();
     expect((await panggil("/rekap?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
     expect((await panggil("/ekspor/pratinjau?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
+    expect((await panggil("/ekspor/dokumentasi?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
     expect((await panggil("/ekspor/kegiatan.pdf?periode=2031-03", { cookie: u.cookie })).status).toBe(403);
   });
 

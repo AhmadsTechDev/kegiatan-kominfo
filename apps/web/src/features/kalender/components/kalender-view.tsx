@@ -182,7 +182,7 @@ function AgendaHari({
 }) {
   const daftar = kegiatan.length ? kegiatan : berikutnya;
   return (
-    <Panel className="lg:sticky lg:top-6">
+    <Panel>
       <PanelHeader title={formatHariPanjang(hari)} description={kegiatan.length ? `${formatAngka(kegiatan.length)} kegiatan` : "Tidak ada kegiatan"} />
       {kegiatan.length === 0 && (
         <EmptyState icon={CalendarX2} title="Tidak ada kegiatan pada tanggal ini." className={berikutnya.length ? "pb-2" : "pb-6"} />
@@ -194,26 +194,29 @@ function AgendaHari({
             <li key={k.id}>
               <Link
                 href={`/kegiatan/${k.id}`}
-                className="flex flex-col gap-1.5 rounded-lg border border-l-4 bg-card p-3 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                style={{ borderLeftColor: warnaUnit(k.unitIndukId) }}
+                className="flex flex-col gap-1.5 rounded-lg border p-3 transition-[filter] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:hover:brightness-125"
+                style={{
+                  backgroundColor: `color-mix(in oklab, ${warnaUnit(k.unitIndukId)} 14%, transparent)`,
+                  borderColor: `color-mix(in oklab, ${warnaUnit(k.unitIndukId)} 40%, transparent)`,
+                }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className={cn("text-sm font-semibold", k.statusPelaksanaan === "dibatalkan" && "line-through")}>{k.judul}</span>
                   <StatusBadge status={k.statusPelaksanaan} className="shrink-0" />
                 </div>
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
+                <span className="flex items-center gap-1.5 text-xs text-foreground/70 tabular-nums">
                   <Clock aria-hidden className="size-3.5" />
                   {kunciHari(k.tglMulai) === kunciHari(k.tglSelesai)
                     ? `${kegiatan.length ? "" : `${formatTanggal(k.tglMulai)} · `}${formatJam(k.tglMulai).slice(0, 5)}–${formatJam(k.tglSelesai)}`
                     : `${formatRentangTanggal(k.tglMulai, k.tglSelesai)} · mulai ${formatJam(k.tglMulai)}`}
                 </span>
                 {k.lokasiNama && (
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5 text-xs text-foreground/70">
                     <MapPin aria-hidden className="size-3.5 shrink-0" />
                     <span className="truncate">{k.lokasiNama}</span>
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-foreground/70">
                   {k.jenis} · {k.bidang.nama} · {k.penanggungJawab}
                 </span>
               </Link>
@@ -225,31 +228,53 @@ function AgendaHari({
   );
 }
 
-type ButirLegenda = { kunci: number; nama: string; warna: string };
+type ButirLegenda = { kunci: number; nama: string; warna: string; jumlah: number };
 
-// Keterangan warna unit; setiap butir juga tombol untuk menampilkan kegiatan unit itu saja
+// Satu kartu per bidang, diwarnai sesuai penanda di kisi; menekannya menyaring kisi ke bidang itu saja
 function Legenda({ butir, dipilih, onPilih }: { butir: ButirLegenda[]; dipilih: number | null; onPilih: (kunci: number | null) => void }) {
   return (
-    <Panel className="px-4 py-3 md:px-5">
-      <p className="mb-1.5 text-xs text-muted-foreground">Ketuk bidang untuk menampilkan kegiatannya saja.</p>
-      <ul aria-label="Keterangan warna bidang" className="flex flex-col gap-x-3 gap-y-0.5 sm:flex-row sm:flex-wrap">
-        {butir.map((b) => (
-          <li key={b.kunci} className="min-w-0">
-            <button
-              type="button"
-              aria-pressed={dipilih === b.kunci}
-              title={b.nama}
-              onClick={() => onPilih(dipilih === b.kunci ? null : b.kunci)}
-              className={cn(
-                "flex max-w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11",
-                dipilih === b.kunci && "bg-secondary font-semibold text-secondary-foreground",
-              )}
-            >
-              <span aria-hidden className="size-2.5 shrink-0 rounded-sm" style={{ backgroundColor: b.warna }} />
-              <span className="truncate sm:max-w-64">{b.nama}</span>
-            </button>
-          </li>
-        ))}
+    <Panel>
+      <PanelHeader
+        title="Bidang"
+        description={dipilih === null ? "Pilih satu untuk menyaring kalender." : "Kalender hanya menampilkan bidang terpilih."}
+        action={
+          dipilih !== null && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs pointer-coarse:min-h-11" onClick={() => onPilih(null)}>
+              Tampilkan semua
+            </Button>
+          )
+        }
+      />
+      <ul aria-label="Keterangan warna bidang" className="flex flex-col gap-2 px-4 pb-4 md:px-5 md:pb-5">
+        {butir.map((b) => {
+          const aktif = dipilih === b.kunci;
+          const redup = dipilih !== null && !aktif;
+          return (
+            <li key={b.kunci}>
+              <button
+                type="button"
+                aria-pressed={aktif}
+                onClick={() => onPilih(aktif ? null : b.kunci)}
+                className={cn(
+                  "flex w-full cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-[filter,opacity] hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none pointer-coarse:min-h-11 dark:hover:brightness-125",
+                  redup && "opacity-55",
+                )}
+                style={{
+                  backgroundColor: `color-mix(in oklab, ${b.warna} ${aktif ? 26 : 14}%, transparent)`,
+                  borderColor: aktif ? b.warna : `color-mix(in oklab, ${b.warna} 40%, transparent)`,
+                  borderWidth: aktif ? 2 : 1,
+                }}
+              >
+                <span aria-hidden className="size-3 shrink-0 rounded-full" style={{ backgroundColor: b.warna }} />
+                <span className={cn("min-w-0 flex-1 text-foreground", aktif ? "font-semibold" : "font-medium")}>{b.nama}</span>
+                <span className="shrink-0 text-xs font-semibold text-foreground/80 tabular-nums">
+                  {formatAngka(b.jumlah)}
+                  <span className="sr-only"> kegiatan</span>
+                </span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </Panel>
   );
@@ -280,9 +305,12 @@ export function KalenderView() {
 
   const legenda = useMemo<ButirLegenda[]>(() => {
     if (!data) return [];
-    const ada = new Set(data.items.map((k) => kunciUnit(k.unitIndukId)));
-    const unit = data.unitInduk.filter((u) => kunciUnit(u.id) === u.id && ada.has(u.id)).map((u) => ({ kunci: u.id, nama: u.nama, warna: warnaUnit(u.id) }));
-    return ada.has(LAINNYA) ? [...unit, { kunci: LAINNYA, nama: "Unit lainnya", warna: WARNA_LAINNYA }] : unit;
+    const jumlah = new Map<number, number>();
+    for (const k of data.items) jumlah.set(kunciUnit(k.unitIndukId), (jumlah.get(kunciUnit(k.unitIndukId)) ?? 0) + 1);
+    const unit = data.unitInduk
+      .filter((u) => kunciUnit(u.id) === u.id && jumlah.has(u.id))
+      .map((u) => ({ kunci: u.id, nama: u.nama, warna: warnaUnit(u.id), jumlah: jumlah.get(u.id)! }));
+    return jumlah.has(LAINNYA) ? [...unit, { kunci: LAINNYA, nama: "Unit lainnya", warna: WARNA_LAINNYA, jumlah: jumlah.get(LAINNYA)! }] : unit;
   }, [data, kunciUnit, warnaUnit]);
 
   const keBulan = (kode: string | null) => {
@@ -412,7 +440,7 @@ export function KalenderView() {
             )}
           </Panel>
 
-          <div ref={agendaRef} className="scroll-mt-20 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <div ref={agendaRef} className="flex scroll-mt-20 flex-col gap-4 lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:-m-1 lg:p-1">
             {terpilih && !isPending ? (
               <AgendaHari
                 hari={terpilih}
@@ -423,9 +451,8 @@ export function KalenderView() {
             ) : (
               <Skeleton className="h-64 rounded-xl" />
             )}
+            {legenda.length > 0 && !isPending && <Legenda butir={legenda} dipilih={unitDipilih} onPilih={setUnitDipilih} />}
           </div>
-
-          {legenda.length > 0 && !isPending && <Legenda butir={legenda} dipilih={unitDipilih} onPilih={setUnitDipilih} />}
         </div>
       )}
     </>

@@ -80,7 +80,7 @@ function TombolDokumentasi({
 function SelLokasi({ nama }: { nama: string | null }) {
   if (!nama) return <span className="text-xs text-muted-foreground">Belum diisi</span>;
   return (
-    <span className="flex max-w-56 min-w-36 items-start gap-1.5 whitespace-normal">
+    <span className="flex max-w-44 min-w-28 items-start gap-1.5 whitespace-normal">
       <MapPin aria-hidden className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
       <span className="line-clamp-2" title={nama}>
         {nama}
@@ -103,7 +103,7 @@ function buatKolom({
       cell: ({ row }) => (
         <Link
           href={`/kegiatan/${row.original.id}`}
-          className="block max-w-72 min-w-48 font-semibold whitespace-normal text-foreground hover:text-primary hover:underline"
+          className="block max-w-60 min-w-40 font-semibold whitespace-normal text-foreground hover:text-primary hover:underline"
         >
           {row.original.judul}
         </Link>
@@ -113,7 +113,7 @@ function buatKolom({
       id: "jenis",
       header: "Jenis",
       cell: ({ row }) => (
-        <span className="whitespace-nowrap font-medium text-foreground">
+        <span className="block max-w-28 font-medium whitespace-normal text-foreground">
           {row.original.jenis.nama}
         </span>
       ),
@@ -122,7 +122,7 @@ function buatKolom({
       id: "bidang",
       header: "Bidang",
       cell: ({ row }) => (
-        <UnitChip className="max-w-48 min-w-32 whitespace-normal">
+        <UnitChip className="max-w-40 min-w-28 whitespace-normal">
           {row.original.bidang.nama}
         </UnitChip>
       ),
@@ -156,14 +156,14 @@ function buatKolom({
     },
     {
       id: "pj",
-      header: "Penanggung jawab",
+      header: () => <span className="block max-w-24 whitespace-normal">Penanggung jawab</span>,
       cell: ({ row }) => (
         <span className="flex items-center gap-2">
           <AvatarInisial
             nama={row.original.penanggungJawab.nama}
-            className="size-7"
+            className="hidden size-7 2xl:flex"
           />
-          {row.original.penanggungJawab.nama}
+          <span className="block max-w-32 whitespace-normal">{row.original.penanggungJawab.nama}</span>
         </span>
       ),
     },
@@ -280,6 +280,7 @@ function TabelKegiatan({
             data={daftar.data?.items ?? []}
             isLoading={daftar.isPending}
             skeletonRows={header ? 4 : 8}
+            padat
             bleed
             caption={caption}
             getRowKey={(k) => String(k.id)}

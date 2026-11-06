@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -67,33 +67,31 @@ export function PeriksaAksi({ kegiatan, ringkas, className }: Props) {
           if (!v) setGalat(null);
         }}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Perlu perbaikan: &ldquo;{kegiatan.judul}&rdquo;</DialogTitle>
-            <DialogDescription>Catatan ini terlihat oleh pencatat di halaman detail kegiatan. Tanda perlu perbaikan hilang setelah kegiatan diubah oleh pencatat.</DialogDescription>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="gap-1 pr-8">
+            <DialogTitle className="font-heading text-base font-bold">Perlu perbaikan</DialogTitle>
+            <DialogDescription className="line-clamp-2 text-sm font-medium text-foreground/80">{kegiatan.judul}</DialogDescription>
           </DialogHeader>
           <Field data-invalid={!!galat}>
-            <FieldLabel htmlFor={`catatan-${kegiatan.id}`}>
-              Catatan perbaikan
-            </FieldLabel>
+            <FieldLabel htmlFor={`catatan-${kegiatan.id}`}>Catatan perbaikan</FieldLabel>
             <Textarea
               id={`catatan-${kegiatan.id}`}
               value={catatan}
               onChange={(e) => setCatatan(e.target.value)}
               maxLength={2000}
-              rows={4}
+              rows={5}
+              className="min-h-28 resize-y"
               aria-required
               aria-invalid={!!galat}
               autoFocus
             />
-            <FieldDescription>Contoh: lengkapi foto dokumentasi dan jumlah peserta.</FieldDescription>
             {galat && <FieldError>{galat}</FieldError>}
           </Field>
-          <DialogFooter>
-            <Button variant="outline" className="h-10" onClick={() => setBuka(false)} disabled={periksa.isPending}>
+          <DialogFooter className="flex-row justify-end">
+            <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={() => setBuka(false)} disabled={periksa.isPending}>
               Batal
             </Button>
-            <Button className="h-10" onClick={kirimPerbaikan} disabled={periksa.isPending}>
+            <Button className="h-10 pointer-coarse:min-h-11" onClick={kirimPerbaikan} disabled={periksa.isPending}>
               {periksa.isPending && <Spinner />}
               Simpan catatan
             </Button>

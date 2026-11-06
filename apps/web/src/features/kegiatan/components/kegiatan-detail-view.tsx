@@ -206,7 +206,7 @@ export function KegiatanDetailView({ id }: { id: number }) {
         </div>
       )}
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(17rem,0.8fr)] lg:gap-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(17rem,0.8fr)] lg:gap-5">
         <div className="flex min-w-0 flex-col gap-4">
           <Panel>
             <PanelHeader title="Uraian dan hasil" />
@@ -223,14 +223,14 @@ export function KegiatanDetailView({ id }: { id: number }) {
             </PanelBody>
           </Panel>
 
-          <Panel id="dokumentasi" className="scroll-mt-24">
+          <Panel id="dokumentasi" className="scroll-mt-24 lg:flex-1">
             <PanelHeader
               title="Dokumentasi"
               action={
                 <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground tabular-nums">{k.dokumentasi.length} berkas</span>
               }
             />
-            <PanelBody>
+            <PanelBody className="flex flex-1 flex-col justify-center">
               {k.dokumentasi.length === 0 ? (
                 <EmptyState icon={ImageOff} title="Belum ada dokumentasi." />
               ) : (

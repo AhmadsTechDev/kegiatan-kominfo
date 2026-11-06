@@ -34,10 +34,6 @@ const s = StyleSheet.create({
   garisKop: { borderBottomWidth: 3, borderBottomColor: "#000", marginBottom: 12 },
   judul: { fontSize: 12, fontFamily: "Helvetica-Bold", textAlign: "center" },
   subjudul: { fontSize: 9.5, textAlign: "center", marginTop: 3, marginBottom: 10 },
-  cakupan: { flexDirection: "row", borderTopWidth: 0.6, borderBottomWidth: 0.6, borderColor: GARIS, paddingVertical: 5, marginBottom: 8 },
-  cakupanItem: { flex: 1, paddingRight: 8 },
-  cakupanLabel: { fontSize: 7.5, color: ABU },
-  cakupanNilai: { fontSize: 9, fontFamily: "Helvetica-Bold", marginTop: 1.5 },
   ringkasan: { flexDirection: "row", marginBottom: 10, gap: 6 },
   kotak: { flex: 1, borderWidth: 0.6, borderColor: GARIS, borderRadius: 3, padding: 6 },
   kotakLabel: { fontSize: 7.5, color: ABU },
@@ -61,13 +57,12 @@ const s = StyleSheet.create({
 
 export const KOLOM = [
   { judul: "No", lebar: "4%" },
-  { judul: "Kegiatan", lebar: "27%" },
+  { judul: "Kegiatan", lebar: "31%" },
   { judul: "Jenis", lebar: "12%" },
-  { judul: "Bidang", lebar: "15%" },
+  { judul: "Bidang", lebar: "17%" },
   { judul: "Penanggung jawab", lebar: "13%" },
-  { judul: "Waktu (WIB)", lebar: "15%" },
+  { judul: "Waktu (WIB)", lebar: "17%" },
   { judul: "Peserta", lebar: "6%" },
-  { judul: "Status", lebar: "8%" },
 ] as const;
 
 const URUTAN_STATUS: StatusPelaksanaan[] = ["akan_datang", "berlangsung", "selesai", "dibatalkan"];
@@ -98,7 +93,6 @@ export function isiSel(b: BarisEkspor) {
     penanggungJawab: b.penanggungJawab,
     waktu: formatRentang(b.tglMulai, b.tglSelesai),
     peserta: b.jumlahPeserta == null ? "–" : b.jumlahPeserta.toLocaleString("id-ID"),
-    status: LABEL_STATUS[b.statusPelaksanaan],
   };
 }
 
@@ -125,15 +119,6 @@ function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
 
         <Text style={s.judul}>{JUDUL_LAPORAN}</Text>
         <Text style={s.subjudul}>{subjudul(info)}</Text>
-
-        <View style={s.cakupan}>
-          {info.cakupan.map((c) => (
-            <View key={c.label} style={s.cakupanItem}>
-              <Text style={s.cakupanLabel}>{c.label}</Text>
-              <Text style={s.cakupanNilai}>{c.nilai}</Text>
-            </View>
-          ))}
-        </View>
 
         <View style={s.ringkasan}>
           {ringkasanStatus(baris).map((r) => (
@@ -166,7 +151,6 @@ function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
               <Text style={sel(4)}>{isi.penanggungJawab}</Text>
               <Text style={sel(5)}>{isi.waktu}</Text>
               <Text style={sel(6)}>{isi.peserta}</Text>
-              <Text style={sel(7)}>{isi.status}</Text>
             </View>
           );
         })}

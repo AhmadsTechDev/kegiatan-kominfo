@@ -12,6 +12,15 @@ type NilaiDokumentasi = {
 };
 
 export const DokumentasiRepository = {
+  // Berkas dokumentasi banyak kegiatan sekaligus (untuk laporan), urut waktu unggah
+  untukKegiatan(kegiatanIds: number[]) {
+    return prisma.dokumentasi.findMany({
+      where: { kegiatanId: { in: kegiatanIds } },
+      select: { id: true, kegiatanId: true, namaAsli: true, mime: true, ukuran: true, createdAt: true },
+      orderBy: { id: "asc" },
+    });
+  },
+
   // Satu dokumentasi beserta data kegiatannya (untuk cek hak akses); undefined bila kegiatan sudah dihapus
   async findDenganKegiatan(id: number) {
     const baris = await prisma.dokumentasi.findFirst({

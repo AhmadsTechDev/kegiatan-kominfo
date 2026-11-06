@@ -9,5 +9,7 @@ export const eksporRoutes = new Elysia({ prefix: "/ekspor" })
   .use(authPlugin)
   // Unduh PDF
   .get("/kegiatan.pdf", EksporController.pdf, { auth: [...PEMERIKSA], query: RekapValidator.query })
+  // Kegiatan beserta berkas dokumentasinya pada cakupan yang sama
+  .get("/dokumentasi", EksporController.dokumentasi, { auth: [...PEMERIKSA], query: RekapValidator.query })
   // Pratinjau isi laporan dalam JSON
   .get("/pratinjau", EksporController.pratinjau, { auth: [...PEMERIKSA], query: RekapValidator.query });

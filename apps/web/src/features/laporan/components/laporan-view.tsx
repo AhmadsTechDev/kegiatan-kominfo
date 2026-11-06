@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { idTab, PilihanTab } from "@/features/admin/components/admin-shared";
 import { useGrupNav } from "@/hooks/use-grup-nav";
 import { KegiatanTanpaAkses } from "@/features/kegiatan/components/kegiatan-states";
 import { useReferensi } from "@/features/kegiatan/hooks/use-kegiatan";
@@ -23,13 +24,17 @@ import { useEkspor } from "@/features/rekap/hooks/use-rekap";
 import type { FormatEkspor } from "@/features/rekap/types";
 import { formatAngka, tanggalWib } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { getEstimasi, getPratinjau } from "../api";
+import { getDokumentasiLaporan, getEstimasi, getPratinjau } from "../api";
 import type { CakupanLaporan } from "../types";
 import { bagiHalaman, HalamanLaporan } from "./halaman-laporan";
+import { hitungBerkas, LaporanDokumentasi } from "./laporan-dokumentasi";
 
 // Halaman laporan: pilih cakupan, pratinjau, lalu unduh atau cetak
 
 const SEMUA = "semua";
+const ID_PANEL = "panel-isi-laporan";
+
+type TabLaporan = "rekap" | "dokumentasi";
 
 function unitDanTurunan(unit: { id: number; parentId: number | null }[], id: number) {
   const hasil = new Set([id]);
@@ -66,6 +71,7 @@ function LaporanIsi() {
   const { terbatas, saringUnit } = useLingkupPegawai();
   const referensi = useReferensi();
   const ekspor = useEkspor();
+  const [tab, setTab] = useState<TabLaporan>("rekap");
 
   const cakupan = useMemo<CakupanLaporan>(() => {
     const hariIni = tanggalWib(new Date());
@@ -80,6 +86,14 @@ function LaporanIsi() {
 
   const estimasi = useQuery({ queryKey: ["laporan", "estimasi", cakupan], queryFn: () => getEstimasi(cakupan), placeholderData: keepPreviousData });
   const pratinjau = useQuery({ queryKey: ["laporan", "pratinjau", cakupan], queryFn: () => getPratinjau(cakupan), placeholderData: keepPreviousData });
+
+  // Dokumentasi baru diambil saat tabnya dibuka
+  const dokumentasi = useQuery({
+    queryKey: ["laporan", "dokumentasi", cakupan],
+    queryFn: () => getDokumentasiLaporan(cakupan),
+    placeholderData: keepPreviousData,
+    enabled: tab === "dokumentasi",
+  });
 
   const unitPilihan = saringUnit(referensi.data?.bidang ?? []);
   const unitBoleh = useMemo(() => new Set(unitPilihan.map((u) => u.id)), [unitPilihan]);
@@ -186,21 +200,46 @@ function LaporanIsi() {
       </Panel>
 
       <Panel>
-        <PanelHeader
-          title="Pratinjau"
-          description={pratinjau.data ? `${jumlahHalaman} halaman · A4 mendatar` : undefined}
-        />
-        <PanelBody className="bg-muted/40">
-          {pratinjau.isError ? (
-            <ErrorState message={pratinjau.error.message} onRetry={() => pratinjau.refetch()} retrying={pratinjau.isRefetching} />
-          ) : !pratinjau.data ? (
-            <Skeleton className="mx-auto aspect-[297/210] w-full max-w-[1123px]" />
+        <div className="border-b border-muted px-4 pt-4 pb-3 md:px-5">
+          <PilihanTab
+            label="Isi laporan"
+            idPanel={ID_PANEL}
+            value={tab}
+            onChange={setTab}
+            opsi={[
+              { nilai: "rekap", label: "Rekap kegiatan" },
+              { nilai: "dokumentasi", label: "Dokumentasi", jumlah: dokumentasi.data ? hitungBerkas(dokumentasi.data) : undefined },
+            ]}
+          />
+        </div>
+        <div role="tabpanel" id={ID_PANEL} aria-labelledby={idTab(ID_PANEL, tab)}>
+          {tab === "rekap" ? (
+            <>
+              <PanelHeader title="Pratinjau" description={pratinjau.data ? `${jumlahHalaman} halaman · A4 mendatar` : undefined} />
+              <PanelBody className="bg-muted/40">
+                {pratinjau.isError ? (
+                  <ErrorState message={pratinjau.error.message} onRetry={() => pratinjau.refetch()} retrying={pratinjau.isRefetching} />
+                ) : !pratinjau.data ? (
+                  <Skeleton className="mx-auto aspect-[297/210] w-full max-w-[1123px]" />
+                ) : (
+                  <SkalaPratinjau>
+                    <HalamanLaporan data={pratinjau.data} className={cn("transition-opacity", pratinjau.isPlaceholderData && "opacity-60")} />
+                  </SkalaPratinjau>
+                )}
+              </PanelBody>
+            </>
           ) : (
-            <SkalaPratinjau>
-              <HalamanLaporan data={pratinjau.data} className={cn("transition-opacity", pratinjau.isPlaceholderData && "opacity-60")} />
-            </SkalaPratinjau>
+            <PanelBody className="pt-4 md:pt-5">
+              <LaporanDokumentasi
+                data={dokumentasi.data}
+                galat={dokumentasi.error}
+                onUlang={() => dokumentasi.refetch()}
+                mengulang={dokumentasi.isRefetching}
+                memudar={dokumentasi.isPlaceholderData}
+              />
+            </PanelBody>
           )}
-        </PanelBody>
+        </div>
       </Panel>
 
       {pratinjau.data &&

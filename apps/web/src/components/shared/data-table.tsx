@@ -23,6 +23,8 @@ type DataTableProps<TData extends RowData> = {
   caption?: string;
   animasiMasuk?: boolean;
   bleed?: boolean;
+  /** Jarak antarkolom lebih rapat, untuk tabel dengan banyak kolom agar tidak perlu digeser */
+  padat?: boolean;
   className?: string;
 };
 
@@ -57,6 +59,7 @@ export function DataTable<TData extends RowData>({
   caption,
   animasiMasuk,
   bleed,
+  padat,
   className,
 }: DataTableProps<TData>) {
   const table = useTable({
@@ -89,7 +92,7 @@ export function DataTable<TData extends RowData>({
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id} className="border-y bg-background hover:bg-background">
               {group.headers.map((header) => (
-                <TableHead key={header.id} scope="col" className="h-10 px-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                <TableHead key={header.id} scope="col" className={cn("h-10 px-4 text-xs font-bold tracking-wider text-muted-foreground uppercase", padat && "px-3")}>
                   {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                 </TableHead>
               ))}
@@ -100,7 +103,7 @@ export function DataTable<TData extends RowData>({
           {table.getRowModel().rows.map((row, i) => (
             <TableRow key={row.id} {...animasiBaris(animasiMasuk, i)}>
               {row.getAllCells().map((cell) => (
-                <TableCell key={cell.id} className="px-4 py-3">
+                <TableCell key={cell.id} className={cn("px-4 py-3", padat && "px-3")}>
                   <table.FlexRender cell={cell} />
                 </TableCell>
               ))}
