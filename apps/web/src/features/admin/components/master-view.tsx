@@ -4,7 +4,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Panel } from "@/components/shared/panel";
-import { useJenisAdmin, usePegawaiAdmin, useBidangAdmin } from "../hooks/use-admin";
 import { AdminGuard, PilihanTab } from "./admin-shared";
 import { JenisTab } from "./jenis-tab";
 import { PegawaiTab } from "./pegawai-tab";
@@ -23,12 +22,6 @@ export function MasterView() {
   const tab: Tab = TAB_SAH.includes(nilai as Tab) ? (nilai as Tab) : "pegawai";
   const indukParam = Number(searchParams.get("induk"));
   const induk = Number.isInteger(indukParam) && indukParam > 0 ? indukParam : null;
-
-  const pegawai = usePegawaiAdmin({ q: "", unit: null, aktif: null, akun: "ada", page: 1 });
-  const unit = useBidangAdmin();
-  const jenis = useJenisAdmin();
-  const jumlahUtama = unit.data?.filter((u) => u.parentId === null).length;
-  const jumlahSub = unit.data?.filter((u) => u.parentId !== null).length;
 
   const buka = useCallback(
     (t: Tab, indukId?: number) => {
@@ -51,10 +44,10 @@ export function MasterView() {
               label="Jenis master data"
               value={tab}
               opsi={[
-                { nilai: "pegawai", label: "Pegawai", jumlah: pegawai.data?.total },
-                { nilai: "unit", label: "Bidang", jumlah: jumlahUtama },
-                { nilai: "sub", label: "Sub bidang", jumlah: jumlahSub },
-                { nilai: "jenis", label: "Jenis kegiatan", jumlah: jenis.data?.length },
+                { nilai: "pegawai", label: "Pegawai" },
+                { nilai: "unit", label: "Bidang" },
+                { nilai: "sub", label: "Sub bidang" },
+                { nilai: "jenis", label: "Jenis kegiatan" },
               ]}
               onChange={(t) => buka(t)}
             />

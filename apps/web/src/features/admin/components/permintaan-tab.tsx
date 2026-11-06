@@ -135,7 +135,6 @@ export function PermintaanTab() {
             { nilai: "SEMUA", label: "Semua riwayat" },
           ]}
         />
-        <p className="text-xs text-muted-foreground">Permintaan dikirim dari halaman login. NIP yang diisi sudah dicocokkan dengan master pegawai.</p>
       </div>
 
       {daftar.isError ? (

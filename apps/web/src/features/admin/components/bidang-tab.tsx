@@ -177,10 +177,6 @@ export function BidangTab({
     () => semua.filter((u) => (turunan ? u.parentId !== null : u.parentId === null) && u.aktif === (lihat === "aktif")),
     [semua, turunan, lihat],
   );
-  const jumlahStatus = useMemo(() => {
-    const tingkat = semua.filter((u) => (turunan ? u.parentId !== null : u.parentId === null));
-    return { aktif: tingkat.filter((u) => u.aktif).length, nonaktif: tingkat.filter((u) => !u.aktif).length };
-  }, [semua, turunan]);
   const baris = useMemo(() => {
     const q = kata.trim().toLowerCase();
     const namaInduk = (u: BidangAdmin) => (u.parentId !== null ? (perId.get(u.parentId)?.nama ?? "") : "");
@@ -285,8 +281,8 @@ export function BidangTab({
           value={lihat}
           onChange={setLihat}
           opsi={[
-            { nilai: "aktif", label: "Aktif", jumlah: jumlahStatus.aktif },
-            { nilai: "nonaktif", label: "Nonaktif", jumlah: jumlahStatus.nonaktif },
+            { nilai: "aktif", label: "Aktif" },
+            { nilai: "nonaktif", label: "Nonaktif" },
           ]}
         />
       </div>

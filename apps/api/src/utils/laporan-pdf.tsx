@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { Document, Font, Image, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import type { BarisEkspor, InfoEkspor } from "@/types/ekspor.types";
 import type { StatusPelaksanaan } from "@/types/umum.types";
-import { LABEL_STATUS, formatRentang, formatWaktu } from "./format-waktu";
+import { formatRentang } from "./format-waktu";
 
 export const KOP = {
   pemerintah: "PEMERINTAH KOTA PALEMBANG",
@@ -24,7 +24,7 @@ const ABU = "#64748b";
 const GARIS = "#cbd5e1";
 
 const s = StyleSheet.create({
-  page: { paddingTop: 28, paddingBottom: 40, paddingHorizontal: 32, fontSize: 8.5, fontFamily: "Helvetica", color: "#0f172a" },
+  page: { paddingTop: 28, paddingBottom: 28, paddingHorizontal: 32, fontSize: 8.5, fontFamily: "Helvetica", color: "#0f172a" },
   kop: { flexDirection: "row", alignItems: "center", paddingBottom: 8 },
   logo: { width: 72, height: 80 },
   kopTeks: { flex: 1, alignItems: "center", marginRight: 72, color: "#000" },
@@ -33,26 +33,12 @@ const s = StyleSheet.create({
   kopAlamat: { fontSize: 8.5, marginTop: 1.5 },
   garisKop: { borderBottomWidth: 3, borderBottomColor: "#000", marginBottom: 12 },
   judul: { fontSize: 12, fontFamily: "Helvetica-Bold", textAlign: "center" },
-  subjudul: { fontSize: 9.5, textAlign: "center", marginTop: 3, marginBottom: 10 },
-  ringkasan: { flexDirection: "row", marginBottom: 10, gap: 6 },
-  kotak: { flex: 1, borderWidth: 0.6, borderColor: GARIS, borderRadius: 3, padding: 6 },
-  kotakLabel: { fontSize: 7.5, color: ABU },
-  kotakNilai: { fontSize: 13, fontFamily: "Helvetica-Bold", marginTop: 2 },
+  subjudul: { fontSize: 9.5, textAlign: "center", marginTop: 3, marginBottom: 12 },
   baris: { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: GARIS },
   kepala: { flexDirection: "row", backgroundColor: NAVY, color: "#fff", fontFamily: "Helvetica-Bold" },
   sel: { paddingVertical: 4, paddingHorizontal: 4 },
   kecil: { fontSize: 7.5, color: ABU, marginTop: 1 },
   kosong: { padding: 16, textAlign: "center", color: ABU },
-  kaki: {
-    position: "absolute",
-    bottom: 18,
-    left: 32,
-    right: 32,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    fontSize: 7.5,
-    color: ABU,
-  },
 });
 
 export const KOLOM = [
@@ -65,23 +51,10 @@ export const KOLOM = [
   { judul: "Peserta", lebar: "6%" },
 ] as const;
 
-const URUTAN_STATUS: StatusPelaksanaan[] = ["akan_datang", "berlangsung", "selesai", "dibatalkan"];
-
 export const JUDUL_LAPORAN = "REKAP KEGIATAN";
 
 // Teks di bawah judul laporan: rentang waktu yang direkap
 export const subjudul = (info: InfoEkspor) => `Periode ${info.periode}`;
-
-// Teks di kaki halaman: siapa yang mencetak dan kapan
-export const teksKaki = (info: InfoEkspor) => `Dicetak oleh ${info.dibuatOleh} pada ${formatWaktu(info.dibuatPada)}`;
-
-// Kotak ringkasan di atas tabel: total kegiatan dan jumlah per status
-export function ringkasanStatus(baris: BarisEkspor[]) {
-  return [
-    { label: "Total kegiatan", nilai: baris.length },
-    ...URUTAN_STATUS.map((st) => ({ label: LABEL_STATUS[st], nilai: baris.filter((b) => b.statusPelaksanaan === st).length })),
-  ];
-}
 
 // Isi teks setiap sel tabel untuk satu kegiatan (dipakai PDF dan pratinjau di frontend)
 export function isiSel(b: BarisEkspor) {
@@ -120,15 +93,6 @@ function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
         <Text style={s.judul}>{JUDUL_LAPORAN}</Text>
         <Text style={s.subjudul}>{subjudul(info)}</Text>
 
-        <View style={s.ringkasan}>
-          {ringkasanStatus(baris).map((r) => (
-            <View key={r.label} style={s.kotak}>
-              <Text style={s.kotakLabel}>{r.label}</Text>
-              <Text style={s.kotakNilai}>{r.nilai.toLocaleString("id-ID")}</Text>
-            </View>
-          ))}
-        </View>
-
         <View style={s.kepala} fixed>
           {KOLOM.map((k, i) => (
             <Text key={k.judul} style={sel(i)}>
@@ -154,11 +118,6 @@ function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
             </View>
           );
         })}
-
-        <View style={s.kaki} fixed>
-          <Text>{teksKaki(info)}</Text>
-          <Text render={({ pageNumber, totalPages }) => `Halaman ${pageNumber} dari ${totalPages}`} />
-        </View>
       </Page>
     </Document>
   );

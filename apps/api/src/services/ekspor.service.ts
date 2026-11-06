@@ -6,7 +6,7 @@ import type { FormatEkspor, InfoEkspor } from "@/types/ekspor.types";
 import type { DokumentasiZipQuery, RekapQuery } from "@/types/rekap.types";
 import type { Aktor, MetaRequest } from "@/types/umum.types";
 import { formatTanggalPanjang, namaBulan, tanggalWib } from "@/utils/format-waktu";
-import { buatPdf, isiSel, JUDUL_LAPORAN, KOLOM, KOP, ringkasanStatus, subjudul, teksKaki } from "@/utils/laporan-pdf";
+import { buatPdf, isiSel, JUDUL_LAPORAN, KOLOM, KOP, subjudul } from "@/utils/laporan-pdf";
 import { buatPembatasLaju } from "@/utils/rate-limit";
 import { aliranZip, type EntriZip } from "@/utils/zip";
 import { AuditLogService } from "./audit-log.service";
@@ -69,10 +69,8 @@ export const EksporService = {
       kop: KOP,
       judul: JUDUL_LAPORAN,
       subjudul: subjudul(info),
-      ringkasan: ringkasanStatus(baris),
       kolom: KOLOM.map((k) => ({ judul: k.judul, lebar: k.lebar })),
       baris: baris.map((b) => ({ id: b.id, ...isiSel(b) })),
-      kaki: teksKaki(info),
     };
   },
 

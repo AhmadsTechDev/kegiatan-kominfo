@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { site } from "@/config/site";
-import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { PratinjauLaporan } from "../types";
 
@@ -32,15 +31,7 @@ function Kop({ data }: { data: PratinjauLaporan }) {
       </div>
       <div className="mb-4 border-b-4 border-black" />
       <p className="text-center text-[15px] font-bold">{data.judul}</p>
-      <p className="mt-1 mb-3 text-center text-[12px]">{data.subjudul}</p>
-      <div className="mb-3 flex gap-2">
-        {data.ringkasan.map((r) => (
-          <div key={r.label} className="flex-1 rounded border border-slate-300 px-2 py-1.5">
-            <p className="text-[10px] text-slate-500">{r.label}</p>
-            <p className="text-[17px] font-bold tabular-nums">{formatAngka(r.nilai)}</p>
-          </div>
-        ))}
-      </div>
+      <p className="mt-1 mb-4 text-center text-[12px]">{data.subjudul}</p>
     </>
   );
 }
@@ -55,7 +46,7 @@ export function HalamanLaporan({ data, className }: { data: PratinjauLaporan; cl
           <article
             key={h}
             aria-label={`Halaman ${h + 1} dari ${halaman.length}`}
-            className="halaman-laporan relative flex aspect-[297/210] w-full max-w-[1123px] flex-col bg-white px-[3%] pt-[2.5%] pb-[4%] font-sans text-[11px] text-slate-900 shadow-md ring-1 ring-black/10"
+            className="halaman-laporan relative flex aspect-[297/210] w-full max-w-[1123px] flex-col bg-white px-[3%] pt-[2.5%] pb-[3%] font-sans text-[11px] text-slate-900 shadow-md ring-1 ring-black/10"
           >
             {h === 0 && <Kop data={data} />}
             <table className="w-full table-fixed border-collapse">
@@ -91,12 +82,6 @@ export function HalamanLaporan({ data, className }: { data: PratinjauLaporan; cl
               </tbody>
             </table>
             {data.baris.length === 0 && <p className="p-6 text-center text-slate-500">Tidak ada kegiatan yang sesuai filter.</p>}
-            <div className="absolute inset-x-[3%] bottom-[2%] flex justify-between text-[10px] text-slate-500">
-              <span>{data.kaki}</span>
-              <span>
-                Halaman {h + 1} dari {halaman.length}
-              </span>
-            </div>
           </article>
         );
       })}

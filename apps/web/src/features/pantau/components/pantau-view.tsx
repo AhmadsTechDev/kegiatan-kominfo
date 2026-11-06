@@ -280,7 +280,7 @@ export function PantauView() {
             value={tampilan}
             onChange={pilihTampilan}
             opsi={[
-              { nilai: "semua", label: "Semua kegiatan", jumlah: r?.total },
+              { nilai: "semua", label: "Semua kegiatan" },
               { nilai: "perlu_perbaikan", label: "Perlu perbaikan", lencana: r?.perluPerbaikan },
             ]}
           />

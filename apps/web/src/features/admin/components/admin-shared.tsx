@@ -133,8 +133,8 @@ export function PilihanTab<T extends string>({
 }: {
   value: T;
   onChange: (v: T) => void;
-  /** jumlah: angka netral; lencana: angka merah untuk hal yang menunggu tindakan (mis. permintaan baru) */
-  opsi: { nilai: T; label: string; jumlah?: number; lencana?: number }[];
+  /** lencana: angka merah untuk hal yang menunggu tindakan (mis. permintaan baru) */
+  opsi: { nilai: T; label: string; lencana?: number }[];
   label: string;
   idPanel?: string;
 }) {
@@ -165,9 +165,6 @@ export function PilihanTab<T extends string>({
               {o.lencana}
               <span className="sr-only"> menunggu</span>
             </span>
-          )}
-          {!!o.jumlah && (
-            <span className={cn("rounded-full px-1.5 text-xs font-semibold tabular-nums", value === o.nilai ? "bg-primary/15" : "bg-muted")}>{o.jumlah}</span>
           )}
         </Button>
       ))}

@@ -24,10 +24,10 @@ import { useEkspor } from "@/features/rekap/hooks/use-rekap";
 import type { FormatEkspor } from "@/features/rekap/types";
 import { formatAngka, tanggalWib } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { getDokumentasiLaporan, getEstimasi, getPratinjau } from "../api";
+import { getDokumentasiLaporan, getPratinjau } from "../api";
 import type { CakupanLaporan } from "../types";
 import { bagiHalaman, HalamanLaporan } from "./halaman-laporan";
-import { hitungBerkas, LaporanDokumentasi } from "./laporan-dokumentasi";
+import { LaporanDokumentasi } from "./laporan-dokumentasi";
 
 // Halaman laporan: pilih cakupan, pratinjau, lalu unduh atau cetak
 
@@ -84,7 +84,6 @@ function LaporanIsi() {
     };
   }, [filter.dari, filter.sampai, filter.unit, filter.pegawai]);
 
-  const estimasi = useQuery({ queryKey: ["laporan", "estimasi", cakupan], queryFn: () => getEstimasi(cakupan), placeholderData: keepPreviousData });
   const pratinjau = useQuery({ queryKey: ["laporan", "pratinjau", cakupan], queryFn: () => getPratinjau(cakupan), placeholderData: keepPreviousData });
 
   // Dokumentasi baru diambil saat tabnya dibuka
@@ -147,8 +146,8 @@ function LaporanIsi() {
       />
 
       <Panel>
-        <PanelHeader title="Rentang dan cakupan" description="Kosongkan bidang dan pegawai untuk mencakup semua kegiatan" />
-        <PanelBody className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(14rem,1.2fr)_1fr_1fr_auto]">
+        <PanelHeader title="Rentang dan cakupan" />
+        <PanelBody className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(14rem,1.2fr)_1fr_1fr]">
           <div className="flex min-w-0 flex-col gap-1.5">
             <label htmlFor={`${id}-tanggal`} className={label}>
               Periode
@@ -186,16 +185,6 @@ function LaporanIsi() {
               placeholderCari="Ketik nama atau bidang..."
             />
           </div>
-          <p className="text-sm sm:col-span-2 lg:col-span-1 lg:pb-2.5" aria-live="polite">
-            {estimasi.data == null ? (
-              <span className="text-muted-foreground">Menghitung...</span>
-            ) : (
-              <>
-                <span className="font-heading text-lg font-extrabold tabular-nums">{formatAngka(estimasi.data)}</span>{" "}
-                <span className="text-muted-foreground">kegiatan akan masuk laporan</span>
-              </>
-            )}
-          </p>
         </PanelBody>
       </Panel>
 
@@ -208,7 +197,7 @@ function LaporanIsi() {
             onChange={setTab}
             opsi={[
               { nilai: "rekap", label: "Rekap kegiatan" },
-              { nilai: "dokumentasi", label: "Dokumentasi", jumlah: dokumentasi.data ? hitungBerkas(dokumentasi.data) : undefined },
+              { nilai: "dokumentasi", label: "Dokumentasi" },
             ]}
           />
         </div>

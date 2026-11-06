@@ -35,7 +35,3 @@ export async function unduhDokumentasiZip(cakupan: CakupanLaporan, kegiatanId?: 
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export async function getEstimasi(cakupan: CakupanLaporan) {
-  const { data } = await apiClient.get<{ total: number }>("/kegiatan", { params: { ...paramsCakupan(cakupan), pageSize: 1 } });
-  return data.total;
-}

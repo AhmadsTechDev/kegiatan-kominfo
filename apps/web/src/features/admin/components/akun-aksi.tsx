@@ -158,11 +158,7 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
       open
       onOpenChange={(v) => !v && onClose()}
       title={awal ? `Ubah akun ${awal.name}` : "Buat akun"}
-      description={
-        awal
-          ? "Data kepegawaian ini tampil di profil pengguna dan hanya bisa diubah admin."
-          : "Pastikan identitas pegawai sudah diverifikasi. Tautan aktivasi dikirim ke email pribadinya; ia membuat kata sandi sendiri."
-      }
+      description={awal ? "Data kepegawaian ini tampil di profil pengguna dan hanya bisa diubah admin." : undefined}
       onSubmit={kirim}
       pending={simpan.isPending}
       submitLabel={awal ? "Simpan perubahan" : "Buat akun dan kirim undangan"}

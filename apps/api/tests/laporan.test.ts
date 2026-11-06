@@ -48,7 +48,6 @@ describe("angka laporan konsisten", () => {
 
     const pratinjau = await panggil(`/ekspor/pratinjau?${filter}`, { cookie: admin });
     expect(pratinjau.data.baris).toHaveLength(3);
-    expect(pratinjau.data.ringkasan[0]).toEqual({ label: "Total kegiatan", nilai: 3 });
     expect(pratinjau.data.subjudul).toContain("Maret 2031");
 
     const dokumentasi = await panggil(`/ekspor/dokumentasi?${filter}`, { cookie: admin });

@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { urlDokumentasi } from "@/features/kegiatan/api/dokumentasi";
 import type { Dokumentasi } from "@/features/kegiatan/types";
-import { formatAngka, formatTanggalJam, formatUkuran } from "@/lib/format";
+import { formatTanggalJam, formatUkuran } from "@/lib/format";
 import { unduhDokumentasiZip } from "../api";
 import type { CakupanLaporan, KegiatanDokumentasi } from "../types";
 
@@ -101,7 +101,7 @@ function KartuKegiatan({
           aria-label={`Unduh ${k.dokumentasi.length} berkas dokumentasi ${k.judul} sebagai ZIP`}
         >
           {mengunduh ? <Spinner /> : <FileArchive aria-hidden />}
-          {mengunduh ? "Menyiapkan..." : `Unduh semua (${formatAngka(k.dokumentasi.length)})`}
+          {mengunduh ? "Menyiapkan..." : "Unduh semua"}
         </Button>
       </div>
 
@@ -231,16 +231,11 @@ export function LaporanDokumentasi({ cakupan, data, galat, onUlang, mengulang, m
 
   return (
     <div className={memudar ? "flex flex-col gap-4 opacity-60 transition-opacity" : "flex flex-col gap-4 transition-opacity"}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground" aria-live="polite">
-          <span className="font-semibold text-foreground tabular-nums">{formatAngka(adaBerkas.length)}</span> dari{" "}
-          <span className="tabular-nums">{formatAngka(data.length)}</span> kegiatan punya dokumentasi,{" "}
-          <span className="font-semibold text-foreground tabular-nums">{formatAngka(totalBerkas)}</span> berkas
-        </p>
+      <div className="flex justify-end">
         {totalBerkas > 0 && (
           <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={() => unduhZip("semua")} disabled={mengunduh !== null}>
             {mengunduh === "semua" ? <Spinner /> : <FileArchive aria-hidden />}
-            {mengunduh === "semua" ? "Menyiapkan ZIP..." : `Unduh semua dokumentasi (${formatAngka(totalBerkas)} berkas)`}
+            {mengunduh === "semua" ? "Menyiapkan ZIP..." : "Unduh semua dokumentasi"}
           </Button>
         )}
       </div>
@@ -264,7 +259,7 @@ export function LaporanDokumentasi({ cakupan, data, galat, onUlang, mengulang, m
 
       {tanpa.length > 0 && (
         <section className="rounded-xl border border-dashed p-4" aria-label="Kegiatan tanpa dokumentasi">
-          <h3 className="text-sm font-semibold">Belum ada dokumentasi ({formatAngka(tanpa.length)})</h3>
+          <h3 className="text-sm font-semibold">Belum ada dokumentasi</h3>
           <ul className="mt-2 flex flex-col divide-y divide-muted text-sm">
             {tanpa.map((k) => (
               <li key={k.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-1.5">
