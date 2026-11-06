@@ -1,26 +1,3 @@
-// =============================================================================
-// BILAH PENYARING DAFTAR KEGIATAN
-// =============================================================================
-// Gunanya: Menyediakan panel interaktif untuk menyaring daftar kegiatan menurut
-//          kata kunci, rentang tanggal, bidang, jenis, dan status pelaksanaan.
-//
-// Isi berkas:
-//   - urutPohon : fungsi penyusun hierarki pohon bidang (induk dan anak)
-//   - FilterBar : komponen bilah filter kegiatan dengan pencarian ber-debounce
-//
-// Cara kerja:
-//   1. Menampung teks pencarian dan mendebounce perubahan selama 300 ms.
-//   2. Mengurutkan opsi bidang secara hierarkis sebelum ditampilkan di dropdown.
-//   3. Mengirim pembaruan kriteria filter ke komponen induk melalui callback onChange.
-//   4. Menyediakan tombol atur ulang untuk mengembalikan semua filter ke awal.
-//
-// Catatan penting:
-//   - Sesuai DESIGN.md bagian 4.2 dan 5.3, pada layar seluler filter tambahan
-//     dapat diciutkan agar daftar kegiatan langsung terlihat tanpa terhalang.
-//
-// Dipakai oleh: Halaman daftar kegiatan (kegiatan-list-view.tsx)
-// =============================================================================
-
 "use client";
 
 import { RotateCcw, Search, SlidersHorizontal } from "lucide-react";
@@ -31,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { RentangTanggalPicker } from "./rentang-tanggal-picker";
+
+// Panel filter daftar kegiatan: kata kunci, tanggal, bidang, jenis, status
 
 export type NilaiFilter = {
   q: string;

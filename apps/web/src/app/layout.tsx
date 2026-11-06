@@ -1,21 +1,10 @@
-// =============================================================================
-// ROOT LAYOUT TATA LETAK UTAMA APLIKASI
-// =============================================================================
-// Gunanya: Kerangka HTML root seluruh halaman aplikasi; mengatur font Inter dan
-// Plus Jakarta Sans, metadata bawaan, context Providers global, dan toast Sonner.
-//
-// Catatan penting:
-//   - Menggunakan suppressHydrationWarning karena next-themes menyetel tema aktif.
-//   - Toaster diletakkan di dalam Providers agar gaya notifikasi mengikuti tema.
-//
-// Dipakai oleh: Next.js App Router sebagai pembungkus utama seluruh rute halaman.
-// =============================================================================
-
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "./providers";
 import "./globals.css";
+
+// Root layout: font, metadata, Providers global, dan toast
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const jakarta = Plus_Jakarta_Sans({

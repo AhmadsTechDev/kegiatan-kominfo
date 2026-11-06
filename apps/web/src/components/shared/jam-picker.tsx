@@ -1,26 +1,3 @@
-// =============================================================================
-// PEMILIH JAM 24 JAM (WIB)
-// =============================================================================
-// Gunanya: Menyediakan kontrol masukan jam format 24 jam (WIB) dengan pilihan
-//          interval 15 menit serta penerimaan pengetikan waktu secara bebas.
-//
-// Isi berkas:
-//   - normalisasiJam : pengonversi berbagai format ketikan teks ke standar "HH:MM"
-//   - durasi         : penghitung selisih waktu antara jam mulai dan jam selesai
-//   - JamPicker      : komponen input jam dengan popover daftar waktu per 15 menit
-//
-// Cara kerja:
-//   1. Menyediakan pilihan 96 interval waktu per 15 menit dari 00:00 hingga 23:45.
-//   2. Menggulir otomatis ke jam yang dipilih saat jendela popover dibuka.
-//   3. Menormalisasi input ketikan bebas pengguna saat fokus lepas atau enter ditekan.
-//
-// Catatan penting:
-//   - Menggantikan input type="time" bawaan peramban yang sering memunculkan AM/PM
-//     agar tetap konsisten menggunakan format 24 jam WIB di seluruh peramban.
-//
-// Dipakai oleh: kegiatan-form.tsx (pengisian jam mulai dan selesai kegiatan)
-// =============================================================================
-
 "use client";
 
 import { Clock } from "lucide-react";
@@ -28,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+
+// Masukan jam 24 jam (WIB) dengan pilihan per 15 menit atau diketik bebas
 
 const dua = (n: number) => String(n).padStart(2, "0");
 const PILIHAN = Array.from({ length: 96 }, (_, i) => `${dua(Math.floor(i / 4))}:${dua((i % 4) * 15)}`);

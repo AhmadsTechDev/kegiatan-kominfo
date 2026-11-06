@@ -1,21 +1,3 @@
-// =============================================================================
-// FORMULIR KATA SANDI BARU DAN KEADAAN HALAMAN PUBLIK
-// =============================================================================
-// Gunanya: Komponen bersama untuk halaman bertautan email: formulir membuat kata sandi
-// baru (aktivasi dan atur ulang) serta tampilan keadaan (berhasil / tautan tidak berlaku).
-//
-// Isi berkas:
-//   - Keadaan        : ikon bulat, judul, dan isi untuk keadaan akhir halaman publik
-//   - TautanTidakBerlaku : keadaan untuk token salah, kedaluwarsa, atau sudah dipakai
-//   - FormSandiBaru  : formulir kata sandi + ulangi, lihat/sembunyikan, validasi kebijakan sandi
-//
-// Cara kerja:
-//   1. FormSandiBaru memeriksa kebijakan sandi di klien (lib/sandi.ts) sebelum mengirim.
-//   2. Galat 422 dari backend (field "password") ditampilkan di bawah input yang sesuai.
-//
-// Dipakai oleh: AktivasiForm, ResetSandiForm, KonfirmasiEmailView
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +13,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/api-client";
 import { skemaSandiBaru, type NilaiSandiBaru } from "@/lib/sandi";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
+
+// Formulir kata sandi baru (aktivasi dan reset) beserta tampilan berhasil / tautan kedaluwarsa
 
 export function Keadaan({ ikon: Ikon, nada, judul, children }: { ikon: typeof CircleCheck; nada: string; judul: string; children: React.ReactNode }) {
   return (

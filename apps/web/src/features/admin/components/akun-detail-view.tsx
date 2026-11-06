@@ -1,22 +1,3 @@
-// =============================================================================
-// HALAMAN DETAIL AKUN (ADMIN)
-// =============================================================================
-// Gunanya: Menampilkan satu akun secara lengkap untuk administrator: identitas, status,
-// informasi akun, data kepegawaian, undangan yang masih berlaku, sesi aktif, dan riwayat.
-//
-// Isi berkas:
-//   - Kepala          : avatar, nama, role, status, dan tombol aksi akun
-//   - PanelUndangan   : masa berlaku tautan aktivasi untuk akun yang belum diaktivasi
-//   - PanelSesiAkun   : sesi login aktif (tanpa token) dengan aksi keluarkan dari semua perangkat
-//   - PanelRiwayat    : 15 catatan audit terbaru yang menyangkut akun ini
-//   - AkunDetailView  : komponen induk dengan keadaan memuat, galat, dan tidak ditemukan
-//
-// Catatan penting:
-//   - Aksi memakai dialog yang sama dengan halaman daftar akun (akun-aksi.tsx).
-//
-// Dipakai oleh: frontend/src/app/(app)/admin/akun/[id]/page.tsx
-// =============================================================================
-
 "use client";
 
 import { ArrowLeft, Ellipsis, Lock, MailWarning, Pencil, Send, UserX } from "lucide-react";
@@ -41,6 +22,8 @@ import type { AkunDetail } from "../types";
 import { AdminGuard } from "./admin-shared";
 import { dariDetail, ItemAksiAkun, useAksiAkun, type AkunRingkas, type JenisAksi } from "./akun-aksi";
 import { ChipAksi, labelEntitas } from "./audit-log-view";
+
+// Detail satu akun: identitas, status, kepegawaian, undangan, sesi, dan riwayat
 
 function Kepala({ a, idSaya, buka }: { a: AkunDetail; idSaya?: string; buka: (j: JenisAksi, akun: AkunRingkas) => void }) {
   const ringkas = dariDetail(a);

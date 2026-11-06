@@ -1,32 +1,10 @@
-// =============================================================================
-// KOMPONEN KARTU INDIKATOR UTAMA (KPI)
-// =============================================================================
-// Gunanya: Menampilkan empat kartu indikator kinerja utama (KPI) kegiatan dinas
-// pada periode terpilih dalam panel dashboard Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - Selisih : Komponen label pembanding tren jumlah kegiatan dengan bulan lalu.
-//   - KpiCards : Komponen baris penyusun empat kartu indikator utama dinas.
-//
-// Cara kerja:
-//   1. Menerima objek data KPI dan kode periode aktif dari properti dashboard.
-//   2. Menghitung selisih total kegiatan terhadap capaian bulan sebelumnya.
-//   3. Merender kartu metrik total kegiatan, kegiatan berlangsung, agenda akan
-//      datang, serta kegiatan selesai.
-//
-// Catatan penting:
-//   - Dokumentasi opsional, jadi kartu Selesai tidak menghitung yang belum berdokumentasi.
-//   - Status tren kenaikan atau penurunan selalu dituliskan dalam bentuk teks
-//     eksplisit ("Naik", "Turun") agar aksesibel dan tidak bergantung warna semata.
-//
-// Dipakai oleh: features/dashboard/components/dashboard-view.tsx
-// =============================================================================
-
 import { CalendarClock, CalendarRange, CheckCircle2, Minus, PlayCircle, TrendingDown, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/shared/stat-card";
 import { formatAngka, formatPeriode, periodeSebelumnya } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { DashboardData } from "../types";
+
+// Empat kartu KPI kegiatan untuk periode terpilih
 
 function Selisih({ sekarang, sebelumnya, periode }: { sekarang: number; sebelumnya: number; periode: string }) {
   const bulanLalu = formatPeriode(periodeSebelumnya(periode, 2)[1]!);

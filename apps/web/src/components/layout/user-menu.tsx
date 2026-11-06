@@ -1,23 +1,3 @@
-// =============================================================================
-// MENU PENGGUNA DAN IDENTITAS AKUN (USER MENU)
-// =============================================================================
-// Gunanya: Menampilkan profil pengguna aktif, informasi bidang, dan kendali sesi
-// pada bilah atas serta bagian bawah bilah samping Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - useUnitSaya    : hook lokal pengambil nama bidang dan NIP pengguna aktif
-//   - useFotoSaya    : hook lokal pengambil URL foto profil pengguna aktif
-//   - UserMenu       : menu profil di bilah atas dengan tautan akun dan ganti sandi
-//   - SidebarAccount : kartu ringkas identitas akun di bagian dasar bilah samping
-//
-// Cara kerja:
-//   1. Memuat data profil pengguna login dari sesi autentikasi TanStack Query.
-//   2. Merender inisial avatar, nama, bidang, serta menu tarik-turun akun.
-//   3. Mengelola dialog modal perubahan kata sandi dan memproses fungsi logout.
-//
-// Dipakai oleh: frontend/src/components/layout/app-shell.tsx
-// =============================================================================
-
 "use client";
 
 import { ChevronDown, KeyRound, LogOut, Settings } from "lucide-react";
@@ -39,6 +19,8 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useProfil } from "@/features/auth/hooks/use-profil";
 import { cn } from "@/lib/utils";
+
+// Menu pengguna aktif: profil, bidang, dan tombol keluar
 
 function useUnitSaya() {
   const { data } = useProfil();

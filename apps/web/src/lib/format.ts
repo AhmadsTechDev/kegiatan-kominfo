@@ -1,28 +1,4 @@
-// =============================================================================
-// UTILITAS PEMFORMAT DATA TAMPILAN
-// =============================================================================
-// Gunanya: Menyeragamkan format tanggal, jam, rentang waktu, angka numerik,
-// periode, ukuran berkas unduhan, dan inisial pengguna sesuai standar lokal id-ID.
-//
-// Isi berkas:
-//   - formatTanggal        : memformat tanggal ke gaya bahasa Indonesia ("16 Okt 2026").
-//   - formatJam            : memformat jam ke format 24 jam dengan akhiran "WIB".
-//   - formatRentangTanggal : meringkas rentang dua tanggal pada bulan yang sama.
-//   - formatAngka          : memformat angka dengan tanda pemisah ribuan titik.
-//   - formatPeriode        : mengubah format "YYYY-MM" menjadi nama bulan dan tahun.
-//   - periodeSebelumnya    : menghasilkan daftar kode periode mundur beberapa bulan.
-//   - formatUkuran         : mengubah besaran bita menjadi teks KB atau MB ramah baca.
-//   - formatTanggalJam     : menggabungkan tanggal dan jam dalam satu baris teks.
-//   - inisial              : mengambil inisial 1-2 huruf kapital dari nama pengguna.
-//   - formatHari           : memformat tanggal dengan nama hari (panjang atau pendek).
-//   - tanggalWib           : mengambil tanggal kalender ISO "YYYY-MM-DD" waktu WIB.
-//
-// Catatan penting:
-//   - Menjadi acuan tunggal seluruh tampilan antarmuka (DESIGN.md bagian 11).
-//   - Zona waktu dikunci ke Asia/Jakarta agar hasil di server dan peramban identik.
-//
-// Dipakai oleh: Seluruh tabel, formulir, dashboard, dan kartu ringkasan kegiatan.
-// =============================================================================
+// Format tanggal, jam, angka, periode, ukuran berkas, dan inisial (id-ID)
 
 const ZONA = "Asia/Jakarta";
 

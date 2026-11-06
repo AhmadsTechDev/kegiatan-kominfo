@@ -1,32 +1,3 @@
-// =============================================================================
-// IMPLEMENTASI INTERNAL PETA SEBARAN KEGIATAN
-// =============================================================================
-// Gunanya: Menampilkan visualisasi peta sebaran seluruh kegiatan pada peta vektor
-//          MapLibre GL dengan pengelompokan titik kluster dan kartu popup info.
-//
-// Isi berkas:
-//   - keGeoJson        : pengonversi daftar kegiatan ke GeoJSON FeatureCollection
-//   - isiPopup         : pembuat elemen DOM popup detail kegiatan secara aman
-//   - batasTitik       : penghitung kotak pembatas (bounding box) seluruh titik
-//   - MapOverviewInner : komponen peta sebaran dengan kontrol kluster dan filter
-//
-// Cara kerja:
-//   1. Menginisialisasi kanvas peta MapLibre GL dengan layer gedung 3D dan kluster.
-//   2. Titik kegiatan berupa pin per warna status; yang berdekatan dikelompokkan ke kluster berjumlah.
-//   3. Hover pin: tooltip judul. Klik pin: popup judul, tanggal, lokasi, bidang, status.
-//      Klik kluster: zoom ke kumpulannya. Popup otomatis berpindah sisi agar tetap di dalam peta.
-//   4. Menyaring titik yang tampil sesuai status yang dipilih tanpa memuat ulang peta.
-//   5. Menyesuaikan sudut kamera ke seluruh titik melalui tombol Semua Titik.
-//
-// Catatan penting:
-//   - Popup informasi kegiatan dibangun melalui manipulasi DOM textContent (bukan
-//     HTML mentah) untuk mencegah celah keamanan injeksi skrip (XSS) pada judul.
-//   - Dibuka dalam tampak atas 2D; perspektif miring 3D bisa dipilih lewat tombol.
-//   - Menggunakan koordinat format MapLibre GL [bujur, lintang] (lng, lat).
-//
-// Dipakai oleh: map-overview.tsx (dimuat secara dinamis tanpa SSR di peramban)
-// =============================================================================
-
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -49,6 +20,8 @@ import {
   usePetaGelap,
 } from "./peta-dasar";
 import type { StatusPelaksanaan } from "./status-badge";
+
+// Peta sebaran kegiatan (MapLibre) dengan kluster titik dan popup info
 
 export type TitikPeta = {
   id: number;

@@ -1,27 +1,3 @@
-// =============================================================================
-// HALAMAN REKAPITULASI KEGIATAN OTOMATIS
-// =============================================================================
-// Gunanya: Menampilkan visualisasi data statistik kegiatan dinas yang mencakup
-// kartu ringkasan, grafik tren waktu, peringkat bidang/pegawai, dan jenis kegiatan.
-//
-// Isi berkas:
-//   - Pengalih       : tombol pemilih satuan periode (harian, bulanan, tahunan)
-//   - KartuRingkasan : kartu metrik total kegiatan, unit, pegawai, periode tersibuk
-//   - RekapView      : komponen utama penyusun filter, grafik, dan tabel rekap
-//
-// Cara kerja:
-//   1. Membaca parameter penyaring dari URL dan satuan waktu yang aktif.
-//   2. Mengambil data ringkasan terkini dari backend menggunakan useRekap.
-//   3. Membatasi rentang ke bulan berjalan jika satuan harian dipilih tanpa tanggal.
-//   4. Menyajikan visualisasi data interaktif dan navigasi ke halaman laporan cetak.
-//
-// Catatan penting:
-//   - Mengacu pada spesifikasi fitur features/04-rekap-otomatis.md.
-//   - Hak akses pegawai dibatasi hanya melihat bidang dan kegiatannya sendiri.
-//
-// Dipakai oleh: frontend/src/app/(app)/rekap/page.tsx
-// =============================================================================
-
 "use client";
 
 import { Building2, CalendarRange, FileText, TrendingUp, Users } from "lucide-react";
@@ -50,6 +26,8 @@ import type { RekapData, SatuanRekap } from "../types";
 import { TabelRekapPegawai } from "./tabel-rekap-pegawai";
 import { TabelRekapUnit } from "./tabel-rekap-unit";
 import { labelPeriode, TrenRekap } from "./tren-rekap";
+
+// Halaman rekap: kartu ringkasan, tren, peringkat bidang/pegawai, dan jenis kegiatan
 
 const SATUAN: { nilai: SatuanRekap; label: string }[] = [
   { nilai: "hari", label: "Harian" },

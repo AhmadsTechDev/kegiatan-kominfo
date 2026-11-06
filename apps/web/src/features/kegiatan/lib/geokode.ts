@@ -1,26 +1,4 @@
-// =============================================================================
-// MODUL GEOKODING LOKASI DAN ALAMAT
-// =============================================================================
-// Gunanya: Menyediakan fungsi pencarian tempat (forward geocoding) dan pembacaan
-// alamat dari koordinat (reverse geocoding) via layanan publik Photon (OpenStreetMap).
-//
-// Isi berkas:
-//   - Tempat          : tipe data representasi lokasi ringkas untuk komponen antarmuka
-//   - cariTempat      : mencari daftar saran lokasi berdasarkan teks kata kunci
-//   - alamatDariTitik : mengambil nama jalan dan wilayah dari koordinat lintang & bujur
-//
-// Cara kerja:
-//   1. Mengirim permintaan HTTP ke API publik Photon dengan parameter bias Palembang.
-//   2. Mengurai fitur GeoJSON mentah menjadi objek lokasi terstruktur Tempat.
-//   3. Membulatkan nilai koordinat lintang dan bujur hingga tingkat presisi 6 desimal.
-//
-// Catatan penting:
-//   - Layanan Photon dipakai karena berbasis data OpenStreetMap tanpa butuh kunci API.
-//   - Bias koordinat diarahkan ke Kota Palembang tanpa membatasi pencarian luar kota.
-//   - Menerima AbortSignal untuk membatalkan permintaan lama saat pengguna terus mengetik.
-//
-// Dipakai oleh: components/cari-lokasi.tsx, components/lokasi-kegiatan.tsx
-// =============================================================================
+// Cari tempat dan alamat dari koordinat lewat Photon (OpenStreetMap)
 
 const DASAR = "https://photon.komoot.io";
 const BIAS = "lat=-2.9761&lon=104.7754";

@@ -1,15 +1,4 @@
-// =============================================================================
-// MODUL KOMPRESI GAMBAR KLIEN
-// =============================================================================
-// Gunanya: Mengompresi dimensi dan ukuran foto di peramban sebelum diunggah agar
-// proses pengunggahan dokumentasi lapangan lebih cepat dan hemat kuota data.
-//
-// Catatan penting:
-//   - Sisi foto dibatasi maksimal 1920 px dengan kualitas 85% (DESIGN.md bagian 7).
-//   - Memakai createImageBitmap dan EXIF agar orientasi foto ponsel tetap tegak.
-//
-// Dipakai oleh: hooks/use-antrean-unggah.ts
-// =============================================================================
+// Kompres foto di peramban sebelum diunggah agar lebih cepat dan hemat kuota
 
 const SISI_MAKS = 1920;
 const KUALITAS = 0.85;

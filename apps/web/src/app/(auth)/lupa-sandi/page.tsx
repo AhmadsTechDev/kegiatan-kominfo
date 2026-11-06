@@ -1,19 +1,9 @@
-// =============================================================================
-// HALAMAN LUPA KATA SANDI
-// =============================================================================
-// Gunanya: Meminta tautan atur ulang kata sandi lewat email pribadi akun.
-//
-// Isi berkas:
-//   - metadata      : judul tab peramban
-//   - LupaSandiPage : AuthShell + KartuPublik berisi LupaSandiForm
-//
-// Dipakai oleh: Next.js App Router untuk rute /lupa-sandi
-// =============================================================================
-
 import type { Metadata } from "next";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { KartuPublik } from "@/features/auth/components/kartu-publik";
 import { LupaSandiForm } from "@/features/auth/components/reset-sandi-form";
+
+// Halaman minta tautan atur ulang kata sandi (/lupa-sandi)
 
 export const metadata: Metadata = { title: "Lupa kata sandi" };
 

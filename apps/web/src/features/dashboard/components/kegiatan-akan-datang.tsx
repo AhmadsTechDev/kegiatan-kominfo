@@ -1,26 +1,3 @@
-// =============================================================================
-// KOMPONEN KEGIATAN AKAN DATANG
-// =============================================================================
-// Gunanya: Menampilkan daftar agenda kegiatan dinas terdekat yang akan segera
-// dilaksanakan pada panel dashboard Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - kolom : Konfigurasi kolom tabel DataTable tingkat modul agar referensi stabil.
-//   - KartuKegiatan : Tampilan kartu vertikal untuk layar perangkat bergerak (mobile).
-//   - KegiatanAkanDatang : Komponen utama panel daftar kegiatan terdekat.
-//
-// Cara kerja:
-//   1. Menerima daftar data kegiatan ringkas yang berstatus akan datang.
-//   2. Merender DataTable responsif (format tabel pada desktop, kartu pada mobile).
-//   3. Menyediakan tautan rincian kegiatan dan navigasi ke daftar kegiatan lengkap.
-//
-// Catatan penting:
-//   - Definisi kolom dideklarasikan di tingkat modul agar referensinya stabil
-//     dan tidak memicu render ulang yang tidak perlu pada TanStack Table.
-//
-// Dipakai oleh: features/dashboard/components/dashboard-view.tsx
-// =============================================================================
-
 "use client";
 
 import { ArrowRight, CalendarCheck } from "lucide-react";
@@ -33,6 +10,8 @@ import { UnitChip } from "@/components/shared/unit-chip";
 import { Button } from "@/components/ui/button";
 import { formatJam, formatRentangTanggal } from "@/lib/format";
 import type { KegiatanRingkas } from "../types";
+
+// Panel kegiatan terdekat yang akan dilaksanakan
 
 const kolom: DataTableColumn<KegiatanRingkas>[] = [
   {

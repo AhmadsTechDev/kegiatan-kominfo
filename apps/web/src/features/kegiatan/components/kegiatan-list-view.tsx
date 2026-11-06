@@ -1,31 +1,3 @@
-// =============================================================================
-// TAMPILAN DAFTAR KEGIATAN DINAS
-// =============================================================================
-// Gunanya: Menampilkan katalog seluruh kegiatan dinas dengan dukungan filter
-// pencarian multi-parameter, paginasi data, tampilan tabel desktop, dan kartu ponsel.
-//
-// Isi berkas:
-//   - buatKolom        : generator konfigurasi kolom tabel data TanStack Table
-//   - KartuKegiatan    : kartu ringkasan kegiatan interaktif untuk layar ponsel
-//   - TabelKegiatan    : pembungkus DataTable dengan kerangka skeleton dan paginasi
-//   - KegiatanListView : komponen utama pengelola filter, lingkup akses, dan daftar
-//
-// Cara kerja:
-//   1. Membaca parameter filter dan halaman dari query string URL via useKegiatanFilter.
-//   2. Menentukan lingkup data (seluruh dinas, bidang, atau kegiatan milik saya).
-//   3. Mengambil data kegiatan via useDaftarKegiatan dengan caching otomatis.
-//   4. Merender tabel pada desktop atau beralih ke format kartu pada layar sempit.
-//   5. Menampilkan panel draf kegiatan di atas daftar khusus bagi pengguna berhak.
-//
-// Catatan penting:
-//   - Tata letak responsif tabel ke kartu mengikuti panduan (DESIGN.md bagian 5.3).
-//   - Lokasi dipadukan di bawah judul agar kolom aksi muat pada resolusi 1280 piksel.
-//   - Pimpinan hanya memiliki izin memantau, sehingga tombol tambah disembunyikan.
-//   - Kolom penanggung jawab otomatis disembunyikan saat membuka menu "Kegiatan saya".
-//
-// Dipakai oleh: app/(app)/kegiatan/page.tsx
-// =============================================================================
-
 "use client";
 
 import {
@@ -65,6 +37,8 @@ import { useKegiatanFilter } from "../hooks/use-kegiatan-filter";
 import type { FilterKegiatan, KegiatanItem } from "../types";
 import { DrafSaya } from "./draf-saya";
 import { KegiatanDokumentasiSheet } from "./kegiatan-dokumentasi-sheet";
+
+// Daftar kegiatan dengan filter, paginasi, tabel di desktop, dan kartu di ponsel
 
 type Lingkup = "semua" | "unit" | "saya" | "perbaikan";
 

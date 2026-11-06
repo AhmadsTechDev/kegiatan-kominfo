@@ -1,16 +1,11 @@
-// =============================================================================
-// KOMPONEN GRAFIK DATA (CHART)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis Recharts dengan dukungan
-//          variabel warna CSS tema untuk visualisasi grafik statistik kegiatan.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
 import { cn } from "cn"
 import * as RechartsPrimitive from "recharts"
 import type { TooltipValueType } from "recharts"
+
+// Komponen dasar shadcn/ui: pembungkus grafik Recharts dengan warna tema
 
 const THEMES = { light: "", dark: ".dark" } as const
 

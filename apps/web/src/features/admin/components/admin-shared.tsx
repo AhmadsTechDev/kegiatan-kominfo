@@ -1,31 +1,3 @@
-// =============================================================================
-// KOMPONEN BERSAMA DAN UTILITAS FITUR ADMINISTRASI
-// =============================================================================
-// Gunanya: menyediakan kumpulan komponen antarmuka bersama dan utilitas form
-// yang digunakan seragam pada seluruh halaman dan dialog fitur administrasi.
-//
-// Isi berkas:
-//   - AdminGuard : pembatas hak akses rute hanya untuk pengguna ber-role ADMIN
-//   - BadgeAktif : lencana visual penanda status aktif atau nonaktif suatu data
-//   - AksiBaris : tombol aksi ubah dan menu dropdown tindakan per baris tabel
-//   - terapkanGalatServer : pemeta galat validasi 422 backend ke React Hook Form
-//   - KolomCari : masukan pencarian data dengan mekanisme jeda ketik (debounce 300ms)
-//   - PilihanTab : tombol navigasi kelompok data bergaya pil dengan lencana jumlah
-//   - PilihUnit : pemilih bidang berjenjang dua tingkat (induk dan sub unit)
-//
-// Cara kerja:
-//   1. AdminGuard memeriksa sesi pengguna saat ini; bila bukan ADMIN, akses diblokir.
-//   2. PilihUnit memisahkan unit utama dan turunannya untuk masukan hierarki organisasi.
-//   3. terapkanGalatServer mencocokkan rincian galat 422 ke kolom input form yang sesuai.
-//
-// Catatan penting:
-//   - AdminGuard mengamankan tampilan UI, sedangkan backend tetap memvalidasi role (403).
-//   - Debounce 300ms pada KolomCari mencegah pemanggilan kueri pencarian berlebihan.
-//
-// Dipakai oleh: akun-view.tsx, akun-aksi.tsx, akun-detail-view.tsx, audit-log-view.tsx,
-//               master-view.tsx, pegawai-tab.tsx, bidang-tab.tsx
-// =============================================================================
-
 "use client";
 
 import { Ellipsis, Pencil, Power, PowerOff, ShieldAlert, Trash2 } from "lucide-react";
@@ -40,6 +12,8 @@ import { ApiError } from "@/lib/api-client";
 import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
 import { cn } from "@/lib/utils";
 import type { BidangAdmin } from "../types";
+
+// Komponen dan utilitas formulir bersama untuk halaman admin
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isPending } = useCurrentUser();

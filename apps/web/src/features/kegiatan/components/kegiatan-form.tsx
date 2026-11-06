@@ -1,34 +1,3 @@
-// =============================================================================
-// FORMULIR PENCATATAN DAN PENGUBAHAN KEGIATAN
-// =============================================================================
-// Gunanya: Komponen formulir utama untuk mencatat kegiatan dinas baru dalam dua
-// langkah bertahap atau memperbarui data kegiatan yang sudah ada dalam satu layar.
-//
-// Isi berkas:
-//   - PenunjukLangkah : indikator navigasi langkah pengisian formulir bertahap
-//   - BarisRingkasan  : penampil baris pratinjau isian sebelum kegiatan disimpan
-//   - KegiatanForm    : komponen formulir reaktif terintegrasi validasi dan mutasi
-//
-// Cara kerja:
-//   1. Mode tambah dibagi 2 langkah: identitas kegiatan, lalu jadwal dan lokasi.
-//   2. Menggunakan React Hook Form dan validasi skema Zod sebelum pengiriman.
-//   3. Opsi "Simpan draf" menyimpan isian mentah tanpa validasi ketat ke backend.
-//   4. Mengirim mutasi buat/ubah kegiatan ke backend via TanStack Query.
-//   5. Galat 422 dipetakan ke kolom terkait; galat 409 memicu dialog konflik versi.
-//
-// Catatan penting:
-//   - Mengikuti panduan tata letak formulir seluler dan desktop (DESIGN.md bagian 4.5).
-//   - Sesuai alur pencatatan kegiatan dinas dan ringkasan awal (features/01-catat-kegiatan.md).
-//   - Penanggung jawab ditentukan otomatis dari akun pegawai yang sedang aktif login.
-//   - Dokumentasi dan hasil diisi setelah kegiatan selesai melalui halaman detail.
-//   - Mode ubah: informasi, hasil, dokumentasi, lalu waktu dan lokasi paling bawah.
-//   - Kegiatan yang sudah selesai hanya menampilkan hasil dan dokumentasi; data
-//     lainnya dibuka lewat tombol "Ubah data kegiatan" atau otomatis bila ada galat.
-//   - Konflik pembaruan (409) diselesaikan dengan memuat ulang data terbaru ke form.
-//
-// Dipakai oleh: components/kegiatan-form-view.tsx
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -75,6 +44,8 @@ import {
 import type { Draf, KegiatanDetail, Referensi } from "../types";
 import { DokumentasiGaleri, type StatusAntrean } from "./dokumentasi-galeri";
 import { LokasiKegiatan } from "./lokasi-kegiatan";
+
+// Formulir kegiatan: dua langkah untuk kegiatan baru, satu layar untuk ubah
 
 type Props = {
   referensi: Referensi;

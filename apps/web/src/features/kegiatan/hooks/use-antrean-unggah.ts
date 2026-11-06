@@ -1,29 +1,3 @@
-// =============================================================================
-// HOOK PENGELOLA ANTREAN UNGGAH DOKUMENTASI
-// =============================================================================
-// Gunanya: Mengelola antrean pengunggahan berkas bukti kegiatan (foto/PDF) di peramban,
-// mencakup validasi ukuran/tipe, kompresi otomatis, kuota, serta pemantauan progres.
-//
-// Isi berkas:
-//   - UKURAN_MAKS         : batas ukuran berkas maksimal 20 MB (NFR-04)
-//   - JUMLAH_MAKS         : batas kuota dokumentasi maksimal 10 berkas per kegiatan
-//   - periksaBerkas       : validasi format berkas dan batas ukuran dokumen PDF di klien
-//   - useAntreanUnggah    : hook pengelola siklus hidup antrean berkas dan unggah sekuensial
-//   - useGantiDokumentasi : hook mutasi untuk menimpa berkas dokumentasi yang salah unggah
-//
-// Cara kerja:
-//   1. Berkas divalidasi format dan kuotanya sebelum dimasukkan ke dalam antrean.
-//   2. Berkas foto dikompresi di sisi klien sebelum dikirim satu per satu ke backend.
-//   3. Memantau persentase progres pengunggahan per berkas lewat callback API.
-//   4. Menyegarkan cache kueri kegiatan dan indikator dashboard setelah selesai.
-//
-// Catatan penting:
-//   - Berkas ditolak ditandai jelas tanpa membatalkan berkas lain (DESIGN.md bagian 7).
-//   - Menggunakan URL.revokeObjectURL saat pembersihan guna mencegah kebocoran memori.
-//
-// Dipakai oleh: components/dokumentasi-galeri.tsx
-// =============================================================================
-
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -33,6 +7,8 @@ import { dashboardKeys } from "@/features/dashboard/hooks/use-dashboard";
 import { gantiDokumentasi, unggahDokumentasi } from "../api/dokumentasi";
 import { JENIS_FOTO, kompresGambar } from "../lib/kompres-gambar";
 import { kegiatanKeys } from "./use-kegiatan";
+
+// Antrean unggah dokumentasi: validasi, kompresi, kuota, dan progres
 
 export const UKURAN_MAKS = 20 * 1024 * 1024;
 export const JUMLAH_MAKS = 10;

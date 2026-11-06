@@ -1,21 +1,11 @@
-// =============================================================================
-// KOMPONEN PEMILIH PERIODE BULAN DASHBOARD
-// =============================================================================
-// Gunanya: Menyediakan dropdown pemilihan bulan dan tahun untuk memfilter data
-// kegiatan dinas, dengan riwayat 12 bulan terakhir serta periode dari URL.
-//
-// Isi berkas:
-//   - PeriodePicker : Dropdown seleksi periode berbasis komponen Select.
-//
-// Dipakai oleh: features/dashboard/components/dashboard-view.tsx
-// =============================================================================
-
 "use client";
 
 import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatPeriode, periodeSebelumnya } from "@/lib/format";
+
+// Pilih bulan dan tahun (12 bulan terakhir) untuk filter dashboard
 
 type PeriodePickerProps = {
   value: string;

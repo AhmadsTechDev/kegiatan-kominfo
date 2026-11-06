@@ -1,26 +1,3 @@
-// =============================================================================
-// TABEL REKAPITULASI KEGIATAN PER PEGAWAI
-// =============================================================================
-// Gunanya: Menyajikan tabel peringkat keaktifan pegawai berdasarkan jumlah
-// kegiatan yang diampu, diurutkan dari yang terbanyak pada periode terpilih.
-//
-// Isi berkas:
-//   - hrefDaftar        : menyusun tautan rute kegiatan dengan filter per pegawai
-//   - TabelRekapPegawai : komponen tabel peringkat kegiatan per penanggung jawab
-//
-// Cara kerja:
-//   1. Menerima data rekapitulasi pegawai dan parameter penyaring yang aktif.
-//   2. Menampilkan nomor urut, nama pegawai, bidang, dan jumlah kegiatan.
-//   3. Menyediakan tautan pada nama pegawai untuk memeriksa rincian kegiatannya.
-//   4. Menampilkan baris total akumulasi kegiatan pada bagian bawah tabel.
-//
-// Catatan penting:
-//   - Mengacu pada dokumen spesifikasi features/04-rekap-otomatis.md.
-//   - Tautan langsung mengarah ke daftar kegiatan dengan filter yang sinkron.
-//
-// Dipakai oleh: frontend/src/features/rekap/components/rekap-view.tsx
-// =============================================================================
-
 "use client";
 
 import { Users } from "lucide-react";
@@ -30,6 +7,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatAngka } from "@/lib/format";
 import type { RekapData } from "../types";
+
+// Tabel peringkat pegawai menurut jumlah kegiatan pada periode terpilih
 
 function hrefDaftar(filter: NilaiFilter, pegawaiId: number) {
   const params = new URLSearchParams();

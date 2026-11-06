@@ -1,28 +1,3 @@
-// =============================================================================
-// TAB MASTER BIDANG DAN SUB BIDANG
-// =============================================================================
-// Gunanya: menyediakan antarmuka pengelolaan bidang dan sub bidang. Tingkatnya
-// ditentukan induknya: tanpa induk berarti bidang, dengan induk berarti sub bidang.
-//
-// Isi berkas:
-//   - SelNamaUnit : perender nama bidang beserta ikon tingkatan hierarki
-//   - UnitDialog : modal formulir pembuatan dan pembaruan data bidang dinas
-//   - BidangTab : panel tabel daftar bidang dengan filter induk dan aksi
-//
-// Cara kerja:
-//   1. Memuat daftar berdasarkan tingkatnya (bidang atau sub bidang).
-//   2. Formulir sub bidang mewajibkan memilih satu bidang sebagai induknya.
-//   3. Administrator dapat menyaring sub bidang berdasarkan bidang induknya.
-//   4. Yang nonaktif dipisah ke tab Nonaktif agar tidak mengotori daftar utama.
-//   5. Bidang yang belum dipakai pegawai, kegiatan, atau sub bidang bisa dihapus permanen.
-//
-// Catatan penting:
-//   - Kode unit bersifat opsional; jika dikosongkan, server mengisinya secara otomatis.
-//   - Kegiatan yang dicatat oleh unit turunan otomatis terhitung pada rekap unit induknya.
-//
-// Dipakai oleh: master-view.tsx
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { useBidangAdmin, useHapusBidang, useSimpanBidang } from "../hooks/use-admin";
 import type { BidangAdmin } from "../types";
 import { AksiBaris, BadgeAktif, KartuMaster, KolomCari, PilihanTab, terapkanGalatServer } from "./admin-shared";
+
+// Tab kelola bidang dan sub bidang (tanpa induk = bidang, dengan induk = sub bidang)
 
 const schema = z.object({
   kode: z

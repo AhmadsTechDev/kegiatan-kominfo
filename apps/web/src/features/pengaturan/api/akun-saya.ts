@@ -1,21 +1,7 @@
-// =============================================================================
-// API PENGATURAN AKUN SENDIRI
-// =============================================================================
-// Gunanya: Fungsi pemanggil endpoint /api/me untuk kontak, ganti email, ganti kata sandi,
-// sesi login aktif, dan preferensi tampilan/notifikasi.
-//
-// Isi berkas:
-//   - ubahKontak, gantiEmail, batalGantiEmail : data akun yang boleh diubah pemiliknya
-//   - gantiSandi : ganti kata sandi; sesi di perangkat lain dicabut
-//   - getSesi, cabutSesi, cabutSesiLain : sesi login aktif
-//   - getPreferensi, ubahPreferensi : tema dan notifikasi
-//   - SesiLogin, Preferensi, Tema : tipe data respons
-//
-// Dipakai oleh: hooks/use-akun-saya.ts
-// =============================================================================
-
 import { apiClient } from "@/lib/api-client";
 import type { Profil } from "@/features/auth/hooks/use-profil";
+
+// Pemanggil endpoint /api/me: kontak, email, kata sandi, sesi, dan preferensi
 
 export type Tema = "light" | "dark" | "system";
 export type Preferensi = { tema: Tema; notifPengingatKegiatan: boolean; notifPengingatDokumentasi: boolean };

@@ -1,21 +1,10 @@
-// =============================================================================
-// HOOK DATA PROFIL PENGGUNA (useProfil)
-// =============================================================================
-// Gunanya: Mengambil data profil lengkap pengguna aktif dari backend via endpoint GET /api/me,
-// mencakup identitas akun, status & verifikasi email, foto, data pegawai, dan bidang.
-//
-// Isi berkas:
-//   - Profil    : tipe data struktur respons profil pengguna dari endpoint GET /api/me
-//   - useProfil : hook query TanStack Query untuk memuat data profil dengan staleTime 5 menit
-//
-// Dipakai oleh: UserMenu, SidebarAccount, KegiatanForm, dan PengaturanView
-// =============================================================================
-
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type { Role, StatusAkun } from "@/types/auth";
+
+// Profil lengkap pengguna aktif dari GET /api/me
 
 export type Profil = {
   id: string;

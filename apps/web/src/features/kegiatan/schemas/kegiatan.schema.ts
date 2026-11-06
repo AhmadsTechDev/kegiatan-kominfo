@@ -1,27 +1,7 @@
-// =============================================================================
-// SKEMA FORM DAN PENGUBAH BENTUK DATA KEGIATAN
-// =============================================================================
-// Gunanya: Mendefinisikan aturan validasi form kegiatan berbasis Zod dan fungsi
-// konversi antara data form klien, payload API backend, serta draf kegiatan.
-//
-// Isi berkas:
-//   - kegiatanSchema    : aturan validasi kolom form (judul, waktu, koordinat)
-//   - keKegiatanPayload : mengubah teks form menjadi tipe data payload backend
-//   - nilaiAwalForm     : memetakan data detail backend menjadi nilai form
-//   - keIsiDraf         : mengubah isian form menjadi format penyimpanan draf
-//   - KOLOM_SERVER      : pemetaan nama kolom galat 422 server ke kolom form
-//
-// Catatan penting:
-//   - Form selalu bekerja dalam WIB (+07:00) terlepas dari zona waktu peramban.
-//   - Validasi klien memberi umpan balik instan, sedangkan backend tetap
-//     memeriksa ulang. Pemetaan galat 422 mengacu pada DESIGN.md bagian 4.5.
-//   - Draf disimpan tanpa validasi ketat dan koordinat dibulatkan 6 desimal.
-//
-// Dipakai oleh: form kegiatan, pengujian skema, dan halaman draf kegiatan
-// =============================================================================
-
 import { z } from "zod";
 import type { IsiDraf, KegiatanDetail, KegiatanPayload } from "../types";
+
+// Skema Zod formulir kegiatan dan konversi antara formulir, payload API, dan draf
 
 const JAM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const OFFSET_WIB_MS = 7 * 60 * 60 * 1000;

@@ -1,17 +1,7 @@
-// =============================================================================
-// KOMPONEN TAMPILAN DATA KOSONG
-// =============================================================================
-// Gunanya: Menampilkan informasi visual yang ramah saat data belum tersedia
-//          atau hasil penyaringan tidak menemukan rekaman apa pun.
-//
-// Isi berkas:
-//   - EmptyState : komponen penampil ikon, judul, deskripsi, dan tombol aksi
-//
-// Dipakai oleh: data-table.tsx, tabel kegiatan, master data, dan log audit
-// =============================================================================
-
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Tampilan saat data kosong atau filter tidak menemukan hasil
 
 type EmptyStateProps = {
   icon: LucideIcon;

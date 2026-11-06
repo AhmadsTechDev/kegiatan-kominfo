@@ -1,14 +1,9 @@
-// =============================================================================
-// TABEL DATA (SHADCN/UI TABLE)
-// =============================================================================
-// Gunanya: Komponen elemen tabel berbasis shadcn/ui untuk menyusun tata letak
-// data tabular secara rapi dengan pembungkus gulir horizontal responsif.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
 import { cn } from "cn"
+
+// Komponen dasar shadcn/ui: tabel dengan gulir horizontal
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (

@@ -1,16 +1,4 @@
-// =============================================================================
-// NAVIGASI PANAH UNTUK TAB DAN GRUP PILIHAN
-// =============================================================================
-// Gunanya: Pola keyboard ARIA untuk role="tablist" dan role="radiogroup": panah
-// kiri/kanan/atas/bawah berpindah sekaligus memilih, Home/End ke ujung, dan hanya
-// pilihan aktif yang masuk urutan Tab (roving tabindex).
-//
-// Isi berkas:
-//   - tanganiPanah : penangan onKeyDown di wadah grup; memilih dan memfokuskan pilihan baru
-//   - tabIndexPilihan : tabIndex 0 untuk pilihan aktif (atau pilihan pertama bila belum ada)
-//
-// Dipakai oleh: PilihanTab (admin-shared.tsx), PilihRole (akun-aksi.tsx), PanelTema (panel-preferensi.tsx)
-// =============================================================================
+// Navigasi panah keyboard untuk tablist/radiogroup (roving tabindex, Home/End)
 
 const PILIHAN = '[role="tab"]:not(:disabled), [role="radio"]:not(:disabled)';
 

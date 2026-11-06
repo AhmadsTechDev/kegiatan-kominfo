@@ -1,21 +1,3 @@
-// =============================================================================
-// KARTU STATISTIK METRIK (STAT CARD)
-// =============================================================================
-// Gunanya: Menampilkan kartu ringkasan indikator angka (KPI) yang dilengkapi ikon
-// berlatar status dan animasi angka pada Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - StatCard        : komponen kartu metrik dengan penghitung animasi bertahap
-//   - StatCardSkeleton: placeholder pemuatan beranimasi untuk menjaga kestabilan tata letak
-//
-// Cara kerja:
-//   1. Menerima nilai angka metrik, label indikator, ikon, dan opsi nada warna status.
-//   2. Menganimasikan angka dari nol ke target akhir menggunakan hook useCountUp.
-//   3. Menampilkan teks keterbacaan (sr-only) agar ramah pembaca layar (screen reader).
-//
-// Dipakai oleh: Dasbor utama dan modul rekapitulasi data kegiatan
-// =============================================================================
-
 "use client";
 
 import type { LucideIcon } from "lucide-react";
@@ -23,6 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCountUp } from "@/hooks/use-count-up";
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+// Kartu angka ringkasan (KPI) dengan ikon dan animasi angka
 
 const NADA = {
   primary: "bg-secondary text-primary",

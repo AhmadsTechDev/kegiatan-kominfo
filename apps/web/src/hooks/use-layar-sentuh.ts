@@ -1,25 +1,8 @@
-// =============================================================================
-// HOOK LAYAR SENTUH
-// =============================================================================
-// Gunanya: Mendeteksi perangkat dengan penunjuk kasar (jari) agar grafik bisa
-// memakai perilaku khusus sentuh, mis. tooltip hanya muncul saat diketuk.
-//
-// Isi berkas:
-//   - useLayarSentuh : hook langganan media query (pointer: coarse).
-//   - redamGeserGrafik : props untuk pembungkus grafik agar geseran jari
-//     (menggulir halaman) tidak mengaktifkan tooltip Recharts.
-//
-// Catatan penting:
-//   - Memakai useSyncExternalStore: bernilai false di server dan sinkron di peramban.
-//   - Geseran hanya dihentikan propagasinya (bukan preventDefault), jadi halaman
-//     tetap bisa digulir seperti biasa.
-//
-// Dipakai oleh: chart-unit-bulanan.tsx dan tren-rekap.tsx.
-// =============================================================================
-
 "use client";
 
 import { useSyncExternalStore } from "react";
+
+// Deteksi layar sentuh agar grafik bisa berperilaku khusus (mis. tooltip saat diketuk)
 
 const QUERY = "(pointer: coarse)";
 

@@ -1,30 +1,11 @@
-// =============================================================================
-// PEMILIH DENGAN PENCARIAN (PilihCari)
-// =============================================================================
-// Gunanya: Pengganti Select untuk daftar panjang (mis. ratusan pegawai): pengguna mengetik
-// sebagian nama lalu memilih dari hasil yang tersaring, tanpa menggulir daftar penuh.
-//
-// Isi berkas:
-//   - OpsiCari  : satu pilihan (nilai, label, keterangan opsional yang ikut dicari)
-//   - PilihCari : tombol pemicu + popover berisi kolom cari dan daftar pilihan
-//
-// Cara kerja:
-//   1. Kolom cari memakai pola combobox ARIA; panah atas/bawah memindah sorotan, Enter memilih,
-//      Escape menutup. Opsi "semua" selalu di urutan pertama untuk mengosongkan pilihan.
-//   2. Tiap kata yang diketik dicocokkan dengan awal kata di label atau keterangan (tanpa peduli
-//      huruf besar-kecil); yang cocok di label tampil lebih dulu.
-//   3. Hanya MAKS_TAMPIL hasil pertama yang dirender agar tetap ringan; sisanya diberi tahu
-//      sebagai ajakan mengetik lebih spesifik.
-//
-// Dipakai oleh: PantauView, LaporanView, AuditLogView
-// =============================================================================
-
 "use client";
 
 import { Check, ChevronDown, Search } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+
+// Pengganti Select untuk daftar panjang: ketik sebagian nama lalu pilih dari hasil
 
 export type OpsiCari = { nilai: string; label: string; keterangan?: string };
 

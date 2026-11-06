@@ -1,31 +1,3 @@
-// =============================================================================
-// KOMPONEN PENCARIAN CEPAT GLOBAL
-// =============================================================================
-// Gunanya: Menyediakan dialog modal pencarian instan (command palette) untuk
-// berpindah cepat ke halaman menu dan menemukan data kegiatan dinas.
-//
-// Isi berkas:
-//   - useTertunda    : custom hook untuk menunda pembaruan nilai input (debounce)
-//   - PencarianCepat : komponen utama kotak dialog modal pencarian global
-//
-// Cara kerja:
-//   1. Mendengarkan pintasan papan ketik global Ctrl+K atau Cmd+K untuk membuka
-//      atau menutup dialog pencarian dari seluruh halaman.
-//   2. Menunda pengiriman kueri pencarian selama 250 milidetik setelah ketukan
-//      terakhir untuk menghemat permintaan ke server backend.
-//   3. Menampilkan menu navigasi yang disesuaikan dengan peran hak akses pengguna.
-//   4. Mencari kegiatan via TanStack Query ketika kata kunci minimal 2 karakter.
-//   5. Mendukung navigasi interaktif memakai tombol panah keyboard dan Enter.
-//
-// Catatan penting:
-//   - Menggunakan endpoint GET /api/kegiatan sehingga pembatasan lingkup baca
-//     berdasarkan peran pengguna tetap ditegakkan oleh server backend.
-//   - Hasil kegiatan dibatasi 6 item teratas dengan tautan ke halaman daftar
-//     lengkap apabila hasil pencarian melebihi batas tersebut.
-//
-// Dipakai oleh: frontend/src/components/layout/app-shell.tsx
-// =============================================================================
-
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -42,6 +14,8 @@ import { getDaftarKegiatan } from "@/features/kegiatan/api/kegiatan";
 import type { KegiatanItem } from "@/features/kegiatan/types";
 import { formatRentangTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+// Pencarian cepat (command palette) untuk pindah halaman dan mencari kegiatan
 
 type Hasil =
   | { jenis: "halaman"; kunci: string; label: string; keterangan: string; href: string; icon: LucideIcon }

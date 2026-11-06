@@ -1,19 +1,3 @@
-// =============================================================================
-// TAB PEGAWAI YANG BELUM PUNYA AKUN
-// =============================================================================
-// Gunanya: Daftar pegawai aktif yang belum punya akun login, lengkap dengan tombol Undang
-// untuk mengirim tautan pembuatan kata sandi ke email pribadi mereka.
-//
-// Isi berkas:
-//   - FILTER_BELUM : filter tetap untuk pegawai aktif yang belum punya akun
-//   - BelumPunyaAkun : tabel pegawai belum berakun dengan pencarian, paginasi, dialog ubah data, dan dialog undangan
-//
-// Catatan penting:
-//   - Akun yang sudah diundang muncul di tab Akun dengan status Menunggu aktivasi, bukan di sini.
-//
-// Dipakai oleh: akun-view.tsx
-// =============================================================================
-
 "use client";
 
 import { Send, Trash2, UserCheck } from "lucide-react";
@@ -34,6 +18,8 @@ import type { FilterPegawai, PegawaiAdmin } from "../types";
 import { KartuMaster, KolomCari, TombolUbah } from "./admin-shared";
 import { PegawaiDialog } from "./pegawai-tab";
 import { UndangDialog } from "./undang-dialog";
+
+// Tab pegawai aktif yang belum punya akun, dengan tombol Undang
 
 export const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun: "tanpa", page: 1 };
 

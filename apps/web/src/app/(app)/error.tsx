@@ -1,29 +1,11 @@
-// =============================================================================
-// PENANGAN GALAT HALAMAN APLIKASI (ERROR BOUNDARY)
-// =============================================================================
-// Gunanya: Menangkap galat tak terduga pada grup rute (app) di Aplikasi Pendataan
-// Kegiatan sehingga kerangka tata letak tetap utuh dan pengguna dapat mencoba lagi.
-//
-// Isi berkas:
-//   - ErrorHalaman : komponen antarmuka peringatan galat beserta tombol pemulihan
-//
-// Cara kerja:
-//   1. Mencatat galat ke konsol peramban melalui hook useEffect saat galat terjadi.
-//   2. Menampilkan pesan ramah serta kode digest galat untuk pelacakan log server.
-//   3. Menyediakan tombol reset untuk merender ulang dan tautan kembali ke dashboard.
-//
-// Catatan penting:
-//   - Detail teknis disembunyikan dari pengguna sesuai panduan desain (DESIGN.md).
-//
-// Dipakai oleh: Next.js App Router saat terjadi galat runtime di rute (app)
-// =============================================================================
-
 "use client";
 
 import { RotateCw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+
+// Penangkap galat grup rute (app); kerangka tata letak tetap tampil dan bisa coba lagi
 
 export default function ErrorHalaman({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {

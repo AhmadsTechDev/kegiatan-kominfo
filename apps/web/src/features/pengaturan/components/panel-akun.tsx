@@ -1,21 +1,3 @@
-// =============================================================================
-// PANEL INFORMASI AKUN DAN GANTI EMAIL
-// =============================================================================
-// Gunanya: Menampilkan email pribadi (login), status verifikasi email, role, status akun,
-// dan tanggal pembuatan akun, serta alur pengajuan ganti email.
-//
-// Isi berkas:
-//   - GantiEmailDialog : formulir email baru + kata sandi saat ini (PATCH /me/email)
-//   - PanelAkun        : rincian akun, pemberitahuan email yang menunggu verifikasi, tombol batal
-//
-// Cara kerja:
-//   1. Pengguna mengajukan email baru; tautan verifikasi dikirim ke email baru.
-//   2. Selama belum diverifikasi, email lama tetap dipakai untuk login dan ditampilkan.
-//   3. Pengajuan bisa dibatalkan; tautan yang sudah terkirim ikut tidak berlaku.
-//
-// Dipakai oleh: frontend/src/features/pengaturan/components/pengaturan-view.tsx
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,6 +19,8 @@ import { formatTanggal, formatTanggalJam } from "@/lib/format";
 import { LABEL_ROLE } from "@/types/auth";
 import { useBatalGantiEmail, useGantiEmail } from "../hooks/use-akun-saya";
 import { Baris } from "./panel-profil";
+
+// Panel informasi akun: email, verifikasi, role, status, dan ganti email
 
 const schemaEmail = (lama: string) =>
   z.object({

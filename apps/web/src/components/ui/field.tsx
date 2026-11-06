@@ -1,10 +1,3 @@
-// =============================================================================
-// KOMPONEN BIDANG FORMULIR (FIELD)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui untuk menyusun elemen input formulir
-//          lengkap dengan label, keterangan petunjuk, dan pesan validasi error.
-// =============================================================================
-
 "use client"
 
 import { useMemo } from "react"
@@ -13,6 +6,8 @@ import { cn } from "cn"
 
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+
+// Komponen dasar shadcn/ui: field formulir dengan label, petunjuk, dan pesan galat
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (

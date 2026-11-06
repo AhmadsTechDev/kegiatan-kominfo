@@ -1,24 +1,3 @@
-// =============================================================================
-// DIALOG KONFIRMASI TINDAKAN
-// =============================================================================
-// Gunanya: Menampilkan modal dialog konfirmasi peringatan sebelum menjalankan
-//          tindakan penting atau berbahaya seperti menghapus data.
-//
-// Isi berkas:
-//   - ConfirmDialog : komponen modal konfirmasi dengan dukungan tombol pending
-//
-// Cara kerja:
-//   1. Menerima status open dan menampilkan judul serta deskripsi konsekuensi aksi.
-//   2. Mengunci tombol aksi dan menampilkan spinner jika proses pending berjalan.
-//   3. Memanggil callback onConfirm ketika pengguna menekan tombol konfirmasi.
-//
-// Catatan penting:
-//   - Tombol konfirmasi tidak langsung menutup dialog agar tetap terbuka selama
-//     permintaan ke server berlangsung sampai proses selesai.
-//
-// Dipakai oleh: Modul kegiatan (hapus/batal kegiatan, hapus foto dokumentasi)
-// =============================================================================
-
 "use client";
 
 import {
@@ -32,6 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+
+// Dialog konfirmasi sebelum tindakan penting atau berbahaya
 
 type ConfirmDialogProps = {
   open: boolean;

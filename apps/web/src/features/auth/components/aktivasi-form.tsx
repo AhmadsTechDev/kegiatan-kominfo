@@ -1,24 +1,3 @@
-// =============================================================================
-// FORMULIR AKTIVASI AKUN (AktivasiForm)
-// =============================================================================
-// Gunanya: Menangani aktivasi akun yang dibuat administrator melalui tautan ber-token:
-// memvalidasi token, menerima kata sandi pertama, lalu mengaktifkan akun.
-//
-// Isi berkas:
-//   - AktivasiForm : komponen formulir utama untuk validasi token dan pembuatan sandi pertama
-//
-// Cara kerja:
-//   1. Membaca token aktivasi dari parameter URL peramban menggunakan useSearchParams.
-//   2. Memverifikasi token dan mengambil nama serta email pemilik akun via getInfoAktivasi.
-//   3. Mengirim kata sandi ke POST /api/aktivasi; email terverifikasi dan akun menjadi aktif.
-//   4. Menampilkan status sukses dengan tombol navigasi masuk ke halaman login.
-//
-// Catatan penting:
-//   - Tautan undangan berlaku 72 jam dan sekali pakai; kirim ulang undangan membatalkan tautan lama.
-//
-// Dipakai oleh: Halaman aktivasi akun (frontend/src/app/(auth)/aktivasi/page.tsx)
-// =============================================================================
-
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -32,6 +11,8 @@ import { authClient } from "@/lib/auth-client";
 import { aktifkanAkun, getInfoAktivasi, tautanRusak, tokenTidakBerlaku } from "../api/akun-publik";
 import { KepalaKartu } from "./kartu-publik";
 import { FormSandiBaru, Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
+
+// Aktivasi akun dari tautan email: cek token lalu buat kata sandi pertama
 
 const PESAN_TIDAK_BERLAKU = "Tautan aktivasi sudah kedaluwarsa, sudah pernah dipakai, atau tidak lengkap. Minta administrator mengirim ulang undangan.";
 

@@ -1,15 +1,10 @@
-// =============================================================================
-// KOTAK BANTUAN KURSOR (SHADCN/UI TOOLTIP)
-// =============================================================================
-// Gunanya: Komponen petunjuk ringkas berbasis Radix UI dan shadcn/ui untuk
-// memunculkan label informasi saat kursor mengarah ke elemen antarmuka.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
 import { cn } from "cn"
 import { Tooltip as TooltipPrimitive } from "radix-ui"
+
+// Komponen dasar shadcn/ui: tooltip (Radix)
 
 function TooltipProvider({
   delayDuration = 0,

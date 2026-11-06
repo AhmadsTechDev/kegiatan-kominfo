@@ -1,28 +1,3 @@
-// =============================================================================
-// TAMPILAN FORMULIR KEGIATAN BARU DAN UBAH
-// =============================================================================
-// Gunanya: Menyediakan halaman pembungkus formulir penambahan kegiatan baru
-// serta pengubahan data kegiatan yang sudah ada dengan validasi hak akses pengguna.
-//
-// Isi berkas:
-//   - TombolKembali    : tombol navigasi kembali ke rute halaman sebelumnya
-//   - KegiatanBaruView : tampilan tambah kegiatan baru dan pemulihan isian draf
-//   - KegiatanUbahView : tampilan edit kegiatan dengan verifikasi izin ubah
-//
-// Cara kerja:
-//   1. KegiatanBaruView memastikan akun pengguna terhubung ke data pegawai aktif.
-//   2. Menolak akses input untuk peran pimpinan karena pimpinan hanya memantau.
-//   3. KegiatanUbahView memeriksa validitas data dan kepemilikan izin edit (bisaUbah).
-//   4. Mengirimkan data referensi master ke komponen formulir utama KegiatanForm.
-//
-// Catatan penting:
-//   - Memenuhi kebutuhan pencatatan kegiatan dinas oleh pegawai (FR-04).
-//   - Larangan akses peran pimpinan ditegakkan ganda di UI dan backend (NFR-03).
-//   - Pengubahan kegiatan hanya diizinkan untuk pembuat, penanggung jawab, atau admin.
-//
-// Dipakai oleh: app/(app)/kegiatan/baru/page.tsx, app/(app)/kegiatan/[id]/ubah/page.tsx
-// =============================================================================
-
 "use client";
 
 import { ArrowLeft } from "lucide-react";
@@ -36,6 +11,8 @@ import { ApiError } from "@/lib/api-client";
 import { idValid, useDraf, useKegiatan, useReferensi } from "../hooks/use-kegiatan";
 import { KegiatanForm } from "./kegiatan-form";
 import { KegiatanFormSkeleton, KegiatanTanpaAkses, KegiatanTidakDitemukan } from "./kegiatan-states";
+
+// Pembungkus halaman tambah/ubah kegiatan, termasuk cek hak akses
 
 function TombolKembali({ href }: { href: string }) {
   return (

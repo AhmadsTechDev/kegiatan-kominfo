@@ -1,30 +1,6 @@
-// =============================================================================
-// KLIEN HTTP DAN PENANGAN GALAT API
-// =============================================================================
-// Gunanya: Menjadi klien HTTP tunggal (berbasis Axios) untuk seluruh komunikasi
-// frontend ke backend, dilengkapi interceptor penanganan error dan sesi kedaluwarsa.
-//
-// Isi berkas:
-//   - ApiError   : kelas galat kustom penyimpan status HTTP, kode, pesan, dan detail.
-//   - apiClient  : instance Axios terkonfigurasi dengan baseURL "/api" dan kredensial cookie.
-//   - bacaBody   : helper pembaca respons error yang terbungkus Blob (misal saat unduh berkas).
-//
-// Cara kerja:
-//   1. Permintaan HTTP dikirim dengan kredensial cookie sesi aktif (withCredentials: true).
-//   2. Interceptor respons memeriksa kode status HTTP saat permintaan gagal.
-//   3. Status 401 mengalihkan layar via window.location.assign ke "/login?sesi=berakhir"
-//      serta menyematkan parameter ?next= untuk mengembalikan pengguna setelah login.
-//   4. Status 413, 415, dan 422 meneruskan pesan validasi asli dari backend, sedangkan
-//      status lain dipetakan ke pesan ramah bahasa Indonesia (DESIGN.md bagian 7).
-//
-// Catatan penting:
-//   - Mengikuti standarisasi penanganan error PRD bagian 9 dan NFR terkait keamanan.
-//   - Pengalihan 401 sengaja memicu reload penuh untuk membersihkan seluruh state sesi lama.
-//
-// Dipakai oleh: Seluruh fungsi pemanggil API dan data fetcher TanStack Query di frontend.
-// =============================================================================
-
 import axios, { AxiosError } from "axios";
+
+// Klien HTTP (Axios) ke backend, dengan penanganan galat dan sesi kedaluwarsa
 
 export type ApiErrorBody = {
   code?: string;

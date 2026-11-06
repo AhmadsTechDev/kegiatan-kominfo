@@ -1,30 +1,7 @@
-// =============================================================================
-// API KEGIATAN DINAS
-// =============================================================================
-// Gunanya: Menyediakan fungsi-fungsi pemanggil endpoint backend REST API untuk
-// seluruh operasi data kegiatan, mulai dari pembacaan, pembuatan, pengubahan,
-// pembatalan, penghapusan, hingga pemeriksaan status oleh pimpinan.
-//
-// Isi berkas:
-//   - UKURAN_HALAMAN    : konstanta batas jumlah data per halaman (20 item)
-//   - getDaftarKegiatan : mengambil daftar kegiatan dengan filter dan paginasi
-//   - getKegiatan       : mengambil rincian data satu kegiatan berdasarkan ID
-//   - getReferensi      : mengambil data opsi master (jenis, bidang, pegawai)
-//   - buatKegiatan      : mengirim data kegiatan baru (bisa melanjutkan draf)
-//   - ubahKegiatan      : memperbarui data kegiatan dengan expectedUpdatedAt
-//   - selesaikanKegiatan: menyelesaikan kegiatan yang berlangsung (waktu selesai menjadi sekarang)
-//   - periksaKegiatan   : mencatat hasil pemeriksaan pimpinan beserta catatan
-//   - hapusKegiatan     : menghapus rekaman kegiatan secara permanen
-//
-// Catatan penting:
-//   - Menggunakan expectedUpdatedAt untuk mencegah konflik data (optimistic locking).
-//   - Parameter drafId dikirim saat rilis draf agar backend menghapus draf terkait.
-//
-// Dipakai oleh: hooks/use-kegiatan.ts
-// =============================================================================
-
 import { apiClient } from "@/lib/api-client";
 import type { DaftarKegiatan, FilterKegiatan, HasilSimpan, KegiatanDetail, KegiatanPayload, Referensi } from "../types";
+
+// Pemanggil endpoint kegiatan: baca, buat, ubah, batal, hapus, dan periksa
 
 export const UKURAN_HALAMAN = 20;
 

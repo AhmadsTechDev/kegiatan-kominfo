@@ -1,26 +1,3 @@
-// =============================================================================
-// TOMBOL AKSI PEMERIKSAAN PIMPINAN
-// =============================================================================
-// Gunanya: Menyediakan tombol tindakan verifikasi bagi pimpinan dan admin untuk menandai
-// kegiatan telah diperiksa atau meminta perbaikan disertai catatan wajib.
-//
-// Isi berkas:
-//   - PeriksaAksi : komponen tombol aksi pemeriksaan dengan modal catatan perbaikan
-//
-// Cara kerja:
-//   1. Tombol "Tandai diperiksa" langsung mengirim status diperiksa ke backend.
-//   2. Tombol "Perlu perbaikan" membuka modal dialog isian catatan koreksi.
-//   3. Catatan wajib diisi sebelum status perbaikan dapat dikirimkan ke server.
-//   4. Menyegarkan cache query kegiatan dan pantauan secara otomatis setelah mutasi.
-//
-// Catatan penting:
-//   - Sesuai alur pengawasan pimpinan pada modul pantau (features/06-pantau-pimpinan.md).
-//   - Tersedia varian prop ringkas untuk disematkan di dalam baris tabel data.
-//   - Status kembali menjadi belum diperiksa bila kegiatan diubah oleh pembuatnya.
-//
-// Dipakai oleh: components/kegiatan-detail-view.tsx, features/pantau/components/*
-// =============================================================================
-
 "use client";
 
 import { CheckCheck, MessageSquareWarning } from "lucide-react";
@@ -35,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { usePeriksaKegiatan } from "../hooks/use-kegiatan";
 import type { StatusPelaksanaan } from "@/components/shared/status-badge";
 import type { StatusPemeriksaanKegiatan } from "../types";
+
+// Tombol periksa untuk pimpinan/admin: tandai diperiksa atau minta perbaikan (catatan wajib)
 
 type Props = {
   kegiatan: { id: number; judul: string; statusPemeriksaan: StatusPemeriksaanKegiatan; statusPelaksanaan: StatusPelaksanaan };

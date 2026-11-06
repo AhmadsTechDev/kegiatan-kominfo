@@ -1,12 +1,7 @@
-// =============================================================================
-// BIDANG TEKS MULTIBARIS (SHADCN/UI TEXTAREA)
-// =============================================================================
-// Gunanya: Komponen area input teks multibaris berbasis shadcn/ui dengan gaya
-// fokus terpadu, ukuran adaptif, serta penanda status validasi formulir.
-// =============================================================================
-
 import * as React from "react"
 import { cn } from "cn"
+
+// Komponen dasar shadcn/ui: input teks multibaris
 
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (

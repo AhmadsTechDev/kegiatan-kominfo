@@ -1,21 +1,3 @@
-// =============================================================================
-// PANEL PROFIL: DATA KEPEGAWAIAN DAN KONTAK
-// =============================================================================
-// Gunanya: Menampilkan data kepegawaian (dikelola administrator, hanya dibaca) dan
-// formulir nomor kontak yang boleh diubah sendiri oleh pemilik akun.
-//
-// Isi berkas:
-//   - Baris, Kosong      : baris label-nilai dan penanda nilai kosong (dipakai panel lain)
-//   - PanelKepegawaian   : nama, NIP, dan bidang (read-only)
-//   - PanelKontak        : formulir nomor kontak (PATCH /me)
-//
-// Catatan penting:
-//   - Nama, NIP, dan bidang hanya bisa diubah admin; backend menolak perubahan dari pemilik akun.
-//   - Foto profil diubah dari kartu profil di bagian atas halaman Pengaturan.
-//
-// Dipakai oleh: frontend/src/features/pengaturan/components/pengaturan-view.tsx
-// =============================================================================
-
 "use client";
 
 import { Check, IdCard, Pencil } from "lucide-react";
@@ -30,6 +12,8 @@ import { Spinner } from "@/components/ui/spinner";
 import type { Profil } from "@/features/auth/hooks/use-profil";
 import { ApiError } from "@/lib/api-client";
 import { useUbahKontak } from "../hooks/use-akun-saya";
+
+// Panel profil: data kepegawaian (hanya baca) dan nomor kontak yang bisa diubah
 
 export function Baris({ label, children }: { label: string; children: React.ReactNode }) {
   return (

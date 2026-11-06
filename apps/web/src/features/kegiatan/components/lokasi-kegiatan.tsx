@@ -1,30 +1,3 @@
-// =============================================================================
-// KOMPONEN PEMILIH LOKASI KEGIATAN
-// =============================================================================
-// Gunanya: Bagian formulir interaktif untuk menentukan lokasi kegiatan dinas
-// melalui pencarian tempat, klik peta, koordinat GPS perangkat, atau input manual.
-//
-// Isi berkas:
-//   - bulatkan       : fungsi pembulatan angka koordinat presisi hingga 6 desimal
-//   - kunci          : penyusun string kunci cache kombinasi lintang dan bujur
-//   - LokasiKegiatan : komponen pemilih koordinat peta dan input nama tempat
-//
-// Cara kerja:
-//   1. Titik koordinat dapat ditentukan lewat pencarian tempat, klik peta, atau GPS.
-//   2. Reverse geocoding otomatis mencari alamat dari titik peta dengan debounce 500 ms.
-//   3. Nama tempat otomatis mengisi kolom "Nama lokasi" jika belum diketik manual.
-//   4. Mengetik nama secara mandiri mematikan penimpaan otomatis dari peta.
-//   5. Disediakan opsi kolom input koordinat manual jika peta interaktif terkendala.
-//
-// Catatan penting:
-//   - Memenuhi kebutuhan fungsional pemetaan lokasi kegiatan dinas (FR-07).
-//   - Koordinat dibulatkan 6 angka desimal dengan tingkat presisi sekitar 10 cm.
-//   - Isian koordinat manual disediakan sebagai fallback koneksi lambat (DESIGN.md bagian 6).
-//   - Menggunakan AbortController dan cache memori ref agar hemat panggilan geocoder.
-//
-// Dipakai oleh: components/kegiatan-form.tsx
-// =============================================================================
-
 "use client";
 
 import { ChevronDown, LocateFixed, MapPin, X } from "lucide-react";
@@ -40,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { alamatDariTitik, type Tempat } from "../lib/geokode";
 import type { KegiatanFormValues } from "../schemas/kegiatan.schema";
 import { CariLokasi } from "./cari-lokasi";
+
+// Bagian formulir lokasi: cari tempat, klik peta, GPS, atau isi koordinat manual
 
 const bulatkan = (n: number) => Math.round(n * 1e6) / 1e6;
 const kunci = (k: { lat: number; lng: number }) => `${k.lat},${k.lng}`;

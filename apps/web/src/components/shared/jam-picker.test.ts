@@ -1,20 +1,7 @@
-// =============================================================================
-// PENGUJIAN NORMALISASI JAM (JAM PICKER TEST)
-// =============================================================================
-// Gunanya: Menguji fungsi normalisasiJam untuk memastikan parsing teks waktu bebas
-//          menghasilkan format baku 24 jam dan menolak masukan yang tidak valid.
-//
-// Isi berkas:
-//   - Unit test bun:test untuk fungsi normalisasiJam
-//
-// Yang diuji dan alasannya:
-//   - Pengujian ragam format jam ("8", "830", "8.30", dll.) menjadi format "HH:MM".
-//   - Pengujian penolakan nilai tak valid ("24:00", "abc", dll.) agar bernilai null.
-//   - Diuji untuk menjamin keandalan input jam kegiatan sebelum validasi formulir.
-// =============================================================================
-
 import { describe, expect, test } from "bun:test";
 import { normalisasiJam } from "./jam-picker";
+
+// Uji normalisasiJam: teks jam bebas jadi format 24 jam, masukan salah ditolak
 
 describe("normalisasiJam", () => {
   test.each([

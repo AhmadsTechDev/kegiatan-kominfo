@@ -1,29 +1,3 @@
-// =============================================================================
-// HOOK PENGELOLA DATA KEGIATAN (TANSTACK QUERY)
-// =============================================================================
-// Gunanya: Menyediakan kumpulan hook kueri dan mutasi TanStack Query untuk membaca,
-// menambah, memperbarui, memeriksa, dan menghapus kegiatan serta draf.
-//
-// Isi berkas:
-//   - kegiatanKeys       : hierarki kunci cache data kegiatan, referensi, dan draf
-//   - idValid            : fungsi validasi parameter ID bilangan bulat positif
-//   - useDaftarKegiatan  : hook pembaca daftar kegiatan dengan keepPreviousData
-//   - useKegiatan        : hook pembaca rincian detail kegiatan tunggal
-//   - useReferensi       : hook pembaca data master (jenis, bidang, pegawai)
-//   - useBuatKegiatan    : hook mutasi pencatatan kegiatan baru
-//   - useUbahKegiatan    : hook mutasi pengubahan data kegiatan
-//   - useSelesaikanKegiatan: hook mutasi untuk menyelesaikan kegiatan yang sedang berlangsung
-//   - usePeriksaKegiatan : hook mutasi pemeriksaan dan verifikasi pimpinan
-//   - useHapusKegiatan   : hook mutasi penghapusan kegiatan
-//
-// Catatan penting:
-//   - Setiap mutasi otomatis menyegarkan cache data terkait, dashboard, dan rekap.
-//   - Mutasi hapus tidak menyegarkan kueri detail guna mencegah 404 sebelum redirect.
-//   - Pimpinan dinonaktifkan dari kueri draf karena tidak memiliki akses pencatatan.
-//
-// Dipakai oleh: modul kegiatan (komponen form, detail, list, draf, dan aksi)
-// =============================================================================
-
 "use client";
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -42,6 +16,8 @@ import {
   ubahKegiatan,
 } from "../api/kegiatan";
 import type { FilterKegiatan, KegiatanPayload } from "../types";
+
+// Hook TanStack Query untuk kegiatan dan draf
 
 export const kegiatanKeys = {
   all: ["kegiatan"] as const,

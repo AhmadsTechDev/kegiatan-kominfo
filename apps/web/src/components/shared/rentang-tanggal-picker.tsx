@@ -1,27 +1,3 @@
-// =============================================================================
-// PEMILIH RENTANG TANGGAL KALENDER
-// =============================================================================
-// Gunanya: Menyediakan kontrol pemilihan rentang tanggal kalender dilengkapi
-//          menu tombol pintas pilihan cepat (hari ini, bulan ini, tahun ini).
-//
-// Isi berkas:
-//   - labelRentang         : pembuat teks label pembacaan rentang tanggal terpilih
-//   - RentangTanggalPicker : komponen popover pemilih rentang tanggal kalender
-//
-// Cara kerja:
-//   1. Menampilkan tombol pemicu dengan label rentang aktif atau placeholder.
-//   2. Membuka popover yang berisi daftar pilihan cepat dan kalender ganda.
-//   3. Menghitung tanggal pilihan cepat berbasis waktu WIB saat tombol diklik.
-//   4. Mengirimkan nilai rentang string "YYYY-MM-DD" ke callback onChange.
-//
-// Catatan penting:
-//   - Nilai tanggal dikelola sebagai string kalender WIB "YYYY-MM-DD" untuk
-//     mencegah distorsi akibat perbedaan zona waktu perangkat lokal pengguna.
-//   - Opsi bolehKosong memungkinkan pemaksaan rentang wajib (misal untuk laporan).
-//
-// Dipakai oleh: filter-bar.tsx (penyaring kegiatan) dan modul laporan kegiatan
-// =============================================================================
-
 "use client";
 
 import { CalendarRange, X } from "lucide-react";
@@ -33,6 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { formatTanggal, tanggalWib } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { keDate, keString } from "./date-picker";
+
+// Pemilih rentang tanggal dengan pintasan (hari ini, bulan ini, tahun ini)
 
 export type RentangTanggal = { dari: string | null; sampai: string | null };
 

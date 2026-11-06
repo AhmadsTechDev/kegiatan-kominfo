@@ -1,22 +1,8 @@
-// =============================================================================
-// HOOK DAN UTILITAS HITUNG MUNDUR (useCountdown & formatSisaWaktu)
-// =============================================================================
-// Gunanya: Menghitung sisa detik menuju batas target secara realtime per detik dan
-// memformat angka detik menjadi representasi string "MM:SS".
-//
-// Isi berkas:
-//   - useCountdown    : hook penghitung sisa detik menuju target waktu (mis. akun terkunci)
-//   - formatSisaWaktu : fungsi pemformat angka detik menjadi tampilan format "MM:SS"
-//
-// Catatan penting:
-//   - Menyimpan timestamp waktu saat ini; sisa detik dihitung dinamis untuk menghindari efek samping render.
-//
-// Dipakai oleh: LoginForm (frontend/src/features/auth/components/login-form.tsx)
-// =============================================================================
-
 "use client";
 
 import { useEffect, useState } from "react";
+
+// Hitung mundur per detik ke waktu target, format "MM:SS"
 
 export function useCountdown(sampai: Date | undefined, mulai: number) {
   const [sekarang, setSekarang] = useState<number | null>(null);

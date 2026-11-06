@@ -1,24 +1,3 @@
-// =============================================================================
-// TAMPILAN INDUK PENGELOLAAN MASTER DATA
-// =============================================================================
-// Gunanya: menyediakan wadah navigasi bertab untuk mengelola seluruh master data
-// aplikasi: pegawai, bidang utama, sub bagian/seksi, dan jenis kegiatan.
-//
-// Isi berkas:
-//   - MasterView : komponen induk pengatur tab master data dengan navigasi URL
-//
-// Cara kerja:
-//   1. Membaca parameter query URL (?tab= dan ?induk=) untuk menentukan tab aktif.
-//   2. Menampilkan jumlah data pada masing-masing label tab dari TanStack Query cache.
-//   3. Mengarahkan pergantian tab via router.replace tanpa memicu pemuatan ulang halaman.
-//
-// Catatan penting:
-//   - Memenuhi FR-02 (status tab di URL mempermudah bookmark dan pembagian tautan).
-//   - Halaman dilindungi oleh AdminGuard agar hanya dapat diakses oleh peran ADMIN.
-//
-// Dipakai oleh: frontend/src/app/(app)/admin/master/page.tsx
-// =============================================================================
-
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -30,6 +9,8 @@ import { AdminGuard, PilihanTab } from "./admin-shared";
 import { JenisTab } from "./jenis-tab";
 import { PegawaiTab } from "./pegawai-tab";
 import { BidangTab } from "./bidang-tab";
+
+// Halaman master data bertab: pegawai, bidang, dan jenis kegiatan
 
 type Tab = "pegawai" | "unit" | "sub" | "jenis";
 const TAB_SAH: Tab[] = ["pegawai", "unit", "sub", "jenis"];

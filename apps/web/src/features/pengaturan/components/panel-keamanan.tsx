@@ -1,21 +1,3 @@
-// =============================================================================
-// PANEL KEAMANAN AKUN
-// =============================================================================
-// Gunanya: Pengaturan keamanan akun sendiri: ganti kata sandi, sesi login aktif
-// (keluarkan satu perangkat atau semua perangkat lain), dan keluar.
-//
-// Isi berkas:
-//   - PanelSandi : tombol ganti kata sandi dan petunjuk bila lupa kata sandi
-//   - PanelSesi  : daftar sesi aktif dengan keadaan memuat, galat, dan konfirmasi pencabutan
-//   - PanelKeluar: tombol keluar dari perangkat ini
-//
-// Catatan penting:
-//   - Akun terkunci 15 menit setelah 5 kali salah kata sandi.
-//   - Sesi yang dicabut langsung tidak berlaku (backend memeriksa sesi di basis data setiap permintaan).
-//
-// Dipakai oleh: frontend/src/features/pengaturan/components/pengaturan-view.tsx
-// =============================================================================
-
 "use client";
 
 import { KeyRound, LogOut, MonitorX, ShieldCheck } from "lucide-react";
@@ -31,6 +13,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { GantiSandiDialog } from "@/features/auth/components/ganti-sandi-dialog";
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useCabutSesi, useCabutSesiLain, useSesi } from "../hooks/use-akun-saya";
+
+// Panel keamanan: ganti kata sandi, sesi login aktif, dan keluar
 
 export function PanelSandi() {
   const [buka, setBuka] = useState(false);

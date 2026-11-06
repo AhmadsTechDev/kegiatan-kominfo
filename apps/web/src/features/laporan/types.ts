@@ -1,15 +1,4 @@
-// =============================================================================
-// TIPE DATA FITUR LAPORAN
-// =============================================================================
-// Gunanya: Mendefinisikan tipe data TypeScript untuk struktur data pratinjau
-// laporan kegiatan dari backend serta parameter cakupan filter pengguna.
-//
-// Isi berkas:
-//   - PratinjauLaporan : kontrak respons GET /ekspor/pratinjau (kop, kolom, baris)
-//   - CakupanLaporan   : pilihan filter rentang tanggal, bidang, dan pegawai
-//
-// Dipakai oleh: api.ts, halaman-laporan.tsx, dan laporan-view.tsx
-// =============================================================================
+// Tipe data pratinjau laporan dan parameter cakupan
 
 export type PratinjauLaporan = {
   kop: { pemerintah: string; dinas: string; alamat: string | null };

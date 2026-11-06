@@ -1,12 +1,7 @@
-// =============================================================================
-// KOMPONEN INDIKATOR PUTAR (SPINNER)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berupa ikon berputar untuk menandai
-//          indikasi pemuatan atau proses yang sedang berjalan pada antarmuka.
-// =============================================================================
-
 import { cn } from "cn"
 import { Loader2Icon } from "lucide-react"
+
+// Komponen dasar shadcn/ui: ikon berputar saat memuat
 
 function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   return (

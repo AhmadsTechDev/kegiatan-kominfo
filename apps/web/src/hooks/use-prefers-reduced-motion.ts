@@ -1,22 +1,8 @@
-// =============================================================================
-// HOOK PREFERENSI KURANGI GERAK
-// =============================================================================
-// Gunanya: Mendeteksi preferensi aksesibilitas "kurangi gerak" dari sistem operasi
-// pengguna agar animasi berat berbasis JavaScript dapat dinonaktifkan.
-//
-// Isi berkas:
-//   - usePrefersReducedMotion : hook langganan media query prefers-reduced-motion.
-//
-// Catatan penting:
-//   - Memakai useSyncExternalStore: bernilai false di server dan sinkron di peramban.
-//   - Diperlukan untuk logika animasi JavaScript yang tidak terjangkau CSS global.
-//
-// Dipakai oleh: use-animasi-pertama.ts dan use-count-up.ts.
-// =============================================================================
-
 "use client";
 
 import { useSyncExternalStore } from "react";
+
+// Deteksi preferensi "kurangi gerak" untuk mematikan animasi JavaScript
 
 const QUERY = "(prefers-reduced-motion: reduce)";
 

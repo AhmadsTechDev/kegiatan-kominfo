@@ -1,15 +1,3 @@
-// =============================================================================
-// KOMPONEN PETA SEBARAN LOKASI KEGIATAN
-// =============================================================================
-// Gunanya: Menampilkan visualisasi peta interaktif sebaran lokasi koordinat
-// kegiatan dinas sesuai periode aktif pada Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - PetaKegiatan : Panel peta koordinat dengan tautan filter daftar kegiatan.
-//
-// Dipakai oleh: features/dashboard/components/dashboard-view.tsx
-// =============================================================================
-
 "use client";
 
 import { ArrowRight, MapPinOff } from "lucide-react";
@@ -20,6 +8,8 @@ import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/shared/
 import { site } from "@/config/site";
 import { formatAngka } from "@/lib/format";
 import type { DashboardData } from "../types";
+
+// Peta sebaran lokasi kegiatan pada periode aktif
 
 export function PetaKegiatan({ data, periode, className }: { data: DashboardData["peta"]; periode: string; className?: string }) {
   return (

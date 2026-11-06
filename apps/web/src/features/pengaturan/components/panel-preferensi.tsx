@@ -1,21 +1,3 @@
-// =============================================================================
-// PANEL PREFERENSI: TEMA DAN NOTIFIKASI
-// =============================================================================
-// Gunanya: Mengatur tema tampilan dan email pengingat otomatis. Preferensi disimpan di akun
-// (terpisah dari data autentikasi) sehingga ikut ke perangkat lain.
-//
-// Isi berkas:
-//   - Saklar            : tombol switch yang dapat diakses (role="switch")
-//   - PanelTema         : pilihan Terang / Gelap / Sistem
-//   - PanelNotifikasi   : pengingat H-1 kegiatan dan pengingat dokumentasi
-//
-// Catatan penting:
-//   - Aplikasi hanya tersedia dalam bahasa Indonesia, jadi tidak ada pengaturan bahasa.
-//   - Perubahan langsung tampil (optimistic) dan dikembalikan bila server menolak.
-//
-// Dipakai oleh: frontend/src/features/pengaturan/components/pengaturan-view.tsx
-// =============================================================================
-
 "use client";
 
 import { Monitor, Moon, Sun } from "lucide-react";
@@ -28,6 +10,8 @@ import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
 import { cn } from "@/lib/utils";
 import type { Preferensi } from "../api/akun-saya";
 import { usePreferensi, useTema, useUbahPreferensi } from "../hooks/use-akun-saya";
+
+// Panel preferensi tema dan email pengingat; disimpan di akun agar ikut ke perangkat lain
 
 const berlangganan = () => () => {};
 

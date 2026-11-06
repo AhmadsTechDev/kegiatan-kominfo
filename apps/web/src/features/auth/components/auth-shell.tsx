@@ -1,19 +1,6 @@
-// =============================================================================
-// KERANGKA TATA LETAK OTENTIKASI (AuthShell)
-// =============================================================================
-// Gunanya: Wadah tata letak terpusat untuk halaman publik dan otentikasi: kartu konten di
-// tengah dan nama instansi di bawah.
-//
-// Isi berkas:
-//   - AuthShell : komponen pembungkus tata letak halaman otentikasi
-//
-// Catatan penting:
-//   - Lambang kota dan nama aplikasi ada di dalam KartuPublik; kerangka ini tidak mengulangnya.
-//
-// Dipakai oleh: Halaman login, minta akun, aktivasi, lupa/atur ulang sandi, verifikasi email
-// =============================================================================
-
 import { site } from "@/config/site";
+
+// Tata letak halaman publik: kartu di tengah dan nama instansi di bawah
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (

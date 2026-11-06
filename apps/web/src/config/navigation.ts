@@ -1,28 +1,3 @@
-// =============================================================================
-// KONFIGURASI STRUKTUR NAVIGASI DAN MENU
-// =============================================================================
-// Gunanya: Mendefinisikan struktur grup dan item menu navigasi berdasarkan peran
-// (role), serta menyediakan helper penentu menu aktif dan breadcrumb.
-//
-// Isi berkas:
-//   - NAV_ADMIN, NAV_PIMPINAN, NAV_PEGAWAI : struktur menu per role (urutan dan kelompoknya berbeda).
-//   - navUntukRole        : menu untuk suatu role, ditambah kelompok Akun (Pengaturan).
-//   - navAktif            : mencocokkan URL dan query parameter dengan item menu aktif.
-//
-// Cara kerja:
-//   1. navUntukRole memilih struktur menu sesuai role. Pegawai: Dashboard, lalu Kegiatan saya,
-//      Semua kegiatan, Kalender, Perlu perbaikan. Pimpinan: Monitoring dan Pengawasan.
-//   2. navAktif membandingkan pathname dan parameter query, memilih rute yang paling
-//      spesifik (skor kecocokan tertinggi) untuk menandai status navigasi aktif.
-//
-// Catatan penting:
-//   - Struktur menu mengikuti DESIGN.md bagian 3 dan prototipe dashboard.
-//   - Penyaringan menu di frontend hanya untuk kenyamanan antarmuka pengguna; kontrol
-//     otorisasi sebenarnya tetap ditegakkan secara ketat oleh backend.
-//
-// Dipakai oleh: app-shell.tsx (breadcrumb dan judul) dan sidebar-nav.tsx (tampilan menu).
-// =============================================================================
-
 import {
   Building2,
   CalendarDays,
@@ -40,6 +15,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "@/types/auth";
+
+// Struktur menu navigasi per role, plus helper menu aktif dan breadcrumb
 
 export type NavItem = {
   label: string;

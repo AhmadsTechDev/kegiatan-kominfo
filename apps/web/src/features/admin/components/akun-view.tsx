@@ -1,31 +1,3 @@
-// =============================================================================
-// TAMPILAN MANAJEMEN PENGELOLAAN AKUN PENGGUNA
-// =============================================================================
-// Gunanya: menyediakan antarmuka manajemen akun pengguna aplikasi: daftar akun dengan
-// pencarian dan filter, pembuatan akun, aksi akun, dan permintaan akses dari pegawai.
-//
-// Isi berkas:
-//   - TombolAksi : tombol Ubah dan menu aksi lain untuk satu akun (baris tabel dan kartu)
-//   - KartuAkun  : tampilan satu akun sebagai kartu di layar sempit
-//   - DaftarAkun : tabel daftar akun berpaginasi dengan pencarian (nama/email/NIP),
-//                  filter role, dan filter status akun
-//   - IsiAkun    : pengelola navigasi tab (Akun dan Permintaan akun)
-//   - AkunView   : komponen tampilan utama halaman manajemen akun dengan AdminGuard
-//
-// Cara kerja:
-//   1. Administrator mencari dan menyaring akun; nama akun menuju halaman detail.
-//   2. "Buat akun" membuka formulir; akun baru berstatus Menunggu aktivasi sampai pemiliknya
-//      membuat kata sandi dari tautan di email pribadinya.
-//   3. Menu aksi baris menyediakan ubah, kirim ulang undangan, atur ulang sandi, keluarkan
-//      sesi, nonaktifkan/aktifkan kembali, dan hapus (lihat akun-aksi.tsx).
-//
-// Catatan penting:
-//   - Tidak ada pendaftaran mandiri; semua akun dibuat di sini atau lewat Undang di Master data.
-//   - Penghapusan permanen hanya diizinkan bagi akun yang belum membuat kegiatan, mengunggah dokumentasi, atau memeriksa.
-//
-// Dipakai oleh: frontend/src/app/(app)/admin/akun/page.tsx
-// =============================================================================
-
 "use client";
 
 import { Ellipsis, Lock, MailWarning, Pencil, Plus, SearchX, UserCog } from "lucide-react";
@@ -52,6 +24,8 @@ import { AdminGuard, idTab, KolomCari, PilihanTab } from "./admin-shared";
 import { AkunFormDialog, dariAdmin, ItemAksiAkun, useAksiAkun, type AkunRingkas, type JenisAksi } from "./akun-aksi";
 import { BelumPunyaAkun, FILTER_BELUM } from "./akun-belum-tab";
 import { PermintaanTab } from "./permintaan-tab";
+
+// Manajemen akun: daftar, filter, buat akun, aksi akun, dan permintaan akses
 
 const SEMUA = "semua";
 const ROLE: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];

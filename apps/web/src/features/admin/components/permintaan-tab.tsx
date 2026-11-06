@@ -1,25 +1,3 @@
-// =============================================================================
-// TAB PERSETUJUAN PERMINTAAN AKUN PENGGUNA BARU
-// =============================================================================
-// Gunanya: menyediakan antarmuka bagi admin untuk meninjau, menyetujui, atau
-// menolak permohonan pendaftaran akun yang diajukan melalui halaman login.
-//
-// Isi berkas:
-//   - PermintaanTab : panel tabel daftar permintaan akun, filter status, dan modal aksi
-//
-// Cara kerja:
-//   1. Menampilkan daftar permohonan akun berpaginasi dengan penyaring status.
-//   2. Jika disetujui, membuka dialog undangan untuk mengirim tautan aktivasi mandiri.
-//   3. Jika ditolak, admin wajib mengisi alasan penolakan yang diteruskan ke surel pemohon.
-//
-// Catatan penting:
-//   - Menampilkan perbandingan jika nama yang diisikan berbeda dengan data master pegawai.
-//   - Pemohon tanpa NIP dapat langsung ditentukan bidangnya saat permohonan disetujui.
-//   - Riwayat penolakan dan admin yang memproses tersimpan dan tampil pada tabel.
-//
-// Dipakai oleh: akun-view.tsx
-// =============================================================================
-
 "use client";
 
 import { Check, Inbox, X } from "lucide-react";
@@ -40,6 +18,8 @@ import { usePermintaanAkun, useProsesPermintaan } from "../hooks/use-admin";
 import type { PermintaanAkun, StatusPermintaan } from "../types";
 import { PilihanTab } from "./admin-shared";
 import { UndangDialog } from "./undang-dialog";
+
+// Tab tinjau, setujui, atau tolak permintaan akun dari halaman minta akun
 
 const LABEL_STATUS: Record<StatusPermintaan, string> = { MENUNGGU: "Menunggu", DISETUJUI: "Disetujui", DITOLAK: "Ditolak" };
 const NADA_STATUS: Record<StatusPermintaan, string> = {

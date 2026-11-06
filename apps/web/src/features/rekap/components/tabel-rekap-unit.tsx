@@ -1,28 +1,3 @@
-// =============================================================================
-// TABEL REKAPITULASI KEGIATAN PER UNIT KERJA
-// =============================================================================
-// Gunanya: Menyajikan ringkasan statistik kegiatan per bidang dinas yang
-// mencakup sebaran status pelaksanaan, total kegiatan, serta jumlah peserta.
-//
-// Isi berkas:
-//   - KOLOM          : konfigurasi kolom metrik status kegiatan dan peserta
-//   - hrefDaftar     : pembuat tautan rute kegiatan yang disaring per bidang
-//   - SelAngka       : komponen sel angka dengan perataan kanan dan format ribuan
-//   - TabelRekapUnit : komponen tabel utama rekapitulasi kegiatan per bidang
-//
-// Cara kerja:
-//   1. Merender kolom status: akan datang, berlangsung, selesai, dan dibatalkan.
-//   2. Menampilkan baris tiap bidang dengan tautan menuju daftar kegiatannya.
-//   3. Menghitung dan merender baris total keseluruhan dinas pada footer tabel.
-//
-// Catatan penting:
-//   - Mengacu pada panduan antarmuka DESIGN.md bagian 5.6.
-//   - Untuk pengguna pegawai (terbatas), rekap ditampilkan per bidang pencatat;
-//     sedangkan bagi pimpinan/admin, kegiatan seksi terhitung ke bidang induk.
-//
-// Dipakai oleh: frontend/src/features/rekap/components/rekap-view.tsx
-// =============================================================================
-
 import { Building2 } from "lucide-react";
 import Link from "next/link";
 import type { NilaiFilter } from "@/components/shared/filter-bar";
@@ -32,6 +7,8 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { JumlahStatus, RekapData } from "../types";
+
+// Tabel rekap per bidang: sebaran status, total kegiatan, dan peserta
 
 const KOLOM: { kunci: keyof JumlahStatus; label: string }[] = [
   { kunci: "akanDatang", label: "Akan datang" },

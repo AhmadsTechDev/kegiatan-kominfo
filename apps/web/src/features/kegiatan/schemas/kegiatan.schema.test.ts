@@ -1,26 +1,7 @@
-// =============================================================================
-// PENGUJIAN SKEMA FORM KEGIATAN
-// =============================================================================
-// Gunanya: Menguji validasi form input kegiatan pada sisi klien dan fungsi
-// konversi waktu ke zona WIB (Waktu Indonesia Barat) sebelum dikirim ke backend.
-//
-// Isi berkas:
-//   - konversi waktu WIB : menguji keIsoWib dan bagianWib tetap konsisten
-//   - validasi form kegiatan : menguji kegiatanSchema dan keKegiatanPayload
-//
-// Cara kerja:
-//   1. Memverifikasi penggabungan tanggal dan jam form menghasilkan ISO +07:00.
-//   2. Memastikan tanggal tidak bergeser ke hari berikutnya saat larut malam.
-//   3. Menguji aturan validasi: kelengkapan data, urutan tanggal/jam, koordinat
-//      lat/lng berpasangan, batas angka peserta, dan pembentukan payload API.
-//
-// Catatan penting:
-//   - Memastikan validasi klien sesuai spesifikasi DESIGN.md bagian 4.5 agar
-//     pengguna lekas mendapat umpan balik tanpa menunggu validasi server.
-// =============================================================================
-
 import { describe, expect, test } from "bun:test";
 import { bagianWib, keIsoWib, keKegiatanPayload, kegiatanSchema, nilaiAwalForm } from "./kegiatan.schema";
+
+// Uji validasi formulir kegiatan dan konversi waktu ke WIB
 
 const isian = {
   ...nilaiAwalForm(undefined, 7),

@@ -1,27 +1,3 @@
-// =============================================================================
-// HOOKS PENGELOLAAN DATA ADMINISTRASI (TANSTACK QUERY)
-// =============================================================================
-// Gunanya: menyediakan hook React kustom berbasis TanStack Query untuk kueri
-// data dan mutasi operasi master data, akun pengguna, audit log, dan permintaan.
-//
-// Isi berkas:
-//   - adminKeys : definisi kunci kueri (query keys) terpusat untuk cache modul admin
-//   - useSegarkan : fungsi pembantu pembatalan cache query terkait secara paralel
-//   - useBidangAdmin, useSimpanBidang, useHapusBidang : kueri dan mutasi master bidang
-//   - usePegawaiAdmin, useSimpanPegawai : kueri dan mutasi pegawai
-//   - useJenisAdmin, useSimpanJenis : kueri dan mutasi master kategori kegiatan
-//   - useAkunAdmin, useDetailAkun, useSimpanAkun, useStatusAkun, useHapusAkun : manajemen akun
-//   - useKirimUlangUndangan, useResetSandi, useCabutSesiAkun, useUndangPegawai : aksi akun lainnya
-//   - useAuditLog, useAuditDetail, usePilihanAudit : kueri jejak audit aktivitas
-//   - usePermintaanAkun, useJumlahPermintaan, useProsesPermintaan : permintaan akun
-//
-// Catatan penting:
-//   - Mutasi data otomatis membatalkan cache referensi form kegiatan dan audit log.
-//   - Hook useJumlahPermintaan melakukan penyegaran berkala (polling) setiap 60 detik.
-//
-// Dipakai oleh: MasterView, PegawaiTab, BidangTab, JenisTab, AkunView, AuditLogView
-// =============================================================================
-
 "use client";
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,6 +34,8 @@ import {
   ubahBidang,
 } from "../api/admin";
 import type { FilterAkun, FilterAudit, FilterPegawai, IsiAkun, IsiPegawaiBaru, HasilPegawaiBaru, IsiUndangan, IsiUnit, StatusPermintaan } from "../types";
+
+// Hook TanStack Query untuk master data, akun, audit log, dan permintaan akun
 
 export const adminKeys = {
   bidang: ["admin", "bidang"] as const,

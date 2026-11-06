@@ -1,29 +1,3 @@
-// =============================================================================
-// PANEL DOKUMENTASI KEGIATAN (DARI TABEL KEGIATAN)
-// =============================================================================
-// Gunanya: Menampilkan dokumentasi (foto/berkas) dan hasil satu kegiatan tanpa
-// meninggalkan daftar kegiatan, lengkap dengan tombol ubah hasil/dokumentasi dan Periksa.
-//
-// Isi berkas:
-//   - KegiatanDokumentasiSheet : panel samping (layar penuh di HP) per ID kegiatan
-//
-// Cara kerja:
-//   1. Data diambil dari GET /kegiatan/:id (hook useKegiatan), jadi selalu sesuai ID terpilih.
-//   2. Mode lihat: hasil kegiatan, galeri dokumentasi (baca saja), catatan perbaikan terakhir.
-//   3. Ubah (hanya bila bisaUbah): hasil bisa diedit dan galeri bisa unggah/ganti/hapus.
-//      Hasil disimpan lewat PATCH /kegiatan/:id dengan isian lain apa adanya.
-//   4. Periksa (hanya bila bisaPeriksa): tombol pemeriksaan pimpinan/admin.
-//   5. Setelah simpan, cache detail dan daftar disegarkan sehingga data terbaru langsung tampil.
-//   6. Tombol utama mengikuti keadaan: "Simpan hasil" bila hasil diubah, "Selesai" bila hanya
-//      dokumentasi (berkas tersimpan saat diunggah). Keduanya ditahan selama unggahan belum beres.
-//
-// Catatan penting:
-//   - Tidak ada endpoint baru: memakai endpoint kegiatan, dokumentasi, dan pemeriksaan yang sudah ada.
-//   - Hak akses tetap ditegakkan backend; tombol hanya mengikuti tanda bisaUbah/bisaPeriksa dari server.
-//
-// Dipakai oleh: components/kegiatan-list-view.tsx
-// =============================================================================
-
 "use client";
 
 import { ChevronRight, CircleAlert, Pencil } from "lucide-react";
@@ -44,6 +18,8 @@ import { keKegiatanPayload, nilaiAwalForm } from "../schemas/kegiatan.schema";
 import type { KegiatanDetail } from "../types";
 import { DokumentasiGaleri, type StatusAntrean } from "./dokumentasi-galeri";
 import { PeriksaAksi } from "./periksa-aksi";
+
+// Sheet dokumentasi dan hasil kegiatan tanpa meninggalkan daftar kegiatan
 
 type Target = { id: number; judul: string };
 

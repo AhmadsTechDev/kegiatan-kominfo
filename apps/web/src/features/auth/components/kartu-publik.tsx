@@ -1,22 +1,7 @@
-// =============================================================================
-// KARTU HALAMAN PUBLIK (KartuPublik)
-// =============================================================================
-// Gunanya: Wadah kartu terpusat untuk halaman publik: lambang kota dan nama aplikasi satu kali,
-// lalu isi yang menulis judulnya sendiri lewat KepalaKartu sesuai keadaan halaman.
-//
-// Isi berkas:
-//   - KartuPublik : kartu dengan lambang kota, nama aplikasi, dan garis emas di tepi atas
-//   - KepalaKartu : judul (h1) dan keterangan singkat; dipasang oleh isi kartu, bukan halaman
-//
-// Catatan penting:
-//   - Judul tidak dipasang di kartu karena keadaan akhir (berhasil, tautan rusak) harus punya
-//     judul sendiri; kepala tetap yang membuat satu h1 per keadaan.
-//
-// Dipakai oleh: Halaman login, minta akun, aktivasi, lupa/atur ulang sandi, verifikasi email
-// =============================================================================
-
 import Image from "next/image";
 import { site } from "@/config/site";
+
+// Kartu halaman publik: lambang kota dan nama aplikasi, judul isi lewat KepalaKartu
 
 export function KartuPublik({ children }: { children: React.ReactNode }) {
   return (

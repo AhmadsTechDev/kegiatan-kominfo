@@ -1,24 +1,3 @@
-// =============================================================================
-// MODAL DIALOG GANTI KATA SANDI (GantiSandiDialog)
-// =============================================================================
-// Gunanya: Menyediakan modal formulir bagi pengguna yang sedang masuk untuk memperbarui
-// kata sandinya sendiri sekaligus mencabut sesi di perangkat lain.
-//
-// Isi berkas:
-//   - GantiSandiDialog : komponen dialog modal pembaruan kata sandi mandiri pengguna
-//
-// Cara kerja:
-//   1. Mengelola input kata sandi saat ini, kata sandi baru, dan konfirmasi kata sandi.
-//   2. Memeriksa kebijakan sandi di klien (lib/sandi.ts) dan memastikan sandi baru berbeda.
-//   3. Mengirim PATCH /api/me/sandi; sesi di perangkat lain dicabut, sesi ini tetap.
-//   4. Galat 422 dari backend (sandiLama/sandiBaru) dipetakan ke input yang sesuai.
-//
-// Catatan penting:
-//   - Pemilik akun menerima email pemberitahuan setiap kali kata sandi diganti.
-//
-// Dipakai oleh: UserMenu dan panel Keamanan di halaman Pengaturan
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +12,8 @@ import { useGantiSandi } from "@/features/pengaturan/hooks/use-akun-saya";
 import { ApiError } from "@/lib/api-client";
 import { periksaSandi } from "@/lib/sandi";
 import { useCurrentUser } from "../hooks/use-current-user";
+
+// Dialog ganti kata sandi sendiri, sekaligus mencabut sesi di perangkat lain
 
 const schema = (email?: string) =>
   z

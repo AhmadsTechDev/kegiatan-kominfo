@@ -1,30 +1,3 @@
-// =============================================================================
-// KOMPONEN DASHBOARD PEGAWAI
-// =============================================================================
-// Gunanya: Menampilkan dasbor personal untuk staf atau pegawai pelaksana dalam
-// Aplikasi Pendataan Kegiatan, berisi agenda pribadi dan pemantauan tugas.
-//
-// Isi berkas:
-//   - Sambutan : Banner sapaan waktu, identitas bidang, dan tombol aksi cepat.
-//   - TautanAngka : Kartu metrik responsif yang mengarah ke filter daftar kegiatan.
-//   - AgendaPekanPanel : Panel daftar agenda kegiatan unit tujuh hari ke depan.
-//   - DashboardPegawai : Komponen utama penyusun tampilan dashboard personal pegawai.
-//
-// Cara kerja:
-//   1. Memuat data aktivitas pegawai menggunakan hook useKegiatanSaya.
-//   2. Menampilkan banner sambutan personal dan tiga kartu ringkasan tugas.
-//   3. Mengelompokkan agenda kegiatan 7 hari ke depan per tanggal pelaksanaan.
-//   4. Merender panel tugas dokumentasi dan panel agenda secara berdampingan.
-//
-// Catatan penting:
-//   - Angka metrik ditujukan murni sebagai pemantau beban tugas dan agenda unit,
-//     bukan sebagai skor penilaian kinerja individu pegawai (FR-09).
-//   - Tampilan kartu angka dipadatkan menjadi satu baris di ponsel agar pengguna
-//     dapat langsung melihat daftar tugas tanpa tergulung jauh ke bawah.
-//
-// Dipakai oleh: features/dashboard/components/dashboard-view.tsx
-// =============================================================================
-
 "use client";
 
 import { ArrowRight, CalendarDays, ChevronRight, CalendarRange, ClipboardList, FileWarning, MapPin, Plus, type LucideIcon } from "lucide-react";
@@ -43,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { useKegiatanSaya } from "../hooks/use-dashboard";
 import type { AgendaPekan } from "../types";
 import { KegiatanSayaPanel } from "./kegiatan-saya";
+
+// Dashboard pegawai: agenda dan tugas pribadi
 
 function Sambutan({ hariIni }: { hariIni?: string }) {
   const sapaan = useSapaan();

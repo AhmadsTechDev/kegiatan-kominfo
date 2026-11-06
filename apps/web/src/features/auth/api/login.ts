@@ -1,29 +1,7 @@
-// =============================================================================
-// API DAN PENANGANAN ERROR LOGIN
-// =============================================================================
-// Gunanya: Menangani autentikasi masuk pengguna serta menerjemahkan respons galat dari
-// Better Auth ke dalam objek galat berbahasa Indonesia yang aman bagi pengguna.
-//
-// Isi berkas:
-//   - LoginErrorKind : tipe union kategori galat (kredensial, terkunci, nonaktif, dll.)
-//   - LoginError     : kelas galat kustom penyimpan jenis galat dan batas akun terkunci
-//   - petakanError   : memetakan kode status HTTP dan kode Better Auth ke LoginError
-//   - login          : mengirim kredensial login via signIn.email
-//
-// Cara kerja:
-//   1. Memanggil login email Better Auth (email pribadi adalah satu-satunya identitas login).
-//   2. Jika gagal, petakanError menangkap kode galat (seperti ACCOUNT_LOCKED) dan melempar LoginError.
-//
-// Catatan penting:
-//   - Memetakan error ke pesan aman berbahasa Indonesia agar tidak membocorkan detail sensitif;
-//     email tidak terdaftar dan kata sandi salah sengaja diberi pesan yang sama.
-//   - Menghitung batas waktu kunci akun (default 15 menit) untuk mendukung hitung mundur di UI.
-//
-// Dipakai oleh: useLogin, LoginForm
-// =============================================================================
-
 import { authClient } from "@/lib/auth-client";
 import type { LoginInput } from "../schemas/login.schema";
+
+// Login lewat Better Auth dan menerjemahkan galatnya ke pesan berbahasa Indonesia
 
 export type LoginErrorKind = "kredensial" | "terkunci" | "nonaktif" | "terlalu_sering" | "validasi" | "server";
 

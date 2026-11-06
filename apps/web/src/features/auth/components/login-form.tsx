@@ -1,25 +1,3 @@
-// =============================================================================
-// KOMPONEN FORMULIR LOGIN (LoginForm)
-// =============================================================================
-// Gunanya: Menangani interaksi formulir masuk pengguna (email dan kata sandi), validasi
-// input, pemanggilan mutasi autentikasi, serta penanganan akun terkunci sementara.
-//
-// Isi berkas:
-//   - LoginForm : komponen formulir login dengan visualisasi hitung mundur saat terkunci
-//
-// Cara kerja:
-//   1. Mengelola input email dan kata sandi dengan validasi skema loginSchema via React Hook Form.
-//   2. Mengirim kredensial ke server melalui mutasi useLogin saat formulir dikirim.
-//   3. Menampilkan peringatan dan timer hitung mundur jika akun terkunci sementara (LoginError).
-//   4. Menonaktifkan tombol submit saat proses/sukses agar terhindar dari pengiriman ganda.
-//
-// Catatan penting:
-//   - Membedakan galat umum dengan akun terkunci memakai useCountdown untuk menampilkan sisa waktu.
-//   - Menyediakan fitur beralih tampilan kata sandi (lihat/sembunyikan).
-//
-// Dipakai oleh: LoginCard (frontend/src/features/auth/components/login-card.tsx)
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,6 +15,8 @@ import { formatSisaWaktu, useCountdown } from "../hooks/use-countdown";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { useLogin } from "../hooks/use-login";
 import { loginSchema, type LoginInput } from "../schemas/login.schema";
+
+// Formulir login: validasi, kirim, dan tampilan akun terkunci sementara
 
 export function LoginForm() {
   const [tampilkanSandi, setTampilkanSandi] = useState(false);

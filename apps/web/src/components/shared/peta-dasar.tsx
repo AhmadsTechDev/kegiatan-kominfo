@@ -1,34 +1,3 @@
-// =============================================================================
-// MODUL FONDASI PETA VEKTOR MAPLIBRE GL
-// =============================================================================
-// Gunanya: Mengelola konfigurasi dasar peta vektor MapLibre GL untuk wilayah Kota
-//          Palembang, penyesuaian tema gelap, gestur interaksi, dan gedung 3D.
-//
-// Isi berkas:
-//   - PUSAT_AWAL, ZOOM_AWAL, KEMIRINGAN_3D : konstanta koordinat default Palembang
-//   - WARNA_STATUS, LABEL_STATUS          : pemetaan visual status pelaksanaan
-//   - usePetaGelap                        : hook pelacak tema gelap yang aman hidrasi
-//   - amankanFilter                       : penambal filter Liberty yang membandingkan nilai kosong
-//   - buatPeta                            : pembangun instans peta MapLibre lengkap
-//   - tambahGedung3d                      : penambah lapisan ekstrusi gedung 3D
-//   - aturMode3d                          : pengatur animasi kamera antara 2D dan 3D
-//   - Tombol3d                            : komponen tombol alih sudut pandang 2D/3D
-//
-// Cara kerja:
-//   1. Menginisialisasi peta vektor OpenFreeMap (gaya Liberty: jalan, kawasan, POI) di Kota Palembang.
-//   2. Mewarnai ulang layer peta secara dinamis jika aplikasi dalam mode gelap.
-//   3. Mengamankan interaksi gulir mouse agar tidak mengganggu pengguliran halaman.
-//   4. Menambahkan ekstrusi gedung 3D mulai zoom 14 di bawah layer label jalan.
-//
-// Catatan penting:
-//   - Mengikuti panduan DESIGN.md bagian 6: gratis tanpa API key OpenFreeMap.
-//   - Palet tema gelap disesuaikan dengan warna navy aplikasi agar nyaman dibaca.
-//   - Pada perangkat sentuh, peta menggunakan gestur dua jari agar halaman tetap
-//     dapat digulir normal dengan satu jari.
-//
-// Dipakai oleh: map-overview-inner.tsx dan map-picker-inner.tsx
-// =============================================================================
-
 "use client";
 
 import { FullscreenControl, Map as PetaGL, NavigationControl } from "maplibre-gl";
@@ -37,6 +6,8 @@ import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import type { StatusPelaksanaan } from "./status-badge";
+
+// Konfigurasi dasar peta MapLibre wilayah Palembang: tema gelap, gestur, gedung 3D
 
 export const PUSAT_AWAL: [number, number] = [104.7754, -2.9761];
 export const ZOOM_AWAL = 12;

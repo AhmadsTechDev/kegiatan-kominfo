@@ -1,38 +1,3 @@
-// =============================================================================
-// KOMPONEN TAMPILAN KALENDER KEGIATAN
-// =============================================================================
-// Gunanya: Menampilkan visualisasi jadwal kegiatan dinas dalam bentuk kalender
-// kisi bulanan interaktif beserta panel rincian agenda harian di sampingnya.
-//
-// Isi berkas:
-//   - ChipKegiatan : Komponen representasi ringkas satu agenda di dalam sel tanggal.
-//   - SelHari : Sel tanggal kalender (titik warna di ponsel, chip di desktop).
-//   - AgendaHari : Panel perinci jadwal kegiatan pada tanggal yang dipilih.
-//   - Legenda : Keterangan warna unit yang sekaligus menjadi penyaring.
-//   - KalenderView : Komponen utama pengelola kisi kalender, navigasi, dan filter.
-//
-// Cara kerja:
-//   1. Membaca parameter bulan aktif dari URL atau menetapkan bulan berjalan.
-//   2. Mengambil data jadwal kegiatan bulanan menggunakan hook useKalender.
-//   3. Menghitung susunan sel kalender mingguan (dimulai Senin) dalam zona WIB.
-//   4. Mengelompokkan agenda ke tiap tanggal yang dilalui (termasuk kegiatan multihari).
-//   5. Merender kisi kalender (tabel semantik) dengan warna pembeda per unit induk serta panel detail.
-//
-// Catatan penting:
-//   - Warna pembeda menandai bidang induk (bidang/bagian) memakai chart-2 sampai chart-6;
-//     chart-1 (navy) dipakai "hari ini" sehingga tidak dipakai unit. Unit ke-6 dan seterusnya
-//     digabung sebagai "Unit lainnya" agar tidak ada dua unit berwarna sama.
-//   - Warna bukan satu-satunya petunjuk: tiap chip memuat jam, dan panel agenda memuat nama unit.
-//   - Maksimal 3 chip ditampilkan per sel pada desktop; selebihnya diringkas (+n lagi).
-//   - Pada layar ponsel, sel tanggal hanya menampilkan indikator titik warna demi
-//     keterbacaan; panel agenda berada tepat di bawah kisi dan digulir ke layar saat tanggal dipilih.
-//   - Kisi memakai tabel biasa: satu tombol per tanggal, tanpa peran grid yang menjanjikan navigasi panah.
-//   - Jika tanggal yang dipilih tidak memiliki kegiatan, panel secara otomatis
-//     menampilkan agenda terdekat berikutnya di bulan yang sama.
-//
-// Dipakai oleh: app/(app)/kalender/page.tsx
-// =============================================================================
-
 "use client";
 
 import { CalendarDays, CalendarX2, ChevronLeft, ChevronRight, Clock, MapPin, Plus } from "lucide-react";
@@ -53,6 +18,8 @@ import { formatAngka, formatJam, formatPeriode, formatRentangTanggal, formatTang
 import { cn } from "@/lib/utils";
 import { useKalender } from "../use-kalender";
 import type { DataKalender, KegiatanKalender } from "../types";
+
+// Kalender bulanan kegiatan dengan panel agenda harian di samping
 
 const ZONA = "Asia/Jakarta";
 const NAMA_HARI = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];

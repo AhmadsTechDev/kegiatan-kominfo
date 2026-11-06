@@ -1,26 +1,3 @@
-// =============================================================================
-// IMPLEMENTASI INTERNAL PEMILIH LOKASI PETA
-// =============================================================================
-// Gunanya: Menyediakan peta interaktif MapLibre GL untuk memilih atau menampilkan
-//          satu titik koordinat kegiatan dinas beserta visualisasi gedung 3D.
-//
-// Isi berkas:
-//   - bulatkan       : pembulat nilai koordinat hingga 6 angka di belakang koma
-//   - elemenPin      : pembuat elemen pin SVG kustom penanda lokasi kegiatan
-//   - MapPickerInner : komponen peta pemilih dan penampil titik koordinat
-//
-// Cara kerja:
-//   1. Menginisialisasi peta MapLibre GL pada koordinat awal dengan zoom detail.
-//   2. Menampilkan penanda pin yang dapat digeser jika bukan mode hanya lihat.
-//   3. Mengirimkan koordinat baru saat peta diklik atau penanda selesai digeser.
-//
-// Catatan penting:
-//   - Koordinat dibulatkan 6 desimal (presisi ~10 cm) yang cukup untuk lokasi dinas.
-//   - Mode lihat langsung membuka sudut 3D, sedangkan pemilih mulai dari tampak 2D.
-//
-// Dipakai oleh: map-picker.tsx (dimuat secara dinamis tanpa SSR di sisi klien)
-// =============================================================================
-
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -37,6 +14,8 @@ import {
   tambahGedung3d,
   usePetaGelap,
 } from "./peta-dasar";
+
+// Peta untuk memilih atau menampilkan satu titik lokasi kegiatan (MapLibre, gedung 3D)
 
 export type Koordinat = { lat: number; lng: number };
 

@@ -1,25 +1,3 @@
-// =============================================================================
-// LONCENG NOTIFIKASI
-// =============================================================================
-// Gunanya: Ikon lonceng di header untuk pegawai, berisi hasil pemeriksaan kegiatan
-// oleh pimpinan atau admin (sudah diperiksa / perlu perbaikan beserta catatannya).
-//
-// Isi berkas:
-//   - LoncengNotifikasi : tombol lonceng dengan jumlah belum dibaca dan daftar notifikasi
-//
-// Cara kerja:
-//   1. Daftar disegarkan tiap 60 detik; jumlah belum dibaca tampil di lencana.
-//   2. Mengklik notifikasi menandainya dibaca lalu membuka detail kegiatan.
-//   3. "Tandai semua dibaca" membersihkan lencana.
-//
-// Catatan penting:
-//   - Hanya dirender untuk role PEGAWAI (penerima notifikasi pemeriksaan).
-//   - Jenis notifikasi tidak dibedakan dengan warna saja: judul selalu memuat
-//     "Perlu perbaikan" atau "Sudah diperiksa".
-//
-// Dipakai oleh: components/layout/app-shell.tsx
-// =============================================================================
-
 "use client";
 
 import { Bell, CircleAlert, CircleCheck } from "lucide-react";
@@ -33,6 +11,8 @@ import { formatTanggalJam } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Notifikasi } from "../api/notifikasi";
 import { useBacaNotifikasi, useBacaSemuaNotifikasi, useNotifikasi } from "../hooks/use-notifikasi";
+
+// Lonceng notifikasi pegawai: hasil pemeriksaan kegiatan beserta catatannya
 
 export function LoncengNotifikasi() {
   const router = useRouter();

@@ -1,24 +1,3 @@
-// =============================================================================
-// KLIEN API ADMINISTRASI DAN MASTER DATA
-// =============================================================================
-// Gunanya: menyediakan fungsi pemanggil HTTP ke backend untuk pengelolaan
-// master data, akun pengguna, jejak audit log, dan persetujuan permintaan akun.
-//
-// Isi berkas:
-//   - getBidang, buatBidang, ubahBidang, hapusBidang : API master bidang
-//   - getPegawai, buatPegawai, ubahPegawai : API master pegawai
-//   - getJenisKegiatan, buatJenisKegiatan, ubahJenisKegiatan : API jenis kegiatan
-//   - getAkun, getDetailAkun, buatAkun, ubahAkun, nonaktifkanAkun, aktifkanAkun, hapusAkun : API akun
-//   - kirimUlangUndangan, resetSandiAkun, cabutSesiAkun, undangPegawai : aksi akun lainnya
-//   - getAuditLog, getAuditDetail, getPilihanAudit : API jejak audit aktivitas
-//   - getPermintaanAkun, getJumlahPermintaan, setujuiPermintaan, tolakPermintaan : API permintaan akun
-//
-// Catatan penting:
-//   - Mendukung kebutuhan master data (FR-02) dan jejak audit aktivitas (FR-03).
-//
-// Dipakai oleh: use-admin.ts, komponen-komponen fitur admin
-// =============================================================================
-
 import { apiClient } from "@/lib/api-client";
 import type {
   AkunAdmin,
@@ -43,6 +22,8 @@ import type {
   PilihanAudit,
   BidangAdmin,
 } from "../types";
+
+// Pemanggil endpoint admin: master data, akun, audit log, dan permintaan akun
 
 export const UKURAN_HALAMAN_ADMIN = 20;
 export const UKURAN_HALAMAN_AUDIT = 25;

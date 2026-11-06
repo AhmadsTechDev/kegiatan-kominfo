@@ -1,29 +1,3 @@
-// =============================================================================
-// HALAMAN PENGATURAN AKUN PENGGUNA
-// =============================================================================
-// Gunanya: Menyediakan pengelolaan akun mandiri dalam empat kelompok: Profil,
-// Informasi akun, Keamanan, dan Preferensi.
-//
-// Isi berkas:
-//   - KartuProfil    : kartu identitas pengguna dan pengelolaan foto avatar
-//   - TAB            : daftar kelompok pengaturan (dibaca dari ?tab= agar bisa ditautkan)
-//   - IsiTab         : panel yang ditampilkan untuk tiap kelompok
-//   - PengaturanView : komponen induk pengatur tata letak seluruh pengaturan
-//
-// Cara kerja:
-//   1. Mengambil data akun pengguna yang sedang masuk menggunakan useProfil.
-//   2. Menangani validasi ukuran (maks. 2 MB) dan format gambar (JPEG, PNG, WebP)
-//      sebelum mengunggah berkas foto profil ke backend.
-//   3. Kelompok aktif disimpan di URL (?tab=akun) sehingga tautan dari email (mis. setelah
-//      verifikasi email baru) langsung membuka kelompok yang tepat.
-//
-// Catatan penting:
-//   - Mengacu pada kebutuhan pengelolaan akun di features/07-masuk-kelola-akun.md.
-//   - Nama, NIP, dan bidang bersifat read-only (dikelola admin).
-//
-// Dipakai oleh: frontend/src/app/(app)/pengaturan/page.tsx
-// =============================================================================
-
 "use client";
 
 import { Building2, Camera, Mail, Trash2 } from "lucide-react";
@@ -46,6 +20,8 @@ import { PanelAkun } from "./panel-akun";
 import { PanelKeluar, PanelSandi, PanelSesi } from "./panel-keamanan";
 import { PanelNotifikasi, PanelTema } from "./panel-preferensi";
 import { PanelKepegawaian, PanelKontak } from "./panel-profil";
+
+// Halaman pengaturan: Profil, Informasi akun, Keamanan, dan Preferensi
 
 const berlangganan = () => () => {};
 

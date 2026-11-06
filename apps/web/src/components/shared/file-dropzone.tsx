@@ -1,28 +1,3 @@
-// =============================================================================
-// AREA UNGGAH BERKAS DOKUMENTASI
-// =============================================================================
-// Gunanya: Menyediakan area seret-lepas (drag and drop) dan pemilih berkas untuk
-//          mengunggah foto kegiatan atau dokumen PDF pada modul dokumentasi.
-//
-// Isi berkas:
-//   - ACCEPT       : konstanta tipe MIME berkas yang diizinkan (gambar dan PDF)
-//   - FileDropzone : komponen antarmuka unggah berkas dengan daftar status progres
-//
-// Cara kerja:
-//   1. Menerima berkas melalui aksi seret-lepas atau tombol pemilih berkas.
-//   2. Menampilkan daftar antrean unggah lengkap dengan pratinjau foto atau ikon PDF.
-//   3. Memperlihatkan bilah progres animasi dan tombol penghapusan item antrean.
-//   4. Bila onUnggah diisi, berkas menunggu di daftar dan baru diunggah setelah
-//      tombol Unggah ditekan. Di layar sentuh teks "seret berkas" disembunyikan.
-//
-// Catatan penting:
-//   - Sesuai DESIGN.md bagian 7 dan 8, komponen menangani tampilan dan masukan,
-//     sedangkan proses unggah dan validasi ukuran (maks 20 MB) dikelola pemanggil.
-//   - Progres digambar menggunakan transformasi CSS scaleX untuk performa animasi.
-//
-// Dipakai oleh: Formulir dokumentasi kegiatan pada modul kegiatan
-// =============================================================================
-
 "use client";
 
 import { CheckCircle2, CircleAlert, FileText, Upload, X } from "lucide-react";
@@ -32,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { formatUkuran } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+// Area seret-lepas untuk unggah foto atau PDF; proses unggah diurus pemanggil
 
 export type StatusUnggah = "menunggu" | "mengunggah" | "berhasil" | "gagal";
 

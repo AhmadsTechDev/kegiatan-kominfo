@@ -1,10 +1,3 @@
-// =============================================================================
-// KOMPONEN DIALOG PERINGATAN (ALERT DIALOG)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis Radix UI untuk menampilkan
-//          dialog konfirmasi penting atau tindakan destruktif pada antarmuka.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
@@ -13,6 +6,8 @@ import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
 import { useOpenTerkendali } from "@/hooks/use-tutup-lewat-kembali"
+
+// Komponen dasar shadcn/ui: dialog konfirmasi (Radix)
 
 // Tombol Kembali di HP menutup konfirmasi, bukan meninggalkan halaman
 function AlertDialog({

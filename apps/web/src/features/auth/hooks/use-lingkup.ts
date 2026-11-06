@@ -1,19 +1,9 @@
-// =============================================================================
-// HOOK LINGKUP DATA PEGAWAI (useLingkupPegawai)
-// =============================================================================
-// Gunanya: Menentukan batasan akses data bidang (pegawai dibatasi ke unit dan cabangnya,
-// sedangkan pimpinan/admin melihat seluruh dinas) serta menyediakan fungsi penyaring saringUnit.
-//
-// Isi berkas:
-//   - useLingkupPegawai : hook penghitung status terbatas, bidang pegawai, dan fungsi saringUnit
-//
-// Dipakai oleh: Komponen filter daftar kegiatan dan halaman rekapitulasi
-// =============================================================================
-
 "use client";
 
 import { useCurrentUser } from "./use-current-user";
 import { useProfil } from "./use-profil";
+
+// Lingkup bidang yang boleh dilihat (pegawai: unitnya, pimpinan/admin: semua) dan saringUnit
 
 type UnitPohon = { id: number; parentId: number | null };
 

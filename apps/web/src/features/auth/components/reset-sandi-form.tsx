@@ -1,24 +1,3 @@
-// =============================================================================
-// FORMULIR LUPA DAN ATUR ULANG KATA SANDI
-// =============================================================================
-// Gunanya: Dua langkah pemulihan kata sandi tanpa login: meminta tautan lewat email,
-// lalu membuat kata sandi baru dari tautan tersebut.
-//
-// Isi berkas:
-//   - LupaSandiForm  : formulir email; jawaban selalu sama agar tidak membocorkan email terdaftar
-//   - ResetSandiForm : cek token, formulir kata sandi baru, dan keadaan sukses
-//
-// Cara kerja:
-//   1. LupaSandiForm mengirim POST /api/lupa-sandi lalu menampilkan pesan umum dari server.
-//   2. ResetSandiForm membaca ?token=, mengecek GET /api/reset-sandi, lalu POST /api/reset-sandi.
-//   3. Setelah berhasil, semua sesi lama dicabut sehingga pengguna perlu masuk ulang.
-//
-// Catatan penting:
-//   - Tautan atur ulang berlaku 1 jam dan sekali pakai.
-//
-// Dipakai oleh: Halaman /lupa-sandi dan /reset-sandi
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +19,8 @@ import { getInfoReset, mintaResetSandi, resetSandi, tautanRusak, tokenTidakBerla
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { KepalaKartu } from "./kartu-publik";
 import { FormSandiBaru, Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
+
+// Pemulihan kata sandi tanpa login: minta tautan, lalu buat kata sandi baru
 
 const schemaEmail = z.object({ email: z.string().trim().min(1, "Email wajib diisi").pipe(z.email("Format email tidak valid")) });
 

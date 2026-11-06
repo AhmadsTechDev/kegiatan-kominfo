@@ -1,22 +1,3 @@
-// =============================================================================
-// HOOKS PENGATURAN AKUN SENDIRI (TANSTACK QUERY)
-// =============================================================================
-// Gunanya: Kueri dan mutasi untuk halaman Pengaturan: kontak, email, kata sandi, sesi,
-// preferensi, serta sinkronisasi tema antara perangkat dan server.
-//
-// Isi berkas:
-//   - useUbahKontak, useGantiEmail, useBatalGantiEmail, useGantiSandi : mutasi data akun
-//   - useSesi, useCabutSesi, useCabutSesiLain : sesi login aktif
-//   - usePreferensi, useUbahPreferensi : preferensi tersimpan di server
-//   - useTema : mengganti tema di perangkat ini sekaligus menyimpannya ke preferensi akun
-//   - SinkronTema : menerapkan tema tersimpan di server saat aplikasi pertama dibuka
-//
-// Catatan penting:
-//   - Preferensi disimpan terpisah dari data autentikasi (tabel preferensi_pengguna).
-//
-// Dipakai oleh: PengaturanView, ThemeToggle, AppShell, GantiSandiDialog
-// =============================================================================
-
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +16,8 @@ import {
   type Preferensi,
   type Tema,
 } from "../api/akun-saya";
+
+// Hook halaman Pengaturan, termasuk sinkronisasi tema perangkat dengan server
 
 const kunci = {
   profil: ["me"] as const,

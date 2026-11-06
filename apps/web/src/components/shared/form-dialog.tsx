@@ -1,30 +1,10 @@
-// =============================================================================
-// DIALOG FORMULIR MODAL
-// =============================================================================
-// Gunanya: Membungkus formulir modal singkat untuk operasi penambahan atau
-//          pembaruan data master, akun pengguna, dan pergantian kata sandi.
-//
-// Isi berkas:
-//   - FormDialog : dialog formulir modal dengan footer aksi dan indikator loading
-//
-// Cara kerja:
-//   1. Membuka dialog modal sesuai prop open dan menangani submit formulir.
-//   2. Mengunci penutupan dialog dan menampilkan spinner saat status pending aktif.
-//   3. Menampilkan kotak peringatan galat umum jika terdapat kesalahan dari server.
-//
-// Catatan penting:
-//   - Mengikuti panduan DESIGN.md bagian 5.7 untuk form data master dan akun.
-//   - Form menggunakan noValidate agar validasi sepenuhnya dikendalikan Zod di klien.
-//   - Tidak ada autofocus ke kolom pertama; fokus diletakkan pada dialog itu sendiri.
-//
-// Dipakai oleh: Dialog master data unit/jenis, modal akun pengguna, dan sandi
-// =============================================================================
-
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+
+// Dialog pembungkus formulir singkat (master data, akun, kata sandi)
 
 type FormDialogProps = {
   open: boolean;

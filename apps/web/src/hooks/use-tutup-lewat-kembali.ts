@@ -1,31 +1,8 @@
-// =============================================================================
-// HOOK TUTUP LAPISAN LEWAT TOMBOL KEMBALI
-// =============================================================================
-// Gunanya: Tombol/gestur Kembali di HP menutup dialog, sheet, atau konfirmasi
-// yang sedang terbuka, bukan meninggalkan halaman (atau keluar dari situs).
-//
-// Isi berkas:
-//   - useTutupLewatKembali : hook untuk komponen root yang punya status open
-//   - useOpenTerkendali    : status open terkendali/tidak terkendali + hook di atas
-//   - lepasLapisan         : dipanggil sebelum lapisan ditutup karena pindah halaman
-//
-// Cara kerja:
-//   1. Saat lapisan terbuka, satu entri riwayat ditambahkan (URL tidak berubah).
-//   2. Kembali (popstate) menghapus entri itu dan menutup lapisan.
-//   3. Bila lapisan ditutup dengan cara lain (Batal, X, Escape), entri itu
-//      dibuang dengan history.back() agar riwayat tidak menumpuk.
-//
-// Catatan penting:
-//   - history.state Next.js disalin agar router tetap mengenali entri tersebut.
-//   - Bila halaman sudah berpindah (router.push/replace) saat lapisan ditutup,
-//     entri teratas bukan milik lapisan lagi sehingga history.back() dilewati.
-//
-// Dipakai oleh: components/ui/dialog.tsx, alert-dialog.tsx, sheet.tsx
-// =============================================================================
-
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+
+// Tombol Kembali di HP menutup dialog/sheet yang terbuka, bukan meninggalkan halaman
 
 // Kunci entri riwayat milik lapisan yang sedang terbuka
 const aktif = new Set<string>();

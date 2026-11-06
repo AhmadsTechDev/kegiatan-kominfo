@@ -1,26 +1,3 @@
-// =============================================================================
-// DIALOG FORMULIR PENGIRIMAN UNDANGAN AKUN
-// =============================================================================
-// Gunanya: menyediakan modal dialog untuk mengirimkan surel undangan aktivasi
-// akun baru kepada calon pengguna (role PEGAWAI atau PIMPINAN).
-//
-// Isi berkas:
-//   - UndangDialog : dialog formulir email pribadi, role, serta bidang (bila belum ada data pegawai)
-//
-// Cara kerja:
-//   1. Administrator menentukan surel tujuan dan role hak akses calon pengguna.
-//   2. Jika pemohon tidak memiliki NIP, dialog menyediakan pemilih bidang terkait.
-//   3. Saat form dikirim, backend membuat akun tertunda dan mengirim surel aktivasi.
-//
-// Catatan penting:
-//   - Tautan aktivasi akun yang dikirimkan ke surel berlaku selama 72 jam.
-//   - Semua role (Pegawai, Pimpinan, Admin) bisa diundang.
-//   - Tanpa autofocus: di HP keyboard tidak langsung muncul menutupi dialog.
-//   - Pegawai wajib memiliki bidang agar dapat melakukan pencatatan kegiatan dinas.
-//
-// Dipakai oleh: permintaan-tab.tsx, pegawai-tab.tsx, akun-view.tsx
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +13,8 @@ import { LABEL_ROLE, type Role } from "@/types/auth";
 import type { IsiUndangan } from "../types";
 import { useBidangAdmin } from "../hooks/use-admin";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
+
+// Dialog kirim email undangan aktivasi akun (role PEGAWAI atau PIMPINAN)
 
 const ROLE_UNDANGAN: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
 

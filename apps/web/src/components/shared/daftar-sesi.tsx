@@ -1,22 +1,8 @@
-// =============================================================================
-// DAFTAR SESI LOGIN (DaftarSesi)
-// =============================================================================
-// Gunanya: Menampilkan sesi login yang masih berlaku: perangkat/peramban, alamat IP,
-// waktu masuk, dan aktivitas terakhir, dengan tombol cabut opsional per sesi.
-//
-// Isi berkas:
-//   - namaPerangkat : membaca user-agent menjadi teks singkat, mis. "Chrome di Windows"
-//   - DaftarSesi    : daftar sesi; sesi yang sedang dipakai diberi penanda "Perangkat ini"
-//
-// Catatan penting:
-//   - Tidak pernah menerima token sesi; backend hanya mengirim id dan metadata.
-//
-// Dipakai oleh: panel Keamanan (Pengaturan) dan AkunDetailView (admin)
-// =============================================================================
-
 import { Laptop, Smartphone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatTanggalJam } from "@/lib/format";
+
+// Daftar sesi login aktif (perangkat, IP, waktu) dengan tombol cabut opsional
 
 export type Sesi = { id: string; ipAddress: string | null; userAgent: string | null; createdAt: string; updatedAt: string; sesiIni?: boolean };
 

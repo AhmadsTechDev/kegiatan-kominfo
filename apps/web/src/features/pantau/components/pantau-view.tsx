@@ -1,36 +1,3 @@
-// =============================================================================
-// HALAMAN PEMANTAUAN KEGIATAN PIMPINAN
-// =============================================================================
-// Gunanya: Menampilkan dasbor pemantauan kegiatan dinas bagi pimpinan dan admin
-// untuk meninjau progres kegiatan seluruh pegawai serta melakukan verifikasi.
-//
-// Isi berkas:
-//   - getRingkasan : memanggil API backend GET /pantau/ringkasan
-//   - kolom        : konfigurasi kolom tabel kegiatan (judul, pegawai, aksi)
-//   - KartuStatus  : kartu ringkasan status yang dapat diklik sebagai penyaring
-//   - PantauView   : komponen utama halaman pemantauan pimpinan
-//
-// Cara kerja:
-//   1. Memeriksa peran pengguna; jika peran PEGAWAI, tampilkan pesan tanpa akses.
-//   2. Mengambil ringkasan statistik (total, belum diperiksa, perlu perbaikan,
-//      sudah diperiksa, dan draf) serta daftar kegiatan terbaru via TanStack Query.
-//   3. Menyaring daftar pilihan pegawai berdasarkan bidang; pegawai dipilih lewat PilihCari
-//      (ketik nama) agar tetap bisa dipakai saat pegawai berjumlah ratusan.
-//   3b. Kolom Cari mencari judul, lokasi, uraian, dan nama pegawai; kartu ringkasan ikut tersaring.
-//   4. Memungkinkan pimpinan menyaring status langsung dari kartu statistik.
-//   5. Menyediakan aksi cepat untuk menandai kegiatan langsung pada baris tabel.
-//
-// Catatan penting:
-//   - Mengacu pada dokumen spesifikasi features/06-pantau-pimpinan.md.
-//   - Akses dibatasi hanya untuk pimpinan dan admin; backend menolak dengan 403
-//     jika diakses oleh pengguna selain hak akses tersebut.
-//   - Kartu ringkasan dan tabel menggunakan parameter penyaring yang sama dari
-//     backend sehingga data selalu sinkron.
-//   - Cache query kegiatan otomatis diperbarui saat pimpinan melakukan verifikasi.
-//
-// Dipakai oleh: frontend/src/app/(app)/pantau/page.tsx
-// =============================================================================
-
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -61,6 +28,8 @@ import type { FilterKegiatan, KegiatanItem, StatusPemeriksaanKegiatan } from "@/
 import { apiClient } from "@/lib/api-client";
 import { formatAngka, formatRentangTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+// Pemantauan kegiatan seluruh pegawai untuk pimpinan dan admin, termasuk pemeriksaan
 
 type Ringkasan = { total: number; draf: number; terkirim: number; diperiksa: number; perluPerbaikan: number };
 type Penyaring = { q: string; unit: string | null; pegawai: string | null; dari: string | null; sampai: string | null };

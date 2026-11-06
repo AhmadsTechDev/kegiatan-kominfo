@@ -1,23 +1,10 @@
-// =============================================================================
-// HALAMAN 404 TIDAK DITEMUKAN
-// =============================================================================
-// Gunanya: Menampilkan pesan informatif dan ramah saat rute URL tidak terdaftar,
-// salah ketik, atau fungsi notFound() dipanggil (DESIGN.md bagian 7).
-//
-// Isi berkas:
-//   - NotFound : komponen tampilan kesalahan 404 dengan tombol kembali ke dashboard.
-//
-// Catatan penting:
-//   - Tombol memakai prop asChild agar gaya Button diteruskan langsung ke Next Link.
-//
-// Dipakai oleh: Next.js App Router secara otomatis untuk rute yang tidak cocok.
-// =============================================================================
-
 import { ArrowLeft, Compass } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { site } from "@/config/site";
+
+// Halaman 404 saat rute tidak ditemukan atau notFound() dipanggil
 
 export const metadata: Metadata = { title: "Halaman tidak ditemukan" };
 

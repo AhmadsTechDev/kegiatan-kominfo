@@ -1,20 +1,6 @@
-// =============================================================================
-// PABRIK QUERY CLIENT (TANSTACK QUERY)
-// =============================================================================
-// Gunanya: Membuat instance QueryClient baru dengan konfigurasi durasi cache segar
-// (staleTime) dan aturan percobaan ulang (retry) permintaan data ke server.
-//
-// Isi berkas:
-//   - createQueryClient : fungsi pembuat instance QueryClient untuk penyedia global.
-//
-// Catatan penting:
-//   - staleTime diatur 30 detik untuk efisiensi transfer data dan kesegaran UI.
-//   - Kesalahan klien HTTP 4xx (400, 403, 404) tidak diulang; error server diulang 2 kali.
-//
-// Dipakai oleh: frontend/src/app/providers.tsx pada inisialisasi QueryClientProvider.
-// =============================================================================
-
 import { QueryClient } from "@tanstack/react-query";
+
+// Membuat QueryClient dengan pengaturan staleTime dan retry
 
 export function createQueryClient() {
   return new QueryClient({

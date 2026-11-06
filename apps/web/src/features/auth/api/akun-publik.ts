@@ -1,23 +1,6 @@
-// =============================================================================
-// API AKUN PUBLIK (TANPA LOGIN)
-// =============================================================================
-// Gunanya: Menyediakan fungsi pemanggilan API publik untuk menghubungi administrator dan
-// alur tautan email: aktivasi akun, lupa/atur ulang kata sandi, dan verifikasi email baru.
-//
-// Isi berkas:
-//   - ajukanPermintaanAkun : mengirim pesan permintaan akses ke administrator (/permintaan-akun)
-//   - getInfoAktivasi, aktifkanAkun : cek token undangan lalu membuat kata sandi pertama
-//   - mintaResetSandi : meminta tautan atur ulang kata sandi (jawaban selalu sama)
-//   - getInfoReset, resetSandi : cek token atur ulang lalu membuat kata sandi baru
-//   - konfirmasiEmail : memverifikasi email baru dari tautan di email
-//
-// Catatan penting:
-//   - Token tautan yang salah, kedaluwarsa, atau sudah dipakai dijawab 410 TOKEN_TIDAK_BERLAKU.
-//
-// Dipakai oleh: MintaAkunForm, AktivasiForm, LupaSandiForm, ResetSandiForm, KonfirmasiEmailView
-// =============================================================================
-
 import { ApiError, apiClient } from "@/lib/api-client";
+
+// Pemanggil endpoint publik: hubungi admin, aktivasi, lupa/reset sandi, konfirmasi email
 
 export type IsiPermintaanAkun = { nama: string; nip: string | null; email: string; catatan: string | null };
 export type InfoAktivasi = { nama: string; email: string; kedaluwarsa: string };

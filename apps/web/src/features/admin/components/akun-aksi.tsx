@@ -1,28 +1,3 @@
-// =============================================================================
-// FORMULIR DAN AKSI AKUN (DIPAKAI DAFTAR DAN DETAIL AKUN)
-// =============================================================================
-// Gunanya: Menyatukan formulir Buat/Ubah akun dan seluruh dialog konfirmasi aksi akun
-// agar perilakunya sama di halaman daftar akun dan halaman detail akun.
-//
-// Isi berkas:
-//   - AkunRingkas      : bentuk data akun minimum yang dibutuhkan formulir dan aksi
-//   - dariAdmin, dariDetail : mengubah data daftar/detail menjadi AkunRingkas
-//   - AkunFormDialog   : formulir Buat/Ubah akun (nama, email pribadi, NIP opsional, unit, role)
-//   - useAksiAkun      : membuka aksi (ubah, kirim ulang undangan, reset sandi, cabut sesi,
-//                        nonaktifkan, pulihkan, hapus) dan merender dialog konfirmasinya
-//   - ItemAksiAkun     : butir menu dropdown sesuai status akun
-//
-// Cara kerja:
-//   1. Akun dibuat tanpa kata sandi; backend mengirim tautan aktivasi ke email pribadi pemiliknya.
-//   2. Reset kata sandi oleh admin mengirim tautan ke email pemilik; admin tidak menentukan kata sandi.
-//   3. Setiap aksi penting meminta konfirmasi dan memberi umpan balik lewat toast.
-//
-// Catatan penting:
-//   - Admin tidak dapat menonaktifkan, menghapus, atau mengubah role akunnya sendiri (juga ditolak backend).
-//
-// Dipakai oleh: akun-view.tsx, akun-detail-view.tsx
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,6 +18,8 @@ import { LABEL_ROLE, type Role, type StatusAkun } from "@/types/auth";
 import { useCabutSesiAkun, useHapusAkun, useKirimUlangUndangan, useResetSandi, useSimpanAkun, useStatusAkun, useBidangAdmin } from "../hooks/use-admin";
 import type { AkunAdmin, AkunDetail, HasilSimpanAkun } from "../types";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
+
+// Formulir buat/ubah akun dan dialog aksi akun, dipakai di daftar dan detail akun
 
 export type AkunRingkas = {
   id: string;

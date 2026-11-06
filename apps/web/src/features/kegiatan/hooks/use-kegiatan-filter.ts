@@ -1,33 +1,11 @@
-// =============================================================================
-// HOOK FILTER KEGIATAN BERBASIS URL
-// =============================================================================
-// Gunanya: Mengelola status penyaringan dan paginasi daftar kegiatan yang tersimpan
-// langsung di query string URL peramban agar tautan dapat dibagikan dan tahan refresh.
-//
-// Isi berkas:
-//   - rentangDariPeriode : konversi format lama YYYY-MM menjadi rentang tanggal awal-akhir
-//   - useKegiatanFilter  : hook pembaca dan pembaru parameter filter pencarian di URL
-//
-// Cara kerja:
-//   1. Membaca nilai filter aktif dari URLSearchParams dan memvalidasi formatnya.
-//   2. Mengabaikan nilai filter yang tidak valid agar tidak dikirim ke API backend.
-//   3. Fungsi setFilter memperbarui URL dan otomatis mengembalikan posisi ke halaman 1.
-//   4. Fungsi resetFilter membersihkan filter pencarian namun mempertahankan menu milik=saya.
-//
-// Catatan penting:
-//   - Memenuhi standar filter dapat dibagikan (shareable URL) pada DESIGN.md bagian 5.3.
-//   - Parameter milik=saya diperlakukan sebagai rute menu navigasi, bukan filter isian.
-//   - Pembaruan rute menggunakan scroll: false agar posisi layar pengguna tidak meloncat.
-//
-// Dipakai oleh: components/kegiatan-list-view.tsx
-// =============================================================================
-
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import type { StatusPelaksanaan } from "@/components/shared/status-badge";
 import type { FilterKegiatan } from "../types";
+
+// Filter dan paginasi daftar kegiatan disimpan di URL agar bisa dibagikan
 
 const STATUS: StatusPelaksanaan[] = ["akan_datang", "berlangsung", "selesai", "dibatalkan"];
 const KUNCI = ["q", "dari", "sampai", "periode", "unit", "jenis", "status", "pegawai", "milik", "pemeriksaan", "page"] as const;

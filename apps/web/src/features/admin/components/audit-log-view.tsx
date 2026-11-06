@@ -1,29 +1,3 @@
-// =============================================================================
-// TAMPILAN REKAM JEJAK AKTIVITAS (AUDIT LOG)
-// =============================================================================
-// Gunanya: menyajikan catatan riwayat aktivitas pengguna pada aplikasi, meliputi
-// autentikasi, perubahan kegiatan dinas, unggah berkas, dan master data.
-//
-// Isi berkas:
-//   - ChipAksi : lencana visual aksi dengan pewarnaan berdasarkan kategori risiko
-//   - BlokJson : penampil data perbandingan JSON terformat rapi dua spasi
-//   - DetailDialog : modal rincian entri audit termasuk data sebelum vs sesudah
-//   - DaftarAudit : tabel log berpaginasi dilengkapi penyaring kriteria dinamis
-//   - AuditLogView : komponen utama halaman jejak audit yang dilindungi AdminGuard
-//
-// Cara kerja:
-//   1. Administrator memfilter log berdasarkan aktor, jenis aksi, entitas, dan tanggal.
-//   2. Tabel menampilkan waktu kejadian, aktor pelaksana, aksi, dan entitas terkait.
-//   3. Tombol rincian membuka DetailDialog untuk memeriksa riwayat mutasi JSON dan IP.
-//
-// Catatan penting:
-//   - Mendukung kebutuhan audit jejak aktivitas (FR-03).
-//   - Data kredensial sensitif telah dieliminasi dari payload JSON di backend (NFR-05).
-//   - Seluruh entri audit bersifat permanen (hanya baca, tidak dapat diubah/dihapus).
-//
-// Dipakai oleh: frontend/src/app/(app)/admin/audit-log/page.tsx
-// =============================================================================
-
 "use client";
 
 import { Eye, RotateCcw, ScrollText, SearchX } from "lucide-react";
@@ -45,6 +19,8 @@ import { UKURAN_HALAMAN_AUDIT } from "../api/admin";
 import { useAuditDetail, useAuditLog, usePilihanAudit } from "../hooks/use-admin";
 import type { AuditItem, FilterAudit } from "../types";
 import { AdminGuard } from "./admin-shared";
+
+// Daftar audit log: login, perubahan kegiatan, unggahan, dan master data
 
 const SEMUA = "semua";
 

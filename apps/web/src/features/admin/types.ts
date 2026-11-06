@@ -1,26 +1,6 @@
-// =============================================================================
-// DEFINISI TIPE DATA FITUR ADMINISTRASI
-// =============================================================================
-// Gunanya: mendefinisikan seluruh tipe data TypeScript yang digunakan pada fitur
-// administrasi: master data, pengelolaan akun, audit log.
-//
-// Isi berkas:
-//   - BidangAdmin, IsiUnit : tipe master bidang dan sub bidang beserta formulirnya
-//   - PegawaiAdmin, IsiPegawai, IsiPegawaiBaru, FilterPegawai : tipe entitas pegawai
-//   - JenisKegiatanAdmin : tipe referensi kategori jenis kegiatan dinas
-//   - Halaman<T> : tipe generik pembungkus respons data berpaginasi dari server
-//   - AkunAdmin, AkunDetail, IsiAkun, FilterAkun : tipe akun pengguna, detail, form, dan filternya
-//   - AuditItem, AuditDetail, FilterAudit, PilihanAudit : tipe riwayat jejak audit
-//   - PermintaanAkun, StatusPermintaan, IsiUndangan : tipe permintaan akun dan undangan
-//
-// Catatan penting:
-//   - Menjadi kontrak data bersama antara klien API, hooks query, dan komponen UI.
-//   - Tipe Halaman<T> menggunakan generic TypeScript untuk standarisasi paginasi.
-//
-// Dipakai oleh: api/admin.ts, hooks/use-admin.ts, dan komponen fitur admin
-// =============================================================================
-
 import type { Role, StatusAkun } from "@/types/auth";
+
+// Tipe data fitur admin: master data, akun, dan audit log
 
 export type BidangAdmin = {
   id: number;

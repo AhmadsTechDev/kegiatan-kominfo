@@ -1,16 +1,11 @@
-// =============================================================================
-// KOMPONEN MENU TARIK-TURUN (DROPDOWN MENU)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis Radix UI untuk menampilkan
-//          menu daftar pilihan tindakan atau navigasi saat pemicu diklik.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
 import { cn } from "cn"
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
+
+// Komponen dasar shadcn/ui: menu tarik-turun (Radix)
 
 function DropdownMenu({
   ...props

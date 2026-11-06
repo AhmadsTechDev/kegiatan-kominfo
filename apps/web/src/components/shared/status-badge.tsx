@@ -1,26 +1,8 @@
-// =============================================================================
-// LENCANA STATUS KEGIATAN, PEMERIKSAAN, DAN AKUN (STATUS BADGE)
-// =============================================================================
-// Gunanya: Menampilkan label status pelaksanaan kegiatan dan status pemeriksaan
-// pimpinan, dan status akun pengguna secara visual pada Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - StatusBadge            : lencana bentuk pil untuk status pelaksanaan kegiatan
-//   - labelPemeriksaan       : fungsi pemetaan teks label status pemeriksaan pimpinan
-//   - StatusPemeriksaanBadge : lencana bentuk kotak untuk status pemeriksaan pimpinan
-//   - StatusAkunBadge        : lencana bentuk pil untuk status akun (menunggu aktivasi, aktif, nonaktif)
-//
-// Catatan penting:
-//   - Status pelaksanaan dihitung oleh backend; antarmuka hanya memetakan tampilannya.
-//   - Lencana pemeriksaan berbentuk kotak agar tidak tertukar dengan status pelaksanaan.
-//   - Teks status selalu dicantumkan agar pemahaman status tidak bergantung pada warna.
-//
-// Dipakai oleh: Tabel daftar kegiatan, tampilan detail kegiatan, modul pimpinan, manajemen akun, dan Pengaturan
-// =============================================================================
-
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { LABEL_STATUS_AKUN, type StatusAkun } from "@/types/auth";
+
+// Label status kegiatan, status pemeriksaan, dan status akun
 
 export type StatusPelaksanaan = "akan_datang" | "berlangsung" | "selesai" | "dibatalkan";
 

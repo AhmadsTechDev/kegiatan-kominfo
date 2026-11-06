@@ -1,24 +1,6 @@
-// =============================================================================
-// PENANGAN GALAT GLOBAL TINGKAT AKAR (GLOBAL ERROR BOUNDARY)
-// =============================================================================
-// Gunanya: Menangkap galat fatal pada Root Layout di Aplikasi Pendataan Kegiatan
-// agar aplikasi tetap menampilkan antarmuka darurat dan tidak menjadi layar putih.
-//
-// Isi berkas:
-//   - GlobalError : komponen penanganan galat akar dengan HTML dan gaya inline
-//
-// Cara kerja:
-//   1. Dipanggil otomatis oleh Next.js ketika terjadi galat fatal di Root Layout.
-//   2. Menampilkan pesan galat darurat serta tombol pemicu fungsi reset.
-//
-// Catatan penting:
-//   - Wajib menyertakan tag <html> dan <body> serta gaya CSS inline karena berkas
-//     CSS aplikasi atau layout utama kemungkinan gagal dimuat saat terjadi error.
-//
-// Dipakai oleh: Next.js App Router sebagai penanganan galat tingkat paling akhir
-// =============================================================================
-
 "use client";
+
+// Penangkap galat fatal di root layout agar tidak jadi layar putih
 
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (

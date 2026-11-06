@@ -1,22 +1,9 @@
-// =============================================================================
-// PEMBUNGKUS DINAMIS PETA SEBARAN
-// =============================================================================
-// Gunanya: Memuat peta sebaran kegiatan secara dinamis di klien tanpa SSR untuk
-//          mencegah galat objek browser (window dan WebGL) di lingkungan server.
-//
-// Isi berkas:
-//   - MapOverview : pembungkus dynamic import Next.js dengan fallback skeleton
-//
-// Catatan penting:
-//   - Mengikuti DESIGN.md bagian 6 dengan mematikan SSR (ssr: false) untuk MapLibre.
-//
-// Dipakai oleh: Komponen peta dashboard (peta-kegiatan.tsx)
-// =============================================================================
-
 "use client";
 
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Memuat peta sebaran hanya di klien (tanpa SSR) karena butuh window/WebGL
 
 export type { TitikPeta } from "./map-overview-inner";
 

@@ -1,19 +1,3 @@
-// =============================================================================
-// VERIFIKASI EMAIL BARU (KonfirmasiEmailView)
-// =============================================================================
-// Gunanya: Menyelesaikan perubahan email akun dari tautan yang dikirim ke email baru.
-//
-// Isi berkas:
-//   - KonfirmasiEmailView : membaca ?token=, meminta konfirmasi pengguna, lalu menampilkan hasilnya
-//
-// Cara kerja:
-//   1. Pengguna menekan tombol konfirmasi (tidak otomatis, agar pemindai tautan di email
-//      tidak memakai token sekali pakai ini).
-//   2. POST /api/konfirmasi-email mengganti email login; email lama tidak berlaku lagi.
-//
-// Dipakai oleh: Halaman /konfirmasi-email
-// =============================================================================
-
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
@@ -27,6 +11,8 @@ import { konfirmasiEmail, tokenTidakBerlaku } from "../api/akun-publik";
 import { useCurrentUser } from "../hooks/use-current-user";
 import { KepalaKartu } from "./kartu-publik";
 import { Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
+
+// Menyelesaikan ganti email dari tautan yang dikirim ke email baru
 
 const PESAN_TIDAK_BERLAKU = "Tautan verifikasi sudah kedaluwarsa, sudah pernah dipakai, atau dibatalkan. Ajukan ulang perubahan email dari halaman Pengaturan.";
 

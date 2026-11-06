@@ -1,26 +1,3 @@
-// =============================================================================
-// HALAMAN CETAK DAN UNDUH LAPORAN
-// =============================================================================
-// Gunanya: Menyediakan antarmuka utama halaman laporan kegiatan untuk memilih
-// filter cakupan, melihat pratinjau halaman, serta mengekspor atau mencetak.
-//
-// Isi berkas:
-//   - unitDanTurunan : fungsi rekursif menghimpun ID bidang dan seksi bawahnya
-//   - LaporanView    : komponen utama pengatur filter, pratinjau, dan ekspor
-//
-// Cara kerja:
-//   1. Membaca parameter tanggal, unit, dan pegawai dari URL query peramban.
-//   2. Menghitung estimasi jumlah kegiatan dan mengambil data pratinjau backend.
-//   3. Menyaring daftar pilihan pegawai mengikuti hierarki bidang yang dipilih.
-//   4. Memfasilitasi ekspor berkas PDF dan pencetakan via window.print().
-//
-// Catatan penting:
-//   - Sesuai features/05-cetak-unduh-laporan.md; filter tetap tersimpan di URL.
-//   - Elemen cetak dirender ke dokumen <body> lewat portal agar cetakan rapi.
-//
-// Dipakai oleh: frontend/src/app/(app)/laporan/page.tsx
-// =============================================================================
-
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -49,6 +26,8 @@ import { cn } from "@/lib/utils";
 import { getEstimasi, getPratinjau } from "../api";
 import type { CakupanLaporan } from "../types";
 import { bagiHalaman, HalamanLaporan } from "./halaman-laporan";
+
+// Halaman laporan: pilih cakupan, pratinjau, lalu unduh atau cetak
 
 const SEMUA = "semua";
 

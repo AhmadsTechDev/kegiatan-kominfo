@@ -1,31 +1,3 @@
-// =============================================================================
-// KOMPONEN GRAFIK TREN KEGIATAN PER UNIT BULANAN
-// =============================================================================
-// Gunanya: Menampilkan visualisasi grafik batang bertumpuk tren kegiatan per
-// bidang selama enam bulan terakhir pada Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - Ringkasan : Komponen kartu metrik kecil (total, rata-rata, bulan tersibuk).
-//   - TooltipKustom : Komponen tooltip detail kontribusi unit per bulan.
-//   - ChartUnitBulanan : Komponen utama grafik batang bertumpuk Recharts.
-//
-// Cara kerja:
-//   1. Memetakan data enam bulan terakhir ke format baris Recharts per bidang.
-//   2. Menyediakan filter interaktif untuk menyembunyikan atau menampilkan unit.
-//   3. Menghitung total dan menandai unit teratas (puncak) di tiap bulan.
-//   4. Merender kartu metrik ringkasan, grafik Recharts, dan legenda interaktif.
-//
-// Catatan penting:
-//   - Animasi batang tumbuh hanya aktif saat pertama kali dimuat, bukan ketika
-//     pengguna mengganti periode filter (DESIGN.md bagian 8.2).
-//   - Label nama unit pada legenda dipendekkan dengan regex agar rapi, sedangkan
-//     nama lengkap bidang tetap disajikan pada tooltip detail.
-//   - Minimal satu bidang harus selalu tampil agar grafik tidak kosong.
-//   - Sudut membulat dan angka total hanya dipasang pada segmen teratas (puncak).
-//
-// Dipakai oleh: features/dashboard/components/dashboard-view.tsx
-// =============================================================================
-
 "use client";
 
 import { BarChart3, ChevronRight, Eye, EyeOff } from "lucide-react";
@@ -40,6 +12,8 @@ import { formatAngka, formatPeriode } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
 import type { DashboardData } from "../types";
+
+// Grafik batang bertumpuk kegiatan per bidang selama 6 bulan terakhir
 
 const JUMLAH_WARNA = 6;
 const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];

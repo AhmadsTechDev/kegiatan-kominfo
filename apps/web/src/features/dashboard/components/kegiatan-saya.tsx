@@ -1,29 +1,3 @@
-// =============================================================================
-// KOMPONEN PANEL KEGIATAN SAYA
-// =============================================================================
-// Gunanya: Menampilkan panel daftar tugas pribadi pegawai yang mencakup kegiatan
-// yang perlu dokumentasi dan agenda mendatang pada Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - JudulKolom : Label judul bagian dengan ikon dan lencana hitungan jumlah.
-//   - Kosong : Pesan konfirmasi positif ketika tidak ada tugas atau agenda tersisa.
-//   - BarisDokumentasi : Baris kegiatan selesai yang belum memiliki dokumentasi.
-//   - BarisAgenda : Baris jadwal kegiatan aktif atau yang akan datang.
-//   - KegiatanSayaPanel : Komponen utama panel tugas personal pegawai.
-//
-// Cara kerja:
-//   1. Mengambil data aktivitas pegawai yang login melalui hook useKegiatanSaya.
-//   2. Menampilkan kolom daftar kegiatan selesai yang memerlukan unggahan bukti foto/PDF.
-//   3. Menampilkan kolom jadwal agenda kegiatan milik pengguna dalam waktu dekat.
-//
-// Catatan penting:
-//   - Berfokus pada daftar tugas tindak lanjut pegawai, bukan skor kinerja (FR-09).
-//   - Menggunakan container queries (@container) agar pembagian dua kolom menyesuaikan
-//     lebar aktual panel, bukan sekadar lebar layar peramban.
-//
-// Dipakai oleh: features/dashboard/components/dashboard-pegawai.tsx
-// =============================================================================
-
 "use client";
 
 import { ArrowRight, CalendarClock, CheckCircle2, FileWarning, Upload } from "lucide-react";
@@ -37,6 +11,8 @@ import { formatAngka, formatJam, formatRentangTanggal, formatTanggal } from "@/l
 import { cn } from "@/lib/utils";
 import { useKegiatanSaya } from "../hooks/use-dashboard";
 import type { KegiatanRingkas } from "../types";
+
+// Panel tugas pegawai: kegiatan yang perlu dokumentasi dan agenda mendatang
 
 function JudulKolom({ ikon: Ikon, judul, jumlah, nada }: { ikon: typeof FileWarning; judul: string; jumlah: number; nada: string }) {
   return (

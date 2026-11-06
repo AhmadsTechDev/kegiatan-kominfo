@@ -1,17 +1,6 @@
-// =============================================================================
-// LABEL PENANDA UNIT KERJA (UNIT CHIP)
-// =============================================================================
-// Gunanya: Menampilkan label penanda nama bidang atau sub bidang penanggung jawab
-// kegiatan pada tabel dan kartu antarmuka Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - UnitChip : komponen chip netral dengan pemotongan teks maksimal dua baris
-//
-// Catatan penting:
-//   - Warna abu-abu netral digunakan agar tidak bersaing visual dengan lencana status.
-// =============================================================================
-
 import { cn } from "@/lib/utils";
+
+// Label nama bidang / sub bidang penanggung jawab kegiatan
 
 export function UnitChip({ children, className }: { children: React.ReactNode; className?: string }) {
   return (

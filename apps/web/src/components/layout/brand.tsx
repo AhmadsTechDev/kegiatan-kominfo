@@ -1,20 +1,9 @@
-// =============================================================================
-// IDENTITAS BRAND DAN LOGO INSTANSI
-// =============================================================================
-// Gunanya: Menampilkan logo instansi dan nama dinas sebagai tautan beranda pada
-// kepala bilah samping Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - Brand : komponen logo berlatar lingkaran putih dengan teks responsif
-//
-// Catatan penting:
-//   - Teks nama dinas disembunyikan saat bilah samping menyusut ke mode rel ikon.
-// =============================================================================
-
 import Image from "next/image";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { cn } from "@/lib/utils";
+
+// Logo dan nama dinas di kepala bilah samping (tautan ke beranda)
 
 export function Brand({ hideTextClassName }: { hideTextClassName?: string }) {
   return (

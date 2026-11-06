@@ -1,15 +1,10 @@
-// =============================================================================
-// KOMPONEN KONTEN MELAYANG (POPOVER)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis Radix UI untuk menampilkan
-//          panel konten melayang yang berlabuh pada elemen pemicu tertentu.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
 import { cn } from "cn"
 import { Popover as PopoverPrimitive } from "radix-ui"
+
+// Komponen dasar shadcn/ui: popover (Radix)
 
 function Popover({
   ...props

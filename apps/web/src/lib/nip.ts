@@ -1,21 +1,6 @@
-// =============================================================================
-// VALIDATOR NOMOR INDUK PEGAWAI (NIP) ASN
-// =============================================================================
-// Gunanya: Memvalidasi kelayakan struktur 18 digit NIP ASN (PNS dan PPPK) untuk
-// tanggal lahir, TMT pengangkatan, kode jenis kelamin, dan nomor urut.
-//
-// Isi berkas:
-//   - periksaNip : fungsi penguji keabsahan logika 18 digit angka NIP.
-//   - zNip       : skema Zod dengan pesan kesalahan yang selaras dengan backend.
-//
-// Catatan penting:
-//   - Mengakui kode bulan 21 khusus untuk pengangkatan PPPK.
-//   - Menangkap kekeliruan ketik; aturan identik dengan backend/src/lib/nip.ts.
-//
-// Dipakai oleh: Formulir master data pegawai dan skema aktivasi/pendaftaran akun.
-// =============================================================================
-
 import { z } from "zod";
+
+// Validasi struktur NIP 18 digit (PNS/PPPK): tanggal lahir, TMT, jenis kelamin, nomor urut
 
 const BULAN_PPPK = 21;
 const USIA_MIN_PENGANGKATAN = 17;

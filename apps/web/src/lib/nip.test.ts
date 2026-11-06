@@ -1,20 +1,7 @@
-// =============================================================================
-// PENGUJIAN UNIT VALIDATOR NOMOR INDUK PEGAWAI (NIP)
-// =============================================================================
-// Gunanya: Menguji keabsahan logika pemeriksaan 18 digit NIP ASN dan skema formulir
-// Zod agar validasi di frontend berfungsi persis sama dengan backend.
-//
-// Yang diuji dan alasannya:
-//   - Format NIP sah PNS dan PPPK: memastikan kombinasi digit yang benar diloloskan.
-//   - Pendeteksian salah ketik: menguji penolakan tanggal lahir kalender tidak valid,
-//     bulan pengangkatan di luar batas (01-12 atau 21 PPPK), dan digit jenis kelamin.
-//   - Skema Zod zNip: memastikan pesan galat formulir konsisten dengan aturan server.
-//
-// Dipakai oleh: Bun test runner untuk pengujian otomatis modul validasi pegawai.
-// =============================================================================
-
 import { describe, expect, test } from "bun:test";
 import { periksaNip, zNip } from "./nip";
+
+// Uji validasi NIP 18 digit agar sama persis dengan backend
 
 const SEKARANG = new Date("2026-10-19T00:00:00Z");
 

@@ -1,22 +1,3 @@
-// =============================================================================
-// TAB PENGELOLAAN MASTER DATA PEGAWAI
-// =============================================================================
-// Gunanya: mengelola data pegawai ASN dan non-ASN: nama, NIP, bidang, dan status.
-// Akun login (undangan, nonaktif, hapus) dikelola di halaman Manajemen akun.
-//
-// Isi berkas:
-//   - PegawaiDialog : modal formulir tambah pegawai atau pengubahan data
-//   - PegawaiTab : tabel data pegawai dengan filter, aksi Ubah, dan paginasi
-//
-// Catatan penting:
-//   - Hanya pegawai yang sudah punya akun yang tampil; yang belum ada di Manajemen akun > Perlu diundang.
-//   - NIP opsional untuk pegawai non-ASN atau tenaga honorer.
-//   - Nomor telepon diambil dari kontak akun pegawai dan hanya ditampilkan di sini.
-//   - Validasi satu pintu di server memastikan NIP tidak bentrok sebelum simpan.
-//
-// Dipakai oleh: master-view.tsx
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,6 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 import { formatTelp } from "@/lib/format";
 import { LABEL_ROLE, type Role } from "@/types/auth";
+
+// Tab kelola data pegawai ASN dan non-ASN (akun login diurus di Manajemen akun)
 
 const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const satisfies readonly Role[];
 

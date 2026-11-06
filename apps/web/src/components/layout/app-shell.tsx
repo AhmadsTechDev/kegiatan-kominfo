@@ -1,27 +1,3 @@
-// =============================================================================
-// KERANGKA UTAMA TATA LETAK APLIKASI (APP SHELL)
-// =============================================================================
-// Gunanya: Menyediakan kerangka tata letak terpadu seluruh halaman Aplikasi Pendataan
-// Kegiatan setelah login, mencakup bilah navigasi samping, bilah atas, dan area konten.
-//
-// Isi berkas:
-//   - subHalaman : menentukan teks penutup breadcrumb untuk rute dinamis kegiatan
-//   - Breadcrumb : menampilkan jejak remah roti navigasi rute aktif di bilah atas
-//   - IsiSidebar : menyusun logo brand, tombol ciutkan, menu navigasi, dan akun
-//   - AppShell   : komponen pembungkus utama yang mengatur tata letak responsif
-//
-// Cara kerja:
-//   1. Memeriksa status login pengguna dan menyusun menu navigasi sesuai peran aktif.
-//   2. Memantau antrean permintaan akun admin untuk ditampilkan sebagai angka lencana.
-//   3. Menampilkan navigasi sebagai bilah geser (drawer) di ponsel, rel ikon di tablet,
-//      serta bilah samping penuh yang dapat diciutkan pada layar desktop.
-//
-// Catatan penting:
-//   - Breadcrumb dibungkus Suspense agar pembacaan URL tidak menahan proses render.
-//
-// Dipakai oleh: frontend/src/app/(app)/layout.tsx
-// =============================================================================
-
 "use client";
 
 import { ChevronRight, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
@@ -43,6 +19,8 @@ import { Brand } from "./brand";
 import { kelasLabel, SidebarNav } from "./sidebar-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { SidebarAccount, UserMenu } from "./user-menu";
+
+// Kerangka halaman setelah login: bilah samping, bilah atas, dan area konten
 
 function subHalaman(pathname: string) {
   if (pathname === "/kegiatan/baru") return "Tambah kegiatan";

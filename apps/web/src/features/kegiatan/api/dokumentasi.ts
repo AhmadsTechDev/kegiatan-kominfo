@@ -1,18 +1,7 @@
-// =============================================================================
-// API DOKUMENTASI KEGIATAN
-// =============================================================================
-// Gunanya: Menyediakan fungsi klien HTTP untuk mengunggah, mengganti, menghapus,
-// serta membuat URL akses terproteksi berkas dokumentasi kegiatan (foto/PDF).
-//
-// Catatan penting:
-//   - Berkas diakses via endpoint privat berkuki sesi tanpa URL publik (NFR-04).
-//   - Parameter v=createdAt mencegah cache peramban saat berkas diganti.
-//
-// Dipakai oleh: use-antrean-unggah.ts, use-kegiatan.ts, dokumentasi-galeri.tsx
-// =============================================================================
-
 import { apiClient } from "@/lib/api-client";
 import type { Dokumentasi } from "../types";
+
+// Pemanggil endpoint dokumentasi: unggah, ganti, hapus, dan URL berkas
 
 export const urlDokumentasi = (d: Pick<Dokumentasi, "id" | "createdAt">, unduh = false) =>
   `/api/dokumentasi/${d.id}?v=${encodeURIComponent(d.createdAt)}${unduh ? "&unduh=1" : ""}`;

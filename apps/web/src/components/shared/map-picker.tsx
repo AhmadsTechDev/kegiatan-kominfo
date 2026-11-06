@@ -1,22 +1,9 @@
-// =============================================================================
-// PEMBUNGKUS DINAMIS PEMILIH LOKASI PETA
-// =============================================================================
-// Gunanya: Memuat modul pemilih lokasi peta MapPickerInner secara dinamis di sisi
-//          klien tanpa SSR untuk mencegah galat window/WebGL di server.
-//
-// Isi berkas:
-//   - MapPicker : pembungkus dynamic Next.js dengan kerangka skeleton pemuatan
-//
-// Catatan penting:
-//   - Sesuai DESIGN.md bagian 6, SSR dimatikan (ssr: false) untuk MapLibre GL.
-//
-// Dipakai oleh: Formulir kegiatan (lokasi-kegiatan.tsx) dan tampilan detail kegiatan
-// =============================================================================
-
 "use client";
 
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Memuat peta pemilih lokasi hanya di klien (tanpa SSR) karena butuh window/WebGL
 
 export type { Koordinat } from "./map-picker-inner";
 

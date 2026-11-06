@@ -1,11 +1,6 @@
-// =============================================================================
-// KOMPONEN KERANGKA PEMUATAN (SKELETON)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui untuk menampilkan animasi kerangka
-//          placeholder pemuatan data sebelum konten sebenarnya selesai dimuat.
-// =============================================================================
-
 import { cn } from "cn"
+
+// Komponen dasar shadcn/ui: skeleton saat memuat
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (

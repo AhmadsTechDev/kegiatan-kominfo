@@ -1,20 +1,6 @@
-// =============================================================================
-// KEBIJAKAN KATA SANDI (SISI KLIEN)
-// =============================================================================
-// Gunanya: Menyamakan pemeriksaan kata sandi di formulir dengan aturan backend
-// (apps/api/src/utils/kebijakan-sandi.ts) agar galat tampil sebelum dikirim.
-//
-// Isi berkas:
-//   - periksaSandi : mengembalikan pesan galat atau null bila kata sandi sah
-//   - skemaSandiBaru : skema Zod kata sandi baru + ulangi, dengan konteks email
-//
-// Catatan penting:
-//   - Backend tetap menjadi penentu akhir; aturan di sini hanya untuk umpan balik cepat.
-//
-// Dipakai oleh: FormSandiBaru (aktivasi dan atur ulang), GantiSandiDialog
-// =============================================================================
-
 import { z } from "zod";
+
+// Cek kata sandi di formulir, sama dengan aturan backend (utils/kebijakan-sandi.ts)
 
 export const SANDI_MIN = 8;
 export const SANDI_MAKS = 128;

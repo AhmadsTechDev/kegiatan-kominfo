@@ -1,30 +1,11 @@
-// =============================================================================
-// KOMPONEN STATUS KEADAAN KHUSUS KEGIATAN
-// =============================================================================
-// Gunanya: Menyediakan komponen tampilan keadaan khusus (fallback states) seperti
-// pesan data tidak ditemukan (404), penolakan akses (403), dan kerangka skeleton.
-//
-// Isi berkas:
-//   - KembaliKeDaftar        : tombol navigasi kembali ke rute daftar kegiatan
-//   - KegiatanTidakDitemukan : kartu pesan kesalahan 404 saat data tidak ditemukan
-//   - KegiatanTanpaAkses     : kartu peringatan 403 saat pengguna tidak berhak
-//   - KegiatanFormSkeleton   : kerangka animasi pemuatan untuk formulir kegiatan
-//   - KegiatanDetailSkeleton : kerangka animasi pemuatan untuk rincian detail kegiatan
-//
-// Catatan penting:
-//   - Mengikuti panduan antarmuka penanganan keadaan khusus (DESIGN.md bagian 7).
-//   - Judul dan pesan pada KegiatanTidakDitemukan dapat disesuaikan untuk kasus draf.
-//   - Skeleton dirancang menyerupai struktur visual asli guna mencegah pergeseran tata letak.
-//
-// Dipakai oleh: components/kegiatan-detail-view.tsx, components/kegiatan-form-view.tsx
-// =============================================================================
-
 import { ArrowLeft, FileQuestion, ShieldX } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Tampilan keadaan kegiatan: tidak ditemukan (404), tanpa akses (403), dan skeleton
 
 function KembaliKeDaftar() {
   return (

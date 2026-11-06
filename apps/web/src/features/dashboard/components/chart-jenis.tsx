@@ -1,34 +1,11 @@
-// =============================================================================
-// KOMPONEN GRAFIK SEBARAN JENIS KEGIATAN
-// =============================================================================
-// Gunanya: Menampilkan visualisasi proporsi dan jumlah kegiatan berdasarkan jenis
-// menggunakan bilah progres horizontal dalam Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - ChartJenis : Komponen panel visualisasi sebaran jenis kegiatan dinas.
-//
-// Cara kerja:
-//   1. Menghitung nilai maksimum dan total akumulasi seluruh jenis kegiatan.
-//   2. Menghitung persentase pangsa tiap jenis terhadap total dan nilai teratas.
-//   3. Merender daftar bilah progres beranimasi beserta angka dan persentase.
-//   4. Menampilkan kalimat ringkasan jenis kegiatan yang paling sering diadakan
-//      langsung di bawah daftar. Jenis aktif tanpa kegiatan tampil dengan angka 0.
-//
-// Catatan penting:
-//   - Format batang horizontal dipilih dibanding donat agar perbandingan kuantitas
-//     lebih mudah dibaca (DESIGN.md bagian 5.2).
-//   - Menggunakan palet Diskominfo (navy dan emas); angka selalu dicantumkan
-//     eksplisit agar pemahaman data tidak bergantung pada persepsi warna.
-//
-// Dipakai oleh: features/dashboard/components/dashboard-view.tsx
-// =============================================================================
-
 import { Lightbulb, PieChart } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/shared/panel";
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { DashboardData } from "../types";
+
+// Jumlah dan proporsi kegiatan per jenis dalam bilah horizontal
 
 const WARNA = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5", "bg-chart-6"];
 const WARNA_TEKS = [

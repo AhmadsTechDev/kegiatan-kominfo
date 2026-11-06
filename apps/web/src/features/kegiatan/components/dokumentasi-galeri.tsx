@@ -1,31 +1,3 @@
-// =============================================================================
-// KOMPONEN GALERI DOKUMENTASI KEGIATAN
-// =============================================================================
-// Gunanya: Menampilkan, mengunggah, mengganti, melihat pratinjau, dan menghapus
-// berkas bukti pelaksanaan kegiatan dinas berupa foto atau dokumen PDF.
-//
-// Isi berkas:
-//   - adalahFoto        : fungsi helper pengecekan tipe MIME berkas gambar
-//   - AksiBerkas        : bilah tombol aksi (unduh, ganti, hapus) per item berkas
-//   - DokumentasiGaleri : komponen utama galeri grid berkas, dropzone, dan modal
-//
-// Cara kerja:
-//   1. Berkas dokumentasi dipisahkan menjadi foto (grid thumbnail) dan PDF (kartu).
-//   2. Pengguna berwenang dapat menambah berkas via dropzone yang langsung diunggah.
-//   3. Mengklik thumbnail foto membuka modal pratinjau dengan navigasi antar-foto.
-//   4. Berkas PDF dapat dibuka langsung di tab baru peramban via tautan terproteksi.
-//   5. Penggantian berkas mempertahankan ID lama; penghapusan meminta konfirmasi dialog.
-//
-// Catatan penting:
-//   - Mengikuti panduan antarmuka galeri dokumentasi (DESIGN.md bagian 5.5).
-//   - Komponen Image Next.js memakai unoptimized karena gambar dilindungi otentikasi
-//     kuki sesi peramban dan tidak dapat diakses langsung oleh pengoptimal server.
-//   - Setiap berkas menyediakan tombol unduh sebagai fallback jika pratinjau gagal dibuka.
-//   - Jika penggantian berkas gagal di jaringan, berkas lama tetap utuh di server.
-//
-// Dipakai oleh: components/kegiatan-detail-view.tsx, components/kegiatan-form.tsx
-// =============================================================================
-
 "use client";
 
 import { ChevronLeft, ChevronRight, Download, ExternalLink, FileText, RefreshCw, Trash2 } from "lucide-react";
@@ -42,6 +14,8 @@ import { urlDokumentasi } from "../api/dokumentasi";
 import { periksaBerkas, useAntreanUnggah, useGantiDokumentasi } from "../hooks/use-antrean-unggah";
 import { useHapusDokumentasi } from "../hooks/use-kegiatan";
 import type { Dokumentasi, KegiatanDetail } from "../types";
+
+// Galeri dokumentasi kegiatan: lihat, unggah, ganti, pratinjau, dan hapus foto/PDF
 
 const adalahFoto = (d: Dokumentasi) => d.mime.startsWith("image/");
 

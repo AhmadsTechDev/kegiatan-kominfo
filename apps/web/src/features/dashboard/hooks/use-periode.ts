@@ -1,19 +1,9 @@
-// =============================================================================
-// HOOK PENGELOLA PERIODE DASHBOARD
-// =============================================================================
-// Gunanya: Membaca dan memperbarui query URL (?periode=YYYY-MM) secara reaktif
-// tanpa memuat ulang halaman agar pilihan periode bertahan saat tautan dibagikan.
-//
-// Isi berkas:
-//   - usePeriode : Hook pembaca dan pembaru query URL dengan opsi scroll: false.
-//
-// Dipakai oleh: features/dashboard/components/dashboard-view.tsx
-// =============================================================================
-
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+
+// Baca dan ubah ?periode=YYYY-MM di URL tanpa muat ulang halaman
 
 export function usePeriode() {
   const searchParams = useSearchParams();

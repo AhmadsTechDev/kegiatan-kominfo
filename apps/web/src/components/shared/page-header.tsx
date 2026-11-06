@@ -1,19 +1,6 @@
-// =============================================================================
-// HEADER KEPALA HALAMAN
-// =============================================================================
-// Gunanya: Menyajikan tata letak kepala halaman yang seragam berisi label kategori,
-//          judul utama, deskripsi singkat, dan deretan tombol aksi.
-//
-// Isi berkas:
-//   - PageHeader : komponen tata letak kepala halaman aplikasi yang konsisten
-//
-// Catatan penting:
-//   - Eyebrow berupa label kategori huruf kapital di atas judul (reference/dashboard-admin).
-//
-// Dipakai oleh: Halaman daftar kegiatan, dashboard, rekapitulasi, dan formulir
-// =============================================================================
-
 import { cn } from "@/lib/utils";
+
+// Kepala halaman seragam: label kategori, judul, deskripsi, dan tombol aksi
 
 type PageHeaderProps = {
   title: string;

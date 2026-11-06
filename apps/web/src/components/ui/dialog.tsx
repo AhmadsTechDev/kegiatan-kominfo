@@ -1,10 +1,3 @@
-// =============================================================================
-// KOMPONEN DIALOG MODAL (DIALOG)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis Radix UI untuk menampilkan
-//          jendela modal terpusat berisi formulir atau konten interaktif.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
@@ -14,6 +7,8 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { Button } from "@/components/ui/button"
 import { useOpenTerkendali } from "@/hooks/use-tutup-lewat-kembali"
 import { XIcon } from "lucide-react"
+
+// Komponen dasar shadcn/ui: dialog modal (Radix)
 
 // Tombol Kembali di HP menutup dialog, bukan meninggalkan halaman
 function Dialog({

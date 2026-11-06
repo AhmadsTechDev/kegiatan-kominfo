@@ -1,26 +1,3 @@
-// =============================================================================
-// KOMPONEN FORMULIR PERMINTAAN AKUN (MintaAkunForm)
-// =============================================================================
-// Gunanya: Menyediakan formulir pengajuan akun baru bagi pegawai atau non-ASN kepada admin,
-// mencakup nama, NIP (opsional), email pribadi, catatan, serta visualisasi status hasil.
-//
-// Isi berkas:
-//   - KOLOM         : pemetaan nama kolom galat dari respons backend ke properti formulir
-//   - MintaAkunForm : komponen formulir permintaan akun baru dan layar konfirmasi sukses
-//
-// Cara kerja:
-//   1. Mengelola isian formulir dengan validasi Zod (nama, NIP 18 digit opsional, email, catatan).
-//   2. Mengirim data permohonan ke API publik menggunakan mutasi TanStack Query ajukanPermintaanAkun.
-//   3. Memetakan galat dari server ke masing-masing kolom input atau menampilkan kotak galat umum.
-//   4. Menampilkan layar sukses jika pengajuan berhasil diterima server untuk ditinjau admin.
-//
-// Catatan penting:
-//   - NIP bersifat opsional agar pegawai non-ASN tanpa NIP tetap dapat mengajukan permohonan akun.
-//   - Akun baru tidak langsung aktif, melainkan harus disetujui oleh administrator terlebih dahulu.
-//
-// Dipakai oleh: Halaman minta akun (frontend/src/app/(auth)/minta-akun/page.tsx)
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +17,8 @@ import { zNip } from "@/lib/nip";
 import { ajukanPermintaanAkun } from "../api/akun-publik";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { KepalaKartu } from "./kartu-publik";
+
+// Formulir pengajuan akun baru ke admin (nama, NIP opsional, email, catatan)
 
 const schema = z.object({
   nama: z.string().trim().min(1, "Nama wajib diisi").max(150, "Nama maksimal 150 karakter"),

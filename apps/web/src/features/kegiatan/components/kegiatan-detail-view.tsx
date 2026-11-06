@@ -1,31 +1,3 @@
-// =============================================================================
-// TAMPILAN RINCIAN DETAIL KEGIATAN
-// =============================================================================
-// Gunanya: Menampilkan informasi lengkap satu kegiatan dinas meliputi status,
-// waktu pelaksanaan, lokasi dan peta koordinat, uraian hasil, galeri dokumen,
-// data penanggung jawab, serta riwayat pemeriksaan pimpinan.
-//
-// Isi berkas:
-//   - Paragraf           : perender pasangan label dan teks deskripsi berbaris baru
-//   - Fakta              : kartu ringkasan informasi berikon pada panel atas
-//   - KegiatanDetailView : komponen utama tampilan rincian detail kegiatan
-//
-// Cara kerja:
-//   1. Mengambil data detail kegiatan dari server via hook useKegiatan(id).
-//   2. Menampilkan kerangka skeleton saat memuat, atau pesan 404 jika tidak ada.
-//   3. Menyajikan kartu fakta waktu, lokasi tempat, bidang, dan jumlah peserta.
-//   4. Memunculkan pengingat melengkapi dokumen/hasil jika kegiatan sudah selesai.
-//   5. Menampilkan panel pemeriksaan jika pengguna memiliki peran pimpinan.
-//   6. Menyediakan tombol Ubah kegiatan, Selesaikan sekarang (saat berlangsung), dan Hapus bagi yang berhak.
-//
-// Catatan penting:
-//   - Sesuai spesifikasi pemantauan pimpinan (features/06-pantau-pimpinan.md).
-//   - Jangkar URL #dokumentasi otomatis digulir halus begitu data selesai dimuat.
-//   - Hapus berupa tombol ikon terpisah dan selalu meminta konfirmasi, jadi tidak mudah salah klik.
-//
-// Dipakai oleh: app/(app)/kegiatan/[id]/page.tsx
-// =============================================================================
-
 "use client";
 
 import { ArrowLeft, Ban, Building2, CalendarDays, CircleAlert, CircleCheck, ImageOff, MapPin, MapPinOff, MessageSquareWarning, Pencil, Trash2, Users } from "lucide-react";
@@ -49,6 +21,8 @@ import { DokumentasiGaleri } from "./dokumentasi-galeri";
 import { KegiatanAksiDialog, type JenisAksi } from "./kegiatan-aksi-dialog";
 import { KegiatanDetailSkeleton, KegiatanTidakDitemukan } from "./kegiatan-states";
 import { PeriksaAksi } from "./periksa-aksi";
+
+// Detail kegiatan: status, waktu, lokasi, hasil, dokumentasi, dan riwayat pemeriksaan
 
 function Paragraf({ label, isi, kosong }: { label: string; isi: string | null; kosong: string }) {
   return (

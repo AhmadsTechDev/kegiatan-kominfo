@@ -1,10 +1,3 @@
-// =============================================================================
-// KOMPONEN KALENDER TANGGAL (CALENDAR)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis react-day-picker untuk
-//          navigasi serta pemilihan tanggal atau rentang tanggal kegiatan.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
@@ -18,6 +11,8 @@ import {
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
+
+// Komponen dasar shadcn/ui: kalender pemilih tanggal (react-day-picker)
 
 function Calendar({
   className,

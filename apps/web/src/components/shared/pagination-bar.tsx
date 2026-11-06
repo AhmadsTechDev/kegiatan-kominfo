@@ -1,30 +1,9 @@
-// =============================================================================
-// BILAH NAVIGASI PAGINASI DATA
-// =============================================================================
-// Gunanya: Menyediakan kontrol navigasi pergantian halaman data, ringkasan rentang
-//          baris yang sedang aktif, serta tombol penomoran halaman cerdas.
-//
-// Isi berkas:
-//   - nomorHalaman  : penyusun daftar nomor halaman kunci dan elipsis pemisah
-//   - PaginationBar : komponen bilah navigasi paginasi dengan panah dan nomor
-//
-// Cara kerja:
-//   1. Menghitung total halaman dan indeks rentang baris awal hingga akhir.
-//   2. Membentuk daftar tombol halaman (halaman pertama, terakhir, tetangga aktif).
-//   3. Menyisipkan tanda titik-titik (elipsis) jika terdapat rentang nomor berjarak.
-//   4. Memanggil onPageChange ketika pengguna menekan panah atau nomor halaman.
-//
-// Catatan penting:
-//   - Sesuai DESIGN.md bagian 5.3, menampilkan teks rentang seperti "1–20 dari 100".
-//   - Pada layar ponsel, tombol halaman non-aktif disembunyikan agar tetap rapi.
-//
-// Dipakai oleh: Tabel kegiatan (kegiatan-list-view.tsx) dan tabel riwayat audit
-// =============================================================================
-
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+// Navigasi halaman data dengan ringkasan rentang baris
 
 type PaginationBarProps = {
   page: number;

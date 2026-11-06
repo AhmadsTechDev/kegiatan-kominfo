@@ -1,25 +1,6 @@
-// =============================================================================
-// TIPE DATA DAN KONTRAK FITUR KEGIATAN
-// =============================================================================
-// Gunanya: Mendefinisikan antarmuka dan tipe TypeScript untuk entitas kegiatan,
-// respons API backend, parameter penyaring, draf, serta dokumen lampiran.
-//
-// Isi berkas:
-//   - StatusPemeriksaanKegiatan : status verifikasi tanpa menyertakan draf
-//   - KegiatanItem & KegiatanDetail : struktur ringkas tabel dan detail kegiatan
-//   - Referensi : master data bidang, jenis kegiatan, dan daftar pegawai
-//   - FilterKegiatan : kumpulan parameter pencarian, rentang WIB, dan paginasi
-//   - KegiatanPayload & HasilSimpan : data masukan dan hasil simpan API
-//   - Draf & IsiDraf : struktur draf kegiatan yang disimpan sementara
-//
-// Catatan penting:
-//   - Menjadi kontrak data antara frontend dengan endpoint backend /api/kegiatan,
-//     /api/referensi, dan /api/draf-kegiatan untuk menjamin konsistensi tipe.
-//
-// Dipakai oleh: api, hooks, skema validasi, serta komponen antarmuka kegiatan
-// =============================================================================
-
 import type { StatusPelaksanaan, StatusPemeriksaan } from "@/components/shared/status-badge";
+
+// Tipe data kegiatan, respons API, filter, draf, dan dokumen
 
 export type StatusPemeriksaanKegiatan = Exclude<StatusPemeriksaan, "draf">;
 import type { KegiatanFormValues } from "./schemas/kegiatan.schema";

@@ -1,18 +1,11 @@
-// =============================================================================
-// KOLOM PENCARIAN (KolomCari)
-// =============================================================================
-// Gunanya: Masukan pencarian dengan ikon kaca pembesar dan jeda ketik 300 ms, agar kueri
-// tidak dikirim di setiap ketukan tombol.
-//
-// Dipakai oleh: halaman admin (akun, master data), Pantau
-// =============================================================================
-
 "use client";
 
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+// Kolom pencarian dengan jeda ketik 300 ms agar kueri tidak dikirim tiap ketukan
 
 export function KolomCari({
   id,

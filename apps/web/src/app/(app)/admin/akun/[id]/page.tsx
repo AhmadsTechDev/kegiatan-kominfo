@@ -1,22 +1,9 @@
-// =============================================================================
-// HALAMAN DETAIL AKUN (ADMIN)
-// =============================================================================
-// Gunanya: Rute /admin/akun/[id] yang menampilkan detail satu akun untuk administrator.
-//
-// Isi berkas:
-//   - metadata        : judul tab peramban
-//   - AkunDetailPage  : membaca id dari params lalu merender AkunDetailView
-//
-// Catatan penting:
-//   - Hak akses tetap diperiksa backend (403 untuk selain ADMIN); AdminGuard hanya untuk tampilan.
-//
-// Dipakai oleh: Next.js App Router untuk rute /admin/akun/[id]
-// =============================================================================
-
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AkunDetailView } from "@/features/admin/components/akun-detail-view";
+
+// Halaman detail satu akun untuk admin (/admin/akun/[id])
 
 export const metadata: Metadata = { title: "Detail akun" };
 

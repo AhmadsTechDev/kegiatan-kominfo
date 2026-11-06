@@ -1,21 +1,11 @@
-// =============================================================================
-// HOOK PROSES KELUAR (useLogout)
-// =============================================================================
-// Gunanya: Menangani proses keluar akun pengguna, menghapus seluruh cache TanStack
-// Query di peramban, dan mengarahkan kembali ke halaman masuk.
-//
-// Isi berkas:
-//   - useLogout : hook pemanggil signOut, pembersih cache query, dan pengalih rute ke login
-//
-// Dipakai oleh: UserMenu dan SidebarAccount pada navigasi aplikasi
-// =============================================================================
-
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { authClient } from "@/lib/auth-client";
+
+// Keluar akun, hapus cache TanStack Query, lalu ke halaman login
 
 export function useLogout() {
   const router = useRouter();

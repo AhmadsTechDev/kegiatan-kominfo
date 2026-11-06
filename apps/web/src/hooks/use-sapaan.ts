@@ -1,22 +1,8 @@
-// =============================================================================
-// HOOK SAPAAN WAKTU WIB
-// =============================================================================
-// Gunanya: Menghasilkan teks sapaan ramah (pagi, siang, sore, malam) sesuai jam
-// zona Waktu Indonesia Barat (WIB) tanpa memicu ketidakcocokan hidrasi SSR.
-//
-// Isi berkas:
-//   - useSapaan : hook penyedia teks sapaan berbasis useSyncExternalStore.
-//
-// Catatan penting:
-//   - Jam dihitung dalam WIB (+7 UTC), bukan waktu lokal perangkat pengguna.
-//   - Mengembalikan nilai netral "Selamat datang" saat prerender server.
-//
-// Dipakai oleh: dashboard-view.tsx dan dashboard-pegawai.tsx.
-// =============================================================================
-
 "use client";
 
 import { useSyncExternalStore } from "react";
+
+// Sapaan pagi/siang/sore/malam menurut jam WIB tanpa galat hidrasi
 
 const subscribe = () => () => {};
 

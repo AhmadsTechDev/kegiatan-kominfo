@@ -1,24 +1,3 @@
-// =============================================================================
-// DAFTAR NAVIGASI BILAH SAMPING (SIDEBAR NAVIGATION)
-// =============================================================================
-// Gunanya: Menyusun dan merender menu navigasi bilah samping sesuai hak akses
-// peran pengguna di Aplikasi Pendataan Kegiatan, baik mode penuh maupun rel ikon.
-//
-// Isi berkas:
-//   - kelasLabel : fungsi pembantu penentu kelas CSS untuk teks label responsif
-//   - SidebarNav : pembungkus navigasi dengan Suspense untuk membaca URL aktif
-//   - ItemSidebar: perender satu baris menu (tautan/tombol, ikon, dan lencana)
-//   - DaftarNav  : perender pengelompokan menu dan animasi pemuatan skeleton
-//
-// Cara kerja:
-//   1. Membaca rute aktif via Suspense agar tidak menghambat pemuatan awal halaman.
-//   2. Mengelompokkan item menu dan menyorot rute yang sedang dibuka pengguna.
-//   3. Menampilkan lencana jumlah antrean (misal permintaan akun) atau titik merah.
-//   4. Menampilkan tooltip keterangan saat navigasi berada dalam mode rel ikon.
-//
-// Dipakai oleh: frontend/src/components/layout/app-shell.tsx
-// =============================================================================
-
 "use client";
 
 import type { LucideIcon } from "lucide-react";
@@ -29,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { navAktif, type NavGroup } from "@/config/navigation";
 import { cn } from "@/lib/utils";
+
+// Menu bilah samping sesuai role, mode penuh maupun rel ikon
 
 type SidebarNavProps = {
   groups: NavGroup[];

@@ -1,22 +1,9 @@
-// =============================================================================
-// KOMPONEN TAMPILAN PESAN KESALAHAN
-// =============================================================================
-// Gunanya: Menampilkan kartu peringatan saat pemuatan data gagal, disertai tombol
-//          untuk memuat ulang data (retry) pada Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - ErrorState : kartu penampil pesan galat dengan opsi pemuatan ulang
-//
-// Catatan penting:
-//   - Memakai panduan DESIGN.md bagian 7 untuk penyajian pesan kesalahan yang jelas.
-//
-// Dipakai oleh: Halaman kegiatan, dashboard, dan komponen pemanggil kueri server
-// =============================================================================
-
 import { CircleAlert, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+
+// Kartu galat saat data gagal dimuat, dengan tombol muat ulang
 
 type ErrorStateProps = {
   message?: string;

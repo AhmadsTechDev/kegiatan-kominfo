@@ -1,19 +1,6 @@
-// =============================================================================
-// WADAH KARTU PANEL MODULAR
-// =============================================================================
-// Gunanya: Menyediakan sekumpulan komponen pembungkus konten bergaya kartu dengan
-//          bagian kepala, badan, dan kaki yang konsisten di seluruh antarmuka.
-//
-// Isi berkas:
-//   - Panel       : wadah utama section kartu dengan border halus dan bayangan
-//   - PanelHeader : bagian kepala kartu penampil judul heading, deskripsi, dan aksi
-//   - PanelBody   : bagian badan penampung konten utama panel
-//   - PanelFooter : bagian kaki panel untuk tautan ringkasan dengan garis batas
-//
-// Dipakai oleh: Halaman dashboard, rekapitulasi, dan tampilan detail kegiatan
-// =============================================================================
-
 import { cn } from "@/lib/utils";
+
+// Pembungkus konten bergaya kartu: kepala, badan, dan kaki
 
 export function Panel({ className, ...props }: React.ComponentProps<"section">) {
   return <section className={cn("flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm", className)} {...props} />;

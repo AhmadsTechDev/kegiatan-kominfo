@@ -1,30 +1,3 @@
-// =============================================================================
-// KOMPONEN TAMPILAN DASHBOARD
-// =============================================================================
-// Gunanya: Menampilkan gerbang utama antarmuka dashboard yang menyesuaikan
-// data dan tata letak berdasarkan peran pengguna di Aplikasi Pendataan Kegiatan.
-//
-// Isi berkas:
-//   - DashboardView : Komponen pemilah tampilan berdasarkan peran pengguna.
-//   - AkunMenunggu : Baris pemberitahuan akun menunggu aktivasi (khusus admin).
-//   - DashboardDinas : Tampilan ringkasan statistik dinas untuk admin dan pimpinan.
-//
-// Cara kerja:
-//   1. Memeriksa peran pengguna saat ini menggunakan hook useCurrentUser.
-//   2. Mengarahkan peran PEGAWAI ke tampilan personal DashboardPegawai.
-//   3. Mengarahkan ADMIN dan PIMPINAN ke tampilan ringkasan dinas DashboardDinas.
-//   4. Mengambil data ringkasan periode aktif dan menyajikan seluruh widget panel.
-//
-// Catatan penting:
-//   - Pimpinan dan admin tidak mencatat kegiatan, jadi tidak ada tombol tambah
-//     di dashboard dinas (backend juga menolak 403).
-//   - Pemilih periode dan tombol muat ulang berada di baris aksi header.
-//   - Dokumentasi bersifat opsional, jadi dashboard tidak lagi menampilkan
-//     panel kegiatan selesai tanpa dokumentasi.
-//
-// Dipakai oleh: app/(app)/dashboard/page.tsx
-// =============================================================================
-
 "use client";
 
 import { ArrowRight, Hourglass, RefreshCw } from "lucide-react";
@@ -47,6 +20,8 @@ import { KegiatanAkanDatang } from "./kegiatan-akan-datang";
 import { KpiCards } from "./kpi-cards";
 import { PeriodePicker } from "./periode-picker";
 import { PetaKegiatan } from "./peta-kegiatan";
+
+// Dashboard utama; isi dan tata letak menyesuaikan role
 
 export function DashboardView() {
   const { user, isPending } = useCurrentUser();

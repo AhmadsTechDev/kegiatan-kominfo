@@ -1,12 +1,7 @@
-// =============================================================================
-// KOMPONEN KARTU KONTEN (CARD)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui sebagai kontainer kartu terstruktur
-//          untuk mengelompokkan informasi, formulir, atau data kegiatan.
-// =============================================================================
-
 import * as React from "react"
 import { cn } from "cn"
+
+// Komponen dasar shadcn/ui: kartu
 
 function Card({
   className,

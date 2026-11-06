@@ -1,18 +1,7 @@
-// =============================================================================
-// API DRAF KEGIATAN
-// =============================================================================
-// Gunanya: Menyediakan fungsi klien HTTP untuk mengambil, menyimpan, dan
-// menghapus draf isian kegiatan sementara milik pegawai yang login.
-//
-// Catatan penting:
-//   - Draf bersifat privat dan hanya dapat dilihat oleh pembuatnya sendiri.
-//   - Simpan tanpa id membuat draf baru; dengan id menimpa draf yang dilanjutkan.
-//
-// Dipakai oleh: use-kegiatan.ts
-// =============================================================================
-
 import { apiClient } from "@/lib/api-client";
 import type { Draf, DrafRingkas, IsiDraf } from "../types";
+
+// Pemanggil endpoint draf kegiatan milik pegawai yang login
 
 export async function getDaftarDraf() {
   const { data } = await apiClient.get<DrafRingkas[]>("/draf-kegiatan");

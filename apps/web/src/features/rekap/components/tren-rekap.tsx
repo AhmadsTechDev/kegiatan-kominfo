@@ -1,26 +1,3 @@
-// =============================================================================
-// GRAFIK DAN DAFTAR TREN KEGIATAN PER PERIODE
-// =============================================================================
-// Gunanya: Menampilkan visualisasi grafik batang tren jumlah kegiatan beserta
-// daftar rincian periodik yang dapat diakses oleh pengguna dan pembaca layar.
-//
-// Isi berkas:
-//   - labelPeriode : memformat kode periode menjadi teks tanggal ramah pengguna
-//   - TooltipTren  : komponen keterangan interaktif saat kursor melayang di grafik
-//   - TrenRekap    : komponen grafik batang dan daftar rincian periodik
-//
-// Cara kerja:
-//   1. Mengonversi data deret waktu sesuai satuan aktif (hari, bulan, tahun).
-//   2. Merender grafik batang Recharts bersumbu X (label periode) dan Y (jumlah).
-//   3. Menyajikan daftar rincian di samping grafik dengan urutan terbaru di atas.
-//
-// Catatan penting:
-//   - Sesuai features/04-rekap-otomatis.md; periode tanpa kegiatan tetap bernilai 0.
-//   - Daftar rincian samping berfungsi sebagai aksesibilitas bagi pembaca layar.
-//
-// Dipakai oleh: frontend/src/features/rekap/components/rekap-view.tsx
-// =============================================================================
-
 "use client";
 
 import { BarChart3 } from "lucide-react";
@@ -32,6 +9,8 @@ import { formatAngka, formatPeriode, formatTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
 import type { RekapData, SatuanRekap } from "../types";
+
+// Grafik tren jumlah kegiatan, plus daftar rincian untuk pembaca layar
 
 const config = { jumlah: { label: "Kegiatan", color: "var(--chart-1)" } } satisfies ChartConfig;
 const RADIUS_ATAS: [number, number, number, number] = [4, 4, 0, 0];

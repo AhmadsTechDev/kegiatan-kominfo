@@ -1,27 +1,3 @@
-// =============================================================================
-// TABEL DATA GENERIK (TANSTACK TABLE)
-// =============================================================================
-// Gunanya: Menampilkan data tabular secara generik dengan dukungan kerangka
-//          pemuatan, kartu tampilan seluler, dan status data kosong.
-//
-// Isi berkas:
-//   - dataTableFeatures : inisialisasi fitur tabel TanStack Table v9
-//   - animasiBaris      : pembuat kelas animasi stagger untuk pemuatan baris
-//   - DataTableSkeleton : komponen kerangka pemuatan (skeleton) berbentuk tabel
-//   - DataTable         : komponen utama tabel data responsif dengan TanStack Table
-//
-// Cara kerja:
-//   1. Menginisialisasi instance tabel menggunakan useTable dan dataTableFeatures.
-//   2. Menampilkan DataTableSkeleton saat isLoading bernilai true.
-//   3. Menampilkan EmptyState bila data kosong, atau merender kartu/baris tabel.
-//
-// Catatan penting:
-//   - Mendukung kartu seluler melalui prop renderMobileCard untuk layar kecil.
-//   - Animasi stagger dibatasi hingga 8 baris pertama untuk performa tampilan.
-//
-// Dipakai oleh: kegiatan-list-view.tsx, halaman audit log, dan tabel master data
-// =============================================================================
-
 "use client";
 
 import { tableFeatures, useTable, type ColumnDef, type RowData } from "@tanstack/react-table";
@@ -30,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "./empty-state";
+
+// Tabel data generik dengan skeleton, kartu di ponsel, dan keadaan kosong
 
 export const dataTableFeatures = tableFeatures({});
 export type DataTableColumn<TData extends RowData> = ColumnDef<typeof dataTableFeatures, TData>;

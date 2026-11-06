@@ -1,29 +1,3 @@
-// =============================================================================
-// DIALOG AKSI PENYELESAIAN DAN PENGHAPUSAN KEGIATAN
-// =============================================================================
-// Gunanya: Menyediakan modal dialog konfirmasi untuk menyelesaikan kegiatan yang sedang
-// berlangsung atau menghapus datanya.
-//
-// Isi berkas:
-//   - pesanGagal         : pemformat pesan kesalahan termasuk deteksi konflik 409
-//   - KegiatanAksiDialog : komponen dialog konfirmasi aksi penyelesaian atau penghapusan
-//
-// Cara kerja:
-//   1. Menerima data target kegiatan dan jenis aksi ("selesai" atau "hapus").
-//      "selesai" mengisi waktu selesai dengan waktu sekarang; statusnya tetap dihitung dari waktu.
-//   2. Aksi hapus menampilkan peringatan dampak dan mengeksekusi mutasi hapus.
-//   3. Menutup dialog saat mutasi berhasil dan memicu callback onDihapus jika ada.
-//
-// Catatan penting:
-//   - Aksi pembatalan kegiatan tidak lagi ditawarkan di antarmuka; kegiatan yang tidak jadi
-//     dilaksanakan cukup dihapus. Data lama berstatus Dibatalkan tetap tampil apa adanya.
-//   - Mengirim expectedUpdatedAt untuk mendeteksi konflik pengubahan (optimistic lock).
-//   - Jika terjadi status 409 Conflict, kueri cache di-invalidasi agar data disegarkan.
-//   - Mengikuti pola dialog konfirmasi tindakan kritis (DESIGN.md bagian 7).
-//
-// Dipakai oleh: components/kegiatan-detail-view.tsx
-// =============================================================================
-
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,6 +7,8 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { lepasLapisan } from "@/hooks/use-tutup-lewat-kembali";
 import { ApiError } from "@/lib/api-client";
 import { kegiatanKeys, useHapusKegiatan, useSelesaikanKegiatan } from "../hooks/use-kegiatan";
+
+// Dialog konfirmasi selesaikan atau hapus kegiatan
 
 export type TargetAksi = { id: number; judul: string; updatedAt: string };
 export type JenisAksi = "selesai" | "hapus";

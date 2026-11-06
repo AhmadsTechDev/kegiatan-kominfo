@@ -1,26 +1,3 @@
-// =============================================================================
-// KOMPONEN CARI LOKASI TEMPAT
-// =============================================================================
-// Gunanya: Komponen input pencarian alamat dan nama tempat berbasis autocomplete
-// combobox untuk menemukan titik koordinat via layanan geocoding OpenStreetMap.
-//
-// Isi berkas:
-//   - CariLokasi : kotak input pencarian tempat dengan dropdown daftar saran
-//
-// Cara kerja:
-//   1. Pengguna mengetik nama tempat minimal 3 karakter pada kotak input.
-//   2. Debounce menunda permintaan HTTP selama 350 ms; request lama dibatalkan.
-//   3. Hasil tempat ditampilkan dalam dropdown listbox dengan navigasi keyboard.
-//   4. Memilih salah satu saran akan memicu callback onPilih dan mengisi koordinat.
-//
-// Catatan penting:
-//   - Menggunakan AbortController agar tidak membanjiri server geocoder publik.
-//   - Tombol Enter dicegah perilakunya agar tidak mengirim form kegiatan secara tak sengaja.
-//   - Standar ARIA combobox diterapkan lengkap dengan penanganan klik di luar area.
-//
-// Dipakai oleh: components/lokasi-kegiatan.tsx
-// =============================================================================
-
 "use client";
 
 import { MapPin, Search, X } from "lucide-react";
@@ -29,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { cariTempat, type Tempat } from "../lib/geokode";
+
+// Kolom cari alamat/tempat (autocomplete) untuk mendapatkan koordinat
 
 export function CariLokasi({ onPilih }: { onPilih: (t: Tempat) => void }) {
   const id = useId();

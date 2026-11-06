@@ -1,20 +1,7 @@
-// =============================================================================
-// PENGUJIAN UNIT PEMFORMAT DATA TAMPILAN
-// =============================================================================
-// Gunanya: Menguji ketepatan fungsi helper format.ts dalam mengonversi tanggal,
-// jam WIB, rentang waktu, angka ribuan, periode bulan, ukuran berkas, dan inisial.
-//
-// Yang diuji dan alasannya:
-//   - Konversi zona waktu WIB: memastikan tanggal dan jam selalu akurat (Asia/Jakarta)
-//     meskipun peramban atau server berjalan di zona waktu berbeda (DESIGN.md bagian 11).
-//   - Perapian rentang tanggal: memastikan tanggal dalam bulan yang sama diringkas.
-//   - Standar lokal Indonesia (id-ID): memeriksa format angka, periode, dan file size.
-//
-// Dipakai oleh: Bun test runner untuk verifikasi otomatis fungsi utilitas format.
-// =============================================================================
-
 import { describe, expect, test } from "bun:test";
 import { formatAngka, formatJam, formatPeriode, formatRentangTanggal, formatTanggal, formatUkuran, inisial, periodeSebelumnya, tanggalWib } from "./format";
+
+// Uji fungsi format.ts: tanggal, jam WIB, rentang, angka, periode, ukuran berkas, inisial
 
 describe("format", () => {
   test("tanggal dan jam selalu dalam WIB, apa pun zona perangkat", () => {

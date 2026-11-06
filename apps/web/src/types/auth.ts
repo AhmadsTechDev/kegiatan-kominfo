@@ -1,19 +1,4 @@
-// =============================================================================
-// TIPE DATA DAN KONSTANTA PERAN PENGGUNA
-// =============================================================================
-// Gunanya: Mendefinisikan tipe peran pengguna (Role) dan kamus label hak akses UI.
-//
-// Isi berkas:
-//   - Role : Tipe union tiga peran pengguna (PEGAWAI, PIMPINAN, ADMIN).
-//   - LABEL_ROLE : Pemetaan label peran (PRD bagian 3, murni untuk antarmuka).
-//   - KETERANGAN_ROLE : Deskripsi lengkap peran untuk sidebar dan menu profil.
-//   - StatusAkun, LABEL_STATUS_AKUN : status akun dari backend dan labelnya.
-//
-// Catatan penting:
-//   - Nilai PEGAWAI di backend ditampilkan "Pegawai" (pencatat kegiatan bidangnya).
-//
-// Dipakai oleh: Komponen navigasi, menu profil, dan kendali tampilan berbasis peran
-// =============================================================================
+// Tipe Role dan label hak akses untuk UI
 
 export type Role = "PEGAWAI" | "PIMPINAN" | "ADMIN";
 

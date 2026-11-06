@@ -1,27 +1,3 @@
-// =============================================================================
-// KOMPONEN PANEL DRAF SAYA
-// =============================================================================
-// Gunanya: Menampilkan panel daftar draf kegiatan sementara milik pegawai yang
-// sedang login di bagian atas halaman daftar kegiatan sebelum dicatat resmi.
-//
-// Isi berkas:
-//   - namaDraf : pembantu penamaan judul draf atau teks fallback jika kosong
-//   - DrafSaya : komponen panel daftar draf dengan tombol lanjut dan hapus
-//
-// Cara kerja:
-//   1. Mengambil daftar draf pengguna via hook useDaftarDraf.
-//   2. Jika tidak ada draf yang tersimpan, komponen tidak merender apa pun (null).
-//   3. Mengklik "Lanjutkan" membawa pengguna ke formulir /kegiatan/baru?draf=ID.
-//   4. Mengklik ikon hapus memunculkan dialog konfirmasi pembatalan draf permanen.
-//
-// Catatan penting:
-//   - Sesuai spesifikasi sub-fitur Simpan Draf (features/01-catat-kegiatan.md).
-//   - Draf belum berstatus kegiatan, sehingga tidak masuk rekap maupun dashboard.
-//   - Kegagalan pengambilan data draf tidak menghambat pemuatan daftar kegiatan utama.
-//
-// Dipakai oleh: components/kegiatan-list-view.tsx
-// =============================================================================
-
 "use client";
 
 import { FilePen, Trash2 } from "lucide-react";
@@ -35,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { formatTanggal, formatTanggalJam } from "@/lib/format";
 import { useDaftarDraf, useHapusDraf } from "../hooks/use-kegiatan";
 import type { DrafRingkas } from "../types";
+
+// Panel draf kegiatan milik pegawai di atas daftar kegiatan
 
 const namaDraf = (d: DrafRingkas) => d.judul ?? "Draf tanpa judul";
 

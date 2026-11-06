@@ -1,25 +1,3 @@
-// =============================================================================
-// TAB MASTER DATA JENIS KEGIATAN DINAS
-// =============================================================================
-// Gunanya: mengelola referensi kategori/jenis kegiatan dinas, termasuk penambahan,
-// pengubahan nama, pemantauan frekuensi pemakaian, dan status keaktifan.
-//
-// Isi berkas:
-//   - JenisDialog : dialog modal penambahan jenis baru atau pengubahan nama jenis
-//   - JenisTab : komponen panel tabel data referensi jenis kegiatan dan aksinya
-//
-// Cara kerja:
-//   1. Mengambil data master jenis kegiatan beserta jumlah kegiatan yang memakainya.
-//   2. Form dialog memvalidasi nama jenis kegiatan sebelum dikirim ke backend.
-//   3. Tombol aksi memungkinkan penonaktifan jenis dengan konfirmasi terlebih dahulu.
-//
-// Catatan penting:
-//   - Perubahan nama jenis otomatis memengaruhi seluruh riwayat kegiatan yang memakainya.
-//   - Jenis yang dinonaktifkan tidak akan muncul lagi pada opsi formulir kegiatan baru.
-//
-// Dipakai oleh: master-view.tsx
-// =============================================================================
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +18,8 @@ import { cn } from "@/lib/utils";
 import { useJenisAdmin, useSimpanJenis } from "../hooks/use-admin";
 import type { JenisKegiatanAdmin } from "../types";
 import { AksiBaris, BadgeAktif, KartuMaster, terapkanGalatServer } from "./admin-shared";
+
+// Tab kelola jenis kegiatan: tambah, ubah nama, jumlah pemakaian, status aktif
 
 const schema = z.object({ nama: z.string().trim().min(1, "Nama jenis wajib diisi").max(100, "Nama maksimal 100 karakter") });
 type Nilai = z.infer<typeof schema>;

@@ -1,32 +1,10 @@
-// =============================================================================
-// TAMPILAN HALAMAN CETAK LAPORAN
-// =============================================================================
-// Gunanya: Menyusun dan merender tata letak halaman laporan A4 mendatar untuk
-// keperluan pratinjau di layar peramban maupun dokumen cetak langsung.
-//
-// Isi berkas:
-//   - bagiHalaman    : membagi baris kegiatan ke beberapa halaman cetak
-//   - Kop            : komponen kepala surat dinas, judul, dan kartu ringkasan
-//   - HalamanLaporan : merender lembar-lembar halaman A4 dengan tabel kegiatan
-//
-// Cara kerja:
-//   1. Membagi data baris (halaman pertama 7 baris karena memuat kop dinas,
-//      halaman berikutnya masing-masing 12 baris).
-//   2. Mengulang kepala tabel pada setiap lembar halaman demi kemudahan baca.
-//   3. Menampilkan catatan kaki nomor halaman serta waktu pencetakan.
-//
-// Catatan penting:
-//   - Mengacu pada dokumen features/05-cetak-unduh-laporan.md dengan rasio A4
-//     mendatar dan tema kertas (latar putih tinta gelap) pada semua mode tampilan.
-//
-// Dipakai oleh: frontend/src/features/laporan/components/laporan-view.tsx
-// =============================================================================
-
 import Image from "next/image";
 import { site } from "@/config/site";
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { PratinjauLaporan } from "../types";
+
+// Tata letak halaman laporan A4 mendatar untuk pratinjau dan cetak
 
 const BARIS_HALAMAN_PERTAMA = 7;
 const BARIS_PER_HALAMAN = 12;

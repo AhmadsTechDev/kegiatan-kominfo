@@ -1,19 +1,8 @@
-// =============================================================================
-// API REKAPITULASI DAN EKSPOR KEGIATAN
-// =============================================================================
-// Gunanya: Memanggil endpoint API backend untuk mengambil ringkasan statistik
-// rekapitulasi kegiatan serta mengunduh berkas ekspor laporan (PDF).
-//
-// Isi berkas:
-//   - getRekap    : memanggil GET /rekap dengan parameter filter terisi (FR-10)
-//   - unduhEkspor : mengunduh blob berkas ekspor dan memicu unduhan di peramban
-//
-// Dipakai oleh: frontend/src/features/rekap/hooks/use-rekap.ts
-// =============================================================================
-
 import { apiClient } from "@/lib/api-client";
 import type { NilaiFilter } from "@/components/shared/filter-bar";
 import type { FormatEkspor, RekapData, SatuanRekap } from "../types";
+
+// Pemanggil endpoint rekap dan unduh ekspor PDF
 
 function paramsFilter(filter: NilaiFilter) {
   const { q, dari, sampai, unit, jenis, status, pegawai } = filter;

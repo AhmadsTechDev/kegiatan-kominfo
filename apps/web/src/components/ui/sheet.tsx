@@ -1,10 +1,3 @@
-// =============================================================================
-// KOMPONEN PANEL SAMPING (SHEET)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis Radix UI untuk menampilkan
-//          panel geser dari tepi layar (drawer) untuk navigasi atau detail data.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
@@ -14,6 +7,8 @@ import { Dialog as SheetPrimitive } from "radix-ui"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 import { useOpenTerkendali } from "@/hooks/use-tutup-lewat-kembali"
+
+// Komponen dasar shadcn/ui: panel geser dari tepi layar (Radix)
 
 // Tombol Kembali di HP menutup sheet (mis. menu samping), bukan meninggalkan halaman
 function Sheet({ open, defaultOpen, onOpenChange, ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {

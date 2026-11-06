@@ -1,19 +1,8 @@
-// =============================================================================
-// KOMPONEN KERANGKA MUAT DASHBOARD
-// =============================================================================
-// Gunanya: Menampilkan kerangka skeleton animasi saat data dashboard dimuat
-// untuk mencegah pergeseran tata letak (layout shift, DESIGN.md bagian 7).
-//
-// Isi berkas:
-//   - KartuSkeleton : Kerangka placeholder panel kartu grafik dan daftar.
-//   - DashboardSkeleton : Grid kerangka utama berpenanda aksesibilitas aria-busy.
-//
-// Dipakai oleh: app/(app)/dashboard/page.tsx dan dashboard-view.tsx
-// =============================================================================
-
 import { StatCardSkeleton } from "@/components/shared/stat-card";
 import { Panel, PanelBody } from "@/components/shared/panel";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Skeleton dashboard saat memuat agar tata letak tidak bergeser
 
 function KartuSkeleton({ className, tinggi = "h-72" }: { className?: string; tinggi?: string }) {
   return (

@@ -1,17 +1,4 @@
-// =============================================================================
-// KONFIGURASI IDENTITAS INSTANSI DAN APLIKASI
-// =============================================================================
-// Gunanya: Menyimpan konstanta identitas instansi, nama resmi aplikasi, wilayah,
-// dan lokasi logo dinas yang digunakan seragam di seluruh antarmuka.
-//
-// Isi berkas:
-//   - site : objek konfigurasi identitas readonly (as const) Diskominfo Kota Palembang.
-//
-// Catatan penting:
-//   - Perubahan identitas instansi, nama aplikasi, atau logo terpusat di berkas ini.
-//
-// Dipakai oleh: brand.tsx, login-card.tsx, not-found.tsx, dan layout aplikasi.
-// =============================================================================
+// Konstanta identitas instansi: nama aplikasi, wilayah, dan logo
 
 export const site = {
   namaSistem: "Pendataan Kegiatan",

@@ -1,13 +1,8 @@
-// =============================================================================
-// KOMPONEN KOTAK PESAN (ALERT)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui untuk menampilkan pesan informasi,
-//          peringatan, atau status penting kepada pengguna antarmuka.
-// =============================================================================
-
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
+
+// Komponen dasar shadcn/ui: kotak pesan info atau peringatan
 
 const alertVariants = cva(
   "group/alert relative grid w-full gap-0.5 rounded-lg border px-2.5 py-2 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",

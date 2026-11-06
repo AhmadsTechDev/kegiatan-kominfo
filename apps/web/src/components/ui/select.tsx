@@ -1,16 +1,11 @@
-// =============================================================================
-// KOMPONEN KOTAK PILIHAN (SELECT)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis Radix UI untuk menyediakan
-//          menu pilihan nilai tunggal dari daftar opsi pada formulir aplikasi.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
 import { cn } from "cn"
 import { Select as SelectPrimitive } from "radix-ui"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
+
+// Komponen dasar shadcn/ui: select pilihan tunggal (Radix)
 
 function Select({
   ...props

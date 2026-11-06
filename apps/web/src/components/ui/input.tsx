@@ -1,12 +1,7 @@
-// =============================================================================
-// KOMPONEN KOLOM MASUKAN (INPUT)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui untuk menerima masukan teks atau data
-//          dari pengguna pada berbagai formulir pengisian data antarmuka.
-// =============================================================================
-
 import * as React from "react"
 import { cn } from "cn"
+
+// Komponen dasar shadcn/ui: input teks
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (

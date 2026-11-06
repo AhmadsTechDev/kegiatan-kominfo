@@ -1,15 +1,10 @@
-// =============================================================================
-// KOMPONEN GARIS PEMISAH (SEPARATOR)
-// =============================================================================
-// Gunanya: Komponen UI dasar dari shadcn/ui berbasis Radix UI untuk memisahkan
-//          elemen visual secara horizontal atau vertikal antarbagian antarmuka.
-// =============================================================================
-
 "use client"
 
 import * as React from "react"
 import { cn } from "cn"
 import { Separator as SeparatorPrimitive } from "radix-ui"
+
+// Komponen dasar shadcn/ui: garis pemisah (Radix)
 
 function Separator({
   className,
