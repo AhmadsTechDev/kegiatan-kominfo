@@ -28,8 +28,7 @@ const KONFIGURASI: Record<StatusPelaksanaan, { label: string; kelas: string }> =
 export function StatusBadge({ status, className }: { status: StatusPelaksanaan; className?: string }) {
   const { label, kelas } = KONFIGURASI[status];
   return (
-    <Badge variant="outline" className={cn("gap-1.5 rounded-full border-transparent font-medium", kelas, className)}>
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+    <Badge variant="outline" className={cn("rounded-full border-transparent font-medium", kelas, className)}>
       {label}
     </Badge>
   );
@@ -53,7 +52,7 @@ export function StatusPemeriksaanBadge({ status, className }: { status: StatusPe
   );
 }
 
-// Bentuk sama dengan StatusBadge (pil + titik + teks). Warna meminjam token status yang artinya sejalan:
+// Bentuk sama dengan StatusBadge (pil + teks). Warna meminjam token status yang artinya sejalan:
 // menunggu aktivasi = kuning (masih berjalan), aktif = hijau, nonaktif = netral (bukan merah, karena bukan galat)
 const AKUN: Record<StatusAkun, string> = {
   MENUNGGU_AKTIVASI: "bg-status-berlangsung text-status-berlangsung-foreground",
@@ -63,8 +62,7 @@ const AKUN: Record<StatusAkun, string> = {
 
 export function StatusAkunBadge({ status, className }: { status: StatusAkun; className?: string }) {
   return (
-    <Badge variant="outline" className={cn("gap-1.5 rounded-full border-transparent font-medium", AKUN[status], className)}>
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+    <Badge variant="outline" className={cn("rounded-full border-transparent font-medium", AKUN[status], className)}>
       {LABEL_STATUS_AKUN[status]}
     </Badge>
   );

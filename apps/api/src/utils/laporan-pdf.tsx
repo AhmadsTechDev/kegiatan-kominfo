@@ -33,7 +33,11 @@ const s = StyleSheet.create({
   kopAlamat: { fontSize: 8.5, marginTop: 1.5 },
   garisKop: { borderBottomWidth: 3, borderBottomColor: "#000", marginBottom: 12 },
   judul: { fontSize: 12, fontFamily: "Helvetica-Bold", textAlign: "center" },
-  subjudul: { fontSize: 9, textAlign: "center", color: ABU, marginTop: 3, marginBottom: 10 },
+  subjudul: { fontSize: 9.5, textAlign: "center", marginTop: 3, marginBottom: 10 },
+  cakupan: { flexDirection: "row", borderTopWidth: 0.6, borderBottomWidth: 0.6, borderColor: GARIS, paddingVertical: 5, marginBottom: 8 },
+  cakupanItem: { flex: 1, paddingRight: 8 },
+  cakupanLabel: { fontSize: 7.5, color: ABU },
+  cakupanNilai: { fontSize: 9, fontFamily: "Helvetica-Bold", marginTop: 1.5 },
   ringkasan: { flexDirection: "row", marginBottom: 10, gap: 6 },
   kotak: { flex: 1, borderWidth: 0.6, borderColor: GARIS, borderRadius: 3, padding: 6 },
   kotakLabel: { fontSize: 7.5, color: ABU },
@@ -70,8 +74,8 @@ const URUTAN_STATUS: StatusPelaksanaan[] = ["akan_datang", "berlangsung", "seles
 
 export const JUDUL_LAPORAN = "REKAP KEGIATAN";
 
-// Teks di bawah judul laporan: uraian filter yang dipakai
-export const subjudul = (info: InfoEkspor) => info.filter.join("  ·  ");
+// Teks di bawah judul laporan: rentang waktu yang direkap
+export const subjudul = (info: InfoEkspor) => `Periode ${info.periode}`;
 
 // Teks di kaki halaman: siapa yang mencetak dan kapan
 export const teksKaki = (info: InfoEkspor) => `Dicetak oleh ${info.dibuatOleh} pada ${formatWaktu(info.dibuatPada)}`;
@@ -121,6 +125,15 @@ function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
 
         <Text style={s.judul}>{JUDUL_LAPORAN}</Text>
         <Text style={s.subjudul}>{subjudul(info)}</Text>
+
+        <View style={s.cakupan}>
+          {info.cakupan.map((c) => (
+            <View key={c.label} style={s.cakupanItem}>
+              <Text style={s.cakupanLabel}>{c.label}</Text>
+              <Text style={s.cakupanNilai}>{c.nilai}</Text>
+            </View>
+          ))}
+        </View>
 
         <View style={s.ringkasan}>
           {ringkasanStatus(baris).map((r) => (

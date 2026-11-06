@@ -4,7 +4,7 @@ import { ReferensiRepository } from "@/repositories/referensi.repository";
 import type { FormatEkspor, InfoEkspor } from "@/types/ekspor.types";
 import type { RekapQuery } from "@/types/rekap.types";
 import type { Aktor, MetaRequest } from "@/types/umum.types";
-import { formatTanggal, LABEL_STATUS, namaBulan, tanggalWib } from "@/utils/format-waktu";
+import { formatTanggalPanjang, LABEL_STATUS, namaBulan, tanggalWib } from "@/utils/format-waktu";
 import { buatPdf, isiSel, JUDUL_LAPORAN, KOLOM, KOP, ringkasanStatus, subjudul, teksKaki } from "@/utils/laporan-pdf";
 import { buatPembatasLaju } from "@/utils/rate-limit";
 import { AuditLogService } from "./audit-log.service";
@@ -17,10 +17,10 @@ const periksaLaju = buatPembatasLaju({ jendelaMs: 60_000, maks: 10, pesan: "Terl
 
 type Pembuat = Aktor & { nama: string };
 
-// Uraian rentang waktu untuk judul laporan, contoh "Mei 2026" atau "01 Mei 2026 – 15 Mei 2026"
+// Uraian rentang waktu untuk judul laporan, contoh "Mei 2026" atau "1 Mei 2026 s.d. 15 Mei 2026"
 export function uraianRentang(query: Pick<RekapQuery, "periode" | "dari" | "sampai">) {
-  const hari = (t: string) => formatTanggal(new Date(`${t}T12:00:00+07:00`));
-  if (query.dari && query.sampai) return query.dari === query.sampai ? hari(query.dari) : `${hari(query.dari)} – ${hari(query.sampai)}`;
+  const hari = (t: string) => formatTanggalPanjang(new Date(`${t}T12:00:00+07:00`));
+  if (query.dari && query.sampai) return query.dari === query.sampai ? hari(query.dari) : `${hari(query.dari)} s.d. ${hari(query.sampai)}`;
   if (query.dari) return `Sejak ${hari(query.dari)}`;
   if (query.sampai) return `Sampai ${hari(query.sampai)}`;
   return query.periode ? namaBulan(query.periode) : "Semua periode";
@@ -32,26 +32,31 @@ function rentangBerkas(query: Pick<RekapQuery, "periode" | "dari" | "sampai">) {
   return query.periode ?? "semua-periode";
 }
 
-// Uraian semua filter yang dipakai (rentang, unit, jenis, status, pegawai, kata kunci) dalam bahasa manusia
-async function uraianFilter(query: RekapQuery, terbatas: boolean) {
+// Periode dan filter lain yang dipakai, masing-masing berlabel agar terbaca jelas di laporan
+async function uraianFilter(query: RekapQuery, terbatas: boolean): Promise<Pick<InfoEkspor, "periode" | "cakupan">> {
   const [unit, jenis, pegawai] = await Promise.all([
     query.unit ? ReferensiRepository.semuaBidang() : undefined,
     query.jenis ? ReferensiRepository.jenisKegiatanAktif() : undefined,
     query.pegawai ? ReferensiRepository.pegawaiAktif() : undefined,
   ]);
   const kataKunci = query.q?.trim();
-  return [
-    uraianRentang(query),
-    query.unit
-      ? (unit?.find((u) => u.id === query.unit)?.nama ?? "Unit tidak dikenal")
-      : terbatas
-        ? "Bidang sendiri dan kegiatan milik sendiri"
-        : "Semua bidang",
-    query.jenis ? (jenis?.find((j) => j.id === query.jenis)?.nama ?? "Jenis tidak dikenal") : "Semua jenis",
-    query.status ? LABEL_STATUS[query.status] : "Semua status",
-    ...(query.pegawai ? [`Penanggung jawab ${pegawai?.find((p) => p.id === query.pegawai)?.nama ?? "tidak dikenal"}`] : []),
-    ...(kataKunci ? [`Kata kunci "${kataKunci}"`] : []),
-  ];
+  return {
+    periode: uraianRentang(query),
+    cakupan: [
+      {
+        label: "Bidang",
+        nilai: query.unit
+          ? (unit?.find((u) => u.id === query.unit)?.nama ?? "Unit tidak dikenal")
+          : terbatas
+            ? "Bidang sendiri dan kegiatan milik sendiri"
+            : "Semua bidang",
+      },
+      { label: "Jenis kegiatan", nilai: query.jenis ? (jenis?.find((j) => j.id === query.jenis)?.nama ?? "Jenis tidak dikenal") : "Semua jenis" },
+      { label: "Status", nilai: query.status ? LABEL_STATUS[query.status] : "Semua status" },
+      ...(query.pegawai ? [{ label: "Penanggung jawab", nilai: pegawai?.find((p) => p.id === query.pegawai)?.nama ?? "Tidak dikenal" }] : []),
+      ...(kataKunci ? [{ label: "Kata kunci", nilai: `"${kataKunci}"` }] : []),
+    ],
+  };
 }
 
 // Mengambil baris laporan; ditolak bila lebih dari 5.000 kegiatan
@@ -68,11 +73,12 @@ export const EksporService = {
   // Data pratinjau laporan dalam bentuk JSON (isi sama dengan PDF) untuk ditampilkan di frontend
   async pratinjau(query: RekapQuery, aktor: Pembuat, sekarang = new Date()) {
     const { baris, terbatas } = await barisLaporan(query, aktor, sekarang);
-    const info: InfoEkspor = { filter: await uraianFilter(query, terbatas), dibuatOleh: aktor.nama, dibuatPada: sekarang };
+    const info: InfoEkspor = { ...(await uraianFilter(query, terbatas)), dibuatOleh: aktor.nama, dibuatPada: sekarang };
     return {
       kop: KOP,
       judul: JUDUL_LAPORAN,
       subjudul: subjudul(info),
+      cakupan: info.cakupan,
       ringkasan: ringkasanStatus(baris),
       kolom: KOLOM.map((k) => ({ judul: k.judul, lebar: k.lebar })),
       baris: baris.map((b) => ({ id: b.id, ...isiSel(b) })),
@@ -85,7 +91,7 @@ export const EksporService = {
     periksaLaju(aktor.id);
 
     const { baris, terbatas } = await barisLaporan(query, aktor, sekarang);
-    const info: InfoEkspor = { filter: await uraianFilter(query, terbatas), dibuatOleh: aktor.nama, dibuatPada: sekarang };
+    const info: InfoEkspor = { ...(await uraianFilter(query, terbatas)), dibuatOleh: aktor.nama, dibuatPada: sekarang };
     const isi = await buatPdf(baris, info);
 
     await AuditLogService.catat({ aktorId: aktor.id, aksi: "ekspor", entitas: "kegiatan", sesudah: { format, filter: query, jumlah: baris.length }, ...meta });

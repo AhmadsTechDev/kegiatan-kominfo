@@ -24,11 +24,11 @@ export function TabelRekapPegawai({ data, filter }: { data: RekapData; filter: N
     <Table>
       <caption className="sr-only">Jumlah kegiatan per pegawai penanggung jawab, terbanyak di atas</caption>
       <TableHeader>
-        <TableRow>
-          <TableHead className="w-10 pl-4 md:pl-5">No</TableHead>
-          <TableHead>Pegawai</TableHead>
-          <TableHead>Bidang</TableHead>
-          <TableHead className="pr-4 text-right md:pr-5">Kegiatan</TableHead>
+        <TableRow className="border-y bg-background hover:bg-background">
+          <TableHead className="w-10 pl-4 md:pl-5 h-10 text-xs font-bold tracking-wider text-muted-foreground uppercase">No</TableHead>
+          <TableHead className="h-10 text-xs font-bold tracking-wider text-muted-foreground uppercase">Pegawai</TableHead>
+          <TableHead className="h-10 text-xs font-bold tracking-wider text-muted-foreground uppercase">Bidang</TableHead>
+          <TableHead className="pr-4 text-right md:pr-5 h-10 text-xs font-bold tracking-wider text-muted-foreground uppercase">Kegiatan</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

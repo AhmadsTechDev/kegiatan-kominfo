@@ -33,6 +33,20 @@ function SelAngka({ nilai, tebal }: { nilai: number; tebal?: boolean }) {
   );
 }
 
+// Batang di sel Total dibandingkan dengan bidang terbanyak, agar bidang tersibuk terlihat tanpa membaca semua angka
+function SelTotal({ nilai, maks }: { nilai: number; maks: number }) {
+  return (
+    <TableCell className="text-right tabular-nums">
+      <span className="inline-flex items-center justify-end gap-2.5">
+        <span aria-hidden className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted sm:block">
+          <span className="block h-full rounded-full bg-primary" style={{ width: `${maks === 0 ? 0 : Math.round((nilai / maks) * 100)}%` }} />
+        </span>
+        <span className={cn("min-w-6 font-bold", nilai === 0 && "font-normal text-muted-foreground")}>{formatAngka(nilai)}</span>
+      </span>
+    </TableCell>
+  );
+}
+
 export function TabelRekapUnit({
   data,
   filter,
@@ -44,6 +58,7 @@ export function TabelRekapUnit({
   aksi?: React.ReactNode;
   className?: string;
 }) {
+  const maks = Math.max(0, ...data.perUnit.map((u) => u.total));
   return (
     <Panel className={className}>
       <PanelHeader
@@ -72,9 +87,9 @@ export function TabelRekapUnit({
                     {u.unit.nama}
                   </Link>
                 </TableCell>
-                {KOLOM.map((k) => (
-                  <SelAngka key={k.kunci} nilai={u[k.kunci]} tebal={k.kunci === "total"} />
-                ))}
+                {KOLOM.map((k) =>
+                  k.kunci === "total" ? <SelTotal key={k.kunci} nilai={u.total} maks={maks} /> : <SelAngka key={k.kunci} nilai={u[k.kunci]} />,
+                )}
               </TableRow>
             ))}
           </TableBody>

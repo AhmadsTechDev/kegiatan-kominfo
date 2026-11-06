@@ -31,7 +31,7 @@ export function PanelKepegawaian({ p }: { p: Profil }) {
   // Admin mengelola datanya sendiri lewat Manajemen akun; role lain harus meminta admin
   const admin = p.role === "ADMIN";
   return (
-    <Panel className="h-fit">
+    <Panel>
       <PanelHeader
         title="Data kepegawaian"
         description={admin ? undefined : "Dikelola administrator. Hubungi admin bila ada data yang keliru."}
@@ -91,7 +91,7 @@ export function PanelKontak({ p }: { p: Profil }) {
   };
 
   return (
-    <Panel className="h-fit">
+    <Panel>
       <PanelHeader title="Kontak" />
       <PanelBody className="border-t border-muted pt-4 md:pt-5">
         <form onSubmit={kirim} noValidate className="flex flex-col gap-4">

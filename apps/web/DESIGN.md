@@ -289,9 +289,8 @@ export function StatusBadge({
 }) {
   const { label, kelas } = KONFIGURASI[status];
   return (
-    <Badge variant="outline" className={cn("gap-1.5 border-transparent font-medium", kelas, className)}>
-      {/* Titik penanda dekoratif; arti status ada pada teks di sebelahnya */}
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+    <Badge variant="outline" className={cn("border-transparent font-medium", kelas, className)}>
+      {/* Tanpa titik penanda: arti status sudah dibawa teks dan warna latar */}
       {label}
     </Badge>
   );
@@ -384,7 +383,7 @@ Pegawai melihat dashboard yang sama untuk seluruh dinas (keputusan PRD), ditamba
 ├────────────────────────────────────────────────────────────────────────────┤
 │ [Cari judul...] [Periode v] [Bidang v] [Jenis v] [Status v] [Atur ulang]│
 ├────────────────────────────────────────────────────────────────────────────┤
-│ Kegiatan            Bidang    Tanggal        Lokasi       Status    ⋯  │
+│ Kegiatan    Jenis    Bidang    Tanggal    Lokasi    Status    PJ    ⋯  │
 │ Rapat koordinasi    E-Government  14 Okt 2026    Palembang    Berlangsung   │
 │ ...                                                                         │
 ├────────────────────────────────────────────────────────────────────────────┤

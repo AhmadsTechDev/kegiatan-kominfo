@@ -186,7 +186,7 @@ export function DashboardPegawai() {
           ),
         )}
       </div>
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12 lg:gap-5">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5">
         <KegiatanSayaPanel className="lg:col-span-7" />
         <AgendaPekanPanel items={data?.pekanIni} hariIni={data?.hariIni} className="lg:col-span-5" />
       </div>

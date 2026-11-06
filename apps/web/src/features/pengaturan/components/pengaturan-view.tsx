@@ -157,14 +157,14 @@ function IsiTab({ tab, p }: { tab: Tab; p: Profil }) {
   }
   if (tab === "preferensi") {
     return (
-      <div className="grid items-start gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <PanelTema />
         <PanelNotifikasi />
       </div>
     );
   }
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
       <PanelKepegawaian p={p} />
       <PanelKontak key={p.kontak ?? ""} p={p} />
     </div>

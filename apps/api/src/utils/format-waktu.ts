@@ -14,6 +14,10 @@ export const LABEL_STATUS: Record<StatusPelaksanaan, string> = {
 export const formatTanggal = (d: Date) =>
   new Intl.DateTimeFormat("id-ID", { timeZone: ZONA, day: "numeric", month: "short", year: "numeric" }).format(d);
 
+// Contoh hasil: "5 November 2026" (bulan ditulis lengkap untuk judul laporan)
+export const formatTanggalPanjang = (d: Date) =>
+  new Intl.DateTimeFormat("id-ID", { timeZone: ZONA, day: "numeric", month: "long", year: "numeric" }).format(d);
+
 // Contoh hasil: "14.30"
 export const formatJam = (d: Date) =>
   new Intl.DateTimeFormat("id-ID", { timeZone: ZONA, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d);

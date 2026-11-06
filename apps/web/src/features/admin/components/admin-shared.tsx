@@ -35,11 +35,10 @@ export function BadgeAktif({ aktif, labelNonaktif = "Nonaktif" }: { aktif: boole
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap",
-        aktif ? "text-status-selesai-foreground" : "rounded-full bg-muted px-2 py-0.5 text-muted-foreground",
+        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
+        aktif ? "bg-status-selesai text-status-selesai-foreground" : "bg-muted text-muted-foreground",
       )}
     >
-      <span aria-hidden className={cn("size-1.5 rounded-full", aktif ? "bg-status-selesai-foreground" : "bg-muted-foreground")} />
       {aktif ? "Aktif" : labelNonaktif}
     </span>
   );
@@ -167,7 +166,7 @@ export function PilihanTab<T extends string>({
               <span className="sr-only"> menunggu</span>
             </span>
           )}
-          {o.jumlah !== undefined && (
+          {!!o.jumlah && (
             <span className={cn("rounded-full px-1.5 text-xs font-semibold tabular-nums", value === o.nilai ? "bg-primary/15" : "bg-muted")}>{o.jumlah}</span>
           )}
         </Button>

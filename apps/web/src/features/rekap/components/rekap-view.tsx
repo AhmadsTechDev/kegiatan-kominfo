@@ -25,6 +25,7 @@ import { useRekap } from "../hooks/use-rekap";
 import type { RekapData, SatuanRekap } from "../types";
 import { TabelRekapPegawai } from "./tabel-rekap-pegawai";
 import { TabelRekapUnit } from "./tabel-rekap-unit";
+import { SebaranStatus } from "./sebaran-status";
 import { labelPeriode, TrenRekap } from "./tren-rekap";
 
 // Halaman rekap: kartu ringkasan, tren, peringkat bidang/pegawai, dan jenis kegiatan
@@ -87,6 +88,10 @@ function RekapSkeleton() {
         ))}
       </div>
       <Skeleton className="h-80 rounded-xl" />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
+        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-64 rounded-xl" />
+      </div>
       <Skeleton className="h-48 rounded-xl" />
     </>
   );
@@ -191,6 +196,10 @@ function RekapIsi() {
             <KartuRingkasan data={rekap.data} cakupan={cakupan} />
           </div>
           <TrenRekap data={rekap.data} animasi={animasi} />
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
+            <SebaranStatus total={rekap.data.total} animasi={animasi} />
+            <ChartJenis data={rekap.data.perJenis} animasi={animasi} />
+          </div>
           {peringkat === "bidang" ? (
             <TabelRekapUnit data={rekap.data} filter={filter} aksi={pengalihPeringkat} />
           ) : (
@@ -199,7 +208,6 @@ function RekapIsi() {
               <TabelRekapPegawai data={rekap.data} filter={filter} />
             </Panel>
           )}
-          <ChartJenis data={rekap.data.perJenis} animasi={animasi} />
         </div>
       )}
     </>

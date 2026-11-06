@@ -42,10 +42,18 @@ export function TrenRekap({ data, animasi, className }: Props) {
   const baris = tren.map((t) => ({ ...t, label: labelPeriode(t.periode, satuan, true) }));
   const kosong = tren.every((t) => t.jumlah === 0);
   const sentuh = useLayarSentuh();
+  const rataRata = tren.length === 0 ? 0 : data.total.total / tren.length;
 
   return (
     <Panel className={className}>
-      <PanelHeader title={`Tren kegiatan ${NAMA_SATUAN[satuan]}`} />
+      <PanelHeader
+        title={`Tren kegiatan ${NAMA_SATUAN[satuan]}`}
+        description={
+          kosong
+            ? undefined
+            : `Rata-rata ${rataRata.toLocaleString("id-ID", { maximumFractionDigits: 1 })} kegiatan per ${satuan} selama ${formatAngka(tren.length)} ${satuan}`
+        }
+      />
       <PanelBody>
         {kosong ? (
           <EmptyState icon={BarChart3} title="Belum ada kegiatan pada periode ini." description="Ubah rentang tanggal atau filter untuk melihat tren." />

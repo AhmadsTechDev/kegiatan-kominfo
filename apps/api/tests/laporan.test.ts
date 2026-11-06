@@ -50,7 +50,7 @@ describe("angka laporan konsisten", () => {
     expect(pratinjau.data.baris).toHaveLength(3);
     expect(pratinjau.data.ringkasan[0]).toEqual({ label: "Total kegiatan", nilai: 3 });
     expect(pratinjau.data.subjudul).toContain("Maret 2031");
-    expect(pratinjau.data.subjudul).toContain(bidang.nama);
+    expect(pratinjau.data.cakupan).toContainEqual({ label: "Bidang", nilai: bidang.nama });
 
     const dashboard = await panggil("/dashboard?periode=2031-03", { cookie: admin });
     expect(dashboard.data.kpi).toMatchObject({ total: 3, akanDatang: 2, berlangsung: 0, totalPeriodeSebelumnya: 0 });

@@ -1,4 +1,4 @@
-import { Lightbulb, PieChart } from "lucide-react";
+import { PieChart } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/shared/panel";
 import { formatAngka } from "@/lib/format";
@@ -29,7 +29,6 @@ export function ChartJenis({
   const maks = Math.max(1, ...data.map((d) => d.jumlah));
   const total = data.reduce((a, d) => a + d.jumlah, 0);
   const pangsa = (n: number) => (total === 0 ? 0 : Math.round((n / total) * 100));
-  const teratas = data.filter((d) => d.jumlah === maks && maks > 0);
 
   return (
     <Panel className={cn("@container", className)}>
@@ -69,16 +68,6 @@ export function ChartJenis({
               );
             })}
           </ul>
-        )}
-        {teratas.length > 0 && (
-          <p className="flex gap-2 rounded-lg bg-secondary/70 p-3 text-xs text-secondary-foreground">
-            <Lightbulb aria-hidden className="mt-px size-4 shrink-0" />
-            <span>
-              <span className="font-semibold">{teratas.map((d) => d.nama).join(" dan ")}</span>{" "}
-              {teratas.length > 1 ? "paling sering dilaksanakan, masing-masing" : "paling sering dilaksanakan:"}{" "}
-              {formatAngka(maks)} dari {formatAngka(total)} kegiatan ({pangsa(maks)}%) pada periode ini.
-            </span>
-          </p>
         )}
       </PanelBody>
       {total > 0 && (

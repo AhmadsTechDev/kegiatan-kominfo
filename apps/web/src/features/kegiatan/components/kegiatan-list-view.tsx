@@ -4,6 +4,7 @@ import {
   ChevronRight,
   ClipboardList,
   Images,
+  MapPin,
   Plus,
   SearchX,
   X,
@@ -45,27 +46,46 @@ type Lingkup = "semua" | "unit" | "saya" | "perbaikan";
 type BukaDokumentasi = (k: KegiatanItem) => void;
 
 // Tombol Dokumentasi: membuka panel dokumentasi dan hasil tanpa meninggalkan daftar
+// ikonSaja dipakai di tabel desktop agar kolom aksi tidak memakan lebar yang dibutuhkan kolom Lokasi
 function TombolDokumentasi({
   k,
   onBuka,
   className,
+  ikonSaja = false,
 }: {
   k: KegiatanItem;
   onBuka: BukaDokumentasi;
   className?: string;
+  ikonSaja?: boolean;
 }) {
   return (
     <Button
       type="button"
       variant="outline"
       size="sm"
-      className={cn("h-8 gap-1 px-3 text-xs pointer-coarse:h-11", className)}
+      className={cn(
+        ikonSaja ? "size-8 p-0 pointer-coarse:size-11" : "h-8 gap-1 px-3 text-xs pointer-coarse:h-11",
+        className,
+      )}
       onClick={() => onBuka(k)}
       aria-label={`Dokumentasi ${k.judul}`}
+      title={ikonSaja ? "Dokumentasi" : undefined}
     >
       <Images aria-hidden className="size-3.5" />
-      Dokumentasi
+      {!ikonSaja && "Dokumentasi"}
     </Button>
+  );
+}
+
+function SelLokasi({ nama }: { nama: string | null }) {
+  if (!nama) return <span className="text-xs text-muted-foreground">Belum diisi</span>;
+  return (
+    <span className="flex max-w-56 min-w-36 items-start gap-1.5 whitespace-normal">
+      <MapPin aria-hidden className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+      <span className="line-clamp-2" title={nama}>
+        {nama}
+      </span>
+    </span>
   );
 }
 
@@ -81,18 +101,21 @@ function buatKolom({
       id: "judul",
       header: "Kegiatan",
       cell: ({ row }) => (
-        <div className="flex max-w-80 min-w-52 flex-col gap-0.5 whitespace-normal">
-          <Link
-            href={`/kegiatan/${row.original.id}`}
-            className="font-semibold text-foreground hover:text-primary hover:underline"
-          >
-            {row.original.judul}
-          </Link>
-          <span className="text-xs text-muted-foreground">
-            {row.original.jenis.nama}
-            {row.original.lokasiNama && ` · ${row.original.lokasiNama}`}
-          </span>
-        </div>
+        <Link
+          href={`/kegiatan/${row.original.id}`}
+          className="block max-w-72 min-w-48 font-semibold whitespace-normal text-foreground hover:text-primary hover:underline"
+        >
+          {row.original.judul}
+        </Link>
+      ),
+    },
+    {
+      id: "jenis",
+      header: "Jenis",
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap font-medium text-foreground">
+          {row.original.jenis.nama}
+        </span>
       ),
     },
     {
@@ -115,6 +138,11 @@ function buatKolom({
           </span>
         </span>
       ),
+    },
+    {
+      id: "lokasi",
+      header: "Lokasi",
+      cell: ({ row }) => <SelLokasi nama={row.original.lokasiNama} />,
     },
     {
       id: "status",
@@ -144,7 +172,7 @@ function buatKolom({
       header: () => <span className="sr-only">Aksi</span>,
       cell: ({ row }) => (
         <div className="flex justify-end gap-2">
-          <TombolDokumentasi k={row.original} onBuka={onDokumentasi} />
+          <TombolDokumentasi k={row.original} onBuka={onDokumentasi} ikonSaja />
           <Button
             asChild
             variant="outline"
@@ -189,8 +217,14 @@ function KartuKegiatan({
             {formatJam(k.tglMulai)}
           </span>
           <span className="text-xs text-muted-foreground">
-            {k.bidang.nama} · {k.penanggungJawab.nama}
+            <span className="font-medium text-foreground">{k.jenis.nama}</span> · {k.bidang.nama} · {k.penanggungJawab.nama}
           </span>
+          {k.lokasiNama && (
+            <span className="flex items-start gap-1.5 text-xs text-muted-foreground">
+              <MapPin aria-hidden className="mt-px size-3.5 shrink-0" />
+              <span className="line-clamp-2">{k.lokasiNama}</span>
+            </span>
+          )}
         </div>
         <ChevronRight
           aria-hidden

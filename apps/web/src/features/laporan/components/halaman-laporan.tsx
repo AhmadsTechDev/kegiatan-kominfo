@@ -6,7 +6,7 @@ import type { PratinjauLaporan } from "../types";
 
 // Tata letak halaman laporan A4 mendatar untuk pratinjau dan cetak
 
-const BARIS_HALAMAN_PERTAMA = 7;
+const BARIS_HALAMAN_PERTAMA = 6;
 const BARIS_PER_HALAMAN = 12;
 
 export function bagiHalaman<T>(baris: T[]): T[][] {
@@ -32,7 +32,15 @@ function Kop({ data }: { data: PratinjauLaporan }) {
       </div>
       <div className="mb-4 border-b-4 border-black" />
       <p className="text-center text-[15px] font-bold">{data.judul}</p>
-      <p className="mt-1 mb-3 text-center text-[11px] text-slate-500">{data.subjudul}</p>
+      <p className="mt-1 mb-3 text-center text-[12px]">{data.subjudul}</p>
+      <dl className="mb-2.5 flex border-y border-slate-300 py-1.5">
+        {data.cakupan.map((c) => (
+          <div key={c.label} className="flex-1 pr-3">
+            <dt className="text-[10px] text-slate-500">{c.label}</dt>
+            <dd className="mt-px text-[11.5px] font-bold">{c.nilai}</dd>
+          </div>
+        ))}
+      </dl>
       <div className="mb-3 flex gap-2">
         {data.ringkasan.map((r) => (
           <div key={r.label} className="flex-1 rounded border border-slate-300 px-2 py-1.5">

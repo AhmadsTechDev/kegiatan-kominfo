@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { ClipboardList, MessageSquareWarning, RotateCcw, SearchX } from "lucide-react";
+import { ChevronRight, ClipboardList, FileClock, RotateCcw, SearchX } from "lucide-react";
 import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { AvatarInisial } from "@/components/shared/avatar-inisial";
@@ -13,20 +13,19 @@ import { PaginationBar } from "@/components/shared/pagination-bar";
 import { PilihCari, type OpsiCari } from "@/components/shared/pilih-cari";
 import { Panel, PanelFooter } from "@/components/shared/panel";
 import { RentangTanggalPicker } from "@/components/shared/rentang-tanggal-picker";
-import { StatusPemeriksaanBadge } from "@/components/shared/status-badge";
-import { UnitChip } from "@/components/shared/unit-chip";
+import { StatusBadge, StatusPemeriksaanBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useGrupNav } from "@/hooks/use-grup-nav";
+import { idTab, PilihanTab } from "@/features/admin/components/admin-shared";
 import { getDaftarKegiatan, UKURAN_HALAMAN } from "@/features/kegiatan/api/kegiatan";
 import { PeriksaAksi } from "@/features/kegiatan/components/periksa-aksi";
 import { KegiatanTanpaAkses } from "@/features/kegiatan/components/kegiatan-states";
 import { useReferensi } from "@/features/kegiatan/hooks/use-kegiatan";
 import type { FilterKegiatan, KegiatanItem, StatusPemeriksaanKegiatan } from "@/features/kegiatan/types";
 import { apiClient } from "@/lib/api-client";
-import { formatAngka, formatRentangTanggal } from "@/lib/format";
+import { formatAngka, formatJam, formatRentangTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 // Pemantauan kegiatan seluruh pegawai untuk pimpinan dan admin, termasuk pemeriksaan
@@ -41,6 +40,21 @@ async function getRingkasan(p: Penyaring) {
   const params = Object.fromEntries(Object.entries(p).filter(([, v]) => v));
   const { data } = await apiClient.get<Ringkasan>("/pantau/ringkasan", { params });
   return data;
+}
+
+type Tampilan = "semua" | "perlu_perbaikan";
+
+const ID_PANEL = "panel-pantau";
+
+function TombolDetail({ k, className }: { k: KegiatanItem; className?: string }) {
+  return (
+    <Button asChild variant="outline" size="sm" className={cn("h-8 gap-1 px-3 text-xs pointer-coarse:h-11", className)}>
+      <Link href={`/kegiatan/${k.id}`} aria-label={`Detail ${k.judul}`}>
+        Detail
+        <ChevronRight aria-hidden className="size-3.5" />
+      </Link>
+    </Button>
+  );
 }
 
 const kolom: DataTableColumn<KegiatanItem>[] = [
@@ -60,25 +74,44 @@ const kolom: DataTableColumn<KegiatanItem>[] = [
     id: "pegawai",
     header: "Pegawai",
     cell: ({ row }) => (
-      <span className="flex items-center gap-2">
+      <span className="flex min-w-40 items-center gap-2">
         <AvatarInisial nama={row.original.penanggungJawab.nama} className="size-7" />
-        {row.original.penanggungJawab.nama}
+        <span className="flex min-w-0 flex-col">
+          {row.original.penanggungJawab.nama}
+          <span className="line-clamp-1 max-w-48 text-xs whitespace-normal text-muted-foreground" title={row.original.bidang.nama}>
+            {row.original.bidang.nama}
+          </span>
+        </span>
       </span>
     ),
   },
-  { id: "bidang", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-44 whitespace-normal">{row.original.bidang.nama}</UnitChip> },
   {
     id: "tanggal",
     header: "Tanggal",
-    cell: ({ row }) => <span className="whitespace-nowrap tabular-nums">{formatRentangTanggal(row.original.tglMulai, row.original.tglSelesai)}</span>,
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap tabular-nums">
+        {formatRentangTanggal(row.original.tglMulai, row.original.tglSelesai)}
+        <span className="block text-xs text-muted-foreground">{formatJam(row.original.tglMulai)}</span>
+      </span>
+    ),
   },
-  { id: "status", header: "Status", cell: ({ row }) => <StatusPemeriksaanBadge status={row.original.statusPemeriksaan} /> },
+  {
+    id: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <div className="flex flex-col items-start gap-1">
+        <StatusBadge status={row.original.statusPelaksanaan} />
+        <StatusPemeriksaanBadge status={row.original.statusPemeriksaan} />
+      </div>
+    ),
+  },
   {
     id: "aksi",
     header: () => <span className="sr-only">Aksi</span>,
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-2">
         <PeriksaAksi kegiatan={row.original} ringkas />
+        <TombolDetail k={row.original} />
       </div>
     ),
   },
@@ -92,8 +125,9 @@ function KartuPemeriksaan({ k }: { k: KegiatanItem }) {
         <Link href={`/kegiatan/${k.id}`} className="min-w-0 rounded font-semibold [overflow-wrap:anywhere] hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
           {k.judul}
         </Link>
-        <StatusPemeriksaanBadge status={k.statusPemeriksaan} className="shrink-0" />
+        <StatusBadge status={k.statusPelaksanaan} className="shrink-0" />
       </div>
+      <StatusPemeriksaanBadge status={k.statusPemeriksaan} className="w-fit" />
       <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
         <span>
           {k.jenis.nama} · {formatRentangTanggal(k.tglMulai, k.tglSelesai)}
@@ -102,48 +136,11 @@ function KartuPemeriksaan({ k }: { k: KegiatanItem }) {
           {k.penanggungJawab.nama} · {k.bidang.nama}
         </span>
       </div>
-      <PeriksaAksi kegiatan={k} className="[&>button]:flex-1" />
+      <div className="flex gap-2">
+        <PeriksaAksi kegiatan={k} className="flex-1 [&>button]:flex-1" />
+        <TombolDetail k={k} className="h-10 flex-1 text-sm" />
+      </div>
     </div>
-  );
-}
-
-function KartuStatus({
-  label,
-  nilai,
-  ikon: Ikon,
-  aktif,
-  onPilih,
-  keterangan,
-}: {
-  label: string;
-  nilai: number | undefined;
-  ikon: typeof ClipboardList;
-  aktif?: boolean;
-  onPilih?: () => void;
-  keterangan?: string;
-}) {
-  const isi = (
-    <>
-      <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-        <Ikon aria-hidden className="size-4" />
-        {label}
-      </span>
-      {nilai == null ? <Skeleton className="h-8 w-16" /> : <span className="font-heading text-2xl font-extrabold tabular-nums">{formatAngka(nilai)}</span>}
-      {keterangan && <span className="text-xs text-muted-foreground">{keterangan}</span>}
-    </>
-  );
-  const kelas = "flex flex-col items-start gap-1 rounded-xl border bg-card p-4 text-left shadow-sm";
-  return onPilih ? (
-    <button
-      type="button"
-      onClick={onPilih}
-      aria-pressed={aktif}
-      className={cn(kelas, "transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none", aktif && "border-primary ring-1 ring-primary")}
-    >
-      {isi}
-    </button>
-  ) : (
-    <div className={kelas}>{isi}</div>
   );
 }
 
@@ -155,23 +152,23 @@ export function PantauView() {
   const grupNav = useGrupNav("Pengawasan");
   const referensi = useReferensi();
   const [penyaring, setPenyaring] = useState<Penyaring>(KOSONG);
-  const [status, setStatus] = useState<StatusPemeriksaanKegiatan | null>(null);
+  const [tampilan, setTampilan] = useState<Tampilan>("semua");
   const [page, setPage] = useState(1);
 
   const ubah = (u: Partial<Penyaring>) => {
     setPenyaring((p) => ({ ...p, ...u }));
     setPage(1);
   };
-  const pilihStatus = (s: StatusPemeriksaanKegiatan) => {
-    setStatus((lama) => (lama === s ? null : s));
+  const pilihTampilan = (t: Tampilan) => {
+    setTampilan(t);
     setPage(1);
   };
   const reset = () => {
     setPenyaring(KOSONG);
-    setStatus(null);
     setPage(1);
   };
-  const adaPenyaring = status != null || Object.values(penyaring).some(Boolean);
+  const adaPenyaring = Object.values(penyaring).some(Boolean);
+  const status: StatusPemeriksaanKegiatan | null = tampilan === "semua" ? null : tampilan;
 
   const ringkasan = useQuery({ queryKey: ["pantau", "ringkasan", penyaring], queryFn: () => getRingkasan(penyaring), placeholderData: keepPreviousData });
   const filter = useMemo<FilterKegiatan>(
@@ -218,8 +215,8 @@ export function PantauView() {
       <PageHeader eyebrow={grupNav} title={judulHalaman} />
 
       <Panel>
-        <div role="search" aria-label="Penyaring pantau" className="grid items-end gap-3 p-4 sm:grid-cols-2 md:p-5 lg:grid-cols-[1fr_1fr_minmax(14rem,1.2fr)_auto]">
-          <div className="flex min-w-0 flex-col gap-1.5 sm:col-span-2 lg:col-span-4">
+        <div role="search" aria-label="Penyaring pantau" className="grid items-end gap-3 p-4 sm:grid-cols-2 md:p-5 xl:grid-cols-[minmax(16rem,1.4fr)_1fr_1fr_minmax(14rem,1fr)_auto]">
+          <div className="flex min-w-0 flex-col gap-1.5 sm:col-span-2 xl:col-span-1">
             <label htmlFor={`${id}-cari`} className={label}>
               Cari
             </label>
@@ -270,49 +267,70 @@ export function PantauView() {
           </div>
           <Button variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={reset} disabled={!adaPenyaring}>
             <RotateCcw aria-hidden />
-            Tampilkan semua
+            Atur ulang
           </Button>
         </div>
       </Panel>
 
-      {ringkasan.isError ? (
-        <ErrorState message={ringkasan.error.message} onRetry={() => ringkasan.refetch()} retrying={ringkasan.isRefetching} />
-      ) : (
-        <div className={cn("grid grid-cols-2 gap-3", ringkasan.isPlaceholderData && "opacity-60")}>
-          <KartuStatus label="Total kegiatan" nilai={r?.total} ikon={ClipboardList} keterangan="Sudah dicatat" />
-          <KartuStatus label="Perlu perbaikan" nilai={r?.perluPerbaikan} ikon={MessageSquareWarning} aktif={status === "perlu_perbaikan"} onPilih={() => pilihStatus("perlu_perbaikan")} />
-        </div>
-      )}
-
       <Panel>
-        {daftar.isError ? (
-          <div className="p-4">
-            <ErrorState message={daftar.error.message} onRetry={() => daftar.refetch()} retrying={daftar.isRefetching} />
-          </div>
-        ) : (
-          <>
-            <DataTable
-              columns={kolom}
-              data={daftar.data?.items ?? []}
-              isLoading={daftar.isPending}
-              bleed
-              caption="Kegiatan terbaru seluruh pegawai"
-              getRowKey={(k) => String(k.id)}
-              renderMobileCard={(k) => <KartuPemeriksaan k={k} />}
-              className={cn("transition-opacity", daftar.isPlaceholderData && "opacity-60")}
-              empty={
-                adaPenyaring
-                  ? { icon: SearchX, title: "Tidak ada kegiatan yang cocok.", action: <Button variant="outline" className="h-10" onClick={reset}>Tampilkan semua</Button> }
-                  : { icon: ClipboardList, title: "Belum ada kegiatan tim." }
-              }
-            />
-            {daftar.data && daftar.data.total > 0 && (
-              <PanelFooter>
-                <PaginationBar className="w-full" page={daftar.data.page} pageSize={UKURAN_HALAMAN} total={daftar.data.total} onPageChange={setPage} />
-              </PanelFooter>
-            )}
-          </>
-        )}
+        <div className={cn("flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-muted px-4 pt-4 pb-3 md:px-5", ringkasan.isPlaceholderData && "opacity-60")}>
+          <PilihanTab
+            label="Tampilan pemantauan"
+            idPanel={ID_PANEL}
+            value={tampilan}
+            onChange={pilihTampilan}
+            opsi={[
+              { nilai: "semua", label: "Semua kegiatan", jumlah: r?.total },
+              { nilai: "perlu_perbaikan", label: "Perlu perbaikan", lencana: r?.perluPerbaikan },
+            ]}
+          />
+          {ringkasan.isError ? (
+            <Button variant="ghost" size="sm" className="h-9 text-xs text-destructive" onClick={() => ringkasan.refetch()}>
+              Ringkasan gagal dimuat. Coba lagi
+            </Button>
+          ) : (
+            !!r?.draf && (
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <FileClock aria-hidden className="size-3.5" />
+                <span>
+                  <span className="font-semibold text-foreground tabular-nums">{formatAngka(r.draf)}</span> draf belum dikirim pegawai
+                </span>
+              </p>
+            )
+          )}
+        </div>
+        <div role="tabpanel" id={ID_PANEL} aria-labelledby={idTab(ID_PANEL, tampilan)}>
+          {daftar.isError ? (
+            <div className="p-4">
+              <ErrorState message={daftar.error.message} onRetry={() => daftar.refetch()} retrying={daftar.isRefetching} />
+            </div>
+          ) : (
+            <>
+              <DataTable
+                columns={kolom}
+                data={daftar.data?.items ?? []}
+                isLoading={daftar.isPending}
+                bleed
+                caption="Kegiatan terbaru seluruh pegawai"
+                getRowKey={(k) => String(k.id)}
+                renderMobileCard={(k) => <KartuPemeriksaan k={k} />}
+                className={cn("transition-opacity", daftar.isPlaceholderData && "opacity-60")}
+                empty={
+                  adaPenyaring
+                    ? { icon: SearchX, title: "Tidak ada kegiatan yang cocok dengan penyaring.", action: <Button variant="outline" className="h-10" onClick={reset}>Atur ulang penyaring</Button> }
+                    : tampilan === "perlu_perbaikan"
+                      ? { icon: ClipboardList, title: "Tidak ada kegiatan yang menunggu perbaikan.", description: "Kegiatan yang ditandai perlu perbaikan muncul di sini sampai pencatat mengubahnya." }
+                      : { icon: ClipboardList, title: "Belum ada kegiatan tim yang dikirim." }
+                }
+              />
+              {daftar.data && daftar.data.total > 0 && (
+                <PanelFooter>
+                  <PaginationBar className="w-full" page={daftar.data.page} pageSize={UKURAN_HALAMAN} total={daftar.data.total} onPageChange={setPage} />
+                </PanelFooter>
+              )}
+            </>
+          )}
+        </div>
       </Panel>
     </>
   );

@@ -23,5 +23,5 @@ export type BarisEkspor = {
   statusPelaksanaan: StatusPelaksanaan;
 };
 
-// Keterangan laporan: uraian filter, pembuat, dan waktu dibuat
-export type InfoEkspor = { filter: string[]; dibuatOleh: string; dibuatPada: Date };
+// Keterangan laporan: periode, filter berlabel, pembuat, dan waktu dibuat
+export type InfoEkspor = { periode: string; cakupan: { label: string; nilai: string }[]; dibuatOleh: string; dibuatPada: Date };

@@ -4,6 +4,7 @@ export type PratinjauLaporan = {
   kop: { pemerintah: string; dinas: string; alamat: string[] };
   judul: string;
   subjudul: string;
+  cakupan: { label: string; nilai: string }[];
   ringkasan: { label: string; nilai: number }[];
   kolom: { judul: string; lebar: string }[];
   baris: {

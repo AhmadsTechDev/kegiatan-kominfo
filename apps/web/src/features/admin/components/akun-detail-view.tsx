@@ -187,7 +187,7 @@ function IsiDetail({ id }: { id: string }) {
     <div className="flex flex-col gap-5">
       <Kepala a={a} idSaya={user?.id} buka={buka} />
       {a.status === "MENUNGGU_AKTIVASI" && <PanelUndangan a={a} buka={buka} />}
-      <div className="grid items-start gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <Panel>
           <PanelHeader title="Informasi akun" />
           <dl className="divide-y divide-muted border-t border-muted">
