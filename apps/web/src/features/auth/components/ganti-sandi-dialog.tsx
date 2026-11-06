@@ -13,7 +13,9 @@ import { ApiError } from "@/lib/api-client";
 import { periksaSandi } from "@/lib/sandi";
 import { useCurrentUser } from "../hooks/use-current-user";
 
-// Dialog ganti kata sandi sendiri, sekaligus mencabut sesi di perangkat lain
+/**
+ * Dialog ganti kata sandi sendiri, sekaligus mencabut sesi di perangkat lain
+ */
 
 const schema = (email?: string) =>
   z

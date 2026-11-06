@@ -5,7 +5,9 @@ import { AuditLogValidator } from "@/validators/audit-log.validator";
 
 const ADMIN = { auth: ["ADMIN" as const] };
 
-// Riwayat aktivitas (audit log), khusus ADMIN
+/**
+ * Riwayat aktivitas (audit log), khusus ADMIN
+ */
 export const auditLogRoutes = new Elysia({ prefix: "/audit-log" })
   .use(authPlugin)
   .get("/", AuditLogController.daftar, { ...ADMIN, query: AuditLogValidator.daftarQuery })

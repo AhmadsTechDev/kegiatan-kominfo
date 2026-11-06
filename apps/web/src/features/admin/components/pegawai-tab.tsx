@@ -20,7 +20,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatTelp } from "@/lib/format";
 import { LABEL_ROLE, type Role } from "@/types/auth";
 
-// Tab kelola data pegawai ASN dan non-ASN (akun login diurus di Manajemen akun)
+/**
+ * Tab kelola data pegawai ASN dan non-ASN (akun login diurus di Manajemen akun)
+ */
 
 const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const satisfies readonly Role[];
 
@@ -48,10 +50,14 @@ const schema = z.object({
 });
 type Nilai = z.infer<typeof schema>;
 
-// Pegawai yang belum punya akun juga bisa diberi role bawaan; role itu dipakai saat pegawai diundang
+/**
+ * Pegawai yang belum punya akun juga bisa diberi role bawaan; role itu dipakai saat pegawai diundang
+ */
 type PegawaiBaru = { id: number; nama: string; nip: string | null; bidang: string };
 
-// onDibuat: dipanggil setelah pegawai baru tersimpan, agar pemanggil bisa langsung membuka dialog Undang
+/**
+ * onDibuat: dipanggil setelah pegawai baru tersimpan, agar pemanggil bisa langsung membuka dialog Undang
+ */
 export function PegawaiDialog({
   pegawai,
   unit,
@@ -133,7 +139,9 @@ export function PegawaiDialog({
           <FieldError errors={[formState.errors.nip]} />
         </Field>
         {awal && (
-          // Nomor telepon tersimpan di akun, jadi baru bisa diisi setelah pegawai diundang
+          /**
+           * Nomor telepon tersimpan di akun, jadi baru bisa diisi setelah pegawai diundang
+           */
           <Field data-invalid={!!formState.errors.kontak} data-disabled={!awal.akun || undefined}>
             <FieldLabel htmlFor="pegawai-kontak">
               No. telp
@@ -215,7 +223,9 @@ export function PegawaiDialog({
   );
 }
 
-// Master data hanya menampilkan pegawai yang sudah punya akun; yang belum ada di Manajemen akun > Perlu diundang
+/**
+ * Master data hanya menampilkan pegawai yang sudah punya akun; yang belum ada di Manajemen akun > Perlu diundang
+ */
 const FILTER_AWAL: FilterPegawai = { q: "", unit: null, aktif: null, akun: "ada", page: 1 };
 
 export function PegawaiTab() {

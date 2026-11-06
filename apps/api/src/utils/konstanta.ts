@@ -1,23 +1,40 @@
-// Daftar nilai tetap yang dipakai di validator, service, dan repository
+/**
+ * Daftar nilai tetap yang dipakai di validator, service, dan repository
+ */
 
-// PEGAWAI adalah role pencatat kegiatan; di antarmuka ditampilkan sebagai "Pegawai"
+/**
+ * PEGAWAI adalah role pencatat kegiatan; di antarmuka ditampilkan sebagai "Pegawai"
+ */
 export const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const;
 
-// Status akun, diturunkan dari kolom banned dan ada-tidaknya kredensial (lihat utils/status-akun.ts)
+/**
+ * Status akun, diturunkan dari kolom banned dan ada-tidaknya kredensial (lihat utils/status-akun.ts)
+ */
 export const STATUS_AKUN = ["MENUNGGU_AKTIVASI", "AKTIF", "NONAKTIF"] as const;
 
 export const TEMA = ["light", "dark", "system"] as const;
 
-// Role yang boleh membuat/mengubah kegiatan, draf, dokumentasi, dan hasil kegiatan.
-// ADMIN tidak termasuk: admin mengelola akun dan master data, serta memeriksa kegiatan
+/**
+ * Role yang boleh membuat/mengubah kegiatan, draf, dokumentasi, dan hasil kegiatan.
+ * ADMIN tidak termasuk: admin mengelola akun dan master data, serta memeriksa kegiatan
+ */
 export const PENULIS = ["PEGAWAI"] as const;
 
-// Role yang boleh memeriksa dokumentasi dan hasil kegiatan, serta memberi catatan perbaikan
+/**
+ * Role yang boleh menghapus berkas dokumentasi: pegawai pemilik kegiatan, dan admin untuk kegiatan mana pun
+ */
+export const PENGHAPUS_DOKUMENTASI = ["PEGAWAI", "ADMIN"] as const;
+
+/**
+ * Role yang boleh memeriksa dokumentasi dan hasil kegiatan, serta memberi catatan perbaikan
+ */
 export const PEMERIKSA = ["PIMPINAN", "ADMIN"] as const;
 
 export const STATUS_PELAKSANAAN = ["akan_datang", "berlangsung", "selesai", "dibatalkan"] as const;
 
-// "terkirim" adalah keadaan biasa (tidak ditandai); pimpinan hanya menandai kegiatan yang perlu perbaikan
+/**
+ * "terkirim" adalah keadaan biasa (tidak ditandai); pimpinan hanya menandai kegiatan yang perlu perbaikan
+ */
 export const STATUS_PEMERIKSAAN = ["terkirim", "perlu_perbaikan"] as const;
 
 export const STATUS_PERMINTAAN = ["MENUNGGU", "DISETUJUI", "DITOLAK"] as const;

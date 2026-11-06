@@ -21,7 +21,9 @@ import { PanelKeluar, PanelSandi, PanelSesi } from "./panel-keamanan";
 import { PanelNotifikasi, PanelTema } from "./panel-preferensi";
 import { PanelKepegawaian, PanelKontak } from "./panel-profil";
 
-// Halaman pengaturan: Profil, Informasi akun, Keamanan, dan Preferensi
+/**
+ * Halaman pengaturan: Profil, Informasi akun, Keamanan, dan Preferensi
+ */
 
 const berlangganan = () => () => {};
 
@@ -171,6 +173,11 @@ function IsiTab({ tab, p }: { tab: Tab; p: Profil }) {
   );
 }
 
+/**
+ * Halaman pengaturan bertab (profil, informasi akun, keamanan, preferensi); tab aktif disimpan di ?tab= pada URL.
+ * `terhidrasi` bernilai false saat render di server dan true di peramban, sehingga skeleton tampil
+ * sampai halaman siap dan tidak ada perbedaan isi antara server dan peramban.
+ */
 export function PengaturanView() {
   const profil = useProfil();
   const searchParams = useSearchParams();

@@ -6,7 +6,9 @@ import { DrafKegiatanValidator } from "@/validators/draf-kegiatan.validator";
 
 const params = DrafKegiatanValidator.params;
 
-// Draf formulir kegiatan milik user sendiri
+/**
+ * Draf formulir kegiatan milik user sendiri
+ */
 export const drafKegiatanRoutes = new Elysia({ prefix: "/draf-kegiatan" })
   .use(authPlugin)
   .get("/", DrafKegiatanController.daftar, { auth: [...PENULIS] })

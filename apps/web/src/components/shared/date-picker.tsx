@@ -9,7 +9,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { formatTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-// Pemilih satu tanggal (popover kalender, format Indonesia)
+/**
+ * Pemilih satu tanggal (popover kalender, format Indonesia)
+ */
 
 export const keDate = (nilai: string) => {
   const [t, b, h] = nilai.split("-").map(Number);

@@ -23,7 +23,9 @@ import type {
   BidangAdmin,
 } from "../types";
 
-// Pemanggil endpoint admin: master data, akun, audit log, dan permintaan akun
+/**
+ * Pemanggil endpoint admin: master data, akun, audit log, dan permintaan akun
+ */
 
 export const UKURAN_HALAMAN_ADMIN = 20;
 export const UKURAN_HALAMAN_AUDIT = 25;
@@ -33,6 +35,10 @@ const params = (nilai: Record<string, unknown>) =>
 
 type Hasil<T = number> = { id: T };
 
+/**
+ * Pola singkat `.then((r) => r.data)`: apiClient mengembalikan objek respons axios lengkap,
+ * lalu `.then` mengambil bagian `data` (isi JSON dari backend) saja. Hasilnya sama dengan memakai async/await.
+ */
 export const getBidang = () => apiClient.get<BidangAdmin[]>("/admin/bidang").then((r) => r.data);
 export const buatBidang = (isi: IsiUnit) => apiClient.post<Hasil>("/admin/bidang", isi).then((r) => r.data);
 export const ubahBidang = (id: number, isi: IsiUnit) => apiClient.patch<Hasil>(`/admin/bidang/${id}`, isi).then((r) => r.data);

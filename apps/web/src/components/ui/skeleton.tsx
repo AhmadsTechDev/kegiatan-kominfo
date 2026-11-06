@@ -1,6 +1,8 @@
 import { cn } from "cn"
 
-// Komponen dasar shadcn/ui: skeleton saat memuat
+/**
+ * Komponen dasar shadcn/ui: skeleton saat memuat
+ */
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (

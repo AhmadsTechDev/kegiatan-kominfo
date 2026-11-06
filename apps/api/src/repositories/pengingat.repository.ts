@@ -14,13 +14,17 @@ export type KandidatPengingat = {
   nama: string;
 };
 
-// Akun penerima pengingat: aktif dan tidak mematikan notifikasi jenis ini di Preferensi (belum punya preferensi = mau)
+/**
+ * Akun penerima pengingat: aktif dan tidak mematikan notifikasi jenis ini di Preferensi (belum punya preferensi = mau)
+ */
 function penerima(jenis: JenisPengingat): Prisma.UserWhereInput {
   const notif = jenis === "H_MINUS_1" ? { notifPengingatKegiatan: true } : { notifPengingatDokumentasi: true };
   return { banned: false, OR: [{ preferensi: { is: null } }, { preferensi: { is: notif } }] };
 }
 
-// Kegiatan yang perlu diingatkan + akun penanggung jawabnya, kecuali yang sudah pernah dikirimi pengingat jenis ini
+/**
+ * Kegiatan yang perlu diingatkan + akun penanggung jawabnya, kecuali yang sudah pernah dikirimi pengingat jenis ini
+ */
 async function kandidat(jenis: JenisPengingat, syarat: Prisma.KegiatanWhereInput): Promise<KandidatPengingat[]> {
   const kepada = penerima(jenis);
   const kegiatan = await prisma.kegiatan.findMany({
@@ -54,12 +58,16 @@ async function kandidat(jenis: JenisPengingat, syarat: Prisma.KegiatanWhereInput
 }
 
 export const PengingatRepository = {
-  // Kegiatan yang mulai dalam 24 jam ke depan
+  /**
+   * Kegiatan yang mulai dalam 24 jam ke depan
+   */
   hMinus1(sekarang: Date) {
     return kandidat("H_MINUS_1", { tglMulai: { gt: sekarang, lte: new Date(sekarang.getTime() + 24 * 3600_000) } });
   },
 
-  // Kegiatan yang selesai (antara `batasMs` lalu sampai `jedaMs` lalu) tetapi belum berdokumentasi
+  /**
+   * Kegiatan yang selesai (antara `batasMs` lalu sampai `jedaMs` lalu) tetapi belum berdokumentasi
+   */
   tanpaDokumentasi(sekarang: Date, jedaMs: number, batasMs: number) {
     return kandidat("DOKUMENTASI", {
       tglSelesai: { lt: new Date(sekarang.getTime() - jedaMs), gte: new Date(sekarang.getTime() - batasMs) },
@@ -67,7 +75,9 @@ export const PengingatRepository = {
     });
   },
 
-  // Mencatat bahwa pengingat sudah dikirim (abaikan bila sudah tercatat)
+  /**
+   * Mencatat bahwa pengingat sudah dikirim (abaikan bila sudah tercatat)
+   */
   async catat(kegiatanId: number, jenis: JenisPengingat, userId: string) {
     await prisma.pengingat.createMany({ data: [{ kegiatanId, jenis, userId }], skipDuplicates: true });
   },

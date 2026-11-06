@@ -28,7 +28,9 @@ import { apiClient } from "@/lib/api-client";
 import { formatAngka, formatJam, formatRentangTanggal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-// Pemantauan kegiatan seluruh pegawai untuk pimpinan dan admin, termasuk pemeriksaan
+/**
+ * Pemantauan kegiatan seluruh pegawai untuk pimpinan dan admin, termasuk pemeriksaan
+ */
 
 type Ringkasan = { total: number; draf: number; perluPerbaikan: number };
 type Penyaring = { q: string; unit: string | null; pegawai: string | null; dari: string | null; sampai: string | null };
@@ -117,7 +119,9 @@ const kolom: DataTableColumn<KegiatanItem>[] = [
   },
 ];
 
-// HP: satu kartu per kegiatan; status dan tombol periksa langsung terlihat tanpa menggeser tabel
+/**
+ * HP: satu kartu per kegiatan; status dan tombol periksa langsung terlihat tanpa menggeser tabel
+ */
 function KartuPemeriksaan({ k }: { k: KegiatanItem }) {
   return (
     <div className="flex flex-col gap-3 rounded-lg border bg-card p-3">
@@ -147,7 +151,10 @@ function KartuPemeriksaan({ k }: { k: KegiatanItem }) {
 export function PantauView() {
   const id = useId();
   const { user } = useCurrentUser();
-  // Nama halaman mengikuti menu: "Pemeriksaan kegiatan" untuk pimpinan, "Pantau" untuk admin
+
+  /**
+   * Nama halaman mengikuti menu: "Pemeriksaan kegiatan" untuk pimpinan, "Pantau" untuk admin
+   */
   const judulHalaman = user?.role === "PIMPINAN" ? "Pemeriksaan kegiatan" : "Pantau";
   const grupNav = useGrupNav("Pengawasan");
   const referensi = useReferensi();
@@ -192,7 +199,10 @@ export function PantauView() {
     }
     return (referensi.data?.pegawai ?? []).filter((p) => ids.has(p.bidangId));
   }, [penyaring.unit, referensi.data, bidang]);
-  // Bidang ikut ditampilkan dan dicari: membedakan pegawai bernama sama dan memudahkan mencari per bidang
+
+  /**
+   * Bidang ikut ditampilkan dan dicari: membedakan pegawai bernama sama dan memudahkan mencari per bidang
+   */
   const opsiPegawai = useMemo<OpsiCari[]>(() => {
     const namaUnit = new Map(bidang.map((u) => [u.id, u.nama]));
     return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: namaUnit.get(p.bidangId) ?? "" }));

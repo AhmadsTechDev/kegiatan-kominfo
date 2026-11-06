@@ -17,7 +17,9 @@ import { useKegiatanSaya } from "../hooks/use-dashboard";
 import type { AgendaPekan } from "../types";
 import { KegiatanSayaPanel } from "./kegiatan-saya";
 
-// Dashboard pegawai: agenda dan tugas pribadi
+/**
+ * Dashboard pegawai: agenda dan tugas pribadi
+ */
 
 function Sambutan({ hariIni }: { hariIni?: string }) {
   const sapaan = useSapaan();

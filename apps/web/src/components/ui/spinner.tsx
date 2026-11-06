@@ -1,7 +1,9 @@
 import { cn } from "cn"
 import { Loader2Icon } from "lucide-react"
 
-// Komponen dasar shadcn/ui: ikon berputar saat memuat
+/**
+ * Komponen dasar shadcn/ui: ikon berputar saat memuat
+ */
 
 function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   return (

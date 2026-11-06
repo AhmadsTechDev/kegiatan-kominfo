@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-// Cek kata sandi di formulir, sama dengan aturan backend (utils/kebijakan-sandi.ts)
+/**
+ * Cek kata sandi di formulir, sama dengan aturan backend (utils/kebijakan-sandi.ts)
+ */
 
 export const SANDI_MIN = 8;
 export const SANDI_MAKS = 128;
@@ -15,6 +17,11 @@ export function periksaSandi(sandi: string, email?: string | null): string | nul
   return null;
 }
 
+/**
+ * Skema form kata sandi baru: sandi harus sesuai kebijakan dan kolom "ulangi" harus sama.
+ * `path` menentukan di bawah kolom mana pesan galat ditampilkan.
+ * @param email email akun, agar sandi yang memuat bagian depan email ditolak
+ */
 export const skemaSandiBaru = (email?: string | null) =>
   z
     .object({ password: z.string(), ulang: z.string() })
@@ -24,4 +31,7 @@ export const skemaSandiBaru = (email?: string | null) =>
       if (v.password !== v.ulang) ctx.addIssue({ code: "custom", path: ["ulang"], message: "Kata sandi tidak sama" });
     });
 
+/**
+ * z.infer mengambil tipe TypeScript dari skema Zod, jadi tipe isian form tidak perlu ditulis manual.
+ */
 export type NilaiSandiBaru = z.infer<ReturnType<typeof skemaSandiBaru>>;

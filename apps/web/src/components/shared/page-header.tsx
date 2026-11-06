@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
-// Kepala halaman seragam: label kategori, judul, deskripsi, dan tombol aksi
+/**
+ * Kepala halaman seragam: label kategori, judul, deskripsi, dan tombol aksi
+ */
 
 type PageHeaderProps = {
   title: string;

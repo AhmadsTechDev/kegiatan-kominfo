@@ -13,7 +13,9 @@ import type { Profil } from "@/features/auth/hooks/use-profil";
 import { ApiError } from "@/lib/api-client";
 import { useUbahKontak } from "../hooks/use-akun-saya";
 
-// Panel profil: data kepegawaian (hanya baca) dan nomor kontak yang bisa diubah
+/**
+ * Panel profil: data kepegawaian (hanya baca) dan nomor kontak yang bisa diubah
+ */
 
 export function Baris({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -28,7 +30,10 @@ export const Kosong = ({ teks = "-" }: { teks?: string }) => <span className="fo
 
 export function PanelKepegawaian({ p }: { p: Profil }) {
   const unit = p.pegawai?.bidang;
-  // Admin mengelola datanya sendiri lewat Manajemen akun; role lain harus meminta admin
+
+  /**
+   * Admin mengelola datanya sendiri lewat Manajemen akun; role lain harus meminta admin
+   */
   const admin = p.role === "ADMIN";
   return (
     <Panel>

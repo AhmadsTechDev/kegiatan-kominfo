@@ -1,6 +1,10 @@
 import nodemailer from "nodemailer";
 import { env } from "@/config/env";
 
+/**
+ * Nodemailer mengirim email lewat server SMTP (di development biasanya Mailpit di port 1025).
+ * `transport` dibuat sekali di awal dan dipakai ulang untuk semua email.
+ */
 const transport = nodemailer.createTransport({
   host: env.SMTP_HOST,
   port: env.SMTP_PORT,
@@ -8,6 +12,9 @@ const transport = nodemailer.createTransport({
   auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
 });
 
+/**
+ * Bahan satu email. Service cukup mengisi bagian-bagian ini, tata letaknya disusun di file ini agar semua email seragam.
+ */
 export type IsiEmail = {
   judul: string;
   /** Cuplikan satu kalimat yang tampil di daftar kotak masuk (preheader) */
@@ -25,14 +32,24 @@ const REDUP = "#5b6785"; // 5,6:1 di putih, 5,2:1 di latar abu
 const LATAR = "#f4f6fb";
 const GARIS = "#e3e7f0";
 
-// Mengamankan teks sebelum dimasukkan ke HTML (mencegah injeksi HTML/XSS)
+/**
+ * Mengamankan teks sebelum dimasukkan ke HTML (mencegah injeksi HTML/XSS)
+ */
 const escapeHtml = (teks: string) =>
   teks.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-// Logo dilayani frontend dari public/images; gambar perlu URL publik agar tampil di aplikasi email
+/**
+ * Logo dilayani frontend dari public/images; gambar perlu URL publik agar tampil di aplikasi email
+ */
 const urlLogo = () => `${env.FRONTEND_URL}/images/logo-email.png`;
 
-// Menyusun badan email versi HTML dengan kepala logo dinas
+/**
+ * Menyusun badan email versi HTML dengan kepala logo dinas
+ *
+ * Email HTML memakai <table> dan style di setiap tag (inline style), bukan CSS modern,
+ * karena banyak aplikasi email (Gmail, Outlook) hanya mendukung HTML model lama.
+ * Semua teks dari luar melewati escapeHtml terlebih dahulu sebelum disisipkan.
+ */
 function htmlEmail(subjek: string, { judul, pratinjau, paragraf, rincian, tombol, catatan }: IsiEmail) {
   const p = paragraf.map((t) => `<p style="margin:0 0 14px;line-height:1.6">${escapeHtml(t)}</p>`).join("");
   const r = rincian?.length
@@ -52,7 +69,10 @@ ${rincian
   const c = catatan
     ? `<p style="margin:18px 0 0;padding-top:16px;border-top:1px solid ${GARIS};font-size:12px;color:${REDUP};line-height:1.5">${escapeHtml(catatan)}</p>`
     : "";
-  // Spasi kosong setelah preheader mencegah aplikasi email menarik teks badan ke cuplikan
+
+  /**
+   * Spasi kosong setelah preheader mencegah aplikasi email menarik teks badan ke cuplikan
+   */
   const pengisi = "&#847;&zwnj;&nbsp;".repeat(60);
   return `<!doctype html><html lang="id"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -74,7 +94,9 @@ ${rincian
 </td></tr></table></body></html>`;
 }
 
-// Menyusun badan email versi teks biasa (untuk aplikasi email tanpa HTML)
+/**
+ * Menyusun badan email versi teks biasa (untuk aplikasi email tanpa HTML)
+ */
 function teksEmail({ judul, paragraf, rincian, tombol, catatan }: IsiEmail) {
   return [
     judul,
@@ -88,13 +110,20 @@ function teksEmail({ judul, paragraf, rincian, tombol, catatan }: IsiEmail) {
   ].join("\n");
 }
 
-// Memecah "Nama <alamat@email>" menjadi { name, email } untuk API Brevo
+/**
+ * Memecah "Nama <alamat@email>" menjadi { name, email } untuk API Brevo
+ */
 function pengirim(dari: string) {
   const cocok = dari.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/);
   return cocok ? { name: cocok[1]!.trim(), email: cocok[2]!.trim() } : { email: dari.trim() };
 }
 
-// Mengirim email lewat REST API Brevo
+/**
+ * Mengirim email lewat REST API Brevo
+ *
+ * KONSEP async/await: `fetch` mengirim permintaan ke internet dan butuh waktu, jadi hasilnya ditunggu dengan `await`.
+ * Bila Brevo menjawab gagal (res.ok bernilai false), galat dilempar supaya pemanggil tahu email tidak terkirim.
+ */
 async function kirimLewatBrevo(kepada: string, subjek: string, isi: IsiEmail) {
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
@@ -110,8 +139,13 @@ async function kirimLewatBrevo(kepada: string, subjek: string, isi: IsiEmail) {
   if (!res.ok) throw new Error(`Brevo menolak email (${res.status}): ${(await res.text()).slice(0, 300)}`);
 }
 
-// Mengirim email: lewat Brevo bila BREVO_API_KEY diisi, selain itu lewat SMTP
+/**
+ * Mengirim email: lewat Brevo bila BREVO_API_KEY diisi, selain itu lewat SMTP
+ */
 export async function kirimEmail(kepada: string, subjek: string, isi: IsiEmail) {
+  /**
+   * Brevo dipakai di hosting yang memblokir port SMTP; selain itu memakai SMTP biasa.
+   */
   if (env.BREVO_API_KEY) return kirimLewatBrevo(kepada, subjek, isi);
   await transport.sendMail({ from: env.SMTP_FROM, to: kepada, subject: subjek, html: htmlEmail(subjek, isi), text: teksEmail(isi) });
 }

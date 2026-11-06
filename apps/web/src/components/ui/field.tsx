@@ -7,7 +7,9 @@ import { cn } from "cn"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
-// Komponen dasar shadcn/ui: field formulir dengan label, petunjuk, dan pesan galat
+/**
+ * Komponen dasar shadcn/ui: field formulir dengan label, petunjuk, dan pesan galat
+ */
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (

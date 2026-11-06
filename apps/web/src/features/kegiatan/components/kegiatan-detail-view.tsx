@@ -22,7 +22,9 @@ import { KegiatanAksiDialog, type JenisAksi } from "./kegiatan-aksi-dialog";
 import { KegiatanDetailSkeleton, KegiatanTidakDitemukan } from "./kegiatan-states";
 import { PeriksaAksi } from "./periksa-aksi";
 
-// Detail kegiatan: status, waktu, lokasi, hasil, dokumentasi, dan riwayat pemeriksaan
+/**
+ * Detail kegiatan: status, waktu, lokasi, hasil, dokumentasi, dan riwayat pemeriksaan
+ */
 
 function Paragraf({ label, isi, kosong }: { label: string; isi: string | null; kosong: string }) {
   return (
@@ -49,12 +51,20 @@ function Fakta({ ikon: Ikon, label, children }: { ikon: typeof CalendarDays; lab
 
 const jamSaja = (iso: string) => formatJam(iso).replace(" WIB", "");
 
+/**
+ * Halaman detail kegiatan. Tombol yang tampil ditentukan tanda dari backend (bisaUbah, bisaPeriksa,
+ * bisaHapusDokumentasi), bukan dihitung ulang di frontend, agar aturannya hanya ada di satu tempat.
+ * @param id id kegiatan dari URL
+ */
 export function KegiatanDetailView({ id }: { id: number }) {
   const router = useRouter();
   const { data: k, isPending, error, refetch, isRefetching } = useKegiatan(id);
   const [aksi, setAksi] = useState<JenisAksi | null>(null);
   const adaData = !!k;
 
+  /**
+   * Tautan berakhiran #dokumentasi (mis. dari email pengingat) langsung digulir ke bagian dokumentasi setelah datanya tampil.
+   */
   useEffect(() => {
     if (adaData && window.location.hash === "#dokumentasi") {
       document.getElementById("dokumentasi")?.scrollIntoView({ behavior: "smooth", block: "start" });

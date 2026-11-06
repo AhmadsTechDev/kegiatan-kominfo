@@ -1,7 +1,9 @@
 import { apiClient } from "@/lib/api-client";
 import type { CakupanLaporan, KegiatanDokumentasi, PratinjauLaporan } from "./types";
 
-// Pemanggil endpoint pratinjau laporan dan perkiraan jumlah kegiatan
+/**
+ * Pemanggil endpoint pratinjau laporan dan perkiraan jumlah kegiatan
+ */
 
 export const paramsCakupan = (c: CakupanLaporan) => Object.fromEntries(Object.entries(c).filter(([, v]) => v));
 
@@ -15,7 +17,9 @@ export async function getDokumentasiLaporan(cakupan: CakupanLaporan) {
   return data;
 }
 
-// Mengunduh dokumentasi sebagai ZIP: semua pada cakupan, atau satu kegiatan bila kegiatanId diisi
+/**
+ * Mengunduh dokumentasi sebagai ZIP: semua pada cakupan, atau satu kegiatan bila kegiatanId diisi
+ */
 export async function unduhDokumentasiZip(cakupan: CakupanLaporan, kegiatanId?: number) {
   const res = await apiClient.get<Blob>("/ekspor/dokumentasi.zip", {
     params: { ...paramsCakupan(cakupan), ...(kegiatanId ? { kegiatan: kegiatanId } : {}) },

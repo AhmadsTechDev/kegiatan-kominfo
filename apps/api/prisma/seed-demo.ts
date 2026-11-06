@@ -1,7 +1,9 @@
-// Data DEMO untuk development: pegawai, akun berbagai role/status, dan kegiatan 3 bulan ke belakang + 3 minggu ke depan.
-// Semua nama, NIP, dan kegiatan di sini fiktif dan hanya untuk mencoba tampilan; JANGAN dijalankan di produksi.
-// Jalankan: bun run db:seed:demo (bisa diulang; data demo lama dihapus lalu dibuat ulang).
-// Prasyarat: bun run db:seed sudah dijalankan (bidang dan jenis kegiatan).
+/**
+ * Data DEMO untuk development: pegawai, akun berbagai role/status, dan kegiatan 3 bulan ke belakang + 3 minggu ke depan.
+ * Semua nama, NIP, dan kegiatan di sini fiktif dan hanya untuk mencoba tampilan; JANGAN dijalankan di produksi.
+ * Jalankan: bun run db:seed:demo (bisa diulang; data demo lama dihapus lalu dibuat ulang).
+ * Prasyarat: bun run db:seed sudah dijalankan (bidang dan jenis kegiatan).
+ */
 import { prisma } from "@/lib/prisma";
 import { hashSandi } from "@/lib/sandi";
 
@@ -10,12 +12,16 @@ if (process.env.NODE_ENV === "production") throw new Error("seed-demo dilarang d
 const DOMAIN = "demo.local";
 export const SANDI_DEMO = "sandidemo2026";
 
-// Acak dengan benih tetap agar hasilnya sama setiap kali dijalankan
+/**
+ * Acak dengan benih tetap agar hasilnya sama setiap kali dijalankan
+ */
 let benih = 20261102;
 const acak = () => ((benih = (benih * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
 const pilih = <T>(daftar: readonly T[]) => daftar[Math.floor(acak() * daftar.length)]!;
 
-// NIP 18 digit yang lolos aturan utils/nip.ts (lahir 1975-1995, TMT 22-26 tahun setelahnya)
+/**
+ * NIP 18 digit yang lolos aturan utils/nip.ts (lahir 1975-1995, TMT 22-26 tahun setelahnya)
+ */
 function nip(urut: number) {
   const lahir = 1975 + Math.floor(acak() * 21);
   const bln = String(1 + Math.floor(acak() * 12)).padStart(2, "0");
@@ -40,7 +46,9 @@ const ORANG: Orang[] = [
   { nama: "Rina Marlina", unit: "SUBBAG-UMPEG" },
 ];
 
-// Lokasi di Palembang (koordinat perkiraan untuk peta demo)
+/**
+ * Lokasi di Palembang (koordinat perkiraan untuk peta demo)
+ */
 const LOKASI = [
   { nama: "Kantor Diskominfo Kota Palembang", lat: -2.9776, lng: 104.7477 },
   { nama: "Kantor Wali Kota Palembang", lat: -2.9908, lng: 104.7566 },
@@ -106,13 +114,18 @@ for (const [i, o] of ORANG.entries()) {
       kontak: o.akun.status === "AKTIF" ? `0812-${String(1000 + i * 37).slice(-4)}-${String(2000 + i * 53).slice(-4)}` : null,
     },
   });
-  // Akun MENUNGGU tidak punya kata sandi (belum aktivasi); selainnya bisa login dengan SANDI_DEMO
+
+  /**
+   * Akun MENUNGGU tidak punya kata sandi (belum aktivasi); selainnya bisa login dengan SANDI_DEMO
+   */
   if (o.akun.status !== "MENUNGGU") await prisma.account.create({ data: { id: crypto.randomUUID(), accountId: id, providerId: "credential", userId: id, password: hash } });
   if (o.akun.role === "PEGAWAI" && o.akun.status === "AKTIF") pelaksana.push({ userId: id, pegawaiId: p.id, unitId });
   if (o.akun.role === "PIMPINAN" && pimpinanId === admin.id) pimpinanId = id;
 }
 
-// Kegiatan: 90 hari ke belakang sampai 21 hari ke depan, jam kerja WIB
+/**
+ * Kegiatan: 90 hari ke belakang sampai 21 hari ke depan, jam kerja WIB
+ */
 const sekarang = Date.now();
 let jumlah = 0;
 for (let i = 0; i < 48; i++) {

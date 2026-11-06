@@ -14,7 +14,9 @@ import { alamatDariTitik, type Tempat } from "../lib/geokode";
 import type { KegiatanFormValues } from "../schemas/kegiatan.schema";
 import { CariLokasi } from "./cari-lokasi";
 
-// Bagian formulir lokasi: cari tempat, klik peta, GPS, atau isi koordinat manual
+/**
+ * Bagian formulir lokasi: cari tempat, klik peta, GPS, atau isi koordinat manual
+ */
 
 const bulatkan = (n: number) => Math.round(n * 1e6) / 1e6;
 const kunci = (k: { lat: number; lng: number }) => `${k.lat},${k.lng}`;
@@ -63,6 +65,10 @@ export function LokasiKegiatan({ form }: { form: UseFormReturn<KegiatanFormValue
     setResetCari((n) => n + 1);
   };
 
+  /**
+   * Setiap kali titik di peta berubah, alamatnya dicari (reverse geocoding) setelah jeda 500 ms.
+   * Alamat yang pernah dicari disimpan di `dikenal` (cache sederhana) agar titik yang sama tidak dicari dua kali.
+   */
   const kunciTitik = titik ? kunci(titik) : null;
   useEffect(() => {
     if (!titik || !kunciTitik) return;
@@ -86,6 +92,10 @@ export function LokasiKegiatan({ form }: { form: UseFormReturn<KegiatanFormValue
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kunciTitik]);
 
+  /**
+   * Geolocation API: peramban meminta izin pengguna lalu memberikan koordinat perangkat.
+   * Hasilnya datang lewat callback: fungsi pertama bila berhasil, kedua bila ditolak atau gagal (batas 10 detik).
+   */
   const gunakanLokasiSaya = () => {
     if (!("geolocation" in navigator)) return toast.error("Peramban ini tidak mendukung lokasi perangkat.");
     setMencariPerangkat(true);

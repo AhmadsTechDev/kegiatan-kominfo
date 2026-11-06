@@ -13,7 +13,9 @@ import { usePeriksaKegiatan } from "../hooks/use-kegiatan";
 import type { StatusPelaksanaan } from "@/components/shared/status-badge";
 import type { StatusPemeriksaanKegiatan } from "../types";
 
-// Tombol periksa untuk pimpinan/admin: tandai perlu perbaikan dengan catatan wajib
+/**
+ * Tombol periksa untuk pimpinan/admin: tandai perlu perbaikan dengan catatan wajib
+ */
 
 type Props = {
   kegiatan: { id: number; judul: string; statusPemeriksaan: StatusPemeriksaanKegiatan; statusPelaksanaan: StatusPelaksanaan };
@@ -43,7 +45,9 @@ export function PeriksaAksi({ kegiatan, ringkas, className }: Props) {
     );
   };
 
-  // Kegiatan yang belum dimulai atau dibatalkan belum punya dokumentasi dan hasil, jadi tidak diperiksa (backend juga menolak)
+  /**
+   * Kegiatan yang belum dimulai atau dibatalkan belum punya dokumentasi dan hasil, jadi tidak diperiksa (backend juga menolak)
+   */
   if (kegiatan.statusPelaksanaan !== "berlangsung" && kegiatan.statusPelaksanaan !== "selesai") return null;
 
   const ukuran = ringkas ? "h-8 px-2.5 text-xs pointer-coarse:h-11" : "h-10 pointer-coarse:min-h-11";

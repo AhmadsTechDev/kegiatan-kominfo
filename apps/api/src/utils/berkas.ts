@@ -16,13 +16,19 @@ const JENIS = {
   pdf: { mime: "application/pdf", ext: "pdf", foto: false },
 } satisfies Record<string, Jenis>;
 
-// Mengecek apakah byte di posisi tertentu sama dengan tanda yang dicari
+/**
+ * Mengecek apakah byte di posisi tertentu sama dengan tanda yang dicari
+ */
 const cocok = (b: Uint8Array, posisi: number, tanda: number[]) => tanda.every((x, i) => b[posisi + i] === x);
 
-// Mengubah teks menjadi deretan kode ASCII
+/**
+ * Mengubah teks menjadi deretan kode ASCII
+ */
 const ascii = (teks: string) => [...teks].map((c) => c.charCodeAt(0));
 
-// Mengenali jenis berkas dari isi byte awalnya (magic bytes), bukan dari nama berkas
+/**
+ * Mengenali jenis berkas dari isi byte awalnya (magic bytes), bukan dari nama berkas
+ */
 export function kenaliJenis(b: Uint8Array): Jenis | null {
   if (cocok(b, 0, [0xff, 0xd8, 0xff])) return JENIS.jpeg;
   if (cocok(b, 0, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return JENIS.png;
@@ -31,14 +37,18 @@ export function kenaliJenis(b: Uint8Array): Jenis | null {
   return null;
 }
 
-// Membersihkan nama berkas asli dari path dan karakter kontrol
+/**
+ * Membersihkan nama berkas asli dari path dan karakter kontrol
+ */
 export function bersihkanNama(nama: string) {
   const dasar = nama.split(/[\\/]/).pop() ?? "";
   const bersih = dasar.replace(/[\u0000-\u001f\u007f]/g, "").trim();
   return (bersih || "berkas").slice(0, 255);
 }
 
-// Memeriksa dan menyiapkan berkas dokumentasi: cek ukuran & jenis, kompres foto, hitung SHA-256
+/**
+ * Memeriksa dan menyiapkan berkas dokumentasi: cek ukuran & jenis, kompres foto, hitung SHA-256
+ */
 export async function prosesBerkas(berkas: File) {
   if (berkas.size > UKURAN_MAKS_DOKUMENTASI) throw PayloadTooLarge("Ukuran maksimal 20 MB");
   const asli = new Uint8Array(await berkas.arrayBuffer());
@@ -67,7 +77,9 @@ export async function prosesBerkas(berkas: File) {
   return { bytes, mime: jenis.mime, ext: jenis.ext, sha256, namaAsli: bersihkanNama(berkas.name) };
 }
 
-// Menyiapkan foto profil: cek jenis, potong persegi 320x320, ubah ke WebP (EXIF/GPS ikut terbuang)
+/**
+ * Menyiapkan foto profil: cek jenis, potong persegi 320x320, ubah ke WebP (EXIF/GPS ikut terbuang)
+ */
 export async function prosesFotoProfil(berkas: File) {
   if (berkas.size > UKURAN_MAKS_FOTO) throw PayloadTooLarge("Ukuran foto maksimal 2 MB");
   const asli = new Uint8Array(await berkas.arrayBuffer());
@@ -85,7 +97,9 @@ export async function prosesFotoProfil(berkas: File) {
   }
 }
 
-// Menyusun header Content-Disposition yang aman untuk nama berkas berhuruf non-ASCII
+/**
+ * Menyusun header Content-Disposition yang aman untuk nama berkas berhuruf non-ASCII
+ */
 export function disposisi(jenis: "inline" | "attachment", nama: string) {
   const asciiNama = nama.replace(/[^\x20-\x7e]/g, "_").replace(/["\\]/g, "_");
   return `${jenis}; filename="${asciiNama}"; filename*=UTF-8''${encodeURIComponent(nama)}`;

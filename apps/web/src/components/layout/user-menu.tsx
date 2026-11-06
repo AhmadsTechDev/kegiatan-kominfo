@@ -20,7 +20,9 @@ import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useProfil } from "@/features/auth/hooks/use-profil";
 import { cn } from "@/lib/utils";
 
-// Menu pengguna aktif: profil, bidang, dan tombol keluar
+/**
+ * Menu pengguna aktif: profil, bidang, dan tombol keluar
+ */
 
 function useUnitSaya() {
   const { data } = useProfil();

@@ -24,24 +24,49 @@ import { AuditLogService } from "./audit-log.service";
 import { NotifikasiService } from "./notifikasi.service";
 import { ReferensiService } from "./referensi.service";
 
+/**
+ * Service kegiatan: pusat aturan bisnis kegiatan (siapa boleh melihat/mengubah, validasi isian, audit log).
+ * Dipanggil oleh KegiatanController; fungsi hak aksesnya juga dipakai ulang oleh service lain
+ * (dokumentasi, rekap, ekspor, kalender) agar aturannya hanya ditulis di satu tempat.
+ *
+ * Tiga data yang menentukan "kepemilikan" kegiatan: bidangnya, siapa pembuatnya, dan siapa penanggung jawabnya.
+ */
 type PemilikKegiatan = { bidangId: number; dibuatOleh: string; penanggungJawabId: number };
 
+/**
+ * Batas tanggal sangat awal/akhir, dipakai bila pengguna hanya mengisi salah satu dari tanggal awal atau akhir.
+ */
 const AWAL_ZAMAN = new Date(Date.UTC(1000, 0, 1));
 const AKHIR_ZAMAN = new Date(Date.UTC(9999, 11, 31));
 
-// Merapikan teks opsional: dipangkas, dan teks kosong menjadi null
+/**
+ * Merapikan teks opsional: dipangkas, dan teks kosong menjadi null
+ */
 const teks = (nilai: string | null | undefined) => nilai?.trim() || null;
 
-// ---------- Aturan hak akses kegiatan (dipakai juga oleh modul lain) ----------
+/**
+ * ---------- Aturan hak akses kegiatan (dipakai juga oleh modul lain) ----------
+ */
 
-// Hanya PEGAWAI yang menulis kegiatan, dan hanya kegiatan yang dibuatnya atau yang dia tanggung jawabi.
-// ADMIN dan PIMPINAN membaca dan memeriksa, tidak mengubah
+/**
+ * Hanya PEGAWAI yang menulis kegiatan, dan hanya kegiatan yang dibuatnya atau yang dia tanggung jawabi.
+ * ADMIN dan PIMPINAN membaca dan memeriksa, tidak mengubah
+ */
 export function bisaUbah(aktor: Aktor, k: { dibuatOleh: string; penanggungJawabId: number }) {
   if (aktor.role !== "PEGAWAI") return false;
   return k.dibuatOleh === aktor.id || (aktor.pegawaiId != null && k.penanggungJawabId === aktor.pegawaiId);
 }
 
-// Lingkup baca PEGAWAI (bidangnya + turunannya, dan kegiatan miliknya); PIMPINAN/ADMIN melihat semua (undefined)
+/**
+ * Lingkup baca PEGAWAI (bidangnya + turunannya, dan kegiatan miliknya); PIMPINAN/ADMIN melihat semua (undefined)
+ *
+ * Menentukan kegiatan mana saja yang boleh DIBACA oleh aktor.
+ * - PIMPINAN/ADMIN: mengembalikan undefined, artinya "tanpa batas" (semua kegiatan).
+ * - PEGAWAI: kegiatan di bidangnya beserta sub bidang di bawahnya, ditambah kegiatan miliknya sendiri.
+ * Fungsi ini `async` karena perlu membaca data pegawai dan daftar sub bidang dari database.
+ * @param aktor pengguna yang sedang login
+ * @returns batas lingkup baca, atau undefined bila boleh membaca semua
+ */
 export async function lingkupBaca(aktor: Aktor): Promise<LingkupBaca | undefined> {
   if (aktor.role !== "PEGAWAI") return undefined;
   const p = aktor.pegawaiId == null ? undefined : await ReferensiRepository.findPegawaiAktif(aktor.pegawaiId);
@@ -51,25 +76,40 @@ export async function lingkupBaca(aktor: Aktor): Promise<LingkupBaca | undefined
   };
 }
 
-// Apakah kegiatan masuk lingkup baca; undefined (PIMPINAN/ADMIN) selalu boleh
+/**
+ * Apakah kegiatan masuk lingkup baca; undefined (PIMPINAN/ADMIN) selalu boleh
+ */
 export function dalamLingkup(lingkup: LingkupBaca | undefined, k: PemilikKegiatan) {
   if (!lingkup) return true;
   const { userId, pegawaiId } = lingkup.milik;
   return lingkup.unitIds.includes(k.bidangId) || k.dibuatOleh === userId || (pegawaiId != null && k.penanggungJawabId === pegawaiId);
 }
 
-// Memastikan aktor boleh menulis: di luar lingkup dianggap tidak ada (404), di dalam lingkup tapi bukan miliknya 403
+/**
+ * Memastikan aktor boleh menulis: di luar lingkup dianggap tidak ada (404), di dalam lingkup tapi bukan miliknya 403
+ *
+ * Menolak permintaan tulis yang tidak berhak dengan melempar galat.
+ * Kegiatan di luar lingkup baca dijawab 404 (seolah tidak ada) supaya orang tidak bisa menebak
+ * keberadaan kegiatan bidang lain; yang terlihat tetapi bukan miliknya dijawab 403.
+ * Pemanggil cukup `await pastikanBisaTulis(...)`: bila tidak ada galat, berarti boleh lanjut.
+ */
 export async function pastikanBisaTulis(aktor: Aktor, k: PemilikKegiatan, pesan: string, pesanTidakAda = "Kegiatan tidak ditemukan") {
   if (!dalamLingkup(await lingkupBaca(aktor), k)) throw NotFound(pesanTidakAda);
   if (!bisaUbah(aktor, k)) throw Forbidden(pesan);
 }
 
-// Pemeriksaan hanya untuk kegiatan yang sudah berjalan atau selesai: sebelum itu belum ada dokumentasi dan hasil
+/**
+ * Pemeriksaan hanya untuk kegiatan yang sudah berjalan atau selesai: sebelum itu belum ada dokumentasi dan hasil
+ */
 export const sudahTerlaksana = (status: string) => status === "berlangsung" || status === "selesai";
 
-// ---------- Filter dari query string ----------
+/**
+ * ---------- Filter dari query string ----------
+ */
 
-// Rentang waktu dari query: dari/sampai (tanggal) lebih diutamakan daripada periode (bulan)
+/**
+ * Rentang waktu dari query: dari/sampai (tanggal) lebih diutamakan daripada periode (bulan)
+ */
 export function rentangDariQuery(query: Pick<QueryFilter, "periode" | "dari" | "sampai">): Rentang | undefined {
   if (query.dari || query.sampai) {
     if (query.dari && query.sampai && query.dari > query.sampai) {
@@ -83,7 +123,12 @@ export function rentangDariQuery(query: Pick<QueryFilter, "periode" | "dari" | "
   return query.periode ? rentangPeriode(parsePeriode(query.periode)) : undefined;
 }
 
-// Mengubah query string menjadi FilterDaftar untuk repository (termasuk lingkup baca aktor)
+/**
+ * Mengubah query string menjadi FilterDaftar untuk repository (termasuk lingkup baca aktor)
+ *
+ * Query string dari URL (mis. ?unit=2&status=selesai) diterjemahkan menjadi filter yang dimengerti repository.
+ * Filter bidang diperluas ke sub bidangnya (unitDanTurunan), sehingga memilih satu bidang ikut menampilkan sub bidangnya.
+ */
 export async function filterDariQuery(query: QueryFilter, aktor: Aktor): Promise<FilterDaftar> {
   return {
     lingkup: await lingkupBaca(aktor),
@@ -97,9 +142,19 @@ export async function filterDariQuery(query: QueryFilter, aktor: Aktor): Promise
   };
 }
 
-// ---------- Validasi isian ----------
+/**
+ * ---------- Validasi isian ----------
+ */
 
-// Memeriksa isian kegiatan dan mengubahnya menjadi nilai kolom; bidang diambil dari penanggung jawab
+/**
+ * Memeriksa isian kegiatan dan mengubahnya menjadi nilai kolom; bidang diambil dari penanggung jawab
+ *
+ * Memeriksa isian form kegiatan lalu mengubahnya menjadi nilai kolom database.
+ * Semua kesalahan dikumpulkan dulu di array `galat`, baru dilempar sekaligus, sehingga pengguna
+ * melihat semua kolom yang salah dalam satu kali kirim (bukan satu per satu).
+ * Bidang kegiatan tidak diambil dari form, tetapi dari bidang penanggung jawabnya, agar tidak bisa dipalsukan.
+ * @throws Unprocessable (422) berisi daftar { field, message } bila ada isian yang salah
+ */
 async function validasiIsi(isi: Omit<IsiKegiatan, "drafId">): Promise<NilaiKegiatan> {
   const galat: GalatField[] = [];
   const judul = isi.judul.trim();
@@ -113,6 +168,10 @@ async function validasiIsi(isi: Omit<IsiKegiatan, "drafId">): Promise<NilaiKegia
   const lng = isi.lng ?? null;
   if ((lat == null) !== (lng == null)) galat.push({ field: "lat", message: "Lintang dan bujur harus diisi berpasangan" });
 
+  /**
+   * KONSEP Promise.all: dua query dijalankan bersamaan (paralel), lalu ditunggu keduanya selesai.
+   * Lebih cepat daripada menunggu query pertama selesai baru menjalankan yang kedua.
+   */
   const [jenis, pj] = await Promise.all([
     ReferensiRepository.findJenisAktif(isi.jenisId),
     ReferensiRepository.findPegawaiAktif(isi.penanggungJawabId),
@@ -133,13 +192,19 @@ async function validasiIsi(isi: Omit<IsiKegiatan, "drafId">): Promise<NilaiKegia
     tglMulai: mulai,
     tglSelesai: selesai,
     lokasiNama: teks(isi.lokasiNama),
+
+    /**
+     * Kolom koordinat bertipe Decimal, jadi angkanya dikirim sebagai teks berisi 6 angka di belakang koma (ketelitian sekitar 10 cm) agar tidak ada galat pembulatan angka desimal.
+     */
     lat: lat == null ? null : lat.toFixed(6),
     lng: lng == null ? null : lng.toFixed(6),
     refEksternal: teks(isi.refEksternal),
   };
 }
 
-// PEGAWAI hanya boleh mencatat kegiatan dengan dirinya sendiri sebagai penanggung jawab
+/**
+ * PEGAWAI hanya boleh mencatat kegiatan dengan dirinya sendiri sebagai penanggung jawab
+ */
 function cekPenanggungJawab(aktor: Aktor, penanggungJawabId: number, lamaId?: number) {
   if (aktor.role !== "PEGAWAI") return;
   if (aktor.pegawaiId == null) throw Unprocessable("Akun Anda belum tertaut ke data pegawai. Hubungi administrator.");
@@ -150,7 +215,16 @@ function cekPenanggungJawab(aktor: Aktor, penanggungJawabId: number, lamaId?: nu
   }
 }
 
-// Mengunci kegiatan untuk diubah, memeriksa hak akses, dan (opsional) mencocokkan versinya
+/**
+ * Mengunci kegiatan untuk diubah, memeriksa hak akses, dan (opsional) mencocokkan versinya
+ *
+ * Mengambil kegiatan yang akan diubah, sekaligus MENGUNCI barisnya selama transaksi berjalan.
+ * Kunci baris (row lock) membuat permintaan lain yang mau mengubah kegiatan yang sama harus menunggu,
+ * jadi dua orang tidak bisa menimpa perubahan satu sama lain di waktu yang persis sama.
+ * KONSEP optimistic locking: `versi` adalah updatedAt yang dilihat pengguna saat membuka form.
+ * Bila berbeda dengan yang tersimpan, berarti sudah ada yang mengubah lebih dulu, maka dijawab 409 Conflict
+ * dan pengguna diminta memuat ulang, daripada perubahan orang lain tertimpa diam-diam.
+ */
 async function muatUntukTulis(id: number, aktor: Aktor, tx: Db, versi?: string) {
   const baris = await KegiatanRepository.kunciAktif(id, tx);
   if (!baris) throw NotFound("Kegiatan tidak ditemukan");
@@ -159,8 +233,14 @@ async function muatUntukTulis(id: number, aktor: Aktor, tx: Db, versi?: string) 
   return baris;
 }
 
+/**
+ * Kumpulan fungsi publik service kegiatan. Setiap fungsi tulis memakai prisma.$transaction supaya
+ * perubahan data dan catatan audit log tersimpan bersamaan: bila salah satu gagal, keduanya dibatalkan.
+ */
 export const KegiatanService = {
-  // Daftar kegiatan dengan filter; setiap item diberi tanda `bisaUbah` untuk aktor
+  /**
+   * Daftar kegiatan dengan filter; setiap item diberi tanda `bisaUbah` untuk aktor
+   */
   async daftar(query: DaftarQuery, aktor: Aktor, sekarang = new Date()) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
@@ -170,6 +250,9 @@ export const KegiatanService = {
     };
     const { items, total } = await KegiatanRepository.daftar(filter, sekarang, { page, pageSize });
     return {
+      /**
+       * Kolom dibuatOleh dipisahkan dari data yang dikirim, lalu dipakai untuk menghitung tanda bisaUbah per baris.
+       */
       items: items.map(({ dibuatOleh, ...k }) => ({ ...k, bisaUbah: bisaUbah(aktor, { dibuatOleh, penanggungJawabId: k.penanggungJawab.id }) })),
       total,
       page,
@@ -177,12 +260,17 @@ export const KegiatanService = {
     };
   },
 
-  // Detail kegiatan lengkap: dokumentasi, riwayat, catatan pemeriksaan, dan hak aktor
+  /**
+   * Detail kegiatan lengkap: dokumentasi, riwayat, catatan pemeriksaan, dan hak aktor
+   */
   async detail(id: number, aktor: Aktor, sekarang = new Date()) {
     const k = await KegiatanRepository.detail(id, sekarang);
     const pemilik = k && { bidangId: k.bidang.id, dibuatOleh: k.pembuat.id, penanggungJawabId: k.penanggungJawab.id };
     if (!pemilik || !dalamLingkup(await lingkupBaca(aktor), pemilik)) throw NotFound("Kegiatan tidak ditemukan");
 
+    /**
+     * Empat data pelengkap detail dibaca paralel. Tanda bisa* memberi tahu frontend tombol apa yang boleh ditampilkan.
+     */
     const [dokumentasi, pengubahTerakhir, riwayat, catatanPemeriksaan] = await Promise.all([
       KegiatanRepository.daftarDokumentasi(id),
       AuditLogRepository.pengubahTerakhirKegiatan(id),
@@ -197,14 +285,20 @@ export const KegiatanService = {
       catatanPemeriksaan,
       bisaPeriksa: (PEMERIKSA as readonly string[]).includes(aktor.role) && sudahTerlaksana(k.statusPelaksanaan),
       bisaUbah: bisaUbah(aktor, pemilik),
+      bisaHapusDokumentasi: aktor.role === "ADMIN" || bisaUbah(aktor, pemilik),
     };
   },
 
-  // Mencatat kegiatan baru; bila berasal dari draf, drafnya ikut dihapus
+  /**
+   * Mencatat kegiatan baru; bila berasal dari draf, drafnya ikut dihapus
+   */
   async buat({ drafId, ...isi }: IsiKegiatan, aktor: Aktor, meta: MetaRequest) {
     cekPenanggungJawab(aktor, isi.penanggungJawabId);
     const nilai = { ...(await validasiIsi(isi)), dibuatOleh: aktor.id };
     return prisma.$transaction(async (tx) => {
+      /**
+       * Bila kegiatan dikirim dari draf, draf milik aktor itu dihapus di transaksi yang sama; 0 baris terhapus berarti drafnya tidak ada.
+       */
       if (drafId && (await DrafKegiatanRepository.hapus(drafId, aktor.id, tx)) === 0) throw NotFound("Draf tidak ditemukan");
       const id = await KegiatanRepository.insert(nilai, tx);
       const baru = await KegiatanRepository.findById(id, tx);
@@ -213,13 +307,20 @@ export const KegiatanService = {
     });
   },
 
-  // Mengubah kegiatan; ditolak 409 bila versi (expectedUpdatedAt) sudah berbeda. Status pemeriksaan kembali "terkirim"
+  /**
+   * Mengubah kegiatan; ditolak 409 bila versi (expectedUpdatedAt) sudah berbeda. Status pemeriksaan kembali "terkirim"
+   */
   async ubah(id: number, isi: UbahKegiatan, aktor: Aktor, meta: MetaRequest) {
     const { expectedUpdatedAt, ...data } = isi;
     const nilai = await validasiIsi(data);
     return prisma.$transaction(async (tx) => {
       const sebelum = await muatUntukTulis(id, aktor, tx, expectedUpdatedAt);
       cekPenanggungJawab(aktor, nilai.penanggungJawabId, sebelum.penanggungJawabId);
+
+      /**
+       * updateDenganVersi hanya mengubah baris bila updatedAt-nya masih sama (lapis kedua optimistic locking).
+       * Setelah diubah, tanda "perlu perbaikan" dari pimpinan dianggap sudah ditanggapi, jadi kembali "terkirim".
+       */
       const berubah = await KegiatanRepository.updateDenganVersi(id, sebelum.updatedAt, { ...nilai, statusPemeriksaan: "terkirim" }, tx);
       if (berubah === 0) throw Conflict();
       const sesudah = await KegiatanRepository.findById(id, tx);
@@ -228,12 +329,18 @@ export const KegiatanService = {
     });
   },
 
-  // Menyelesaikan kegiatan yang sedang berlangsung: waktu selesai menjadi sekarang, sehingga statusnya langsung "selesai".
-  // Status tetap dihitung dari waktu, jadi tidak ada status yang bisa tidak sinkron dengan waktunya
+  /**
+   * Menyelesaikan kegiatan yang sedang berlangsung: waktu selesai menjadi sekarang, sehingga statusnya langsung "selesai".
+   * Status tetap dihitung dari waktu, jadi tidak ada status yang bisa tidak sinkron dengan waktunya
+   */
   async selesaikan(id: number, isi: SelesaikanKegiatan, aktor: Aktor, meta: MetaRequest) {
     return prisma.$transaction(async (tx) => {
       const sebelum = await muatUntukTulis(id, aktor, tx, isi.expectedUpdatedAt);
       const sekarang = new Date();
+
+      /**
+       * Status pelaksanaan tidak disimpan di database, tetapi dihitung dari waktu mulai/selesai dibanding waktu sekarang.
+       */
       const status = hitungStatus(sebelum, sekarang);
       if (status !== "berlangsung") {
         throw Unprocessable(
@@ -252,9 +359,11 @@ export const KegiatanService = {
     });
   },
 
-  // Pimpinan atau admin menandai kegiatan "perlu_perbaikan" dengan catatan wajib.
-  // Status pemeriksaan terpisah dari status pelaksanaan.
-  // Pegawai pembuat dan penanggung jawab mendapat notifikasi dalam aplikasi
+  /**
+   * Pimpinan atau admin menandai kegiatan "perlu_perbaikan" dengan catatan wajib.
+   * Status pemeriksaan terpisah dari status pelaksanaan.
+   * Pegawai pembuat dan penanggung jawab mendapat notifikasi dalam aplikasi
+   */
   async periksa(id: number, isi: PeriksaKegiatan, aktor: Aktor, meta: MetaRequest) {
     const status = "perlu_perbaikan";
     const catatan = isi.catatan.trim();
@@ -270,6 +379,10 @@ export const KegiatanService = {
       }
       await KegiatanRepository.setPemeriksaan(id, status, sebelum.updatedAt, tx);
       await KegiatanRepository.insertCatatan({ kegiatanId: id, pemeriksaId: aktor.id, status, isi: catatan }, tx);
+
+      /**
+       * Notifikasi ikut masuk transaksi: bila pencatatan pemeriksaan gagal, notifikasinya juga tidak terkirim.
+       */
       await NotifikasiService.perluPerbaikan({ ...sebelum, catatan, pemeriksaId: aktor.id }, tx);
       await AuditLogService.catat(
         {
@@ -287,7 +400,9 @@ export const KegiatanService = {
     });
   },
 
-  // Membatalkan kegiatan dengan alasan (kegiatan tetap tersimpan, statusnya "dibatalkan")
+  /**
+   * Membatalkan kegiatan dengan alasan (kegiatan tetap tersimpan, statusnya "dibatalkan")
+   */
   async batalkan(id: number, isi: BatalkanKegiatan, aktor: Aktor, meta: MetaRequest) {
     const alasan = isi.alasan.trim();
     if (!alasan) throw Unprocessable("Alasan pembatalan wajib diisi", [{ field: "alasan", message: "Alasan pembatalan wajib diisi" }]);
@@ -303,10 +418,17 @@ export const KegiatanService = {
     });
   },
 
-  // Menghapus kegiatan secara lunak (tidak muncul lagi di daftar/rekap)
+  /**
+   * Menghapus kegiatan secara lunak (tidak muncul lagi di daftar/rekap)
+   */
   async hapus(id: number, aktor: Aktor, meta: MetaRequest) {
     await prisma.$transaction(async (tx) => {
       const sebelum = await muatUntukTulis(id, aktor, tx);
+
+      /**
+       * KONSEP soft delete: data tidak benar-benar dihapus dari database, hanya diberi tanda waktu hapus.
+       * Kegiatan itu tidak tampil lagi di aplikasi, tetapi jejaknya tetap ada untuk audit.
+       */
       await KegiatanRepository.softDelete(id, tx);
       await AuditLogService.catat({ aktorId: aktor.id, aksi: "hapus", entitas: "kegiatan", entitasId: id, sebelum, ...meta }, tx);
     });

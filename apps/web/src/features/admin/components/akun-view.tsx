@@ -25,7 +25,9 @@ import { AkunFormDialog, dariAdmin, ItemAksiAkun, useAksiAkun, type AkunRingkas,
 import { BelumPunyaAkun } from "./akun-belum-tab";
 import { PermintaanTab } from "./permintaan-tab";
 
-// Manajemen akun: daftar, filter, buat akun, aksi akun, dan permintaan akses
+/**
+ * Manajemen akun: daftar, filter, buat akun, aksi akun, dan permintaan akses
+ */
 
 const SEMUA = "semua";
 const ROLE: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
@@ -54,7 +56,9 @@ function TombolAksi({ akun, idSaya, buka }: { akun: AkunRingkas; idSaya?: string
   );
 }
 
-// Tampilan kartu di bawah md (DESIGN.md bagian 10): kolom aksi tidak tersembunyi di balik gulir menyamping
+/**
+ * Tampilan kartu di bawah md (DESIGN.md bagian 10): kolom aksi tidak tersembunyi di balik gulir menyamping
+ */
 function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: Buka }) {
   return (
     <div className="flex items-start gap-3 rounded-xl border bg-card p-3">
@@ -84,11 +88,16 @@ function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: B
   );
 }
 
-// nonaktif: tab Nonaktif memuat khusus akun nonaktif; tab Akun menyembunyikannya agar tidak mengganggu tabel utama
+/**
+ * nonaktif: tab Nonaktif memuat khusus akun nonaktif; tab Akun menyembunyikannya agar tidak mengganggu tabel utama
+ */
 function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
   const { user } = useCurrentUser();
   const idSaya = user?.id;
-  // ?status=... dipakai tautan dari dashboard (mis. akun menunggu aktivasi)
+
+  /**
+   * ?status=... dipakai tautan dari dashboard (mis. akun menunggu aktivasi)
+   */
   const statusAwal = useSearchParams().get("status");
   const [filter, setFilterState] = useState<FilterAkun>(() => ({
     ...FILTER_AWAL,

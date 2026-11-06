@@ -12,7 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
-// Dialog konfirmasi sebelum tindakan penting atau berbahaya
+/**
+ * Dialog konfirmasi sebelum tindakan penting atau berbahaya
+ */
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -23,11 +25,18 @@ type ConfirmDialogProps = {
   pendingLabel?: string;
   onConfirm: () => void;
   pending?: boolean;
-  // "default" untuk aksi yang tidak merusak (mis. kirim ulang undangan)
+
+  /**
+   * "default" untuk aksi yang tidak merusak (mis. kirim ulang undangan)
+   */
   confirmVariant?: "destructive" | "default";
   children?: React.ReactNode;
 };
 
+/**
+ * Dialog konfirmasi standar untuk aksi penting (hapus, nonaktifkan, kirim ulang). Semua konfirmasi di aplikasi
+ * memakai komponen ini agar tampilan dan perilakunya seragam: tombol nonaktif dan label berubah selama proses.
+ */
 export function ConfirmDialog({
   open,
   onOpenChange,

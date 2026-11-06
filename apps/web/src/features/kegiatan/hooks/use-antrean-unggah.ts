@@ -8,7 +8,9 @@ import { gantiDokumentasi, unggahDokumentasi } from "../api/dokumentasi";
 import { JENIS_FOTO, kompresGambar } from "../lib/kompres-gambar";
 import { kegiatanKeys } from "./use-kegiatan";
 
-// Antrean unggah dokumentasi: validasi, kompresi, kuota, dan progres
+/**
+ * Antrean unggah dokumentasi: validasi, kompresi, kuota, dan progres
+ */
 
 export const UKURAN_MAKS = 20 * 1024 * 1024;
 export const JUMLAH_MAKS = 10;
@@ -22,6 +24,13 @@ export function periksaBerkas(f: File): string | null {
 
 const idAcak = () => crypto.randomUUID();
 
+/**
+ * Menyimpan daftar berkas yang dipilih beserta statusnya (menunggu, mengunggah, berhasil, gagal) dan progresnya.
+ * Kuota 10 berkas per kegiatan dihitung di sini juga, supaya pengguna langsung tahu sebelum mengunggah;
+ * backend tetap memeriksanya ulang.
+ * URL.createObjectURL membuat alamat sementara untuk pratinjau foto dan harus dilepas (revokeObjectURL) agar memori tidak bocor.
+ * @param terpakai jumlah berkas yang sudah tersimpan di kegiatan
+ */
 export function useAntreanUnggah(terpakai = 0) {
   const queryClient = useQueryClient();
   const [items, setItems] = useState<ItemUnggah[]>([]);
@@ -73,6 +82,10 @@ export function useAntreanUnggah(terpakai = 0) {
     [],
   );
 
+  /**
+   * Berkas diunggah satu per satu (for...of dengan await), bukan bersamaan, agar koneksi HP tidak kewalahan
+   * dan urutan progres mudah diikuti. Satu berkas gagal tidak menghentikan berkas berikutnya.
+   */
   const unggah = async (kegiatanId: number, daftar: ItemUnggah[] = items) => {
     const antre = daftar.filter((it) => it.status === "menunggu");
     let berhasil = 0;

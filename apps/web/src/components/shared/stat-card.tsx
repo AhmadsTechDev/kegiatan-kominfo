@@ -6,7 +6,9 @@ import { useCountUp } from "@/hooks/use-count-up";
 import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-// Kartu angka ringkasan (KPI) dengan ikon dan animasi angka
+/**
+ * Kartu angka ringkasan (KPI) dengan ikon dan animasi angka
+ */
 
 const NADA = {
   primary: "bg-secondary text-primary",

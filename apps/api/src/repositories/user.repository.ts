@@ -5,7 +5,9 @@ import { kondisiStatus } from "@/utils/status-akun";
 
 const KREDENSIAL = { where: { providerId: "credential" }, select: { id: true } } as const;
 
-// Kolom akun yang ditampilkan dan dicatat di audit log
+/**
+ * Kolom akun yang ditampilkan dan dicatat di audit log
+ */
 const PILIH_AKUN = {
   id: true,
   name: true,
@@ -21,12 +23,16 @@ const PILIH_AKUN = {
   accounts: KREDENSIAL,
 } satisfies Prisma.UserSelect;
 
-// Mengganti daftar akun kredensial dengan penanda punyaKredensial
+/**
+ * Mengganti daftar akun kredensial dengan penanda punyaKredensial
+ */
 function ringkas<T extends { accounts: unknown[] }>({ accounts, ...a }: T) {
   return { ...a, punyaKredensial: accounts.length > 0 };
 }
 
-// Menyusun `where` Prisma dari filter daftar akun
+/**
+ * Menyusun `where` Prisma dari filter daftar akun
+ */
 function kondisi(f: FilterAkun): Prisma.UserWhereInput {
   const cari = f.q ? ({ contains: f.q, mode: "insensitive" } as const) : undefined;
   return {
@@ -40,13 +46,17 @@ function kondisi(f: FilterAkun): Prisma.UserWhereInput {
 }
 
 export const UserRepository = {
-  // Jumlah akun dengan status tertentu
+  /**
+   * Jumlah akun dengan status tertentu
+   */
   hitungStatus(status: StatusAkun) {
     return prisma.user.count({ where: kondisiStatus(status) });
   },
 
-  // Daftar akun dengan filter dan paginasi, beserta pegawai tertaut dan status kredensialnya.
-  // Akun yang menunggu aktivasi selalu di atas (admin perlu memantaunya), lalu urut nama; keduanya dipaginasi sebagai satu daftar
+  /**
+   * Daftar akun dengan filter dan paginasi, beserta pegawai tertaut dan status kredensialnya.
+   * Akun yang menunggu aktivasi selalu di atas (admin perlu memantaunya), lalu urut nama; keduanya dipaginasi sebagai satu daftar
+   */
   async daftar(f: FilterAkun, halaman: Halaman) {
     const where = kondisi(f);
     const menunggu = kondisiStatus("MENUNGGU_AKTIVASI");
@@ -96,13 +106,17 @@ export const UserRepository = {
     return { items, total };
   },
 
-  // Satu akun berdasarkan id
+  /**
+   * Satu akun berdasarkan id
+   */
   async byId(id: string, db: Db = prisma) {
     const a = await db.user.findUnique({ where: { id }, select: PILIH_AKUN });
     return a ? ringkas(a) : undefined;
   },
 
-  // Detail akun untuk halaman detail admin: data akun, pegawai beserta bidangnya, dan sesi yang masih berlaku
+  /**
+   * Detail akun untuk halaman detail admin: data akun, pegawai beserta bidangnya, dan sesi yang masih berlaku
+   */
   async detail(id: string, sekarang = new Date()) {
     const a = await prisma.user.findUnique({
       where: { id },
@@ -130,22 +144,30 @@ export const UserRepository = {
     return a ? ringkas(a) : undefined;
   },
 
-  // Membuat akun tanpa kata sandi (status MENUNGGU_AKTIVASI sampai pemiliknya mengaktifkan lewat email)
+  /**
+   * Membuat akun tanpa kata sandi (status MENUNGGU_AKTIVASI sampai pemiliknya mengaktifkan lewat email)
+   */
   async insert(nilai: { id: string; name: string; email: string; role: Role; pegawaiId: number | null }, tx: Db) {
     await tx.user.create({ data: { ...nilai, emailVerified: false } });
   },
 
-  // Mengubah kolom akun
+  /**
+   * Mengubah kolom akun
+   */
   async update(id: string, data: Prisma.UserUncheckedUpdateInput, tx: Db) {
     await tx.user.update({ where: { id }, data });
   },
 
-  // Menghapus akun (sesi, kredensial, dan draf ikut terhapus lewat ON DELETE CASCADE)
+  /**
+   * Menghapus akun (sesi, kredensial, dan draf ikut terhapus lewat ON DELETE CASCADE)
+   */
   async hapus(id: string, tx: Db) {
     await tx.user.delete({ where: { id } });
   },
 
-  // Akun lain (selain kecualiUserId) yang sudah tertaut ke pegawai ini
+  /**
+   * Akun lain (selain kecualiUserId) yang sudah tertaut ke pegawai ini
+   */
   async akunLainUntukPegawai(pegawaiId: number, kecualiUserId?: string) {
     return (
       (await prisma.user.findFirst({ where: { pegawaiId, id: kecualiUserId ? { not: kecualiUserId } : undefined }, select: { id: true, email: true } })) ??
@@ -153,18 +175,24 @@ export const UserRepository = {
     );
   },
 
-  // Pegawai pemilik NIP tertentu
+  /**
+   * Pegawai pemilik NIP tertentu
+   */
   async pegawaiByNip(nip: string) {
     return (await prisma.pegawai.findUnique({ where: { nip }, select: { id: true, nama: true, aktif: true } })) ?? undefined;
   },
 
-  // Pegawai berdasarkan id
+  /**
+   * Pegawai berdasarkan id
+   */
   async pegawai(id: number) {
     return (await prisma.pegawai.findUnique({ where: { id }, select: { id: true, nip: true, bidangId: true, aktif: true } })) ?? undefined;
   },
 
-  // Id akun yang meninggalkan data kegiatan (membuat kegiatan, mengunggah dokumentasi, atau memeriksa) sehingga tidak boleh dihapus.
-  // Riwayat audit tidak ikut dihitung: audit_log menyimpan id aktor sebagai teks, jadi tetap utuh setelah akun dihapus
+  /**
+   * Id akun yang meninggalkan data kegiatan (membuat kegiatan, mengunggah dokumentasi, atau memeriksa) sehingga tidak boleh dihapus.
+   * Riwayat audit tidak ikut dihitung: audit_log menyimpan id aktor sebagai teks, jadi tetap utuh setelah akun dihapus
+   */
   async terpakai(ids: string[]) {
     if (!ids.length) return new Set<string>();
     const [pembuat, pengunggah, pemeriksa] = await Promise.all([

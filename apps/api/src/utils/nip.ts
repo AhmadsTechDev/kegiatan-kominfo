@@ -1,7 +1,17 @@
 const BULAN_PPPK = 21;
 const USIA_MIN_PENGANGKATAN = 17;
 
-// Memeriksa struktur 18 digit NIP ASN; mengembalikan pesan galat, atau null bila sah
+/**
+ * Memeriksa struktur 18 digit NIP ASN; mengembalikan pesan galat, atau null bila sah
+ *
+ * Struktur NIP ASN 18 digit: TTTTBBHH (tanggal lahir) + TTTTBB (tahun-bulan pengangkatan)
+ * + 1 digit jenis kelamin + 3 digit nomor urut.
+ * Tanggal lahir dicek dengan membuat Date lalu membandingkannya lagi: tanggal mustahil seperti 31 Februari
+ * akan "bergeser" ke Maret, sehingga ketahuan tidak sah.
+ * @param nip NIP yang diketik pengguna
+ * @param sekarang waktu acuan (untuk menolak tanggal di masa depan)
+ * @returns pesan galat dalam Bahasa Indonesia, atau null bila sah
+ */
 export function periksaNip(nip: string, sekarang = new Date()): string | null {
   if (!/^\d{18}$/.test(nip)) return "NIP harus 18 digit angka";
 

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { site } from "@/config/site";
 
-// Halaman 404 saat rute tidak ditemukan atau notFound() dipanggil
+/**
+ * Halaman 404 saat rute tidak ditemukan atau notFound() dipanggil
+ */
 
 export const metadata: Metadata = { title: "Halaman tidak ditemukan" };
 

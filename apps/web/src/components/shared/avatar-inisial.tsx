@@ -4,7 +4,9 @@ import { useState } from "react";
 import { inisial } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-// Foto profil, atau inisial nama jika foto belum ada / gagal dimuat
+/**
+ * Foto profil, atau inisial nama jika foto belum ada / gagal dimuat
+ */
 
 export function AvatarInisial({ nama, src, className }: { nama: string; src?: string | null; className?: string }) {
   const [gagal, setGagal] = useState<string | null>(null);

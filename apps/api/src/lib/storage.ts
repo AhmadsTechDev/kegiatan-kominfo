@@ -4,14 +4,22 @@ import { v2 as cloudinary, type UploadApiResponse } from "cloudinary";
 import { env } from "@/config/env";
 import { PayloadTooLarge } from "@/lib/errors";
 
-// Kontrak penyimpanan berkas; isinya bisa disk lokal atau Cloudinary
+/**
+ * Kontrak penyimpanan berkas; isinya bisa disk lokal atau Cloudinary
+ *
+ * KONSEP interface: "kontrak" berisi daftar fungsi yang wajib dimiliki. LocalStorage dan CloudinaryStorage sama-sama
+ * memenuhi kontrak ini, sehingga service cukup memanggil storage.put/read/delete tanpa peduli berkas
+ * disimpan di disk atau di Cloudinary. Mengganti tempat penyimpanan cukup lewat .env, kodenya tidak berubah.
+ */
 export interface DocumentStorage {
   put(key: string, bytes: Uint8Array): Promise<void>;
   read(key: string): Promise<Blob | null>;
   delete(key: string): Promise<void>;
 }
 
-// Penyimpanan di folder disk lokal (development dan VPS tanpa Cloudinary)
+/**
+ * Penyimpanan di folder disk lokal (development dan VPS tanpa Cloudinary)
+ */
 class LocalStorage implements DocumentStorage {
   private readonly akar: string;
 
@@ -19,33 +27,46 @@ class LocalStorage implements DocumentStorage {
     this.akar = resolve(folder);
   }
 
-  // Mengubah key menjadi path lengkap dan menolak key yang keluar dari folder akar (path traversal)
+  /**
+   * Mengubah key menjadi path lengkap dan menolak key yang keluar dari folder akar (path traversal)
+   *
+   * Path traversal: trik memakai "../" di nama berkas untuk keluar dari folder penyimpanan dan membaca
+   * file lain di server. Pengecekan startsWith memastikan hasil akhirnya tetap di dalam folder akar.
+   */
   private path(key: string) {
     const lengkap = resolve(this.akar, key);
     if (!lengkap.startsWith(this.akar + sep)) throw new Error(`Key penyimpanan tidak valid: ${key}`);
     return lengkap;
   }
 
-  // Menulis berkas, membuat foldernya bila belum ada
+  /**
+   * Menulis berkas, membuat foldernya bila belum ada
+   */
   async put(key: string, bytes: Uint8Array) {
     const tujuan = this.path(key);
     await mkdir(dirname(tujuan), { recursive: true });
     await Bun.write(tujuan, bytes);
   }
 
-  // Membaca berkas; null bila tidak ada
+  /**
+   * Membaca berkas; null bila tidak ada
+   */
   async read(key: string) {
     const berkas = Bun.file(this.path(key));
     return (await berkas.exists()) ? berkas : null;
   }
 
-  // Menghapus berkas (tidak galat bila berkas sudah tidak ada)
+  /**
+   * Menghapus berkas (tidak galat bila berkas sudah tidak ada)
+   */
   async delete(key: string) {
     await rm(this.path(key), { force: true });
   }
 }
 
-// Penyimpanan di Cloudinary sebagai berkas privat (hanya bisa dibaca dengan URL bertanda tangan)
+/**
+ * Penyimpanan di Cloudinary sebagai berkas privat (hanya bisa dibaca dengan URL bertanda tangan)
+ */
 class CloudinaryStorage implements DocumentStorage {
   private readonly opsi = { resource_type: "raw", type: "authenticated" } as const;
 
@@ -62,13 +83,20 @@ class CloudinaryStorage implements DocumentStorage {
     });
   }
 
-  // Mengubah key menjadi public_id Cloudinary dan menolak key mencurigakan
+  /**
+   * Mengubah key menjadi public_id Cloudinary dan menolak key mencurigakan
+   */
   private publicId(key: string) {
     if (key.split("/").some((bagian) => bagian === ".." || bagian === "")) throw new Error(`Key penyimpanan tidak valid: ${key}`);
     return `${this.folder}/${key}`;
   }
 
-  // Mengunggah berkas ke Cloudinary
+  /**
+   * Mengunggah berkas ke Cloudinary
+   *
+   * upload_stream memakai gaya callback (fungsi yang dipanggil saat selesai), jadi dibungkus `new Promise`
+   * agar bisa ditunggu dengan await: selesai(hasil) bila berhasil, gagal(galat) bila error.
+   */
   async put(key: string, bytes: Uint8Array) {
     try {
       await new Promise<UploadApiResponse>((selesai, gagal) => {
@@ -84,7 +112,9 @@ class CloudinaryStorage implements DocumentStorage {
     }
   }
 
-  // Mengunduh berkas lewat URL bertanda tangan; null bila tidak ada
+  /**
+   * Mengunduh berkas lewat URL bertanda tangan; null bila tidak ada
+   */
   async read(key: string) {
     const url = cloudinary.url(this.publicId(key), { ...this.opsi, sign_url: true });
     const res = await fetch(url);
@@ -93,13 +123,19 @@ class CloudinaryStorage implements DocumentStorage {
     return res.blob();
   }
 
-  // Menghapus berkas dari Cloudinary
+  /**
+   * Menghapus berkas dari Cloudinary
+   */
   async delete(key: string) {
     await cloudinary.uploader.destroy(this.publicId(key), { ...this.opsi, invalidate: true });
   }
 }
 
-// Penyimpanan aktif: Cloudinary bila CLOUDINARY_URL diisi, selain itu disk lokal
+/**
+ * Penyimpanan aktif: Cloudinary bila CLOUDINARY_URL diisi, selain itu disk lokal
+ *
+ * Satu objek penyimpanan untuk seluruh aplikasi; pilihannya ditentukan sekali saat server menyala.
+ */
 export const storage: DocumentStorage = env.CLOUDINARY_URL
   ? new CloudinaryStorage(env.CLOUDINARY_URL, env.CLOUDINARY_FOLDER)
   : new LocalStorage(env.STORAGE_DIR);

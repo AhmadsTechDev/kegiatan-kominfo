@@ -19,7 +19,9 @@ import type { PermintaanAkun, StatusPermintaan } from "../types";
 import { PilihanTab } from "./admin-shared";
 import { UndangDialog } from "./undang-dialog";
 
-// Tab tinjau, setujui, atau tolak permintaan akun dari halaman minta akun
+/**
+ * Tab tinjau, setujui, atau tolak permintaan akun dari halaman minta akun
+ */
 
 const LABEL_STATUS: Record<StatusPermintaan, string> = { MENUNGGU: "Menunggu", DISETUJUI: "Disetujui", DITOLAK: "Ditolak" };
 const NADA_STATUS: Record<StatusPermintaan, string> = {
@@ -27,6 +29,38 @@ const NADA_STATUS: Record<StatusPermintaan, string> = {
   DISETUJUI: "bg-status-selesai text-status-selesai-foreground",
   DITOLAK: "bg-status-dibatalkan text-status-dibatalkan-foreground",
 };
+
+/**
+ * Tampilan kartu di bawah md: tombol Tolak dan Setujui tidak tersembunyi di balik gulir menyamping
+ */
+function KartuPermintaan({ p, onTolak, onSetujui }: { p: PermintaanAkun; onTolak: () => void; onSetujui: () => void }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border bg-card p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <span className="font-semibold">{p.pegawai?.nama ?? p.nama}</span>
+          <span className="text-xs break-all text-muted-foreground">{p.email}</span>
+        </div>
+        <span className={cn("shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold", NADA_STATUS[p.status])}>{LABEL_STATUS[p.status]}</span>
+      </div>
+      {p.catatan && <p className="text-sm whitespace-pre-line">{p.catatan}</p>}
+      <span className="text-xs text-muted-foreground tabular-nums">Diajukan {formatTanggalJam(p.createdAt)}</span>
+      {p.alasanTolak && <span className="text-xs text-muted-foreground">Alasan: {p.alasanTolak}</span>}
+      {p.status === "MENUNGGU" && (
+        <div className="flex gap-2">
+          <Button variant="outline" className="h-11 flex-1" onClick={onTolak}>
+            <X aria-hidden />
+            Tolak
+          </Button>
+          <Button className="h-11 flex-1" onClick={onSetujui}>
+            <Check aria-hidden />
+            Setujui
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 type Filter = "MENUNGGU" | "SEMUA";
 
@@ -76,13 +110,20 @@ export function PermintaanTab() {
       },
       {
         id: "email",
-        header: "Email dan catatan",
-        cell: ({ row }) => (
-          <span className="flex max-w-64 min-w-44 flex-col gap-0.5 whitespace-normal">
-            <span className="text-sm break-all">{row.original.email}</span>
-            {row.original.catatan && <span className="text-xs text-muted-foreground">“{row.original.catatan}”</span>}
-          </span>
-        ),
+        header: "Email",
+        cell: ({ row }) => <span className="block max-w-64 min-w-44 text-sm break-all whitespace-normal">{row.original.email}</span>,
+      },
+      {
+        id: "catatan",
+        header: "Catatan",
+        cell: ({ row }) =>
+          row.original.catatan ? (
+            <span className="line-clamp-3 block max-w-64 min-w-32 text-sm whitespace-normal" title={row.original.catatan}>
+              {row.original.catatan}
+            </span>
+          ) : (
+            <span className="text-sm text-muted-foreground">-</span>
+          ),
       },
       {
         id: "status",
@@ -150,6 +191,7 @@ export function PermintaanTab() {
             bleed
             caption="Permintaan akun"
             getRowKey={(p) => String(p.id)}
+            renderMobileCard={(p) => <KartuPermintaan p={p} onTolak={() => setTolak(p)} onSetujui={() => setSetujui(p)} />}
             className={cn("transition-opacity duration-150", daftar.isPlaceholderData && "opacity-60")}
             empty={{
               icon: Inbox,
@@ -202,7 +244,6 @@ export function PermintaanTab() {
           open
           onOpenChange={(v) => !v && tutupTolak()}
           title={`Tolak permintaan ${tolak.pegawai?.nama ?? tolak.nama}?`}
-          description="Pemohon akan menerima email berisi alasan penolakan. Ia dapat mengajukan permintaan baru setelahnya."
           confirmLabel="Tolak permintaan"
           pendingLabel="Menolak..."
           pending={proses.isPending}

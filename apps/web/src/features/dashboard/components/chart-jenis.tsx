@@ -5,7 +5,9 @@ import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { DashboardData } from "../types";
 
-// Jumlah dan proporsi kegiatan per jenis dalam bilah horizontal
+/**
+ * Jumlah dan proporsi kegiatan per jenis dalam bilah horizontal
+ */
 
 const WARNA = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5", "bg-chart-6"];
 const WARNA_TEKS = [

@@ -3,7 +3,9 @@ import type { FilterDaftar } from "@/types/kegiatan.types";
 import { kondisiDaftar } from "./kegiatan.repository";
 
 export const RekapRepository = {
-  // Semua kegiatan sesuai filter dengan kolom yang dibutuhkan rekap; penjumlahan dilakukan di service
+  /**
+   * Semua kegiatan sesuai filter dengan kolom yang dibutuhkan rekap; penjumlahan dilakukan di service
+   */
   barisRekap(f: FilterDaftar, sekarang: Date) {
     return prisma.kegiatan.findMany({
       where: kondisiDaftar(f, sekarang),

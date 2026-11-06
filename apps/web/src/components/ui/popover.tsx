@@ -4,7 +4,9 @@ import * as React from "react"
 import { cn } from "cn"
 import { Popover as PopoverPrimitive } from "radix-ui"
 
-// Komponen dasar shadcn/ui: popover (Radix)
+/**
+ * Komponen dasar shadcn/ui: popover (Radix)
+ */
 
 function Popover({
   ...props

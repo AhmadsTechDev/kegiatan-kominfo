@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { FormDialog } from "@/components/shared/form-dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LABEL_ROLE, type Role } from "@/types/auth";
@@ -14,7 +14,9 @@ import type { IsiUndangan } from "../types";
 import { useBidangAdmin } from "../hooks/use-admin";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
 
-// Dialog kirim email undangan aktivasi akun (role PEGAWAI atau PIMPINAN)
+/**
+ * Dialog kirim email undangan aktivasi akun (role PEGAWAI atau PIMPINAN)
+ */
 
 const ROLE_UNDANGAN: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
 
@@ -47,7 +49,10 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
 
   const kirim = handleSubmit((v) => {
     setGalat(null);
-    // Setiap akun tertaut ke data pegawai, jadi pemohon tanpa data pegawai wajib diberi bidang
+
+    /**
+     * Setiap akun tertaut ke data pegawai, jadi pemohon tanpa data pegawai wajib diberi bidang
+     */
     if (pilihUnit && !v.bidangId) return setError("bidangId", { message: "Bidang wajib dipilih" });
     const isi: IsiUndangan = { email: v.email.trim().toLowerCase(), role: v.role };
     if (pilihUnit) Object.assign(isi, { bidangId: Number(v.bidangId) });
@@ -124,7 +129,6 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
                 <PilihUnit id="undang-unit" unit={unit.data ?? []} value={field.value} onChange={field.onChange} invalid={!!formState.errors.bidangId} required />
               )}
             />
-            <FieldDescription>Data pegawainya dibuat otomatis di bidang ini, tanpa NIP.</FieldDescription>
             <FieldError errors={[formState.errors.bidangId]} />
           </Field>
         </>

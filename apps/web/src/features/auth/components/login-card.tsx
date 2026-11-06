@@ -2,7 +2,9 @@ import Link from "next/link";
 import { KartuPublik, KepalaKartu } from "./kartu-publik";
 import { LoginForm } from "./login-form";
 
-// Kartu halaman login: judul, LoginForm, dan tautan minta akun
+/**
+ * Kartu halaman login: judul, LoginForm, dan tautan minta akun
+ */
 
 export function LoginCard() {
   return (

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AkunView } from "@/features/admin/components/akun-view";
 
-// Halaman manajemen akun untuk admin (/admin/akun)
+/**
+ * Halaman manajemen akun untuk admin (/admin/akun)
+ */
 
 export const metadata: Metadata = { title: "Manajemen akun" };
 

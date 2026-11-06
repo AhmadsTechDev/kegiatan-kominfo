@@ -1,4 +1,6 @@
-// Tipe Role dan label hak akses untuk UI
+/**
+ * Tipe Role dan label hak akses untuk UI
+ */
 
 export type Role = "PEGAWAI" | "PIMPINAN" | "ADMIN";
 

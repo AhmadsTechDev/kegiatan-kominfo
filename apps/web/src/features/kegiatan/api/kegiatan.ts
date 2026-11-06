@@ -1,10 +1,27 @@
 import { apiClient } from "@/lib/api-client";
 import type { DaftarKegiatan, FilterKegiatan, HasilSimpan, KegiatanDetail, KegiatanPayload, Referensi } from "../types";
 
-// Pemanggil endpoint kegiatan: baca, buat, ubah, batal, hapus, dan periksa
+/**
+ * Pemanggil endpoint kegiatan: baca, buat, ubah, batal, hapus, dan periksa
+ */
 
+/**
+ * POLA FITUR di frontend (sama untuk semua folder features/*):
+ *   api/*.ts        -> fungsi biasa yang memanggil endpoint backend lewat apiClient dan mengembalikan datanya.
+ *   hooks/use-*.ts  -> membungkus fungsi api dengan TanStack Query (cache, status loading, error, muat ulang).
+ *   components/*    -> tampilan; memakai hooks, tidak memanggil apiClient langsung.
+ *   types.ts        -> bentuk data dari backend.
+ *
+ * Jumlah baris per halaman daftar kegiatan.
+ */
 export const UKURAN_HALAMAN = 20;
 
+/**
+ * Filter yang kosong (null atau "") dibuang dulu agar URL API tetap bersih, mis. /kegiatan?status=selesai&pageSize=20.
+ * Object.entries mengubah objek menjadi daftar [kunci, nilai], disaring, lalu Object.fromEntries mengubahnya kembali.
+ * @param filter filter dari URL halaman (useKegiatanFilter)
+ * @returns satu halaman daftar kegiatan beserta totalnya
+ */
 export async function getDaftarKegiatan(filter: FilterKegiatan) {
   const params = Object.fromEntries(
     Object.entries({ ...filter, q: filter.q.trim(), pageSize: UKURAN_HALAMAN }).filter(([, v]) => v !== null && v !== ""),
@@ -38,7 +55,9 @@ export async function selesaikanKegiatan(id: number, expectedUpdatedAt: string) 
   return data;
 }
 
-// Pimpinan/admin menandai kegiatan perlu perbaikan beserta catatannya
+/**
+ * Pimpinan/admin menandai kegiatan perlu perbaikan beserta catatannya
+ */
 export async function periksaKegiatan(id: number, catatan: string) {
   const { data } = await apiClient.post<{ id: number; statusPemeriksaan: string }>(`/kegiatan/${id}/pemeriksaan`, { catatan });
   return data;

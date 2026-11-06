@@ -10,7 +10,9 @@ import { cn } from "@/lib/utils";
 import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
 import type { RekapData, SatuanRekap } from "../types";
 
-// Grafik tren jumlah kegiatan, plus daftar rincian untuk pembaca layar
+/**
+ * Grafik tren jumlah kegiatan, plus daftar rincian untuk pembaca layar
+ */
 
 const config = { jumlah: { label: "Kegiatan", color: "var(--chart-1)" } } satisfies ChartConfig;
 const RADIUS_ATAS: [number, number, number, number] = [4, 4, 0, 0];
@@ -63,7 +65,10 @@ export function TrenRekap({ data, animasi, className }: Props) {
               config={config}
               className="aspect-auto h-72 w-full"
               role="img"
-              // HP: menggulir melewati grafik tidak memunculkan tooltip; tooltip dibuka dengan ketukan
+
+              /**
+               * HP: menggulir melewati grafik tidak memunculkan tooltip; tooltip dibuka dengan ketukan
+               */
               {...(sentuh ? redamGeserGrafik : {})}
               aria-label={`Grafik batang jumlah kegiatan ${NAMA_SATUAN[satuan]}, ${tren.length} periode, total ${data.total.total} kegiatan. Angka per periode tersedia di daftar di sampingnya.`}
             >

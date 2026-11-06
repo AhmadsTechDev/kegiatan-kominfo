@@ -19,7 +19,9 @@ import { useCabutSesiAkun, useHapusAkun, useKirimUlangUndangan, useResetSandi, u
 import type { AkunAdmin, AkunDetail, HasilSimpanAkun } from "../types";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
 
-// Formulir buat/ubah akun dan dialog aksi akun, dipakai di daftar dan detail akun
+/**
+ * Formulir buat/ubah akun dan dialog aksi akun, dipakai di daftar dan detail akun
+ */
 
 export type AkunRingkas = {
   id: string;
@@ -107,7 +109,9 @@ function PilihRole({ value, onChange, terkunci }: { value: Role; onChange: (r: R
   );
 }
 
-// Pesan setelah simpan: undangan terkirim, atau peringatan bila email gagal (akun tetap tersimpan)
+/**
+ * Pesan setelah simpan: undangan terkirim, atau peringatan bila email gagal (akun tetap tersimpan)
+ */
 function beriTahu(h: HasilSimpanAkun, baru: boolean) {
   if (h.undangan?.galat) {
     toast.warning(`${baru ? "Akun dibuat" : "Akun diperbarui"}, tetapi email undangan gagal dikirim. Gunakan Kirim ulang undangan setelah SMTP diperbaiki.`);
@@ -158,7 +162,6 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
       open
       onOpenChange={(v) => !v && onClose()}
       title={awal ? `Ubah akun ${awal.name}` : "Buat akun"}
-      description={awal ? "Data kepegawaian ini tampil di profil pengguna dan hanya bisa diubah admin." : undefined}
       onSubmit={kirim}
       pending={simpan.isPending}
       submitLabel={awal ? "Simpan perubahan" : "Buat akun dan kirim undangan"}
@@ -177,13 +180,12 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
             Email pribadi
           </FieldLabel>
           <Input id="akun-email" type="email" placeholder="Masukkan email" inputMode="email" autoComplete="off" maxLength={255} className="h-10" aria-required aria-invalid={!!formState.errors.email} {...register("email")} />
-          <FieldDescription>
-            {gantiEmail
-              ? awal?.status === "MENUNGGU_AKTIVASI"
-                ? "Undangan baru dikirim ke email ini; tautan lama tidak berlaku."
-                : "Email login berubah dan ditandai belum terverifikasi."
-              : "Dipakai untuk masuk dan menerima tautan aktivasi."}
-          </FieldDescription>
+          {/* Hanya muncul saat email akun diganti, karena penggantian itu berdampak langsung pada pemilik akun */}
+          {gantiEmail && (
+            <FieldDescription>
+              {awal?.status === "MENUNGGU_AKTIVASI" ? "Undangan baru dikirim ke email ini; tautan lama tidak berlaku." : "Email login berubah dan ditandai belum terverifikasi."}
+            </FieldDescription>
+          )}
           <FieldError errors={[formState.errors.email]} />
         </Field>
         <Field data-invalid={!!formState.errors.nip}>
@@ -212,7 +214,6 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
           Role
         </FieldLabel>
         <Controller control={control} name="role" render={({ field }) => <PilihRole value={field.value} onChange={field.onChange} terkunci={awal?.id === idSaya} />} />
-        {awal?.id === idSaya && <FieldDescription>Anda tidak dapat mengubah role akun Anda sendiri.</FieldDescription>}
         {awal && awal.id !== idSaya && role !== awal.role && <FieldDescription>Akun akan dikeluarkan dari semua sesinya setelah role diubah.</FieldDescription>}
         <FieldError errors={[formState.errors.role]} />
       </Field>
@@ -222,6 +223,11 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
 
 export type JenisAksi = "ubah" | "undang" | "reset" | "sesi" | "nonaktifkan" | "pulihkan" | "hapus";
 
+/**
+ * Custom hook yang mengelola semua aksi akun (ubah, undang ulang, reset sandi, cabut sesi, nonaktifkan, aktifkan, hapus)
+ * dalam satu tempat, supaya daftar akun dan halaman detail akun memakai dialog yang sama persis.
+ * @returns { buka, dialog }: panggil buka(jenis, akun) untuk membuka aksi, lalu render `dialog` di halaman
+ */
 export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelahHapus?: () => void } = {}) {
   const [aksi, setAksi] = useState<{ jenis: JenisAksi; akun: AkunRingkas } | null>(null);
   const [alasan, setAlasan] = useState("");
@@ -251,7 +257,7 @@ export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelah
         <ConfirmDialog
           {...konfirmasi}
           title={`Kirim ulang undangan ke ${a.email}?`}
-          description="Tautan aktivasi baru berlaku 72 jam. Tautan yang dikirim sebelumnya tidak berlaku lagi."
+          description="Tautan sebelumnya tidak berlaku lagi."
           confirmLabel="Kirim ulang undangan"
           confirmVariant="default"
           pendingLabel="Mengirim..."
@@ -264,7 +270,7 @@ export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelah
         <ConfirmDialog
           {...konfirmasi}
           title={`Kirim tautan atur ulang kata sandi ke ${a.name}?`}
-          description={`Tautan dikirim ke ${a.email} dan berlaku 1 jam. Semua sesi akun ini dikeluarkan dan penguncian karena salah sandi dibuka. Anda tidak menentukan kata sandinya.`}
+          description={`Tautan dikirim ke ${a.email}. Semua sesi akun ini akan dikeluarkan.`}
           confirmLabel="Kirim tautan"
           confirmVariant="default"
           pendingLabel="Mengirim..."
@@ -289,7 +295,7 @@ export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelah
         <ConfirmDialog
           {...konfirmasi}
           title={`Aktifkan kembali akun ${a.name}?`}
-          description="Akun bisa dipakai masuk lagi. Akun yang belum pernah diaktivasi perlu dikirimi undangan baru."
+          description={a.status === "MENUNGGU_AKTIVASI" ? "Akun ini belum diaktivasi, kirim undangan baru setelahnya." : undefined}
           confirmLabel="Aktifkan kembali"
           confirmVariant="default"
           pendingLabel="Mengaktifkan..."
@@ -350,7 +356,9 @@ export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelah
   return { buka, dialog };
 }
 
-// Butir menu setinggi 44 px di layar sentuh (R-03); ukuran desktop tidak berubah
+/**
+ * Butir menu setinggi 44 px di layar sentuh (R-03); ukuran desktop tidak berubah
+ */
 const ITEM = "pointer-coarse:min-h-11";
 
 export function ItemAksiAkun({ akun, idSaya, buka, denganDetail }: { akun: AkunRingkas; idSaya?: string; buka: (j: JenisAksi, a: AkunRingkas) => void; denganDetail?: boolean }) {

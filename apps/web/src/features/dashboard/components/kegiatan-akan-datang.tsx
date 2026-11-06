@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button";
 import { formatJam, formatRentangTanggal } from "@/lib/format";
 import type { KegiatanRingkas } from "../types";
 
-// Panel kegiatan terdekat yang akan dilaksanakan
+/**
+ * Panel kegiatan terdekat yang akan dilaksanakan
+ */
 
 const kolom: DataTableColumn<KegiatanRingkas>[] = [
   {

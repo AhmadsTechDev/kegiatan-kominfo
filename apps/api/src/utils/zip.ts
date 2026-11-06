@@ -1,17 +1,24 @@
-// Pembuat berkas ZIP sederhana tanpa kompresi (metode "store"), dialirkan berkas demi berkas.
-// Foto JPEG/WebP dan PDF sudah terkompresi, jadi kompresi ulang hampir tidak mengecilkan ukuran
-// dan hanya membebani server. Format mengikuti PKWARE APPNOTE (ZIP32: total di bawah 4 GB).
+/**
+ * Pembuat berkas ZIP sederhana tanpa kompresi (metode "store"), dialirkan berkas demi berkas.
+ * Foto JPEG/WebP dan PDF sudah terkompresi, jadi kompresi ulang hampir tidak mengecilkan ukuran
+ * dan hanya membebani server. Format mengikuti PKWARE APPNOTE (ZIP32: total di bawah 4 GB).
+ */
 
 export type EntriZip = { nama: string; waktu: Date; baca: () => Promise<Uint8Array | null> };
 
 const TANDA_LOKAL = 0x04034b50;
 const TANDA_PUSAT = 0x02014b50;
 const TANDA_AKHIR = 0x06054b50;
-// Bit 11: nama berkas memakai UTF-8, agar nama berhuruf non-ASCII tetap terbaca
+
+/**
+ * Bit 11: nama berkas memakai UTF-8, agar nama berhuruf non-ASCII tetap terbaca
+ */
 const BENDERA_UTF8 = 0x0800;
 const VERSI = 20;
 
-// Tanggal dan jam format DOS, dalam WIB agar sama dengan waktu di aplikasi
+/**
+ * Tanggal dan jam format DOS, dalam WIB agar sama dengan waktu di aplikasi
+ */
 function waktuDos(d: Date) {
   const w = new Date(d.getTime() + 7 * 3600_000);
   const tahun = Math.max(1980, w.getUTCFullYear());
@@ -74,7 +81,9 @@ function gabung(bagian: Uint8Array[]) {
   return hasil;
 }
 
-// Berkas yang tidak ditemukan di penyimpanan (baca() mengembalikan null) dilewati
+/**
+ * Berkas yang tidak ditemukan di penyimpanan (baca() mengembalikan null) dilewati
+ */
 export function aliranZip(entri: EntriZip[]): ReadableStream<Uint8Array> {
   const enkoder = new TextEncoder();
   const pusat: Uint8Array[] = [];

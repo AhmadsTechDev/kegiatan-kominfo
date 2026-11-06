@@ -5,7 +5,9 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { KartuPublik } from "@/features/auth/components/kartu-publik";
 import { ResetSandiForm } from "@/features/auth/components/reset-sandi-form";
 
-// Halaman buat kata sandi baru dari tautan atur ulang (/reset-sandi)
+/**
+ * Halaman buat kata sandi baru dari tautan atur ulang (/reset-sandi)
+ */
 
 export const metadata: Metadata = { title: "Atur ulang kata sandi" };
 

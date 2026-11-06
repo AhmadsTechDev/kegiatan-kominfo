@@ -7,9 +7,13 @@ import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 import { Button } from "@/components/ui/button"
 import { useOpenTerkendali } from "@/hooks/use-tutup-lewat-kembali"
 
-// Komponen dasar shadcn/ui: dialog konfirmasi (Radix)
+/**
+ * Komponen dasar shadcn/ui: dialog konfirmasi (Radix)
+ */
 
-// Tombol Kembali di HP menutup konfirmasi, bukan meninggalkan halaman
+/**
+ * Tombol Kembali di HP menutup konfirmasi, bukan meninggalkan halaman
+ */
 function AlertDialog({
   open,
   defaultOpen,

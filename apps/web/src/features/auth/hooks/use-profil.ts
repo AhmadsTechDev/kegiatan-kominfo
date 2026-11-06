@@ -4,7 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type { Role, StatusAkun } from "@/types/auth";
 
-// Profil lengkap pengguna aktif dari GET /api/me
+/**
+ * Profil lengkap pengguna aktif dari GET /api/me
+ */
 
 export type Profil = {
   id: string;

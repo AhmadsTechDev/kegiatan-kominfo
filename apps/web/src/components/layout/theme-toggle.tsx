@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useTema } from "@/features/pengaturan/hooks/use-akun-saya";
 
-// Tombol pilih tema terang, gelap, atau ikut sistem
+/**
+ * Tombol pilih tema terang, gelap, atau ikut sistem
+ */
 
 const PILIHAN = [
   { nilai: "light", label: "Terang", ikon: Sun },

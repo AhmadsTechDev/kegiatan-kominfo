@@ -14,7 +14,9 @@ import { ApiError } from "@/lib/api-client";
 import { skemaSandiBaru, type NilaiSandiBaru } from "@/lib/sandi";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 
-// Formulir kata sandi baru (aktivasi dan reset) beserta tampilan berhasil / tautan kedaluwarsa
+/**
+ * Formulir kata sandi baru (aktivasi dan reset) beserta tampilan berhasil / tautan kedaluwarsa
+ */
 
 export function Keadaan({ ikon: Ikon, nada, judul, children }: { ikon: typeof CircleCheck; nada: string; judul: string; children: React.ReactNode }) {
   return (

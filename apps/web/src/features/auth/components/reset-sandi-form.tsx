@@ -20,7 +20,9 @@ import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { KepalaKartu } from "./kartu-publik";
 import { FormSandiBaru, Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
 
-// Pemulihan kata sandi tanpa login: minta tautan, lalu buat kata sandi baru
+/**
+ * Pemulihan kata sandi tanpa login: minta tautan, lalu buat kata sandi baru
+ */
 
 const schemaEmail = z.object({ email: z.string().trim().min(1, "Email wajib diisi").pipe(z.email("Format email tidak valid")) });
 
@@ -79,7 +81,10 @@ export function ResetSandiForm() {
   const simpan = useMutation({
     mutationFn: async (password: string) => {
       const hasil = await resetSandi(token, password);
-      // Sesi akun lain di browser ini dikeluarkan agar "Masuk" tidak dialihkan ke dashboard akun tersebut
+
+      /**
+       * Sesi akun lain di browser ini dikeluarkan agar "Masuk" tidak dialihkan ke dashboard akun tersebut
+       */
       await authClient.signOut().catch(() => undefined);
       return hasil;
     },

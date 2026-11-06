@@ -6,30 +6,48 @@ import { adminDari, aktorDari, requestMeta } from "@/utils/konteks";
 
 type Id = { id: number };
 
+/**
+ * Controller master data (pegawai, bidang, jenis kegiatan) untuk admin.
+ * Setiap fungsi menerima konteks permintaan dari Elysia, mengambil bagian yang perlu, lalu menyerahkan pekerjaannya ke service.
+ */
 export const MasterController = {
-  // GET /api/admin/bidang
+  /**
+   * GET /api/admin/bidang
+   */
   daftarUnit: () => MasterService.daftarUnit(),
 
-  // POST /api/admin/bidang
+  /**
+   * POST /api/admin/bidang
+   */
   buatUnit: ({ body, user, request, set }: Konteks<IsiUnit>) => {
     set.status = 201;
     return MasterService.buatUnit(body, aktorDari(user), requestMeta(request.headers));
   },
 
-  // PATCH /api/admin/bidang/:id
+  /**
+   * PATCH /api/admin/bidang/:id
+   */
   ubahUnit: ({ params, body, user, request }: Konteks<IsiUnit, Id>) => MasterService.ubahUnit(params.id, body, aktorDari(user), requestMeta(request.headers)),
 
-  // DELETE /api/admin/bidang/:id — hanya bila belum dipakai pegawai, kegiatan, atau sub bidang
+  /**
+   * DELETE /api/admin/bidang/:id — hanya bila belum dipakai pegawai, kegiatan, atau sub bidang
+   */
   hapusUnit: ({ params, user, request }: Konteks<unknown, Id>) => MasterService.hapusUnit(params.id, aktorDari(user), requestMeta(request.headers)),
 
-  // DELETE /api/admin/pegawai/:id
+  /**
+   * DELETE /api/admin/pegawai/:id
+   */
   hapusPegawai: ({ params, user, request }: Konteks<unknown, Id>) => MasterService.hapusPegawai(params.id, aktorDari(user), requestMeta(request.headers)),
 
-  // GET /api/admin/pegawai
+  /**
+   * GET /api/admin/pegawai
+   */
   daftarPegawai: ({ query }: Konteks<unknown, unknown, DaftarPegawaiQuery>) => MasterService.daftarPegawai(query),
 
-  // POST /api/admin/pegawai — bila email diisi, langsung dikirimi undangan akun.
-  // Gagal kirim undangan tidak membatalkan pegawai yang sudah tersimpan; galatnya dikembalikan di `undangan.galat`
+  /**
+   * POST /api/admin/pegawai — bila email diisi, langsung dikirimi undangan akun.
+   * Gagal kirim undangan tidak membatalkan pegawai yang sudah tersimpan; galatnya dikembalikan di `undangan.galat`
+   */
   buatPegawai: async ({ body, user, request, set }: Konteks<IsiPegawaiBaru>) => {
     const { email: emailMentah, role, ...isi } = body;
     const email = emailMentah?.trim().toLowerCase() || null;
@@ -44,19 +62,27 @@ export const MasterController = {
     }
   },
 
-  // PATCH /api/admin/pegawai/:id
+  /**
+   * PATCH /api/admin/pegawai/:id
+   */
   ubahPegawai: ({ params, body, user, request }: Konteks<IsiPegawai, Id>) =>
     MasterService.ubahPegawai(params.id, body, aktorDari(user), requestMeta(request.headers)),
 
-  // GET /api/admin/jenis-kegiatan
+  /**
+   * GET /api/admin/jenis-kegiatan
+   */
   daftarJenis: () => MasterService.daftarJenis(),
 
-  // POST /api/admin/jenis-kegiatan
+  /**
+   * POST /api/admin/jenis-kegiatan
+   */
   buatJenis: ({ body, user, request, set }: Konteks<IsiJenis>) => {
     set.status = 201;
     return MasterService.buatJenis(body, aktorDari(user), requestMeta(request.headers));
   },
 
-  // PATCH /api/admin/jenis-kegiatan/:id
+  /**
+   * PATCH /api/admin/jenis-kegiatan/:id
+   */
   ubahJenis: ({ params, body, user, request }: Konteks<IsiJenis, Id>) => MasterService.ubahJenis(params.id, body, aktorDari(user), requestMeta(request.headers)),
 };

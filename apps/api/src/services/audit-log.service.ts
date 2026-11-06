@@ -5,9 +5,22 @@ import type { AuditLogQuery, CatatAuditInput } from "@/types/audit-log.types";
 import { AKSI_AUDIT } from "@/utils/konstanta";
 import { awalHariJakarta } from "@/utils/periode";
 
+/**
+ * Service audit log: mencatat siapa melakukan apa, kapan, dan dari mana. Hampir semua service lain memanggil catat().
+ * Catatan hanya ditambah, tidak pernah diubah atau dihapus (append-only), supaya bisa dipercaya sebagai bukti.
+ *
+ * Kunci data yang tidak boleh ikut tersimpan di audit log.
+ */
 const KUNCI_SENSITIF = /password|token|secret|cookie|authorization/i;
 
-// Menyiapkan data untuk disimpan sebagai JSON: membuang kunci rahasia, mengubah Date/Decimal/BigInt jadi teks
+/**
+ * Menyiapkan data untuk disimpan sebagai JSON: membuang kunci rahasia, mengubah Date/Decimal/BigInt jadi teks
+ *
+ * KONSEP rekursi: fungsi memanggil dirinya sendiri untuk setiap isi array atau objek, sehingga data bersarang
+ * sedalam apa pun ikut dibersihkan.
+ * @param nilai data apa pun yang akan disimpan sebagai JSON
+ * @returns data yang aman disimpan (tanpa kunci rahasia, tanggal sudah menjadi teks)
+ */
 export function redaksi(nilai: unknown): unknown {
   if (nilai === undefined || nilai === null) return null;
   if (typeof nilai === "bigint") return Number(nilai);
@@ -24,13 +37,21 @@ export function redaksi(nilai: unknown): unknown {
   return nilai;
 }
 
-// Merapikan aktor: null bila tidak ada aktor, nama "Akun dihapus" bila akunnya sudah tidak ada
+/**
+ * Merapikan aktor: null bila tidak ada aktor, nama "Akun dihapus" bila akunnya sudah tidak ada
+ * `T extends {...}` artinya T boleh tipe apa pun asalkan punya properti aktor dengan bentuk ini.
+ */
 function rapikanAktor<T extends { aktor: { id: string | null; nama: string | null; email: string | null } }>(b: T) {
   return { ...b, aktor: b.aktor.id == null ? null : { id: b.aktor.id, nama: b.aktor.nama ?? "Akun dihapus", email: b.aktor.email } };
 }
 
 export const AuditLogService = {
-  // Mencatat satu aksi ke audit log (append-only). Kirim `tx` agar ikut transaksi yang sedang berjalan
+  /**
+   * Mencatat satu aksi ke audit log (append-only). Kirim `tx` agar ikut transaksi yang sedang berjalan
+   *
+   * @param input aktor, aksi, entitas, data sebelum/sesudah, IP, dan user-agent
+   * @param tx transaksi yang sedang berjalan; bila diisi, catatan audit ikut batal bila transaksinya gagal
+   */
   async catat(input: CatatAuditInput, tx?: Db) {
     await AuditLogRepository.insert(
       {
@@ -47,7 +68,9 @@ export const AuditLogService = {
     );
   },
 
-  // Daftar audit log untuk admin, dengan filter aktor/aksi/entitas/tanggal
+  /**
+   * Daftar audit log untuk admin, dengan filter aktor/aksi/entitas/tanggal
+   */
   async daftar(query: AuditLogQuery) {
     if (query.dari && query.sampai && query.sampai < query.dari) {
       throw Unprocessable("Rentang tanggal tidak valid", [{ field: "sampai", message: "Tanggal akhir tidak boleh sebelum tanggal awal" }]);
@@ -67,14 +90,18 @@ export const AuditLogService = {
     return { items: items.map(rapikanAktor), total, page, pageSize };
   },
 
-  // Detail satu catatan audit
+  /**
+   * Detail satu catatan audit
+   */
   async detail(id: number) {
     const baris = await AuditLogRepository.detail(id);
     if (!baris) throw NotFound("Catatan audit tidak ditemukan");
     return rapikanAktor(baris);
   },
 
-  // Pilihan untuk filter di halaman audit log: daftar aktor, entitas, dan aksi
+  /**
+   * Pilihan untuk filter di halaman audit log: daftar aktor, entitas, dan aksi
+   */
   async pilihan() {
     const [aktor, entitas] = await Promise.all([AuditLogRepository.aktorTercatat(), AuditLogRepository.entitasTercatat()]);
     return { aktor, entitas, aksi: AKSI_AUDIT };

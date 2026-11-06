@@ -4,7 +4,9 @@ import * as React from "react"
 import { cn } from "cn"
 import { Tooltip as TooltipPrimitive } from "radix-ui"
 
-// Komponen dasar shadcn/ui: tooltip (Radix)
+/**
+ * Komponen dasar shadcn/ui: tooltip (Radix)
+ */
 
 function TooltipProvider({
   delayDuration = 0,

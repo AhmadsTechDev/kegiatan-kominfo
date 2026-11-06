@@ -45,7 +45,9 @@ import type { Draf, KegiatanDetail, Referensi } from "../types";
 import { DokumentasiGaleri, type StatusAntrean } from "./dokumentasi-galeri";
 import { LokasiKegiatan } from "./lokasi-kegiatan";
 
-// Formulir kegiatan: dua langkah untuk kegiatan baru, satu layar untuk ubah
+/**
+ * Formulir kegiatan: dua langkah untuk kegiatan baru, satu layar untuk ubah
+ */
 
 type Props = {
   referensi: Referensi;
@@ -112,6 +114,17 @@ function PenunjukLangkah({ aktif, onPilih }: { aktif: number; onPilih: (i: numbe
   );
 }
 
+/**
+ * Form catat/ubah kegiatan.
+ * KONSEP react-hook-form: library pengelola form. `register` menghubungkan input ke form, `Controller` dipakai untuk
+ * komponen buatan sendiri (DatePicker, Select), dan zodResolver membuat validasinya memakai kegiatanSchema.
+ * Alur simpan: validasi di peramban -> kirim lewat mutation -> galat 422 dari backend dipasang ke kolomnya,
+ * 409 (diubah orang lain) menampilkan dialog konflik.
+ * @param referensi pilihan bidang, jenis, dan pegawai
+ * @param kegiatan kegiatan yang diubah; kosong berarti catat baru (form dua langkah)
+ * @param penanggungJawabBawaan pegawai yang otomatis menjadi penanggung jawab
+ * @param draf draf yang sedang dilanjutkan, bila ada
+ */
 export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -125,7 +138,10 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
   const [langkah, setLangkah] = useState(0);
   const awalSelesai = kegiatan?.statusPelaksanaan === "selesai";
   const [semuaKolom, setSemuaKolom] = useState(!awalSelesai);
-  // Simpan ditahan selama berkas dokumentasi masih dipilih tapi belum diunggah, atau sedang diunggah
+
+  /**
+   * Simpan ditahan selama berkas dokumentasi masih dipilih tapi belum diunggah, atau sedang diunggah
+   */
   const [antrean, setAntrean] = useState<StatusAntrean>("kosong");
   const tahanSimpan = antrean !== "kosong";
 
@@ -143,6 +159,9 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
     formState: { errors, isDirty },
   } = form;
 
+  /**
+   * useWatch membaca nilai kolom secara langsung (ikut berubah saat diketik) untuk ringkasan di langkah terakhir.
+   */
   const [tglMulai, jamMulai, tglSelesai, jamSelesai, judul, jenisId, lokasiNama] = useWatch({
     control,
     name: ["tanggalMulai", "jamMulai", "tanggalSelesai", "jamSelesai", "judul", "jenisId", "lokasiNama"],
@@ -153,8 +172,16 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
   const profil = useProfil();
   const fotoPj = pj && profil.data?.pegawai?.id === pj.id ? profil.data.foto : null;
 
+  /**
+   * isSuccess ikut dihitung "sibuk" agar tombol tetap nonaktif selama halaman berpindah setelah simpan berhasil (mencegah klik ganda).
+   */
   const sibuk = buat.isPending || ubah.isPending || buat.isSuccess || ubah.isSuccess || simpanDraf.isPending || simpanDraf.isSuccess;
 
+  /**
+   * Menerjemahkan galat backend: 409 -> dialog konflik; 422 dengan details -> pesan dipasang ke kolom yang sesuai
+   * (KOLOM_SERVER memetakan nama kolom backend ke nama kolom form) dan form pindah ke langkah tempat kolom itu berada;
+   * galat lainnya ditampilkan sebagai pesan umum di atas tombol.
+   */
   const tanganiGalat = (e: unknown) => {
     if (e instanceof ApiError && e.status === 409) return setKonflik(true);
     if (e instanceof ApiError && e.status === 422 && e.details?.length) {
@@ -180,6 +207,9 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
     router.push(`/kegiatan/${hasil.id}`);
   };
 
+  /**
+   * handleSubmit menjalankan validasi dulu: fungsi pertama dipanggil bila semua kolom sah, fungsi kedua bila ada yang salah.
+   */
   const onSubmit = handleSubmit(
     (nilai) => {
       if (tahanSimpan) return;
@@ -216,6 +246,9 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
       ? `${formatTanggal(tglMulai)} ${jamMulai} – ${tglSelesai === tglMulai ? "" : `${formatTanggal(tglSelesai)} `}${jamSelesai}`
       : null;
 
+  /**
+   * trigger(...) memvalidasi hanya kolom langkah 1; pengguna baru boleh lanjut ke langkah 2 bila kolom-kolom itu sah.
+   */
   const lanjut = async () => {
     if (await trigger(KOLOM_LANGKAH_1, { shouldFocus: true })) {
       setLangkah(1);
@@ -223,6 +256,9 @@ export function KegiatanForm({ referensi, kegiatan, penanggungJawabBawaan, draf 
     }
   };
 
+  /**
+   * Saat konflik, data terbaru diambil langsung (fetchQuery, staleTime 0 = abaikan cache) lalu form diisi ulang dengan data itu.
+   */
   const muatUlang = async () => {
     if (!kegiatan) return;
     setMemuatUlang(true);

@@ -18,11 +18,16 @@ import { cn } from "@/lib/utils";
 import { useKalender } from "../use-kalender";
 import type { DataKalender, KegiatanKalender } from "../types";
 
-// Kalender bulanan kegiatan: penyaring bidang di atas kisi, agenda tanggal terpilih di samping
+/**
+ * Kalender bulanan kegiatan: penyaring bidang di atas kisi, agenda tanggal terpilih di samping
+ */
 
 const ZONA = "Asia/Jakarta";
 const NAMA_HARI = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-// chart-1 (navy) milik "hari ini"; unit memakai chart-2 sampai chart-6
+
+/**
+ * chart-1 (navy) milik "hari ini"; unit memakai chart-2 sampai chart-6
+ */
 const PALET_UNIT = [2, 3, 4, 5, 6];
 const LAINNYA = -1;
 const WARNA_LAINNYA = "var(--foreground)";
@@ -69,7 +74,9 @@ const formatKunci = (kunci: string, opsi: Intl.DateTimeFormatOptions) =>
 const formatHariPanjang = (kunci: string) => formatKunci(kunci, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 const jam = (nilai: string) => formatJam(nilai).slice(0, 5);
 
-// Unit di luar palet digabung ke LAINNYA; kuncinya dipakai juga oleh penyaring bidang
+/**
+ * Unit di luar palet digabung ke LAINNYA; kuncinya dipakai juga oleh penyaring bidang
+ */
 function useWarnaUnit(data: DataKalender | undefined) {
   return useMemo(() => {
     const peta = new Map<number, string>();
@@ -123,7 +130,10 @@ function SelHari({
   onPilih: () => void;
 }) {
   const sisa = kegiatan.length - MAKS_DI_SEL;
-  // Seluruh sel bisa diketuk di layar sentuh; pengguna keyboard memakai tombol tanggal di dalamnya
+
+  /**
+   * Seluruh sel bisa diketuk di layar sentuh; pengguna keyboard memakai tombol tanggal di dalamnya
+   */
   return (
     <td
       onClick={onPilih}
@@ -145,7 +155,10 @@ function SelHari({
           aria-label={`${formatHariPanjang(hari)}, ${kegiatan.length} kegiatan`}
           className={cn(
             "flex size-7 cursor-pointer items-center justify-center self-start rounded-full text-xs font-semibold tabular-nums focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-            // Minggu merah mengikuti kebiasaan kalender Indonesia
+
+            /**
+             * Minggu merah mengikuti kebiasaan kalender Indonesia
+             */
             minggu && diBulanIni && !hariIni && "text-destructive",
             !diBulanIni && "font-normal text-muted-foreground",
             hariIni && "bg-primary text-primary-foreground",
@@ -183,7 +196,9 @@ function SelHari({
   );
 }
 
-// Satu kegiatan di agenda: kolom jam di kiri agar urutan waktu terbaca sekilas
+/**
+ * Satu kegiatan di agenda: kolom jam di kiri agar urutan waktu terbaca sekilas
+ */
 function ItemAgenda({ k, hari, warna, denganTanggal }: { k: KegiatanKalender; hari: string; warna: string; denganTanggal?: boolean }) {
   const mulai = kunciHari(k.tglMulai);
   const selesai = kunciHari(k.tglSelesai);
@@ -299,7 +314,9 @@ function AgendaHari({
 
 type ButirBidang = { kunci: number; nama: string; warna: string; jumlah: number };
 
-// Penyaring bidang tepat di atas kisi yang disaringnya; warnanya sekaligus keterangan warna chip di kisi
+/**
+ * Penyaring bidang tepat di atas kisi yang disaringnya; warnanya sekaligus keterangan warna chip di kisi
+ */
 function PenyaringBidang({ butir, total, dipilih, onPilih }: { butir: ButirBidang[]; total: number; dipilih: number | null; onPilih: (kunci: number | null) => void }) {
   const kelas = (aktif: boolean) =>
     cn(
@@ -369,7 +386,9 @@ export function KalenderView() {
     router.replace(kode ? `${pathname}?bulan=${kode}` : pathname, { scroll: false });
   };
 
-  // Di ponsel panel agenda berada di bawah kisi; gulir ke sana bila belum terlihat agar ketukan tanggal ada hasilnya
+  /**
+   * Di ponsel panel agenda berada di bawah kisi; gulir ke sana bila belum terlihat agar ketukan tanggal ada hasilnya
+   */
   const pilihHari = (hari: string) => {
     setPilihan(hari);
     const panel = agendaRef.current;

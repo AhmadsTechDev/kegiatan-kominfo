@@ -1,7 +1,9 @@
 import { t } from "elysia";
 import { AKSI_AUDIT } from "@/utils/konstanta";
 
-// Tanggal opsional berformat YYYY-MM-DD
+/**
+ * Tanggal opsional berformat YYYY-MM-DD
+ */
 const tanggal = (pesan: string) => t.Optional(t.String({ pattern: "^\\d{4}-\\d{2}-\\d{2}$", error: pesan }));
 
 export const AuditLogValidator = {

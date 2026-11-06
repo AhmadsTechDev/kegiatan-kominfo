@@ -1,7 +1,9 @@
 import Image from "next/image";
 import { site } from "@/config/site";
 
-// Kartu halaman publik: lambang kota dan nama aplikasi, judul isi lewat KepalaKartu
+/**
+ * Kartu halaman publik: lambang kota dan nama aplikasi, judul isi lewat KepalaKartu
+ */
 
 export function KartuPublik({ children }: { children: React.ReactNode }) {
   return (

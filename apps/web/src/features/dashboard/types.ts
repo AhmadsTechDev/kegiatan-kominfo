@@ -1,6 +1,8 @@
 import type { StatusPelaksanaan } from "@/components/shared/status-badge";
 
-// Tipe data dashboard: statistik dinas dan aktivitas pegawai
+/**
+ * Tipe data dashboard: statistik dinas dan aktivitas pegawai
+ */
 
 export type KegiatanRingkas = {
   id: number;

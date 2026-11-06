@@ -20,7 +20,9 @@ import { useBidangAdmin, useHapusBidang, useSimpanBidang } from "../hooks/use-ad
 import type { BidangAdmin } from "../types";
 import { AksiBaris, BadgeAktif, KartuMaster, KolomCari, PilihanTab, terapkanGalatServer } from "./admin-shared";
 
-// Tab kelola bidang dan sub bidang (tanpa induk = bidang, dengan induk = sub bidang)
+/**
+ * Tab kelola bidang dan sub bidang (tanpa induk = bidang, dengan induk = sub bidang)
+ */
 
 const schema = z.object({
   kode: z
@@ -56,7 +58,9 @@ function SelNamaUnit({ u, turunan }: { u: BidangAdmin; turunan: boolean }) {
   );
 }
 
-// Tingkat mengikuti tab: tab Bidang membuat bidang (tanpa induk), tab Sub bidang membuat sub bidang di bawah satu bidang
+/**
+ * Tingkat mengikuti tab: tab Bidang membuat bidang (tanpa induk), tab Sub bidang membuat sub bidang di bawah satu bidang
+ */
 function UnitDialog({ unit, semua, tingkat, onClose }: { unit: BidangAdmin | "baru"; semua: BidangAdmin[]; tingkat: TingkatUnit; onClose: () => void }) {
   const simpan = useSimpanBidang();
   const [galat, setGalat] = useState<string | null>(null);

@@ -1,4 +1,6 @@
-// Tipe data pratinjau laporan dan parameter cakupan
+/**
+ * Tipe data pratinjau laporan dan parameter cakupan
+ */
 
 export type PratinjauLaporan = {
   kop: { pemerintah: string; dinas: string; alamat: string[] };
@@ -17,7 +19,9 @@ export type PratinjauLaporan = {
   }[];
 };
 
-// Kegiatan beserta berkas dokumentasinya (tab Dokumentasi)
+/**
+ * Kegiatan beserta berkas dokumentasinya (tab Dokumentasi)
+ */
 export type KegiatanDokumentasi = {
   id: number;
   judul: string;

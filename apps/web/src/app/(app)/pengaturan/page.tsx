@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PengaturanView } from "@/features/pengaturan/components/pengaturan-view";
 
-// Halaman pengaturan akun sendiri (/pengaturan)
+/**
+ * Halaman pengaturan akun sendiri (/pengaturan)
+ */
 
 export const metadata: Metadata = { title: "Pengaturan" };
 

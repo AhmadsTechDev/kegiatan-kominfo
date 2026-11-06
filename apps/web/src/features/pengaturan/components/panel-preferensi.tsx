@@ -11,7 +11,9 @@ import { cn } from "@/lib/utils";
 import type { Preferensi } from "../api/akun-saya";
 import { usePreferensi, useTema, useUbahPreferensi } from "../hooks/use-akun-saya";
 
-// Panel preferensi tema dan email pengingat; disimpan di akun agar ikut ke perangkat lain
+/**
+ * Panel preferensi tema dan email pengingat; disimpan di akun agar ikut ke perangkat lain
+ */
 
 const berlangganan = () => () => {};
 

@@ -3,7 +3,9 @@ import { NotifikasiController } from "@/controllers/notifikasi.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
 import { NotifikasiValidator } from "@/validators/notifikasi.validator";
 
-// Notifikasi dalam aplikasi milik user yang sedang masuk (semua role; isinya hanya miliknya sendiri)
+/**
+ * Notifikasi dalam aplikasi milik user yang sedang masuk (semua role; isinya hanya miliknya sendiri)
+ */
 export const notifikasiRoutes = new Elysia({ prefix: "/notifikasi" })
   .use(authPlugin)
   .get("/", NotifikasiController.daftar, { auth: true })

@@ -2,7 +2,10 @@ import { t } from "elysia";
 import { ROLES, STATUS_AKUN } from "@/utils/konstanta";
 
 const role = t.UnionEnum(ROLES, { error: "Role tidak valid" });
-// Untuk filter query sengaja memakai t.Union: t.Optional(t.UnionEnum) di query diisi otomatis nilai pertama ("PEGAWAI")
+
+/**
+ * Untuk filter query sengaja memakai t.Union: t.Optional(t.UnionEnum) di query diisi otomatis nilai pertama ("PEGAWAI")
+ */
 const roleFilter = t.Union(
   ROLES.map((r) => t.Literal(r)),
   { error: "Role tidak valid" },
@@ -12,8 +15,10 @@ const statusFilter = t.Union(
   { error: "Status akun tidak valid" },
 );
 
-// Isian form Buat/Ubah akun. Akun selalu tertaut ke data pegawai: bidang wajib, NIP opsional.
-// pegawaiId diisi bila admin memilih pegawai yang sudah terdaftar di Master data
+/**
+ * Isian form Buat/Ubah akun. Akun selalu tertaut ke data pegawai: bidang wajib, NIP opsional.
+ * pegawaiId diisi bila admin memilih pegawai yang sudah terdaftar di Master data
+ */
 const isiAkun = {
   name: t.String({ minLength: 1, maxLength: 150, error: "Nama wajib diisi, maksimal 150 karakter" }),
   email: t.String({ format: "email", maxLength: 255, error: "Email tidak valid" }),
@@ -23,7 +28,9 @@ const isiAkun = {
   pegawaiId: t.Optional(t.Nullable(t.Integer({ minimum: 1, error: "Pegawai tidak valid" }))),
 };
 
-// Aturan isian untuk manajemen akun pengguna (/admin/akun)
+/**
+ * Aturan isian untuk manajemen akun pengguna (/admin/akun)
+ */
 export const UserValidator = {
   params: t.Object({ id: t.String({ minLength: 1, maxLength: 36, error: "ID akun tidak valid" }) }),
 

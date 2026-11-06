@@ -8,7 +8,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { formatUkuran } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-// Area seret-lepas untuk unggah foto atau PDF; proses unggah diurus pemanggil
+/**
+ * Area seret-lepas untuk unggah foto atau PDF; proses unggah diurus pemanggil
+ */
 
 export type StatusUnggah = "menunggu" | "mengunggah" | "berhasil" | "gagal";
 

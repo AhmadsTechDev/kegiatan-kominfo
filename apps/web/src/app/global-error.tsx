@@ -1,6 +1,8 @@
 "use client";
 
-// Penangkap galat fatal di root layout agar tidak jadi layar putih
+/**
+ * Penangkap galat fatal di root layout agar tidak jadi layar putih
+ */
 
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (

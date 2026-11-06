@@ -2,7 +2,9 @@ import { Laptop, Smartphone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatTanggalJam } from "@/lib/format";
 
-// Daftar sesi login aktif (perangkat, IP, waktu) dengan tombol cabut opsional
+/**
+ * Daftar sesi login aktif (perangkat, IP, waktu) dengan tombol cabut opsional
+ */
 
 export type Sesi = { id: string; ipAddress: string | null; userAgent: string | null; createdAt: string; updatedAt: string; sesiIni?: boolean };
 

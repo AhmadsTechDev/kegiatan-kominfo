@@ -1,11 +1,16 @@
 import { z } from "zod";
 import type { IsiDraf, KegiatanDetail, KegiatanPayload } from "../types";
 
-// Skema Zod formulir kegiatan dan konversi antara formulir, payload API, dan draf
+/**
+ * Skema Zod formulir kegiatan dan konversi antara formulir, payload API, dan draf
+ */
 
 const JAM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const OFFSET_WIB_MS = 7 * 60 * 60 * 1000;
 
+/**
+ * Form memisahkan tanggal dan jam; keduanya digabung menjadi waktu ISO dengan zona +07:00 (WIB) sebelum dikirim ke backend.
+ */
 export const keIsoWib = (tanggal: string, jam: string) => `${tanggal}T${jam}:00+07:00`;
 
 export function bagianWib(iso: string) {
@@ -15,6 +20,10 @@ export function bagianWib(iso: string) {
 
 const angkaOpsional = (teks: string) => (teks.trim() === "" ? null : Number(teks.replace(",", ".")));
 
+/**
+ * Skema form kegiatan. Semua kolom berupa teks karena itulah yang dihasilkan input HTML; angka dan koordinat
+ * baru diubah saat membentuk payload. superRefine memeriksa aturan antarkolom, mis. selesai tidak boleh sebelum mulai.
+ */
 export const kegiatanSchema = z
   .object({
     judul: z.string().trim().min(1, "Judul wajib diisi").max(200, "Judul maksimal 200 karakter"),
@@ -92,7 +101,9 @@ export function keKegiatanPayload(v: KegiatanFormValues): KegiatanPayload {
 
 export function nilaiAwalForm(k?: KegiatanDetail, penanggungJawabId?: number | null): KegiatanFormValues {
   if (!k) {
-    // Kegiatan baru dimulai sekarang (WIB) dan berakhir satu jam kemudian, supaya pengisi tinggal mengubah bila perlu
+    /**
+     * Kegiatan baru dimulai sekarang (WIB) dan berakhir satu jam kemudian, supaya pengisi tinggal mengubah bila perlu
+     */
     const sekarang = Date.now();
     const mulai = bagianWib(new Date(sekarang).toISOString());
     const selesai = bagianWib(new Date(sekarang + 3600_000).toISOString());

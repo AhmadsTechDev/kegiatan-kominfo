@@ -20,7 +20,9 @@ import { kelasLabel, SidebarNav } from "./sidebar-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { SidebarAccount, UserMenu } from "./user-menu";
 
-// Kerangka halaman setelah login: bilah samping, bilah atas, dan area konten
+/**
+ * Kerangka halaman setelah login: bilah samping, bilah atas, dan area konten
+ */
 
 function subHalaman(pathname: string) {
   if (pathname === "/kegiatan/baru") return "Tambah kegiatan";
@@ -126,6 +128,12 @@ function IsiSidebar({
   );
 }
 
+/**
+ * Kerangka semua halaman setelah login: sidebar (menjadi drawer di HP), topbar dengan breadcrumb,
+ * pencarian cepat, notifikasi, pengganti tema, dan menu pengguna. Menu yang tampil mengikuti role pengguna.
+ * Atribut data-peran pada <html> dipakai CSS untuk memberi warna aksen emas khusus pimpinan.
+ * @param children isi halaman yang sedang dibuka
+ */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, isPending } = useCurrentUser();
   const [collapsed, setCollapsed] = useState(false);
@@ -134,7 +142,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const permintaan = useJumlahPermintaan(user?.role === "ADMIN");
   const lencana = { "/admin/akun": permintaan.data?.menunggu ?? 0 };
 
-  // Penanda peran untuk token warna (globals.css): pimpinan mendapat aksen emas
+  /**
+   * Penanda peran untuk token warna (globals.css): pimpinan mendapat aksen emas
+   */
   const peran = user?.role === "PIMPINAN" ? "pimpinan" : null;
   useEffect(() => {
     const akar = document.documentElement;

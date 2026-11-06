@@ -39,14 +39,18 @@ import type { FilterKegiatan, KegiatanItem } from "../types";
 import { DrafSaya } from "./draf-saya";
 import { KegiatanDokumentasiSheet } from "./kegiatan-dokumentasi-sheet";
 
-// Daftar kegiatan dengan filter, paginasi, tabel di desktop, dan kartu di ponsel
+/**
+ * Daftar kegiatan dengan filter, paginasi, tabel di desktop, dan kartu di ponsel
+ */
 
 type Lingkup = "semua" | "unit" | "saya" | "perbaikan";
 
 type BukaDokumentasi = (k: KegiatanItem) => void;
 
-// Tombol Dokumentasi: membuka panel dokumentasi dan hasil tanpa meninggalkan daftar
-// ikonSaja dipakai di tabel desktop agar kolom aksi tidak memakan lebar yang dibutuhkan kolom Lokasi
+/**
+ * Tombol Dokumentasi: membuka panel dokumentasi dan hasil tanpa meninggalkan daftar
+ * ikonSaja dipakai di tabel desktop agar kolom aksi tidak memakan lebar yang dibutuhkan kolom Lokasi
+ */
 function TombolDokumentasi({
   k,
   onBuka,
@@ -89,6 +93,11 @@ function SelLokasi({ nama }: { nama: string | null }) {
   );
 }
 
+/**
+ * Definisi kolom tabel untuk DataTable (TanStack Table). Setiap kolom punya `id`, `header`, dan `cell`
+ * (fungsi yang menerima baris lalu mengembalikan tampilan selnya).
+ * @param opsi tanpaPj menyembunyikan kolom penanggung jawab; onDokumentasi membuka panel dokumentasi
+ */
 function buatKolom({
   tanpaPj,
   onDokumentasi,
@@ -311,6 +320,10 @@ function TabelKegiatan({
   );
 }
 
+/**
+ * Halaman daftar kegiatan: filter (disimpan di URL), tabel di layar lebar, dan kartu di HP.
+ * Panel dokumentasi dibuka di atas daftar (sheet), jadi pengguna tidak kehilangan posisi filter dan halamannya.
+ */
 export function KegiatanListView() {
   const { user } = useCurrentUser();
   const grupNav = useGrupNav("Operasional");
@@ -324,7 +337,9 @@ export function KegiatanListView() {
         ? "saya"
         : "unit";
   const judul: Record<Lingkup, { title: string; description?: string }> = {
-    // Admin tetap "Kegiatan"; pimpinan memakai nama menu "Semua kegiatan"
+    /**
+     * Admin tetap "Kegiatan"; pimpinan memakai nama menu "Semua kegiatan"
+     */
     semua: { title: user?.role === "PIMPINAN" ? "Semua kegiatan" : "Kegiatan" },
     unit: {
       title: "Semua kegiatan",

@@ -11,7 +11,9 @@ const MIME: Record<FormatEkspor, string> = {
 
 type KonteksEkspor = Konteks<unknown, unknown, RekapQuery>;
 
-// Membuat handler unduh berkas untuk format tertentu (saat ini hanya PDF)
+/**
+ * Membuat handler unduh berkas untuk format tertentu (saat ini hanya PDF)
+ */
 const unduh = (format: FormatEkspor) => async ({ query, user, request }: KonteksEkspor) => {
   const hasil = await EksporService.buat(format, query, { ...aktorDari(user), nama: user.name }, requestMeta(request.headers));
   return new Response(hasil.isi, {
@@ -25,11 +27,19 @@ const unduh = (format: FormatEkspor) => async ({ query, user, request }: Konteks
   });
 };
 
+/**
+ * Controller ekspor laporan (PDF, pratinjau JSON, dan ZIP dokumentasi).
+ * Setiap fungsi menerima konteks permintaan dari Elysia, mengambil bagian yang perlu, lalu menyerahkan pekerjaannya ke service.
+ */
 export const EksporController = {
-  // GET /api/ekspor/kegiatan.pdf
+  /**
+   * GET /api/ekspor/kegiatan.pdf
+   */
   pdf: unduh("pdf"),
 
-  // GET /api/ekspor/dokumentasi.zip — semua dokumentasi pada cakupan, atau satu kegiatan bila ?kegiatan= diisi
+  /**
+   * GET /api/ekspor/dokumentasi.zip — semua dokumentasi pada cakupan, atau satu kegiatan bila ?kegiatan= diisi
+   */
   dokumentasiZip: async ({ query, user, request }: Konteks<unknown, unknown, DokumentasiZipQuery>) => {
     const hasil = await EksporService.dokumentasiZip(query, { ...aktorDari(user), nama: user.name }, requestMeta(request.headers));
     return new Response(hasil.aliran, {
@@ -42,9 +52,13 @@ export const EksporController = {
     });
   },
 
-  // GET /api/ekspor/dokumentasi
+  /**
+   * GET /api/ekspor/dokumentasi
+   */
   dokumentasi: ({ query, user }: KonteksEkspor) => EksporService.dokumentasi(query, aktorDari(user)),
 
-  // GET /api/ekspor/pratinjau
+  /**
+   * GET /api/ekspor/pratinjau
+   */
   pratinjau: ({ query, user }: KonteksEkspor) => EksporService.pratinjau(query, { ...aktorDari(user), nama: user.name }),
 };

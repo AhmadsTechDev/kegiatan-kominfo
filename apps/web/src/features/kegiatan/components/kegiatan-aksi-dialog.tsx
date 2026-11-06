@@ -8,7 +8,9 @@ import { lepasLapisan } from "@/hooks/use-tutup-lewat-kembali";
 import { ApiError } from "@/lib/api-client";
 import { kegiatanKeys, useHapusKegiatan, useSelesaikanKegiatan } from "../hooks/use-kegiatan";
 
-// Dialog konfirmasi selesaikan atau hapus kegiatan
+/**
+ * Dialog konfirmasi selesaikan atau hapus kegiatan
+ */
 
 export type TargetAksi = { id: number; judul: string; updatedAt: string };
 export type JenisAksi = "selesai" | "hapus";
@@ -92,8 +94,11 @@ export function KegiatanAksiDialog({ target, aksi, onClose, onDihapus }: Props) 
           hapus.mutate(target.id, {
             onSuccess: () => {
               toast.success("Kegiatan dihapus");
-              // Halaman akan berpindah: entri riwayat dialog dilepas agar penutupan dialog tidak
-              // memanggil history.back() yang membatalkan perpindahan ke daftar
+
+              /**
+               * Halaman akan berpindah: entri riwayat dialog dilepas agar penutupan dialog tidak
+               * memanggil history.back() yang membatalkan perpindahan ke daftar
+               */
               if (onDihapus) lepasLapisan();
               tutup();
               onDihapus?.();

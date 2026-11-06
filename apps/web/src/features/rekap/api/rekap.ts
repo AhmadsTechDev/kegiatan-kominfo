@@ -2,7 +2,9 @@ import { apiClient } from "@/lib/api-client";
 import type { NilaiFilter } from "@/components/shared/filter-bar";
 import type { FormatEkspor, RekapData, SatuanRekap } from "../types";
 
-// Pemanggil endpoint rekap dan unduh ekspor PDF
+/**
+ * Pemanggil endpoint rekap dan unduh ekspor PDF
+ */
 
 function paramsFilter(filter: NilaiFilter) {
   const { q, dari, sampai, unit, jenis, status, pegawai } = filter;

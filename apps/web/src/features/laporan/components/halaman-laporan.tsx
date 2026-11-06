@@ -3,7 +3,9 @@ import { site } from "@/config/site";
 import { cn } from "@/lib/utils";
 import type { PratinjauLaporan } from "../types";
 
-// Tata letak halaman laporan A4 mendatar untuk pratinjau dan cetak
+/**
+ * Tata letak halaman laporan A4 mendatar untuk pratinjau dan cetak
+ */
 
 const BARIS_HALAMAN_PERTAMA = 7;
 const BARIS_PER_HALAMAN = 12;

@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AkunDetailView } from "@/features/admin/components/akun-detail-view";
 
-// Halaman detail satu akun untuk admin (/admin/akun/[id])
+/**
+ * Halaman detail satu akun untuk admin (/admin/akun/[id])
+ */
 
 export const metadata: Metadata = { title: "Detail akun" };
 

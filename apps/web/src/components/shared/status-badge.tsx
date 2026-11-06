@@ -2,7 +2,9 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { LABEL_STATUS_AKUN, type StatusAkun } from "@/types/auth";
 
-// Label status kegiatan, status pemeriksaan, dan status akun
+/**
+ * Label status kegiatan, status pemeriksaan, dan status akun
+ */
 
 export type StatusPelaksanaan = "akan_datang" | "berlangsung" | "selesai" | "dibatalkan";
 
@@ -34,7 +36,9 @@ export function StatusBadge({ status, className }: { status: StatusPelaksanaan; 
   );
 }
 
-// "terkirim" adalah keadaan biasa kegiatan yang sudah dikirim, jadi tidak diberi lencana
+/**
+ * "terkirim" adalah keadaan biasa kegiatan yang sudah dikirim, jadi tidak diberi lencana
+ */
 export type StatusPemeriksaan = "draf" | "terkirim" | "perlu_perbaikan";
 
 const PEMERIKSAAN: Record<Exclude<StatusPemeriksaan, "terkirim">, { label: string; kelas: string }> = {
@@ -52,8 +56,10 @@ export function StatusPemeriksaanBadge({ status, className }: { status: StatusPe
   );
 }
 
-// Bentuk sama dengan StatusBadge (pil + teks). Warna meminjam token status yang artinya sejalan:
-// menunggu aktivasi = kuning (masih berjalan), aktif = hijau, nonaktif = netral (bukan merah, karena bukan galat)
+/**
+ * Bentuk sama dengan StatusBadge (pil + teks). Warna meminjam token status yang artinya sejalan:
+ * menunggu aktivasi = kuning (masih berjalan), aktif = hijau, nonaktif = netral (bukan merah, karena bukan galat)
+ */
 const AKUN: Record<StatusAkun, string> = {
   MENUNGGU_AKTIVASI: "bg-status-berlangsung text-status-berlangsung-foreground",
   AKTIF: "bg-status-selesai text-status-selesai-foreground",

@@ -19,7 +19,9 @@ import { useJenisAdmin, useSimpanJenis } from "../hooks/use-admin";
 import type { JenisKegiatanAdmin } from "../types";
 import { AksiBaris, BadgeAktif, KartuMaster, terapkanGalatServer } from "./admin-shared";
 
-// Tab kelola jenis kegiatan: tambah, ubah nama, jumlah pemakaian, status aktif
+/**
+ * Tab kelola jenis kegiatan: tambah, ubah nama, jumlah pemakaian, status aktif
+ */
 
 const schema = z.object({ nama: z.string().trim().min(1, "Nama jenis wajib diisi").max(100, "Nama maksimal 100 karakter") });
 type Nilai = z.infer<typeof schema>;

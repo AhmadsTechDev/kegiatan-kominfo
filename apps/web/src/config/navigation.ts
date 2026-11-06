@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 import type { Role } from "@/types/auth";
 
-// Struktur menu navigasi per role, plus helper menu aktif dan breadcrumb
+/**
+ * Struktur menu navigasi per role, plus helper menu aktif dan breadcrumb
+ */
 
 export type NavItem = {
   label: string;
@@ -24,10 +26,14 @@ export type NavItem = {
   icon: LucideIcon;
 };
 
-// tampilkanLabel: kelompok satu menu biasanya tanpa label; isi true agar labelnya tetap tampil
+/**
+ * tampilkanLabel: kelompok satu menu biasanya tanpa label; isi true agar labelnya tetap tampil
+ */
 export type NavGroup = { label: string; items: NavItem[]; tampilkanLabel?: boolean };
 
-// Admin: struktur lama dipertahankan
+/**
+ * Admin: struktur lama dipertahankan
+ */
 const NAV_ADMIN: NavGroup[] = [
   { label: "Ringkasan", items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }] },
   {
@@ -50,7 +56,9 @@ const NAV_ADMIN: NavGroup[] = [
   },
 ];
 
-// Pimpinan: memantau seluruh kegiatan lintas bidang, lalu memeriksa dan memberi catatan perbaikan
+/**
+ * Pimpinan: memantau seluruh kegiatan lintas bidang, lalu memeriksa dan memberi catatan perbaikan
+ */
 const NAV_PIMPINAN: NavGroup[] = [
   {
     label: "Monitoring",
@@ -65,7 +73,9 @@ const NAV_PIMPINAN: NavGroup[] = [
   { label: "Pengawasan", tampilkanLabel: true, items: [{ label: "Pemeriksaan kegiatan", href: "/pantau", icon: ClipboardCheck }] },
 ];
 
-// Pegawai: Dashboard di paling atas seperti role lain; tanpa Rekap dan Laporan (ditolak juga oleh backend)
+/**
+ * Pegawai: Dashboard di paling atas seperti role lain; tanpa Rekap dan Laporan (ditolak juga oleh backend)
+ */
 const NAV_PEGAWAI: NavGroup[] = [
   { label: "Ringkasan", items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }] },
   {

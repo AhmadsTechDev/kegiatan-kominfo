@@ -6,7 +6,9 @@ import { formatAngka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { JumlahStatus } from "../types";
 
-// Komposisi status pelaksanaan: satu batang bertumpuk plus rincian jumlah dan persentase
+/**
+ * Komposisi status pelaksanaan: satu batang bertumpuk plus rincian jumlah dan persentase
+ */
 
 const STATUS: { kunci: Exclude<keyof JumlahStatus, "total" | "peserta">; status: StatusPelaksanaan; batang: string }[] = [
   { kunci: "selesai", status: "selesai", batang: "bg-status-selesai-foreground" },

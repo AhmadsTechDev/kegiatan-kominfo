@@ -3,7 +3,9 @@ import type { AksiAudit } from "./umum.types";
 
 export type AuditLogQuery = typeof AuditLogValidator.daftarQuery.static;
 
-// Data yang dikirim service saat mencatat audit
+/**
+ * Data yang dikirim service saat mencatat audit
+ */
 export type CatatAuditInput = {
   aktorId: string | null;
   aksi: AksiAudit;

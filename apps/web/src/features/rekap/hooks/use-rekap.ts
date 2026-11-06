@@ -5,7 +5,9 @@ import type { NilaiFilter } from "@/components/shared/filter-bar";
 import { getRekap, unduhEkspor } from "../api/rekap";
 import type { FormatEkspor, SatuanRekap } from "../types";
 
-// Hook TanStack Query untuk data rekap dan ekspor
+/**
+ * Hook TanStack Query untuk data rekap dan ekspor
+ */
 
 export const rekapKeys = {
   all: ["rekap"] as const,

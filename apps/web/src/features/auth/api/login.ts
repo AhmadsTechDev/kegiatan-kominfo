@@ -1,7 +1,9 @@
 import { authClient } from "@/lib/auth-client";
 import type { LoginInput } from "../schemas/login.schema";
 
-// Login lewat Better Auth dan menerjemahkan galatnya ke pesan berbahasa Indonesia
+/**
+ * Login lewat Better Auth dan menerjemahkan galatnya ke pesan berbahasa Indonesia
+ */
 
 export type LoginErrorKind = "kredensial" | "terkunci" | "nonaktif" | "terlalu_sering" | "validasi" | "server";
 

@@ -4,19 +4,32 @@ import { kirimEmail, type IsiEmail } from "@/lib/mailer";
 import { PengingatRepository, type KandidatPengingat } from "@/repositories/pengingat.repository";
 import { formatJam, formatRentang, tanggalWib } from "@/utils/format-waktu";
 
+/**
+ * Service pengingat email terjadwal (dijalankan oleh jobs/pengingat.job.ts setiap 15 menit):
+ * - H-1: mengingatkan penanggung jawab sehari sebelum kegiatan.
+ * - Dokumentasi: mengingatkan kegiatan yang sudah selesai sejak 1 jam lalu (sampai 3 hari) tetapi belum ada dokumentasinya.
+ */
 const JEDA_DOKUMENTASI_MS = 60 * 60 * 1000;
 const BATAS_DOKUMENTASI_MS = 3 * 24 * 60 * 60 * 1000;
 
+/**
+ * KONSEP dependency injection sederhana: fungsi pengirim email dijadikan parameter (bawaannya kirimEmail).
+ * Saat pengujian, fungsi palsu bisa dimasukkan sehingga tidak ada email sungguhan yang terkirim.
+ */
 export type Pengirim = (kepada: string, subjek: string, isi: IsiEmail) => Promise<void>;
 
-// Rincian kegiatan yang sama untuk kedua jenis pengingat
+/**
+ * Rincian kegiatan yang sama untuk kedua jenis pengingat
+ */
 const rincianKegiatan = (k: KandidatPengingat) => [
   { label: "Kegiatan", nilai: k.judul },
   { label: "Waktu", nilai: formatRentang(k.tglMulai, k.tglSelesai) },
   ...(k.lokasiNama ? [{ label: "Lokasi", nilai: k.lokasiNama }] : []),
 ];
 
-// Isi email pengingat H-1 ("hari ini" bila kegiatannya mulai hari ini)
+/**
+ * Isi email pengingat H-1 ("hari ini" bila kegiatannya mulai hari ini)
+ */
 function emailHMinus1(k: KandidatPengingat, sekarang: Date) {
   const hari = tanggalWib(k.tglMulai) === tanggalWib(sekarang) ? "hari ini" : "besok";
   return {
@@ -32,7 +45,9 @@ function emailHMinus1(k: KandidatPengingat, sekarang: Date) {
   };
 }
 
-// Isi email pengingat untuk kegiatan selesai yang belum berdokumentasi
+/**
+ * Isi email pengingat untuk kegiatan selesai yang belum berdokumentasi
+ */
 function emailDokumentasi(k: KandidatPengingat) {
   return {
     subjek: `Lengkapi dokumentasi: ${k.judul}`,
@@ -51,7 +66,15 @@ function emailDokumentasi(k: KandidatPengingat) {
 }
 
 export const PengingatService = {
-  // Satu putaran pengingat: cari kandidat, kirim email, catat agar tidak terkirim dua kali
+  /**
+   * Satu putaran pengingat: cari kandidat, kirim email, catat agar tidak terkirim dua kali
+   *
+   * Pengingat dicatat SETELAH email berhasil terkirim. Bila pengiriman gagal, kegiatan itu tidak dicatat
+   * dan akan dicoba lagi di putaran berikutnya. Satu email gagal tidak menghentikan email lainnya (try/catch per email).
+   * @param sekarang waktu acuan (bisa diatur saat pengujian)
+   * @param kirim fungsi pengirim email
+   * @returns jumlah email yang terkirim per jenis pengingat
+   */
   async jalankan(sekarang = new Date(), kirim: Pengirim = kirimEmail) {
     const hasil: Record<JenisPengingat, number> = { H_MINUS_1: 0, DOKUMENTASI: 0 };
     const [besok, dokumentasi] = await Promise.all([

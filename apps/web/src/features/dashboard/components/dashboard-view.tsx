@@ -21,7 +21,9 @@ import { KpiCards } from "./kpi-cards";
 import { PeriodePicker } from "./periode-picker";
 import { PetaKegiatan } from "./peta-kegiatan";
 
-// Dashboard utama; isi dan tata letak menyesuaikan role
+/**
+ * Dashboard utama; isi dan tata letak menyesuaikan role
+ */
 
 export function DashboardView() {
   const { user, isPending } = useCurrentUser();
@@ -67,7 +69,9 @@ function DashboardDinas({ namaDepan }: { namaDepan: string }) {
         eyebrow="Ringkasan dinas"
         title={`${sapaan}, ${namaDepan}`}
         actions={
-          // HP: periode + muat ulang sebaris, Tambah selebar layar, waktu pembaruan di bawah
+          /**
+           * HP: periode + muat ulang sebaris, Tambah selebar layar, waktu pembaruan di bawah
+           */
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             {dataUpdatedAt > 0 && (
               <span className="order-last text-xs text-muted-foreground sm:order-first" aria-live="polite">

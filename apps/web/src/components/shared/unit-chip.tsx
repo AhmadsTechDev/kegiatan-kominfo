@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
-// Label nama bidang / sub bidang penanggung jawab kegiatan
+/**
+ * Label nama bidang / sub bidang penanggung jawab kegiatan
+ */
 
 export function UnitChip({ children, className }: { children: React.ReactNode; className?: string }) {
   return (

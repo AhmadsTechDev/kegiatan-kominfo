@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import { KegiatanDetailView } from "@/features/kegiatan/components/kegiatan-detail-view";
 import { KegiatanDetailSkeleton } from "@/features/kegiatan/components/kegiatan-states";
 
-// Halaman detail kegiatan (/kegiatan/[id])
+/**
+ * Halaman detail kegiatan (/kegiatan/[id])
+ */
 
 export const metadata: Metadata = { title: "Detail kegiatan" };
 

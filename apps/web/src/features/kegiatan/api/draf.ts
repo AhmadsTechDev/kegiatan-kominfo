@@ -1,7 +1,9 @@
 import { apiClient } from "@/lib/api-client";
 import type { Draf, DrafRingkas, IsiDraf } from "../types";
 
-// Pemanggil endpoint draf kegiatan milik pegawai yang login
+/**
+ * Pemanggil endpoint draf kegiatan milik pegawai yang login
+ */
 
 export async function getDaftarDraf() {
   const { data } = await apiClient.get<DrafRingkas[]>("/draf-kegiatan");

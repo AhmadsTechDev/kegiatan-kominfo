@@ -17,8 +17,15 @@ import {
 } from "../api/kegiatan";
 import type { FilterKegiatan, KegiatanPayload } from "../types";
 
-// Hook TanStack Query untuk kegiatan dan draf
+/**
+ * Hook TanStack Query untuk kegiatan dan draf
+ */
 
+/**
+ * KONSEP query key: "alamat" data di cache TanStack Query. Data dengan key sama dibagikan ke semua komponen.
+ * Key disusun bertingkat (["kegiatan", "detail", 5]), sehingga menyegarkan ["kegiatan"] ikut menyegarkan
+ * semua turunannya sekaligus (daftar, detail, draf).
+ */
 export const kegiatanKeys = {
   all: ["kegiatan"] as const,
   daftar: (filter: FilterKegiatan) => [...kegiatanKeys.all, "daftar", filter] as const,
@@ -28,6 +35,12 @@ export const kegiatanKeys = {
   drafDetail: (id: number) => [...kegiatanKeys.draf(), id] as const,
 };
 
+/**
+ * KONSEP useQuery: mengambil data lalu mengembalikan { data, isPending, isError, refetch, ... }.
+ * Filter adalah bagian dari key, jadi mengganti filter otomatis mengambil data baru.
+ * keepPreviousData membuat data lama tetap tampil (agak pudar) selama data baru dimuat, sehingga tabel tidak berkedip.
+ * @param filter filter dan halaman yang sedang aktif
+ */
 export function useDaftarKegiatan(filter: FilterKegiatan) {
   return useQuery({
     queryKey: kegiatanKeys.daftar(filter),
@@ -39,13 +52,23 @@ export function useDaftarKegiatan(filter: FilterKegiatan) {
 export const idValid = (id: number) => Number.isInteger(id) && id > 0;
 
 export function useKegiatan(id: number) {
+  /**
+   * enabled: false menunda pengambilan data, di sini sampai id dari URL sah (angka positif).
+   */
   return useQuery({ queryKey: kegiatanKeys.detail(id), queryFn: () => getKegiatan(id), enabled: idValid(id) });
 }
 
 export function useReferensi() {
+  /**
+   * Data referensi (bidang, jenis, pegawai) jarang berubah, jadi dianggap segar selama 5 menit.
+   */
   return useQuery({ queryKey: kegiatanKeys.referensi, queryFn: getReferensi, staleTime: 5 * 60_000 });
 }
 
+/**
+ * KONSEP invalidateQueries: menandai data di cache sebagai usang lalu mengambil ulang yang sedang tampil.
+ * Setelah kegiatan berubah, angka di dashboard dan rekap juga ikut berubah, jadi ketiganya disegarkan.
+ */
 function useSegarkan() {
   const queryClient = useQueryClient();
   return () =>
@@ -56,6 +79,11 @@ function useSegarkan() {
     ]);
 }
 
+/**
+ * KONSEP useMutation: untuk aksi yang MENGUBAH data (buat, ubah, hapus). Komponen memanggil mutate(data),
+ * lalu mendapat isPending selama proses dan bisa memberi onSuccess/onError sendiri.
+ * onSuccess di sini menyegarkan cache agar daftar langsung menampilkan kegiatan baru.
+ */
 export function useBuatKegiatan() {
   const segarkan = useSegarkan();
   return useMutation({ mutationFn: buatKegiatan, onSuccess: segarkan });
@@ -96,8 +124,11 @@ export function useHapusKegiatan() {
     onSuccess: (_, id) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: [...kegiatanKeys.all, "daftar"] }),
-        // Detail hanya ditandai usang (tanpa ambil ulang) agar halaman tidak berkedip sebelum pindah;
-        // bila pengguna menekan Kembali, detail diambil ulang dan tampil "tidak ditemukan"
+
+        /**
+         * Detail hanya ditandai usang (tanpa ambil ulang) agar halaman tidak berkedip sebelum pindah;
+         * bila pengguna menekan Kembali, detail diambil ulang dan tampil "tidak ditemukan"
+         */
         queryClient.invalidateQueries({ queryKey: kegiatanKeys.detail(id), refetchType: "none" }),
         queryClient.invalidateQueries({ queryKey: dashboardKeys.all }),
         queryClient.invalidateQueries({ queryKey: rekapKeys.all }),

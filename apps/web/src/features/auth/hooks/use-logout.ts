@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { authClient } from "@/lib/auth-client";
 
-// Keluar akun, hapus cache TanStack Query, lalu ke halaman login
+/**
+ * Keluar akun, hapus cache TanStack Query, lalu ke halaman login
+ */
 
 export function useLogout() {
   const router = useRouter();

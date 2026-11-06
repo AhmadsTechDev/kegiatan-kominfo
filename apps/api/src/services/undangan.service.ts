@@ -8,8 +8,15 @@ import { AuditLogService } from "./audit-log.service";
 import { KredensialService } from "./kredensial.service";
 
 export const UndanganService = {
-  // Mengundang pegawai dari Master data: membuat akunnya (tanpa kata sandi) lalu mengirim email aktivasi.
-  // Bila pegawai sudah punya akun yang belum diaktivasi, email/role diperbarui dan undangan dikirim ulang
+  /**
+   * Mengundang pegawai dari Master data: membuat akunnya (tanpa kata sandi) lalu mengirim email aktivasi.
+   * Bila pegawai sudah punya akun yang belum diaktivasi, email/role diperbarui dan undangan dikirim ulang
+   *
+   * Dipakai di dua tempat: tombol Undang di Master data dan persetujuan permintaan akun (permintaan-akun.service).
+   * @param admin admin yang mengundang (untuk audit log)
+   * @returns id akun, email tujuan, dan apakah ini pengiriman ulang
+   * @throws Unprocessable bila pegawai sudah punya akun aktif, akunnya nonaktif, atau email dipakai akun lain
+   */
   async undang({ pegawaiId, email: emailMentah, role }: IsiUndangan, admin: Admin) {
     const email = emailMentah.trim().toLowerCase();
     const pegawai = await UndanganRepository.pegawaiAktif(pegawaiId);

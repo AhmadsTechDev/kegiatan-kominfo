@@ -23,7 +23,9 @@ import { AdminGuard } from "./admin-shared";
 import { dariDetail, ItemAksiAkun, useAksiAkun, type AkunRingkas, type JenisAksi } from "./akun-aksi";
 import { ChipAksi, labelEntitas } from "./audit-log-view";
 
-// Detail satu akun: identitas, status, kepegawaian, undangan, sesi, dan riwayat
+/**
+ * Detail satu akun: identitas, status, kepegawaian, undangan, sesi, dan riwayat
+ */
 
 function Kepala({ a, idSaya, buka }: { a: AkunDetail; idSaya?: string; buka: (j: JenisAksi, akun: AkunRingkas) => void }) {
   const ringkas = dariDetail(a);

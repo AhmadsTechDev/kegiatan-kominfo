@@ -1,6 +1,13 @@
-// Cari tempat dan alamat dari koordinat lewat Photon (OpenStreetMap)
+/**
+ * Cari tempat dan alamat dari koordinat lewat Photon (OpenStreetMap)
+ */
 
 const DASAR = "https://photon.komoot.io";
+
+/**
+ * Geokode = mengubah nama tempat menjadi koordinat (dan sebaliknya). Photon adalah layanan pencarian gratis berbasis OpenStreetMap.
+ * Koordinat pusat Kota Palembang dikirim sebagai "bias" agar hasil di sekitar Palembang muncul lebih dulu.
+ */
 const BIAS = "lat=-2.9761&lon=104.7754";
 
 export type Tempat = { id: string; nama: string; alamat: string; lat: number; lng: number };
@@ -22,6 +29,10 @@ type FiturPhoton = {
 
 const bulatkan = (n: number) => Math.round(n * 1e6) / 1e6;
 
+/**
+ * Mengubah hasil Photon menjadi bentuk sederhana untuk aplikasi: nama, alamat, dan koordinat 6 angka desimal.
+ * `new Set(bagian)` membuang bagian alamat yang kembar, mis. kota yang sama ditulis dua kali.
+ */
 function keTempat(f: FiturPhoton): Tempat {
   const p = f.properties;
   const jalan = p.street ? [p.street, p.housenumber].filter(Boolean).join(" ") : undefined;

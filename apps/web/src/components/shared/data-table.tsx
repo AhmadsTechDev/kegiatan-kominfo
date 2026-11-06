@@ -7,7 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { EmptyState } from "./empty-state";
 
-// Tabel data generik dengan skeleton, kartu di ponsel, dan keadaan kosong
+/**
+ * Tabel data generik dengan skeleton, kartu di ponsel, dan keadaan kosong
+ */
 
 export const dataTableFeatures = tableFeatures({});
 export type DataTableColumn<TData extends RowData> = ColumnDef<typeof dataTableFeatures, TData>;
@@ -48,6 +50,14 @@ export function DataTableSkeleton({ rows = 5, className }: { rows?: number; clas
   );
 }
 
+/**
+ * Tabel data serbaguna berbasis TanStack Table, dipakai hampir di semua halaman daftar.
+ * Generic <TData> membuat tabel ini bisa menerima baris apa saja (kegiatan, akun, pegawai) dengan tipe yang tetap aman.
+ * Sudah menangani keadaan memuat (skeleton), kosong (EmptyState), dan tampilan kartu di HP (renderMobileCard).
+ * @param columns definisi kolom (header dan cara menampilkan sel)
+ * @param data baris yang ditampilkan
+ * @param renderMobileCard bila diisi, layar sempit menampilkan kartu alih-alih tabel
+ */
 export function DataTable<TData extends RowData>({
   columns,
   data,

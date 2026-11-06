@@ -2,7 +2,9 @@ import { StatCardSkeleton } from "@/components/shared/stat-card";
 import { Panel, PanelBody } from "@/components/shared/panel";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Skeleton dashboard saat memuat agar tata letak tidak bergeser
+/**
+ * Skeleton dashboard saat memuat agar tata letak tidak bergeser
+ */
 
 function KartuSkeleton({ className, tinggi = "h-72" }: { className?: string; tinggi?: string }) {
   return (

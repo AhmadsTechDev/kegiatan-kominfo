@@ -9,7 +9,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { navAktif, type NavGroup } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 
-// Menu bilah samping sesuai role, mode penuh maupun rel ikon
+/**
+ * Menu bilah samping sesuai role, mode penuh maupun rel ikon
+ */
 
 type SidebarNavProps = {
   groups: NavGroup[];
@@ -101,7 +103,10 @@ export function ItemSidebar({ label, icon: Icon, aktif, mode, collapsed, lencana
     <Link
       href={href}
       onClick={onNavigate}
-      // Dari menu HP: halaman tujuan menggantikan entri riwayat menu, jadi Kembali langsung ke halaman asal
+
+      /**
+       * Dari menu HP: halaman tujuan menggantikan entri riwayat menu, jadi Kembali langsung ke halaman asal
+       */
       replace={!!onNavigate}
       aria-current={aktif ? "page" : undefined}
       aria-label={lencana > 0 ? `${label}, ${lencana} menunggu` : label}

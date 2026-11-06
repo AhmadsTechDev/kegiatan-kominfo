@@ -20,7 +20,9 @@ import { LABEL_ROLE } from "@/types/auth";
 import { useBatalGantiEmail, useGantiEmail } from "../hooks/use-akun-saya";
 import { Baris } from "./panel-profil";
 
-// Panel informasi akun: email, verifikasi, role, status, dan ganti email
+/**
+ * Panel informasi akun: email, verifikasi, role, status, dan ganti email
+ */
 
 const schemaEmail = (lama: string) =>
   z.object({

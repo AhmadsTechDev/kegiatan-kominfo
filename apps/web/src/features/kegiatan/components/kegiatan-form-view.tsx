@@ -12,7 +12,9 @@ import { idValid, useDraf, useKegiatan, useReferensi } from "../hooks/use-kegiat
 import { KegiatanForm } from "./kegiatan-form";
 import { KegiatanFormSkeleton, KegiatanTanpaAkses, KegiatanTidakDitemukan } from "./kegiatan-states";
 
-// Pembungkus halaman tambah/ubah kegiatan, termasuk cek hak akses
+/**
+ * Pembungkus halaman tambah/ubah kegiatan, termasuk cek hak akses
+ */
 
 function TombolKembali({ href }: { href: string }) {
   return (
@@ -39,7 +41,9 @@ export function KegiatanBaruView({ drafId = null }: { drafId?: number | null }) 
     />
   );
 
-  // Hanya pegawai yang mencatat kegiatan; pimpinan dan admin melihat dan memeriksa (backend juga menolak 403)
+  /**
+   * Hanya pegawai yang mencatat kegiatan; pimpinan dan admin melihat dan memeriksa (backend juga menolak 403)
+   */
   if (user && user.role !== "PEGAWAI") {
     return (
       <>

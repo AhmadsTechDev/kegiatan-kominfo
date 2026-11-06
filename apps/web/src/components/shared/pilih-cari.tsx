@@ -5,7 +5,9 @@ import { useId, useMemo, useRef, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-// Pengganti Select untuk daftar panjang: ketik sebagian nama lalu pilih dari hasil
+/**
+ * Pengganti Select untuk daftar panjang: ketik sebagian nama lalu pilih dari hasil
+ */
 
 export type OpsiCari = { nilai: string; label: string; keterangan?: string };
 
@@ -41,8 +43,11 @@ export function PilihCari({
   const cocok = useMemo(() => {
     const kunci = normal(kata.trim()).split(/\s+/).filter(Boolean);
     if (!kunci.length) return opsi;
-    // Tiap kata yang diketik harus cocok dengan awal sebuah kata ("andi" tidak mengenai "Persandian");
-    // opsi yang cocok di label (nama) didahulukan dari yang hanya cocok di keterangan
+
+    /**
+     * Tiap kata yang diketik harus cocok dengan awal sebuah kata ("andi" tidak mengenai "Persandian");
+     * opsi yang cocok di label (nama) didahulukan dari yang hanya cocok di keterangan
+     */
     const kataDari = (t: string) => normal(t).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
     const kena = (daftar: string[]) => kunci.every((k) => daftar.some((w) => w.startsWith(k)));
     const diLabel: OpsiCari[] = [];
@@ -55,7 +60,10 @@ export function PilihCari({
     return [...diLabel, ...diKeterangan];
   }, [opsi, kata]);
   const tampil = cocok.slice(0, MAKS_TAMPIL);
-  // Indeks 0 adalah opsi "semua"; hasil pencarian mulai indeks 1
+
+  /**
+   * Indeks 0 adalah opsi "semua"; hasil pencarian mulai indeks 1
+   */
   const butir: (OpsiCari | null)[] = [null, ...tampil];
 
   const pilih = (o: OpsiCari | null) => {

@@ -9,7 +9,9 @@ import { JenisTab } from "./jenis-tab";
 import { PegawaiTab } from "./pegawai-tab";
 import { BidangTab } from "./bidang-tab";
 
-// Halaman master data bertab: pegawai, bidang, dan jenis kegiatan
+/**
+ * Halaman master data bertab: pegawai, bidang, dan jenis kegiatan
+ */
 
 type Tab = "pegawai" | "unit" | "sub" | "jenis";
 const TAB_SAH: Tab[] = ["pegawai", "unit", "sub", "jenis"];

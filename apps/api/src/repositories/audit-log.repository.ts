@@ -13,10 +13,14 @@ type BarisAudit = {
   userAgent: string | null;
 };
 
-// Mengubah nilai JSON biasa menjadi input kolom Json Prisma (null harus memakai Prisma.DbNull)
+/**
+ * Mengubah nilai JSON biasa menjadi input kolom Json Prisma (null harus memakai Prisma.DbNull)
+ */
 const json = (nilai: unknown) => (nilai == null ? Prisma.DbNull : (nilai as Prisma.InputJsonValue));
 
-// Menyusun `where` Prisma dari filter audit log
+/**
+ * Menyusun `where` Prisma dari filter audit log
+ */
 function kondisi(f: FilterAudit): Prisma.AuditLogWhereInput {
   return {
     aktorId: f.aktorId,
@@ -26,7 +30,9 @@ function kondisi(f: FilterAudit): Prisma.AuditLogWhereInput {
   };
 }
 
-// Mengambil nama & email aktor untuk sekumpulan id user (audit_log tidak punya relasi ke user)
+/**
+ * Mengambil nama & email aktor untuk sekumpulan id user (audit_log tidak punya relasi ke user)
+ */
 async function petaAktor(ids: (string | null)[]) {
   const unik = [...new Set(ids.filter((id): id is string => id != null))];
   if (!unik.length) return new Map<string, { nama: string; email: string }>();
@@ -34,7 +40,9 @@ async function petaAktor(ids: (string | null)[]) {
   return new Map(users.map((u) => [u.id, { nama: u.name, email: u.email }]));
 }
 
-// Menempelkan data aktor ke setiap baris audit; aktor null bila akunnya sudah dihapus
+/**
+ * Menempelkan data aktor ke setiap baris audit; aktor null bila akunnya sudah dihapus
+ */
 function denganAktor<T extends { aktorId: string | null }>(baris: T, peta: Map<string, { nama: string; email: string }>) {
   const { aktorId, ...sisa } = baris;
   const u = aktorId ? peta.get(aktorId) : undefined;
@@ -42,12 +50,16 @@ function denganAktor<T extends { aktorId: string | null }>(baris: T, peta: Map<s
 }
 
 export const AuditLogRepository = {
-  // Menyimpan satu catatan audit (bisa di dalam transaksi lewat parameter db)
+  /**
+   * Menyimpan satu catatan audit (bisa di dalam transaksi lewat parameter db)
+   */
   async insert(baris: BarisAudit, db: Db = prisma) {
     await db.auditLog.create({ data: { ...baris, dataSebelum: json(baris.dataSebelum), dataSesudah: json(baris.dataSesudah) } });
   },
 
-  // Daftar audit log terbaru dengan filter dan paginasi
+  /**
+   * Daftar audit log terbaru dengan filter dan paginasi
+   */
   async daftar(f: FilterAudit, halaman: Halaman) {
     const where = kondisi(f);
     const [baris, total] = await Promise.all([
@@ -65,7 +77,9 @@ export const AuditLogRepository = {
     return { items, total };
   },
 
-  // Detail satu catatan audit termasuk data sebelum/sesudah
+  /**
+   * Detail satu catatan audit termasuk data sebelum/sesudah
+   */
   async detail(id: number) {
     const b = await prisma.auditLog.findUnique({ where: { id } });
     if (!b) return undefined;
@@ -87,7 +101,9 @@ export const AuditLogRepository = {
     );
   },
 
-  // Daftar akun yang pernah tercatat di audit log (untuk pilihan filter)
+  /**
+   * Daftar akun yang pernah tercatat di audit log (untuk pilihan filter)
+   */
   async aktorTercatat() {
     const baris = await prisma.auditLog.findMany({ where: { aktorId: { not: null } }, distinct: ["aktorId"], select: { aktorId: true } });
     const users = await prisma.user.findMany({
@@ -98,13 +114,17 @@ export const AuditLogRepository = {
     return users.map((u) => ({ id: u.id, nama: u.name, email: u.email }));
   },
 
-  // Daftar nama entitas yang pernah tercatat (untuk pilihan filter)
+  /**
+   * Daftar nama entitas yang pernah tercatat (untuk pilihan filter)
+   */
   async entitasTercatat() {
     const baris = await prisma.auditLog.findMany({ distinct: ["entitas"], select: { entitas: true }, orderBy: { entitas: "asc" } });
     return baris.map((b) => b.entitas);
   },
 
-  // Riwayat aksi pada satu kegiatan: buat/ubah/batal kegiatan dan perubahan dokumentasinya
+  /**
+   * Riwayat aksi pada satu kegiatan: buat/ubah/batal kegiatan dan perubahan dokumentasinya
+   */
   async riwayatKegiatan(kegiatanId: number, batas = 20) {
     const baris = await prisma.auditLog.findMany({
       where: {
@@ -124,7 +144,9 @@ export const AuditLogRepository = {
     return baris.map((b) => ({ id: Number(b.id), aksi: b.aksi, aktor: b.aktorId ? (peta.get(b.aktorId)?.nama ?? null) : null, waktu: b.createdAt }));
   },
 
-  // Riwayat terbaru yang menyangkut satu akun: aksi terhadap akun itu dan aksi yang dilakukannya
+  /**
+   * Riwayat terbaru yang menyangkut satu akun: aksi terhadap akun itu dan aksi yang dilakukannya
+   */
   async riwayatAkun(userId: string, batas = 15) {
     const baris = await prisma.auditLog.findMany({
       where: { OR: [{ entitas: "user", entitasId: userId }, { aktorId: userId }] },
@@ -136,7 +158,9 @@ export const AuditLogRepository = {
     return baris.map(({ id, createdAt, ...b }) => denganAktor({ id: Number(id), waktu: createdAt, ...b }, peta));
   },
 
-  // Siapa dan kapan terakhir mengubah/membatalkan kegiatan; null bila belum pernah
+  /**
+   * Siapa dan kapan terakhir mengubah/membatalkan kegiatan; null bila belum pernah
+   */
   async pengubahTerakhirKegiatan(kegiatanId: number) {
     const b = await prisma.auditLog.findFirst({
       where: { entitas: "kegiatan", entitasId: String(kegiatanId), aksi: { in: ["ubah", "batal"] }, aktorId: { not: null } },

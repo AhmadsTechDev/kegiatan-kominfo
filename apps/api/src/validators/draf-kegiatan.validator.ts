@@ -1,6 +1,8 @@
 import { t } from "elysia";
 
-// Isian draf selalu teks (bentuk mentah dari formulir) dengan panjang maksimal
+/**
+ * Isian draf selalu teks (bentuk mentah dari formulir) dengan panjang maksimal
+ */
 const teks = (maks: number) => t.Optional(t.String({ maxLength: maks, error: `Isian draf maksimal ${maks} karakter` }));
 
 const isiDraf = t.Object({

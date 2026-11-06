@@ -18,7 +18,9 @@ import { ajukanPermintaanAkun } from "../api/akun-publik";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { KepalaKartu } from "./kartu-publik";
 
-// Formulir pengajuan akun baru ke admin (nama, NIP opsional, email, catatan)
+/**
+ * Formulir pengajuan akun baru ke admin (nama, NIP opsional, email, catatan)
+ */
 
 const schema = z.object({
   nama: z.string().trim().min(1, "Nama wajib diisi").max(150, "Nama maksimal 150 karakter"),

@@ -35,7 +35,9 @@ import {
 } from "../api/admin";
 import type { FilterAkun, FilterAudit, FilterPegawai, IsiAkun, IsiPegawaiBaru, HasilPegawaiBaru, IsiUndangan, IsiUnit, StatusPermintaan } from "../types";
 
-// Hook TanStack Query untuk master data, akun, audit log, dan permintaan akun
+/**
+ * Hook TanStack Query untuk master data, akun, audit log, dan permintaan akun
+ */
 
 export const adminKeys = {
   bidang: ["admin", "bidang"] as const,
@@ -54,6 +56,11 @@ export const adminKeys = {
   jumlahPermintaan: ["admin", "permintaan-akun", "jumlah"] as const,
 };
 
+/**
+ * `...kunci` (rest parameter) menampung berapa pun query key yang dikirim, lalu semuanya disegarkan.
+ * Referensi kegiatan dan audit log selalu ikut disegarkan, karena perubahan master data mengubah pilihan form
+ * dan setiap perubahan admin tercatat di audit log.
+ */
 function useSegarkan(...kunci: (readonly unknown[])[]) {
   const queryClient = useQueryClient();
   return () =>

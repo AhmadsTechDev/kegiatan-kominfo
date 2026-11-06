@@ -1,16 +1,30 @@
 import { t } from "elysia";
 import { STATUS_PELAKSANAAN, STATUS_PEMERIKSAAN } from "@/utils/konstanta";
 
-// ID angka >= 1 dengan pesan galat sendiri
+/**
+ * ID angka >= 1 dengan pesan galat sendiri
+ * KONSEP validator: skema yang menjelaskan bentuk data yang boleh masuk. Elysia memeriksanya otomatis
+ * SEBELUM handler dijalankan; bila tidak cocok, permintaan ditolak 422 dan pesan `error` dikirim ke frontend.
+ * `t` berasal dari TypeBox: t.String, t.Integer, t.Optional (boleh tidak dikirim), t.Nullable (boleh null).
+ * Skema yang sama juga menghasilkan tipe TypeScript (lihat types/*.types.ts), jadi bentuk data dan tipenya selalu sama.
+ *
+ * Fungsi kecil di bawah adalah "pembuat skema" agar aturan yang sering dipakai cukup ditulis sekali.
+ */
 const id = (pesan: string) => t.Integer({ minimum: 1, error: pesan });
 
-// Teks opsional (boleh null) dengan panjang maksimal
+/**
+ * Teks opsional (boleh null) dengan panjang maksimal
+ */
 const teksOpsional = (maks: number, pesan: string) => t.Optional(t.Nullable(t.String({ maxLength: maks, error: pesan })));
 
-// Waktu ISO 8601, contoh "2026-05-05T09:00:00+07:00"
+/**
+ * Waktu ISO 8601, contoh "2026-05-05T09:00:00+07:00"
+ */
 const waktu = (pesan: string) => t.String({ format: "date-time", error: pesan });
 
-// Tanggal opsional berformat YYYY-MM-DD
+/**
+ * Tanggal opsional berformat YYYY-MM-DD
+ */
 const tanggal = (pesan: string) => t.Optional(t.String({ pattern: "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$", error: pesan }));
 
 const isiKegiatan = {
@@ -31,11 +45,18 @@ const isiKegiatan = {
 const versi = { expectedUpdatedAt: waktu("Versi data (expectedUpdatedAt) wajib dikirim") };
 
 export const KegiatanValidator = {
+  /**
+   * t.Numeric dipakai untuk params dan query karena di URL semuanya teks; Numeric menerima "12" lalu mengubahnya menjadi angka 12.
+   */
   params: t.Object({ id: t.Numeric({ minimum: 1, error: "ID kegiatan tidak valid" }) }),
 
   daftarQuery: t.Object({
     unit: t.Optional(t.Numeric({ minimum: 1, error: "Bidang tidak valid" })),
     jenis: t.Optional(t.Numeric({ minimum: 1, error: "Jenis kegiatan tidak valid" })),
+
+    /**
+     * t.Union dari t.Literal = nilainya harus salah satu dari daftar konstanta (mis. "selesai"), selain itu ditolak.
+     */
     status: t.Optional(t.Union(STATUS_PELAKSANAAN.map((s) => t.Literal(s)), { error: "Status tidak valid" })),
     periode: t.Optional(t.String({ pattern: "^\\d{4}-(0[1-9]|1[0-2])$", error: "Periode harus berformat YYYY-MM" })),
     dari: tanggal("Tanggal awal harus berformat YYYY-MM-DD"),
@@ -48,6 +69,9 @@ export const KegiatanValidator = {
     pageSize: t.Optional(t.Numeric({ minimum: 1, maximum: 100, default: 20, error: "Ukuran halaman 1 sampai 100" })),
   }),
 
+  /**
+   * `...isiKegiatan` menyalin semua aturan kolom kegiatan, lalu menambah kolom khusus untuk aksi tertentu.
+   */
   buat: t.Object({ ...isiKegiatan, drafId: t.Optional(id("Draf tidak valid")) }),
   ubah: t.Object({ ...isiKegiatan, ...versi }),
   selesai: t.Object({ ...versi }),

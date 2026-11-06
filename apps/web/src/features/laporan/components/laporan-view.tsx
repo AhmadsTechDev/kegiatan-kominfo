@@ -29,7 +29,9 @@ import type { CakupanLaporan } from "../types";
 import { bagiHalaman, HalamanLaporan } from "./halaman-laporan";
 import { LaporanDokumentasi } from "./laporan-dokumentasi";
 
-// Halaman laporan: pilih cakupan, pratinjau, lalu unduh atau cetak
+/**
+ * Halaman laporan: pilih cakupan, pratinjau, lalu unduh atau cetak
+ */
 
 const SEMUA = "semua";
 const ID_PANEL = "panel-isi-laporan";
@@ -50,7 +52,9 @@ function unitDanTurunan(unit: { id: number; parentId: number | null }[], id: num
   return hasil;
 }
 
-// Rekap dan laporan hanya untuk pimpinan dan admin; backend juga menolak 403 untuk pegawai
+/**
+ * Rekap dan laporan hanya untuk pimpinan dan admin; backend juga menolak 403 untuk pegawai
+ */
 export function LaporanView() {
   const { user } = useCurrentUser();
   if (user?.role === "PEGAWAI") {
@@ -86,7 +90,9 @@ function LaporanIsi() {
 
   const pratinjau = useQuery({ queryKey: ["laporan", "pratinjau", cakupan], queryFn: () => getPratinjau(cakupan), placeholderData: keepPreviousData });
 
-  // Dokumentasi baru diambil saat tabnya dibuka
+  /**
+   * Dokumentasi baru diambil saat tabnya dibuka
+   */
   const dokumentasi = useQuery({
     queryKey: ["laporan", "dokumentasi", cakupan],
     queryFn: () => getDokumentasiLaporan(cakupan),
@@ -120,8 +126,10 @@ function LaporanIsi() {
     );
 
   const cetak = () => {
+    /**
+     * Tanpa toast: peramban tidak memberi tahu apakah pengguna jadi mencetak atau membatalkan
+     */
     window.print();
-    toast.success("Laporan dikirim ke dialog cetak");
   };
 
   const label = "text-xs font-bold text-foreground/80";
@@ -244,10 +252,17 @@ function LaporanIsi() {
   );
 }
 
-// Lebar halaman A4 mendatar di layar (px). Di layar sempit halaman diperkecil
-// utuh, bukan dilipat, agar susunannya tetap sama dengan hasil cetak.
+/**
+ * Lebar halaman A4 mendatar di layar (px). Di layar sempit halaman diperkecil
+ * utuh, bukan dilipat, agar susunannya tetap sama dengan hasil cetak.
+ */
 const LEBAR_HALAMAN = 1123;
 
+/**
+ * Pratinjau halaman A4 dibuat selebar aslinya (1123 px), lalu diperkecil dengan CSS transform agar muat di layar.
+ * KONSEP ResizeObserver: memantau perubahan ukuran elemen (mis. jendela diperkecil) lalu menghitung ulang skalanya.
+ * Tinggi pembungkus diatur manual karena transform tidak mengubah ruang yang dipakai elemen di halaman.
+ */
 function SkalaPratinjau({ children }: { children: React.ReactNode }) {
   const luar = useRef<HTMLDivElement>(null);
   const dalam = useRef<HTMLDivElement>(null);

@@ -1,6 +1,8 @@
 import type { StatusPelaksanaan } from "@/components/shared/status-badge";
 
-// Tipe data kalender dan respons GET /kalender
+/**
+ * Tipe data kalender dan respons GET /kalender
+ */
 
 export type KegiatanKalender = {
   id: number;

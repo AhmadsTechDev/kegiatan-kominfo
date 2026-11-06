@@ -3,7 +3,9 @@
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Memuat peta pemilih lokasi hanya di klien (tanpa SSR) karena butuh window/WebGL
+/**
+ * Memuat peta pemilih lokasi hanya di klien (tanpa SSR) karena butuh window/WebGL
+ */
 
 export type { Koordinat } from "./map-picker-inner";
 

@@ -1,6 +1,8 @@
 import type { StatusPelaksanaan, StatusPemeriksaan } from "@/components/shared/status-badge";
 
-// Tipe data kegiatan, respons API, filter, draf, dan dokumen
+/**
+ * Tipe data kegiatan, respons API, filter, draf, dan dokumen
+ */
 
 export type StatusPemeriksaanKegiatan = Exclude<StatusPemeriksaan, "draf">;
 import type { KegiatanFormValues } from "./schemas/kegiatan.schema";
@@ -55,6 +57,7 @@ export type KegiatanDetail = {
   pengubahTerakhir: { nama: string; waktu: string } | null;
   riwayat: { id: number; aksi: string; aktor: string | null; waktu: string }[];
   bisaUbah: boolean;
+  bisaHapusDokumentasi: boolean;
 };
 
 export type Referensi = {

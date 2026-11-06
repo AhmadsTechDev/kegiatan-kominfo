@@ -2,7 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 
-// Sapaan pagi/siang/sore/malam menurut jam WIB tanpa galat hidrasi
+/**
+ * Sapaan pagi/siang/sore/malam menurut jam WIB tanpa galat hidrasi
+ */
 
 const subscribe = () => () => {};
 

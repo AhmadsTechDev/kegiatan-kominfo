@@ -10,7 +10,9 @@ import { formatTanggal, tanggalWib } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { keDate, keString } from "./date-picker";
 
-// Pemilih rentang tanggal dengan pintasan (hari ini, bulan ini, tahun ini)
+/**
+ * Pemilih rentang tanggal dengan pintasan (hari ini, bulan ini, tahun ini)
+ */
 
 export type RentangTanggal = { dari: string | null; sampai: string | null };
 

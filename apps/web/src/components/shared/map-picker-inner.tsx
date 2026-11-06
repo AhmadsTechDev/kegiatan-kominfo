@@ -15,7 +15,9 @@ import {
   usePetaGelap,
 } from "./peta-dasar";
 
-// Peta untuk memilih atau menampilkan satu titik lokasi kegiatan (MapLibre, gedung 3D)
+/**
+ * Peta untuk memilih atau menampilkan satu titik lokasi kegiatan (MapLibre, gedung 3D)
+ */
 
 export type Koordinat = { lat: number; lng: number };
 
@@ -43,6 +45,11 @@ export default function MapPickerInner({ value, onChange, readOnly, className }:
   const gelap = usePetaGelap();
   const [tigaD, setTigaD] = useState(!!readOnly);
 
+  /**
+   * KONSEP useRef: wadah yang isinya bertahan di antara render tanpa memicu render ulang.
+   * Peta MapLibre dibuat sekali saja; event peta (klik, geser pin) membaca nilai props terbaru lewat ref ini,
+   * sehingga peta tidak perlu dibuat ulang setiap kali props berubah.
+   */
   const terkini = useRef({ value, onChange, tigaD });
   useEffect(() => {
     terkini.current = { value, onChange, tigaD };

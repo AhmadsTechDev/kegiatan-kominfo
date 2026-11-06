@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { formatAngka, formatJam, formatPeriode, formatRentangTanggal, formatTanggal, formatUkuran, inisial, periodeSebelumnya, tanggalWib } from "./format";
 
-// Uji fungsi format.ts: tanggal, jam WIB, rentang, angka, periode, ukuran berkas, inisial
+/**
+ * Uji fungsi format.ts: tanggal, jam WIB, rentang, angka, periode, ukuran berkas, inisial
+ */
 
 describe("format", () => {
   test("tanggal dan jam selalu dalam WIB, apa pun zona perangkat", () => {

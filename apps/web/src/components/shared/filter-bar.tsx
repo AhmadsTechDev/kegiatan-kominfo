@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { RentangTanggalPicker } from "./rentang-tanggal-picker";
 
-// Panel filter daftar kegiatan: kata kunci, tanggal, bidang, jenis, status
+/**
+ * Panel filter daftar kegiatan: kata kunci, tanggal, bidang, jenis, status
+ */
 
 export type NilaiFilter = {
   q: string;
@@ -50,6 +52,11 @@ function urutPohon(unit: FilterBarProps["bidang"]) {
     ]);
 }
 
+/**
+ * Baris filter daftar kegiatan dan rekap: pencarian, tanggal, bidang, jenis, dan status.
+ * Komponen ini tidak menyimpan filter sendiri; nilainya datang dari induk (biasanya dari URL) lewat `value`,
+ * dan setiap perubahan dikirim balik lewat `onChange`.
+ */
 export function FilterBar({ value, onChange, onReset, adaFilter, bidang, jenisKegiatan, className }: FilterBarProps) {
   const id = useId();
   const [bukaFilter, setBukaFilter] = useState(false);

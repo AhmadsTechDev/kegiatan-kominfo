@@ -1,7 +1,9 @@
 import * as React from "react"
 import { cn } from "cn"
 
-// Komponen dasar shadcn/ui: input teks multibaris
+/**
+ * Komponen dasar shadcn/ui: input teks multibaris
+ */
 
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (

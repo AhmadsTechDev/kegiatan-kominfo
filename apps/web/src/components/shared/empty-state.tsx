@@ -1,7 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Tampilan saat data kosong atau filter tidak menemukan hasil
+/**
+ * Tampilan saat data kosong atau filter tidak menemukan hasil
+ */
 
 type EmptyStateProps = {
   icon: LucideIcon;

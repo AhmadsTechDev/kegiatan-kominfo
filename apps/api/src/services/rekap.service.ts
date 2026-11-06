@@ -8,6 +8,13 @@ import { hitungStatus } from "@/utils/status-kegiatan";
 import { filterDariQuery } from "./kegiatan.service";
 import { cariIndukTertinggi } from "./referensi.service";
 
+/**
+ * Service rekap: menghitung statistik kegiatan (total, tren, per bidang, per pegawai, per jenis).
+ * Database hanya mengambil baris kegiatan mentah; penjumlahannya dilakukan di sini dengan Map,
+ * karena status pelaksanaan dihitung dari waktu dan tidak tersimpan sebagai kolom di database.
+ *
+ * Batas jumlah titik grafik tren agar rentang yang sangat panjang (mis. 10 tahun per hari) tidak memberatkan.
+ */
 export const MAKS_TITIK_TREN = 400;
 
 const KOLOM_JUMLAH = ["total", "akanDatang", "berlangsung", "selesai", "dibatalkan", "peserta"] as const;
@@ -15,24 +22,34 @@ const KOLOM_STATUS = { akan_datang: "akanDatang", berlangsung: "berlangsung", se
 
 type BarisRekap = Awaited<ReturnType<typeof RekapRepository.barisRekap>>[number];
 
-// Objek jumlah yang semua angkanya nol
+/**
+ * Objek jumlah yang semua angkanya nol
+ */
 const kosong = (): Jumlah => ({ total: 0, akanDatang: 0, berlangsung: 0, selesai: 0, dibatalkan: 0, peserta: 0 });
 
-// Menambahkan angka-angka `dari` ke `ke`
+/**
+ * Menambahkan angka-angka `dari` ke `ke`
+ */
 function tambah(ke: Jumlah, dari: Jumlah) {
   for (const k of KOLOM_JUMLAH) ke[k] += dari[k];
 }
 
-// Memotong tanggal "YYYY-MM-DD" sesuai satuan: hari utuh, "YYYY-MM", atau "YYYY"
+/**
+ * Memotong tanggal "YYYY-MM-DD" sesuai satuan: hari utuh, "YYYY-MM", atau "YYYY"
+ */
 const potong = (tanggal: string, satuan: SatuanRekap) => tanggal.slice(0, satuan === "hari" ? 10 : satuan === "bulan" ? 7 : 4);
 
-// Tanggal terakhir dari bulan "YYYY-MM"
+/**
+ * Tanggal terakhir dari bulan "YYYY-MM"
+ */
 function akhirBulan(periode: string) {
   const [t, b] = periode.split("-").map(Number);
   return new Date(Date.UTC(t!, b!, 0)).toISOString().slice(0, 10);
 }
 
-// Kunci periode berikutnya: hari/bulan/tahun setelah `kunci`
+/**
+ * Kunci periode berikutnya: hari/bulan/tahun setelah `kunci`
+ */
 export function kunciBerikutnya(kunci: string, satuan: SatuanRekap) {
   if (satuan === "tahun") return String(Number(kunci) + 1);
   const [t, b, h] = kunci.split("-").map(Number);
@@ -40,7 +57,18 @@ export function kunciBerikutnya(kunci: string, satuan: SatuanRekap) {
   return new Date(Date.UTC(t!, b! - 1, h! + 1)).toISOString().slice(0, 10);
 }
 
-// Mengisi tren dari awal sampai akhir; periode tanpa kegiatan tetap muncul dengan jumlah 0
+/**
+ * Mengisi tren dari awal sampai akhir; periode tanpa kegiatan tetap muncul dengan jumlah 0
+ *
+ * Database hanya mengembalikan periode yang punya kegiatan. Fungsi ini menambahkan periode kosong (jumlah 0)
+ * supaya grafik tren tidak "melompat" dan setiap bulan/hari tetap tampil.
+ * @param data jumlah kegiatan per kunci periode yang ada datanya
+ * @param awal kunci periode pertama, mis. "2026-01"
+ * @param akhir kunci periode terakhir
+ * @param satuan "hari", "bulan", atau "tahun"
+ * @returns deret periode lengkap dari awal sampai akhir
+ * @throws Unprocessable bila hasilnya lebih dari MAKS_TITIK_TREN titik
+ */
 export function isiTren(data: { kunci: string; jumlah: number }[], awal: string, akhir: string, satuan: SatuanRekap) {
   const peta = new Map(data.map((d) => [d.kunci, d.jumlah]));
   const hasil: { periode: string; jumlah: number }[] = [];
@@ -53,12 +81,18 @@ export function isiTren(data: { kunci: string; jumlah: number }[], awal: string,
   return hasil;
 }
 
-// Menjumlahkan kegiatan per bidang, termasuk per status pelaksanaan dan total peserta
+/**
+ * Menjumlahkan kegiatan per bidang, termasuk per status pelaksanaan dan total peserta
+ */
 function hitungPerUnit(baris: BarisRekap[], sekarang: Date) {
   const peta = new Map<number, Jumlah>();
   for (const k of baris) {
     const j = peta.get(k.bidangId) ?? kosong();
     j.total++;
+
+    /**
+     * Status kegiatan (mis. "akan_datang") diterjemahkan ke nama kolom jumlah ("akanDatang") lalu ditambah satu.
+     */
     j[KOLOM_STATUS[hitungStatus(k, sekarang)]]++;
     j.peserta += k.jumlahPeserta ?? 0;
     peta.set(k.bidangId, j);
@@ -66,17 +100,24 @@ function hitungPerUnit(baris: BarisRekap[], sekarang: Date) {
   return [...peta.entries()].map(([bidangId, j]) => ({ bidangId, ...j }));
 }
 
-// Menjumlahkan kegiatan per periode (kunci tanggal WIB), urut naik
+/**
+ * Menjumlahkan kegiatan per periode (kunci tanggal WIB), urut naik
+ */
 function hitungPerPeriode(baris: BarisRekap[], satuan: SatuanRekap) {
   const peta = new Map<string, number>();
   for (const k of baris) {
+    /**
+     * Waktu disimpan dalam UTC; digeser ke WIB dulu agar kegiatan pukul 01.00 WIB tidak terhitung di hari sebelumnya.
+     */
     const kunci = potong(geserKeWib(k.tglMulai).toISOString(), satuan);
     peta.set(kunci, (peta.get(kunci) ?? 0) + 1);
   }
   return [...peta.entries()].map(([kunci, jumlah]) => ({ kunci, jumlah })).sort((a, b) => a.kunci.localeCompare(b.kunci));
 }
 
-// Menjumlahkan kegiatan per penanggung jawab, terbanyak di atas
+/**
+ * Menjumlahkan kegiatan per penanggung jawab, terbanyak di atas
+ */
 function hitungPerPegawai(baris: BarisRekap[]) {
   const peta = new Map<number, { id: number; nama: string; bidang: string; jumlah: number }>();
   for (const { penanggungJawab: p } of baris) {
@@ -84,10 +125,16 @@ function hitungPerPegawai(baris: BarisRekap[]) {
     j.jumlah++;
     peta.set(p.id, j);
   }
+
+  /**
+   * Urut dari jumlah terbanyak; bila sama, urut nama abjad. `||` dipakai karena hasil 0 berarti "sama".
+   */
   return [...peta.values()].sort((a, b) => b.jumlah - a.jumlah || a.nama.localeCompare(b.nama));
 }
 
-// Menjumlahkan kegiatan per jenis, terbanyak di atas
+/**
+ * Menjumlahkan kegiatan per jenis, terbanyak di atas
+ */
 function hitungPerJenis(baris: BarisRekap[]) {
   const peta = new Map<number, { id: number; nama: string; jumlah: number }>();
   for (const { jenis } of baris) {
@@ -99,14 +146,23 @@ function hitungPerJenis(baris: BarisRekap[]) {
 }
 
 export const RekapService = {
-  // Rekap kegiatan: total, tren per periode, per pegawai, per unit induk, dan per jenis
+  /**
+   * Rekap kegiatan: total, tren per periode, per pegawai, per unit induk, dan per jenis
+   *
+   * `{ satuan = "bulan", ...query }` adalah destructuring: satuan diambil (bawaan "bulan") dan sisanya dikumpulkan di `query`.
+   * @param aktor pengguna yang meminta rekap; menentukan lingkup kegiatan yang dihitung
+   * @param sekarang waktu acuan perhitungan status (bisa diatur saat pengujian)
+   * @returns total, tren, perPegawai, perUnit, dan perJenis
+   */
   async rekap({ satuan = "bulan", ...query }: RekapPeriodeQuery, aktor: Aktor, sekarang = new Date()) {
     const filter = await filterDariQuery(query, aktor);
     const [baris, unit] = await Promise.all([RekapRepository.barisRekap(filter, sekarang), ReferensiRepository.semuaBidang()]);
     const perUnit = hitungPerUnit(baris, sekarang);
     const perPeriode = hitungPerPeriode(baris, satuan);
 
-    // Tren: rentangnya dari filter tanggal/periode; bila tidak ada filter, dari data pertama sampai terakhir
+    /**
+     * Tren: rentangnya dari filter tanggal/periode; bila tidak ada filter, dari data pertama sampai terakhir
+     */
     const hariIni = tanggalJakarta(sekarang);
     const awalFilter = query.dari ?? (query.periode && !query.sampai ? `${query.periode}-01` : undefined);
     const akhirFilter = query.sampai ?? (query.periode && !query.dari ? akhirBulan(query.periode) : undefined);
@@ -114,12 +170,18 @@ export const RekapService = {
     const akhir = akhirFilter ? potong(akhirFilter, satuan) : (perPeriode.at(-1)?.kunci ?? potong(hariIni, satuan));
     const tren = awalFilter || akhirFilter || perPeriode.length > 0 ? isiTren(perPeriode, awal, akhir, satuan) : [];
 
-    // Per unit: PEGAWAI melihat per unit sendiri; selain itu digabung ke unit induk tertinggi
+    /**
+     * Per unit: PEGAWAI melihat per unit sendiri; selain itu digabung ke unit induk tertinggi
+     */
     const barisUnit = new Map<number, { unit: { id: number; kode: string; nama: string } } & Jumlah>();
     const ambilBaris = (u: Unit) => {
       if (!barisUnit.has(u.id)) barisUnit.set(u.id, { unit: { id: u.id, kode: u.kode, nama: u.nama }, ...kosong() });
       return barisUnit.get(u.id)!;
     };
+
+    /**
+     * Tanpa filter bidang, semua bidang induk aktif ditampilkan lebih dulu (termasuk yang 0 kegiatan) agar tabel rekap lengkap.
+     */
     if (!filter.unitIds && !filter.lingkup) for (const u of unit) if (u.parentId == null && u.aktif) ambilBaris(u);
 
     const total = kosong();

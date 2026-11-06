@@ -20,7 +20,9 @@ import { useAuditDetail, useAuditLog, usePilihanAudit } from "../hooks/use-admin
 import type { AuditItem, FilterAudit } from "../types";
 import { AdminGuard } from "./admin-shared";
 
-// Daftar audit log: login, perubahan kegiatan, unggahan, dan master data
+/**
+ * Daftar audit log: login, perubahan kegiatan, unggahan, dan master data
+ */
 
 const SEMUA = "semua";
 
@@ -67,6 +69,9 @@ const LABEL_ENTITAS: Record<string, string> = {
   permintaan_akun: "Permintaan akun",
 };
 
+/**
+ * Pengelompokan aksi untuk warna chip: merah (perlu diperhatikan), hijau (penambahan), dan netral (akses).
+ */
 const AKSI_PERINGATAN = new Set(["login_gagal", "akun_terkunci", "hapus", "hapus_file", "nonaktifkan", "reset_sandi", "kirim_reset_sandi", "cabut_sesi", "tolak"]);
 const AKSI_BARU = new Set(["buat", "unggah", "aktifkan", "aktivasi", "setujui"]);
 const AKSI_AKSES = new Set(["login", "logout", "ekspor", "minta_akun", "minta_reset_sandi"]);

@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
-// Pembungkus konten bergaya kartu: kepala, badan, dan kaki
+/**
+ * Pembungkus konten bergaya kartu: kepala, badan, dan kaki
+ */
 
 export function Panel({ className, ...props }: React.ComponentProps<"section">) {
   return <section className={cn("flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm", className)} {...props} />;

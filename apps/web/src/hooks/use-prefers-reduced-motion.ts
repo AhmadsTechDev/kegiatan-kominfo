@@ -2,7 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 
-// Deteksi preferensi "kurangi gerak" untuk mematikan animasi JavaScript
+/**
+ * Deteksi preferensi "kurangi gerak" untuk mematikan animasi JavaScript
+ */
 
 const QUERY = "(prefers-reduced-motion: reduce)";
 

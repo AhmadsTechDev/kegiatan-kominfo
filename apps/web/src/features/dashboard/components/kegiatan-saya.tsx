@@ -12,7 +12,9 @@ import { cn } from "@/lib/utils";
 import { useKegiatanSaya } from "../hooks/use-dashboard";
 import type { KegiatanRingkas } from "../types";
 
-// Panel tugas pegawai: kegiatan yang perlu dokumentasi dan agenda mendatang
+/**
+ * Panel tugas pegawai: kegiatan yang perlu dokumentasi dan agenda mendatang
+ */
 
 function JudulKolom({ ikon: Ikon, judul, jumlah, nada }: { ikon: typeof FileWarning; judul: string; jumlah: number; nada: string }) {
   return (

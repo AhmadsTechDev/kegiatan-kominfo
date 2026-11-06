@@ -28,7 +28,9 @@ import { TabelRekapUnit } from "./tabel-rekap-unit";
 import { SebaranStatus } from "./sebaran-status";
 import { labelPeriode, TrenRekap } from "./tren-rekap";
 
-// Halaman rekap: kartu ringkasan, tren, peringkat bidang/pegawai, dan jenis kegiatan
+/**
+ * Halaman rekap: kartu ringkasan, tren, peringkat bidang/pegawai, dan jenis kegiatan
+ */
 
 const SATUAN: { nilai: SatuanRekap; label: string }[] = [
   { nilai: "hari", label: "Harian" },
@@ -104,7 +106,9 @@ function hrefLaporan(filter: NilaiFilter) {
   return qs ? `/laporan?${qs}` : "/laporan";
 }
 
-// Rekap dan laporan hanya untuk pimpinan dan admin; backend juga menolak 403 untuk pegawai
+/**
+ * Rekap dan laporan hanya untuk pimpinan dan admin; backend juga menolak 403 untuk pegawai
+ */
 export function RekapView() {
   const { user } = useCurrentUser();
   if (user?.role === "PEGAWAI") {

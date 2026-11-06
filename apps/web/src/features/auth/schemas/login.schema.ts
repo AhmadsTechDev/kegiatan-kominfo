@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-// Skema Zod formulir login (FR-01)
+/**
+ * Skema Zod formulir login (FR-01)
+ */
 
 export const loginSchema = z.object({
   email: z.string().trim().min(1, "Email wajib diisi").pipe(z.email("Format email tidak valid")),

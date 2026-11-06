@@ -4,7 +4,9 @@ import * as React from "react"
 import { cn } from "cn"
 import { Label as LabelPrimitive } from "radix-ui"
 
-// Komponen dasar shadcn/ui: label formulir (Radix)
+/**
+ * Komponen dasar shadcn/ui: label formulir (Radix)
+ */
 
 function Label({
   className,

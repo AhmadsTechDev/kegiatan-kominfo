@@ -12,7 +12,9 @@ import { cn } from "@/lib/utils";
 import type { Notifikasi } from "../api/notifikasi";
 import { useBacaNotifikasi, useBacaSemuaNotifikasi, useNotifikasi } from "../hooks/use-notifikasi";
 
-// Lonceng notifikasi pegawai: hasil pemeriksaan kegiatan beserta catatannya
+/**
+ * Lonceng notifikasi pegawai: hasil pemeriksaan kegiatan beserta catatannya
+ */
 
 export function LoncengNotifikasi() {
   const router = useRouter();

@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
-// Penangkap galat grup rute (app); kerangka tata letak tetap tampil dan bisa coba lagi
+/**
+ * Penangkap galat grup rute (app); kerangka tata letak tetap tampil dan bisa coba lagi
+ */
 
 export default function ErrorHalaman({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {

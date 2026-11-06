@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-// Kolom pencarian dengan jeda ketik 300 ms agar kueri tidak dikirim tiap ketukan
+/**
+ * Kolom pencarian dengan jeda ketik 300 ms agar kueri tidak dikirim tiap ketukan
+ */
 
 export function KolomCari({
   id,

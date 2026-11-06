@@ -19,17 +19,23 @@ import { KartuMaster, KolomCari, TombolUbah } from "./admin-shared";
 import { PegawaiDialog } from "./pegawai-tab";
 import { UndangDialog } from "./undang-dialog";
 
-// Tab pegawai aktif yang belum punya akun, dengan tombol Undang
+/**
+ * Tab pegawai aktif yang belum punya akun, dengan tombol Undang
+ */
 
 export const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun: "tanpa", page: 1 };
 
-// Role bawaan adalah Pegawai; hanya role lain yang perlu ditandai
+/**
+ * Role bawaan adalah Pegawai; hanya role lain yang perlu ditandai
+ */
 function LabelRole({ role }: { role: PegawaiAdmin["roleUndangan"] }) {
   if (role === "PEGAWAI") return null;
   return <span className="mt-0.5 block text-xs font-normal text-muted-foreground">Akan diundang sebagai {LABEL_ROLE[role]}</span>;
 }
 
-// Hapus pegawai salah input; backend menolak bila sudah dipakai kegiatan atau permintaan akun
+/**
+ * Hapus pegawai salah input; backend menolak bila sudah dipakai kegiatan atau permintaan akun
+ */
 function TombolHapus({ p, onClick }: { p: PegawaiAdmin; onClick: () => void }) {
   return (
     <Button

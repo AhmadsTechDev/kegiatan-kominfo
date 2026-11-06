@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import { KegiatanUbahView } from "@/features/kegiatan/components/kegiatan-form-view";
 import { KegiatanFormSkeleton } from "@/features/kegiatan/components/kegiatan-states";
 
-// Halaman ubah kegiatan (/kegiatan/[id]/ubah)
+/**
+ * Halaman ubah kegiatan (/kegiatan/[id]/ubah)
+ */
 
 export const metadata: Metadata = { title: "Ubah kegiatan" };
 

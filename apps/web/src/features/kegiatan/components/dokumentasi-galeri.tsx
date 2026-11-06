@@ -15,19 +15,23 @@ import { periksaBerkas, useAntreanUnggah, useGantiDokumentasi } from "../hooks/u
 import { useHapusDokumentasi } from "../hooks/use-kegiatan";
 import type { Dokumentasi, KegiatanDetail } from "../types";
 
-// Galeri dokumentasi kegiatan: lihat, unggah, ganti, pratinjau, dan hapus foto/PDF
+/**
+ * Galeri dokumentasi kegiatan: lihat, unggah, ganti, pratinjau, dan hapus foto/PDF
+ */
 
 const adalahFoto = (d: Dokumentasi) => d.mime.startsWith("image/");
 
 function AksiBerkas({
   d,
   bisaUbah,
+  bisaHapus,
   sedangDiganti,
   onGanti,
   onHapus,
 }: {
   d: Dokumentasi;
   bisaUbah: boolean;
+  bisaHapus: boolean;
   sedangDiganti: boolean;
   onGanti: () => void;
   onHapus: () => void;
@@ -42,25 +46,25 @@ function AksiBerkas({
         </a>
       </Button>
       {bisaUbah && (
-        <>
-          <Button type="button" variant="ghost" size="sm" className={kelas} onClick={onGanti} disabled={sedangDiganti} aria-label={`Ganti ${d.namaAsli}`} title="Ganti">
-            {sedangDiganti ? <Spinner className="size-3.5" /> : <RefreshCw aria-hidden className="size-3.5" />}
-            <span className="hidden @[15rem]:inline">Ganti</span>
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className={`${kelas} text-destructive hover:text-destructive`}
-            onClick={onHapus}
-            disabled={sedangDiganti}
-            aria-label={`Hapus ${d.namaAsli}`}
-            title="Hapus"
-          >
-            <Trash2 aria-hidden className="size-3.5" />
-            <span className="hidden @[15rem]:inline">Hapus</span>
-          </Button>
-        </>
+        <Button type="button" variant="ghost" size="sm" className={kelas} onClick={onGanti} disabled={sedangDiganti} aria-label={`Ganti ${d.namaAsli}`} title="Ganti">
+          {sedangDiganti ? <Spinner className="size-3.5" /> : <RefreshCw aria-hidden className="size-3.5" />}
+          <span className="hidden @[15rem]:inline">Ganti</span>
+        </Button>
+      )}
+      {bisaHapus && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className={`${kelas} text-destructive hover:text-destructive`}
+          onClick={onHapus}
+          disabled={sedangDiganti}
+          aria-label={`Hapus ${d.namaAsli}`}
+          title="Hapus"
+        >
+          <Trash2 aria-hidden className="size-3.5" />
+          <span className="hidden @[15rem]:inline">Hapus</span>
+        </Button>
       )}
     </div>
   );
@@ -68,18 +72,25 @@ function AksiBerkas({
 
 export type StatusAntrean = "kosong" | "menunggu" | "mengunggah";
 
-// bacaSaja: hanya tampilan dan pratinjau (halaman detail); unggah, ganti, dan hapus ada di halaman ubah
-// onAntreanBerubah: induk menahan tombol Simpan selama ada berkas yang belum diunggah atau sedang diunggah
+/**
+ * bacaSaja: hanya tampilan dan pratinjau (halaman detail); unggah, ganti, dan hapus ada di halaman ubah
+ * onAntreanBerubah: induk menahan tombol Simpan selama ada berkas yang belum diunggah atau sedang diunggah
+ */
 export function DokumentasiGaleri({
   kegiatan,
   bacaSaja = false,
   onAntreanBerubah,
 }: {
-  kegiatan: Pick<KegiatanDetail, "id" | "dokumentasi" | "bisaUbah" | "statusPelaksanaan">;
+  kegiatan: Pick<KegiatanDetail, "id" | "dokumentasi" | "bisaUbah" | "statusPelaksanaan"> & { bisaHapusDokumentasi?: boolean };
   bacaSaja?: boolean;
   onAntreanBerubah?: (status: StatusAntrean) => void;
 }) {
   const bisaUbah = kegiatan.bisaUbah && !bacaSaja;
+
+  /**
+   * Admin boleh menghapus dokumentasi walau tidak bisa mengunggah atau menggantinya, juga di tampilan baca saja
+   */
+  const bisaHapus = bisaUbah || !!kegiatan.bisaHapusDokumentasi;
   const antrean = useAntreanUnggah(kegiatan.dokumentasi.length);
   const statusAntrean: StatusAntrean = antrean.berjalan
     ? "mengunggah"
@@ -98,7 +109,9 @@ export function DokumentasiGaleri({
   const [akanDihapus, setAkanDihapus] = useState<Dokumentasi | null>(null);
   const dipratinjau = indeksPratinjau === null ? null : foto[indeksPratinjau];
 
-  // Berkas langsung diunggah begitu dipilih; yang berhasil pindah ke galeri, yang gagal tetap di daftar dengan pesannya
+  /**
+   * Berkas langsung diunggah begitu dipilih; yang berhasil pindah ke galeri, yang gagal tetap di daftar dengan pesannya
+   */
   const tambahDanUnggah = async (berkas: File[]) => {
     const baru = antrean.tambah(berkas);
     if (!baru.some((it) => it.status === "menunggu")) return;
@@ -179,6 +192,7 @@ export function DokumentasiGaleri({
                 <AksiBerkas
                   d={d}
                   bisaUbah={bisaUbah}
+                  bisaHapus={bisaHapus}
                   sedangDiganti={sedangDiganti(d)}
                   onGanti={() => pilihGanti(d)}
                   onHapus={() => setAkanDihapus(d)}
@@ -202,6 +216,7 @@ export function DokumentasiGaleri({
                 <AksiBerkas
                   d={d}
                   bisaUbah={bisaUbah}
+                  bisaHapus={bisaHapus}
                   sedangDiganti={sedangDiganti(d)}
                   onGanti={() => pilihGanti(d)}
                   onHapus={() => setAkanDihapus(d)}
@@ -258,16 +273,16 @@ export function DokumentasiGaleri({
                   </a>
                 </Button>
                 {bisaUbah && (
-                  <>
-                    <Button type="button" variant="outline" className="h-10" onClick={() => pilihGanti(dipratinjau)} disabled={sedangDiganti(dipratinjau)}>
-                      {sedangDiganti(dipratinjau) ? <Spinner /> : <RefreshCw aria-hidden />}
-                      Ganti
-                    </Button>
-                    <Button type="button" variant="destructive" className="h-10" onClick={() => setAkanDihapus(dipratinjau)}>
-                      <Trash2 aria-hidden />
-                      Hapus
-                    </Button>
-                  </>
+                  <Button type="button" variant="outline" className="h-10" onClick={() => pilihGanti(dipratinjau)} disabled={sedangDiganti(dipratinjau)}>
+                    {sedangDiganti(dipratinjau) ? <Spinner /> : <RefreshCw aria-hidden />}
+                    Ganti
+                  </Button>
+                )}
+                {bisaHapus && (
+                  <Button type="button" variant="destructive" className="h-10" onClick={() => setAkanDihapus(dipratinjau)}>
+                    <Trash2 aria-hidden />
+                    Hapus
+                  </Button>
                 )}
               </div>
             </div>

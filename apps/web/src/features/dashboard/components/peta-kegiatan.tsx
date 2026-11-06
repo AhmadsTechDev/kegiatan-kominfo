@@ -9,7 +9,9 @@ import { site } from "@/config/site";
 import { formatAngka } from "@/lib/format";
 import type { DashboardData } from "../types";
 
-// Peta sebaran lokasi kegiatan pada periode aktif
+/**
+ * Peta sebaran lokasi kegiatan pada periode aktif
+ */
 
 export function PetaKegiatan({ data, periode, className }: { data: DashboardData["peta"]; periode: string; className?: string }) {
   return (

@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-// Masukan jam 24 jam (WIB) dengan pilihan per 15 menit atau diketik bebas
+/**
+ * Masukan jam 24 jam (WIB) dengan pilihan per 15 menit atau diketik bebas
+ */
 
 const dua = (n: number) => String(n).padStart(2, "0");
 const PILIHAN = Array.from({ length: 96 }, (_, i) => `${dua(Math.floor(i / 4))}:${dua((i % 4) * 15)}`);

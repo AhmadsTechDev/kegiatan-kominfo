@@ -12,7 +12,9 @@ import { useCurrentUser } from "../hooks/use-current-user";
 import { KepalaKartu } from "./kartu-publik";
 import { Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
 
-// Menyelesaikan ganti email dari tautan yang dikirim ke email baru
+/**
+ * Menyelesaikan ganti email dari tautan yang dikirim ke email baru
+ */
 
 const PESAN_TIDAK_BERLAKU = "Tautan verifikasi sudah kedaluwarsa, sudah pernah dipakai, atau dibatalkan. Ajukan ulang perubahan email dari halaman Pengaturan.";
 

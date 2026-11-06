@@ -17,7 +17,9 @@ import {
   type Tema,
 } from "../api/akun-saya";
 
-// Hook halaman Pengaturan, termasuk sinkronisasi tema perangkat dengan server
+/**
+ * Hook halaman Pengaturan, termasuk sinkronisasi tema perangkat dengan server
+ */
 
 const kunci = {
   profil: ["me"] as const,
@@ -65,7 +67,10 @@ export function useUbahPreferensi() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ubahPreferensi,
-    // Tampilan langsung berubah; dikembalikan bila server menolak
+
+    /**
+     * Tampilan langsung berubah; dikembalikan bila server menolak
+     */
     onMutate: async (isi) => {
       await queryClient.cancelQueries({ queryKey: kunci.preferensi });
       const sebelum = queryClient.getQueryData<Preferensi>(kunci.preferensi);

@@ -1,7 +1,9 @@
 import { apiClient } from "@/lib/api-client";
 import type { DashboardData, KegiatanSaya } from "../types";
 
-// Pemanggil endpoint dashboard (statistik dinas dan kegiatan pegawai)
+/**
+ * Pemanggil endpoint dashboard (statistik dinas dan kegiatan pegawai)
+ */
 
 export async function getDashboard(periode: string | null) {
   const { data } = await apiClient.get<DashboardData>("/dashboard", {

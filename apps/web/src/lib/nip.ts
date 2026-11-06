@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-// Validasi struktur NIP 18 digit (PNS/PPPK): tanggal lahir, TMT, jenis kelamin, nomor urut
+/**
+ * Validasi struktur NIP 18 digit (PNS/PPPK): tanggal lahir, TMT, jenis kelamin, nomor urut
+ */
 
 const BULAN_PPPK = 21;
 const USIA_MIN_PENGANGKATAN = 17;
@@ -25,6 +27,10 @@ export function periksaNip(nip: string, sekarang = new Date()): string | null {
   return null;
 }
 
+/**
+ * KONSEP Zod: library validasi form di frontend. superRefine menjalankan pengecekan buatan sendiri (periksaNip)
+ * dan menambahkan pesan galat ke kolom bila tidak sah. Aturannya sama dengan backend agar pesannya konsisten.
+ */
 export const zNip = () =>
   z
     .string()

@@ -3,7 +3,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 
-// Mutasi unggah dan hapus foto profil
+/**
+ * Mutasi unggah dan hapus foto profil
+ */
 
 export function useUnggahFoto() {
   const queryClient = useQueryClient();

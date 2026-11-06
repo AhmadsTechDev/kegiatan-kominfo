@@ -4,7 +4,9 @@ import * as React from "react"
 import { cn } from "cn"
 import { Avatar as AvatarPrimitive } from "radix-ui"
 
-// Komponen dasar shadcn/ui: avatar dengan fallback inisial (Radix)
+/**
+ * Komponen dasar shadcn/ui: avatar dengan fallback inisial (Radix)
+ */
 
 function Avatar({
   className,

@@ -4,22 +4,30 @@ import type { Halaman, StatusPermintaan } from "@/types/umum.types";
 type BarisBaru = { pegawaiId: number | null; nama: string; email: string; catatan: string | null; ip: string | null };
 
 export const PermintaanAkunRepository = {
-  // Menyimpan permintaan akun baru dan mengembalikan id-nya
+  /**
+   * Menyimpan permintaan akun baru dan mengembalikan id-nya
+   */
   async insert(nilai: BarisBaru) {
     return (await prisma.permintaanAkun.create({ data: nilai, select: { id: true } })).id;
   },
 
-  // Permintaan yang masih menunggu untuk pegawai tertentu
+  /**
+   * Permintaan yang masih menunggu untuk pegawai tertentu
+   */
   async menungguUntukPegawai(pegawaiId: number) {
     return (await prisma.permintaanAkun.findFirst({ where: { pegawaiId, status: "MENUNGGU" }, select: { id: true } })) ?? undefined;
   },
 
-  // Permintaan yang masih menunggu untuk email tertentu
+  /**
+   * Permintaan yang masih menunggu untuk email tertentu
+   */
   async menungguUntukEmail(email: string) {
     return (await prisma.permintaanAkun.findFirst({ where: { email, status: "MENUNGGU" }, select: { id: true } })) ?? undefined;
   },
 
-  // Daftar permintaan akun terbaru dengan filter status dan paginasi
+  /**
+   * Daftar permintaan akun terbaru dengan filter status dan paginasi
+   */
   async daftar(status: StatusPermintaan | undefined, halaman: Halaman) {
     const where = { status };
     const [baris, total] = await Promise.all([
@@ -52,28 +60,38 @@ export const PermintaanAkunRepository = {
     return { items, total };
   },
 
-  // Jumlah permintaan yang menunggu persetujuan
+  /**
+   * Jumlah permintaan yang menunggu persetujuan
+   */
   jumlahMenunggu() {
     return prisma.permintaanAkun.count({ where: { status: "MENUNGGU" } });
   },
 
-  // Satu permintaan berdasarkan id
+  /**
+   * Satu permintaan berdasarkan id
+   */
   async byId(id: number, db: Db = prisma) {
     return (await db.permintaanAkun.findUnique({ where: { id } })) ?? undefined;
   },
 
-  // Menandai permintaan selesai HANYA bila statusnya masih MENUNGGU; mengembalikan true bila berhasil
+  /**
+   * Menandai permintaan selesai HANYA bila statusnya masih MENUNGGU; mengembalikan true bila berhasil
+   */
   async selesaikanJikaMenunggu(id: number, nilai: { status: StatusPermintaan; alasanTolak?: string | null; diprosesOleh: string }, db: Db = prisma) {
     const hasil = await db.permintaanAkun.updateMany({ where: { id, status: "MENUNGGU" }, data: { ...nilai, diprosesAt: new Date() } });
     return hasil.count > 0;
   },
 
-  // Mengembalikan permintaan ke status MENUNGGU (bila pembuatan akun gagal)
+  /**
+   * Mengembalikan permintaan ke status MENUNGGU (bila pembuatan akun gagal)
+   */
   async kembalikanMenunggu(id: number) {
     await prisma.permintaanAkun.update({ where: { id }, data: { status: "MENUNGGU", diprosesOleh: null, diprosesAt: null } });
   },
 
-  // Email semua admin yang aktif (penerima pemberitahuan)
+  /**
+   * Email semua admin yang aktif (penerima pemberitahuan)
+   */
   async emailAdmin() {
     const baris = await prisma.user.findMany({ where: { role: "ADMIN", banned: false }, select: { email: true } });
     return baris.map((b) => b.email);

@@ -1,6 +1,8 @@
 import type { Role, StatusAkun } from "@/types/auth";
 
-// Tipe data fitur admin: master data, akun, dan audit log
+/**
+ * Tipe data fitur admin: master data, akun, dan audit log
+ */
 
 export type BidangAdmin = {
   id: number;
@@ -31,7 +33,9 @@ export type PegawaiAdmin = {
   updatedAt: string;
 };
 
-// kontak: nomor telepon akun tertaut; hanya dikirim saat mengubah pegawai yang sudah punya akun
+/**
+ * kontak: nomor telepon akun tertaut; hanya dikirim saat mengubah pegawai yang sudah punya akun
+ */
 export type IsiPegawai = {
   nip: string | null;
   nama: string;
@@ -91,12 +95,16 @@ export type AkunDetail = Omit<AkunAdmin, "pegawai"> & {
   riwayat: AuditItem[];
 };
 
-// Isian form Buat/Ubah akun. NIP opsional; bidang wajib (akun selalu tertaut ke data pegawai)
+/**
+ * Isian form Buat/Ubah akun. NIP opsional; bidang wajib (akun selalu tertaut ke data pegawai)
+ */
 export type IsiAkun = { name: string; email: string; nip: string | null; bidangId: number; role: Role };
 
 export type HasilSimpanAkun = { id: string; undangan: { email: string; galat: string | null } | null };
 
-// nonaktif: "1" hanya akun nonaktif, "0" menyembunyikannya
+/**
+ * nonaktif: "1" hanya akun nonaktif, "0" menyembunyikannya
+ */
 export type FilterAkun = { q: string; role: Role | null; status: StatusAkun | null; nonaktif: "1" | "0" | null; page: number };
 
 export type AuditItem = {

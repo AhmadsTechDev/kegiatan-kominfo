@@ -13,8 +13,14 @@ import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
 import { cn } from "@/lib/utils";
 import type { BidangAdmin } from "../types";
 
-// Komponen dan utilitas formulir bersama untuk halaman admin
+/**
+ * Komponen dan utilitas formulir bersama untuk halaman admin
+ */
 
+/**
+ * Penjaga halaman admin: selama sesi dimuat tampil skeleton, bukan admin tampil pesan, admin melihat isinya.
+ * Ini hanya untuk tampilan; backend tetap menolak 403 bila bukan admin yang memanggil endpoint admin.
+ */
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, isPending } = useCurrentUser();
   if (isPending) return <Skeleton className="h-64 w-full rounded-xl" />;
@@ -100,6 +106,14 @@ export function AksiBaris({
   );
 }
 
+/**
+ * Memasang pesan galat 422 dari backend ke kolom form react-hook-form yang sesuai.
+ * Fokus dipindah ke kolom salah yang pertama agar pengguna langsung melihatnya.
+ * @param e galat dari mutation
+ * @param setError fungsi setError dari useForm
+ * @param petaKolom pemetaan nama kolom backend -> nama kolom form
+ * @returns "" bila semua pesan sudah terpasang di kolom, atau pesan umum untuk ditampilkan di atas form
+ */
 export function terapkanGalatServer<T extends FieldValues>(
   e: unknown,
   setError: UseFormSetError<T>,
@@ -121,9 +135,15 @@ export function terapkanGalatServer<T extends FieldValues>(
 
 export { KolomCari } from "@/components/shared/kolom-cari";
 
-// idPanel: id elemen role="tabpanel" yang isinya diganti tab ini; panel memakai aria-labelledby={idTab(idPanel, value)}
+/**
+ * idPanel: id elemen role="tabpanel" yang isinya diganti tab ini; panel memakai aria-labelledby={idTab(idPanel, value)}
+ */
 export const idTab = (idPanel: string, nilai: string) => `${idPanel}-tab-${nilai}`;
 
+/**
+ * Deretan tab yang aksesibel (role="tablist"): bisa dipakai dengan mouse, sentuhan, maupun panah keyboard.
+ * Generic <T extends string> membuat `value` dan `onChange` hanya menerima nilai yang ada di `opsi`.
+ */
 export function PilihanTab<T extends string>({
   value,
   onChange,
@@ -139,8 +159,11 @@ export function PilihanTab<T extends string>({
   idPanel?: string;
 }) {
   const nilai = opsi.map((o) => o.nilai);
-  // Tab turun ke baris berikutnya bila tidak muat (bukan digulir), agar tab terakhir tidak terpotong tanpa tanda.
-  // relative: teks sr-only di lencana (position absolute) tidak melebarkan halaman
+
+  /**
+   * Tab turun ke baris berikutnya bila tidak muat (bukan digulir), agar tab terakhir tidak terpotong tanpa tanda.
+   * relative: teks sr-only di lencana (position absolute) tidak melebarkan halaman
+   */
   return (
     <div role="tablist" aria-label={label} className="relative flex flex-wrap gap-1 py-0.5" onKeyDown={(e) => tanganiPanah(e, nilai, value, onChange)}>
       {opsi.map((o) => (
@@ -213,7 +236,9 @@ export function PilihUnit({ unit, value, onChange, id, invalid, required }: { un
   );
 }
 
-// Tampilan kartu di bawah md (DESIGN.md bagian 10): kolom aksi tidak tersembunyi di balik gulir menyamping
+/**
+ * Tampilan kartu di bawah md (DESIGN.md bagian 10): kolom aksi tidak tersembunyi di balik gulir menyamping
+ */
 export function KartuMaster({ judul, aksi, children }: { judul: React.ReactNode; aksi: React.ReactNode; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2 rounded-xl border bg-card p-3">
@@ -226,7 +251,9 @@ export function KartuMaster({ judul, aksi, children }: { judul: React.ReactNode;
   );
 }
 
-// Tombol Ubah untuk baris yang hanya punya satu aksi
+/**
+ * Tombol Ubah untuk baris yang hanya punya satu aksi
+ */
 export function TombolUbah({ nama, onClick }: { nama: string; onClick: () => void }) {
   return (
     <div className="flex items-center justify-end">

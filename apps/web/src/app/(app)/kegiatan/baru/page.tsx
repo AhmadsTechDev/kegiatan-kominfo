@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import { KegiatanFormSkeleton } from "@/features/kegiatan/components/kegiatan-states";
 import { KegiatanBaruView } from "@/features/kegiatan/components/kegiatan-form-view";
 
-// Halaman catat kegiatan baru, termasuk melanjutkan draf (/kegiatan/baru)
+/**
+ * Halaman catat kegiatan baru, termasuk melanjutkan draf (/kegiatan/baru)
+ */
 
 export const metadata: Metadata = { title: "Tambah kegiatan" };
 

@@ -1,5 +1,12 @@
-// Format tanggal, jam, angka, periode, ukuran berkas, dan inisial (id-ID)
+/**
+ * Format tanggal, jam, angka, periode, ukuran berkas, dan inisial (id-ID)
+ */
 
+/**
+ * KONSEP Intl: API bawaan JavaScript untuk memformat tanggal dan angka sesuai bahasa/wilayah.
+ * "id-ID" menghasilkan format Indonesia (mis. "5 Nov 2026", "1.234"), dan timeZone memastikan jam selalu WIB
+ * walaupun perangkat pengguna diatur ke zona waktu lain.
+ */
 const ZONA = "Asia/Jakarta";
 
 export function formatTanggal(nilai: string | Date): string {
@@ -22,6 +29,11 @@ export function formatJam(nilai: string | Date): string {
     .replace(".", ":")} WIB`;
 }
 
+/**
+ * Meringkas rentang tanggal agar tidak berulang: "3–4 Nov 2026" bila bulan dan tahunnya sama,
+ * selain itu "30 Okt 2026 – 2 Nov 2026".
+ * @returns teks rentang tanggal dalam WIB
+ */
 export function formatRentangTanggal(mulai: string | Date, selesai: string | Date): string {
   const a = formatTanggal(mulai);
   const b = formatTanggal(selesai);
@@ -36,6 +48,9 @@ export function formatAngka(nilai: number): string {
   return new Intl.NumberFormat("id-ID").format(nilai);
 }
 
+/**
+ * Tanggal 15 pukul 12.00 UTC dipakai sebagai titik tengah bulan, jadi pergeseran zona waktu tidak membuat bulannya mundur atau maju.
+ */
 export function formatPeriode(kode: string, panjang = false): string {
   const [tahun, bulan] = kode.split("-").map(Number);
   return new Intl.DateTimeFormat("id-ID", {
@@ -62,6 +77,9 @@ export function formatTanggalJam(nilai: string | Date): string {
   return `${formatTanggal(nilai)}, ${formatJam(nilai)}`;
 }
 
+/**
+ * Contoh: "Budi Setiawan" -> "BS". Dipakai sebagai pengganti foto profil.
+ */
 export function inisial(nama: string): string {
   return nama
     .split(" ")
@@ -81,11 +99,16 @@ export function formatHari(tanggal: string, pendek = false): string {
   }).format(new Date(`${tanggal}T12:00:00+07:00`));
 }
 
+/**
+ * Tanggal "YYYY-MM-DD" menurut WIB: waktu digeser +7 jam lalu diambil 10 karakter pertama dari format ISO.
+ */
 export function tanggalWib(nilai: string | Date): string {
   return new Date(new Date(nilai).getTime() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
-// Nomor telepon dalam satu bentuk: awalan 62 atau +62 menjadi 0, lalu dikelompokkan 4-4-sisanya (0812-3456-7890)
+/**
+ * Nomor telepon dalam satu bentuk: awalan 62 atau +62 menjadi 0, lalu dikelompokkan 4-4-sisanya (0812-3456-7890)
+ */
 export function formatTelp(nilai: string): string {
   let angka = nilai.replace(/\D/g, "");
   if (angka.startsWith("62")) angka = `0${angka.slice(2)}`;

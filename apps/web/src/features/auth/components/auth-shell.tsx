@@ -1,6 +1,8 @@
 import { site } from "@/config/site";
 
-// Tata letak halaman publik: kartu di tengah dan nama instansi di bawah
+/**
+ * Tata letak halaman publik: kartu di tengah dan nama instansi di bawah
+ */
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (

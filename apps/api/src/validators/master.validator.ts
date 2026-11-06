@@ -41,10 +41,16 @@ export const MasterValidator = {
   ubahPegawai: t.Object({
     ...pegawai,
     ...aktif,
-    // Role bawaan saat diundang; tidak berpengaruh bila pegawai sudah punya akun
-    // Union literal, bukan UnionEnum: UnionEnum opsional terisi nilai pertama (PEGAWAI) bila field tidak dikirim
+
+    /**
+     * Role bawaan saat diundang; tidak berpengaruh bila pegawai sudah punya akun
+     * Union literal, bukan UnionEnum: UnionEnum opsional terisi nilai pertama (PEGAWAI) bila field tidak dikirim
+     */
     roleUndangan: t.Optional(t.Union(ROLES.map((r) => t.Literal(r)), { error: "Role tidak valid" })),
-    // Nomor telepon disimpan di akun; hanya bisa diisi bila pegawai sudah punya akun
+
+    /**
+     * Nomor telepon disimpan di akun; hanya bisa diisi bila pegawai sudah punya akun
+     */
     kontak: t.Optional(t.Nullable(t.String({ maxLength: 50, pattern: "^[0-9+()\\-\\s]*$", error: "Nomor telepon hanya angka, spasi, +, -, atau tanda kurung, maksimal 50 karakter" }))),
   }),
 

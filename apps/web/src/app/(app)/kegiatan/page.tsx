@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/shared/data-table";
 import { KegiatanListView } from "@/features/kegiatan/components/kegiatan-list-view";
 
-// Halaman daftar kegiatan (/kegiatan)
+/**
+ * Halaman daftar kegiatan (/kegiatan)
+ */
 
 export const metadata: Metadata = { title: "Kegiatan" };
 

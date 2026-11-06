@@ -12,7 +12,9 @@ import { formatTanggal, formatTanggalJam } from "@/lib/format";
 import { useDaftarDraf, useHapusDraf } from "../hooks/use-kegiatan";
 import type { DrafRingkas } from "../types";
 
-// Panel draf kegiatan milik pegawai di atas daftar kegiatan
+/**
+ * Panel draf kegiatan milik pegawai di atas daftar kegiatan
+ */
 
 const namaDraf = (d: DrafRingkas) => d.judul ?? "Draf tanpa judul";
 
