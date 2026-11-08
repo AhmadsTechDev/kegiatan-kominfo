@@ -3,8 +3,10 @@
  * Kepala Dinas tidak dibuat sebagai unit; perannya dijalankan akun ber-role PIMPINAN.
  * Aman dijalankan berulang kali; data yang sudah ada dilewati. Jalankan: bun run db:seed
  */
+import { eq } from "drizzle-orm";
+import { bidang, jenisKegiatan, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db, pool } from "@/lib/db";
 
 const DATA_UNIT: { kode: string; nama: string; induk?: string }[] = [
   { kode: "SEKRETARIAT", nama: "Sekretariat" },
@@ -23,6 +25,14 @@ const DATA_UNIT: { kode: string; nama: string; induk?: string }[] = [
 const DATA_JENIS_KEGIATAN = ["Rapat", "Sosialisasi", "Liputan", "Bimtek", "Pemeliharaan"];
 
 /**
+ * Mencari satu bidang berdasarkan kode
+ */
+async function bidangDenganKode(kode: string) {
+  const [b] = await db.select().from(bidang).where(eq(bidang.kode, kode)).limit(1);
+  return b;
+}
+
+/**
  * Membuat bidang bawaan (unit tanpa induk dibuat lebih dulu)
  */
 async function seedBidang() {
@@ -31,9 +41,9 @@ async function seedBidang() {
    * karena sub unit butuh id induknya. `!!x` mengubah nilai apa pun menjadi true/false.
    */
   for (const unit of [...DATA_UNIT].sort((a, b) => Number(!!a.induk) - Number(!!b.induk))) {
-    if (await prisma.bidang.findUnique({ where: { kode: unit.kode } })) continue;
-    const induk = unit.induk ? await prisma.bidang.findUnique({ where: { kode: unit.induk } }) : null;
-    await prisma.bidang.create({ data: { kode: unit.kode, nama: unit.nama, parentId: induk?.id ?? null } });
+    if (await bidangDenganKode(unit.kode)) continue;
+    const induk = unit.induk ? await bidangDenganKode(unit.induk) : undefined;
+    await db.insert(bidang).values({ kode: unit.kode, nama: unit.nama, parentId: induk?.id ?? null });
   }
 }
 
@@ -42,9 +52,12 @@ async function seedBidang() {
  */
 async function seedJenisKegiatan() {
   /**
-   * skipDuplicates: jenis yang sudah ada dilewati, jadi seed aman dijalankan berulang kali.
+   * onConflictDoNothing: jenis yang sudah ada dilewati, jadi seed aman dijalankan berulang kali.
    */
-  await prisma.jenisKegiatan.createMany({ data: DATA_JENIS_KEGIATAN.map((nama) => ({ nama })), skipDuplicates: true });
+  await db
+    .insert(jenisKegiatan)
+    .values(DATA_JENIS_KEGIATAN.map((nama) => ({ nama })))
+    .onConflictDoNothing();
 }
 
 /**
@@ -57,17 +70,18 @@ async function seedAdmin() {
     console.log("Lewati akun admin: SEED_ADMIN_EMAIL atau SEED_ADMIN_PASSWORD belum diisi");
     return;
   }
-  if (await prisma.user.findUnique({ where: { email: email.toLowerCase() } })) {
+  const [ada] = await db.select({ id: user.id }).from(user).where(eq(user.email, email.toLowerCase())).limit(1);
+  if (ada) {
     console.log(`Akun admin ${email} sudah ada`);
     return;
   }
-  const { user } = await auth.api.createUser({ body: { email, password, name: "Administrator", role: "ADMIN" } });
+  const hasil = await auth.api.createUser({ body: { email, password, name: "Administrator", role: "ADMIN" } });
 
   /**
    * Admin pertama tidak melewati tautan aktivasi; email-nya ditetapkan sendiri oleh pengelola server lewat .env,
    * jadi dianggap terverifikasi agar tidak tampil "Belum terverifikasi" di Pengaturan
    */
-  await prisma.user.update({ where: { id: user.id }, data: { emailVerified: true } });
+  await db.update(user).set({ emailVerified: true }).where(eq(user.id, hasil.user.id));
   console.log(`Akun admin ${email} dibuat`);
 }
 
@@ -75,5 +89,5 @@ await seedBidang();
 await seedJenisKegiatan();
 console.log(`Bidang: ${DATA_UNIT.length}, jenis kegiatan: ${DATA_JENIS_KEGIATAN.length}`);
 await seedAdmin();
-await prisma.$disconnect();
+await pool.end();
 process.exit(0);

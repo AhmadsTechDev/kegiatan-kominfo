@@ -1,5 +1,5 @@
 import { NotFound, Unprocessable } from "@/lib/errors";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { UndanganRepository } from "@/repositories/undangan.repository";
 import { UserRepository } from "@/repositories/user.repository";
 import type { IsiUndangan } from "@/types/undangan.types";
@@ -27,7 +27,7 @@ export const UndanganService = {
     }
 
     const userId = akun?.id ?? crypto.randomUUID();
-    const { token } = await prisma.$transaction(async (tx) => {
+    const { token } = await db.transaction(async (tx) => {
       if (akun) await UserRepository.update(akun.id, { email, role }, tx);
       else await UserRepository.insert({ id: userId, name: pegawai.nama, email, role, pegawaiId }, tx);
       return KredensialService.terbitkan("aktivasi", userId, tx);

@@ -1,6 +1,6 @@
 # Diagram UML
 
-Diagram Aplikasi Pendataan Kegiatan Diskominfo Kota Palembang, ditulis dengan [Mermaid](https://mermaid.js.org) sehingga tampil langsung di GitHub dan di VS Code (pratinjau Markdown, atau ekstensi *Markdown Preview Mermaid Support*). Isinya diturunkan dari kode: skema `apps/api/prisma/schema.prisma`, route di `apps/api/src/routes/`, dan service di `apps/api/src/services/`. Bila kode berubah, perbarui diagram yang terkait.
+Diagram Aplikasi Pendataan Kegiatan Diskominfo Kota Palembang, ditulis dengan [Mermaid](https://mermaid.js.org) sehingga tampil langsung di GitHub dan di VS Code (pratinjau Markdown, atau ekstensi *Markdown Preview Mermaid Support*). Isinya diturunkan dari kode: skema `apps/api/src/db/schema.ts`, route di `apps/api/src/routes/`, dan service di `apps/api/src/services/`. Bila kode berubah, perbarui diagram yang terkait.
 
 | No | Diagram | Isi |
 | --- | --- | --- |

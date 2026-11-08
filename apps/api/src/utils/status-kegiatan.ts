@@ -20,6 +20,6 @@ export function hitungStatus(k: WaktuKegiatan, sekarang: Date): StatusPelaksanaa
 }
 
 /**
- * Mengubah nilai Decimal Prisma (lat/lng) menjadi number biasa
+ * Mengubah nilai numeric PostgreSQL (lat/lng) menjadi number biasa
  */
 export const angka = (nilai: { toString(): string } | null) => (nilai == null ? null : Number(nilai));

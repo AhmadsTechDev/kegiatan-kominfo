@@ -1,5 +1,5 @@
 import { NotFound, Unprocessable } from "@/lib/errors";
-import { galatDuplikat, prisma } from "@/lib/prisma";
+import { db, galatDuplikat } from "@/lib/db";
 import { MasterRepository } from "@/repositories/master.repository";
 import type {
   DaftarPegawaiQuery,
@@ -184,7 +184,7 @@ export const MasterService = {
     const { nilai: isian, namaJenis } = await validasiUnit(isi);
     const nilai = { ...isian, kode: isian.kode ?? (await buatKodeUnit(isian.nama, namaJenis)) };
     return denganCekDuplikat("kode", "Kode unit sudah dipakai", () =>
-      prisma.$transaction(async (tx) => {
+      db.transaction(async (tx) => {
         const id = await MasterRepository.insertUnit(nilai, tx);
         return { id };
       }),
@@ -208,7 +208,7 @@ export const MasterService = {
     }
 
     return denganCekDuplikat("kode", "Kode unit sudah dipakai", () =>
-      prisma.$transaction(async (tx) => {
+      db.transaction(async (tx) => {
         await MasterRepository.updateUnit(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif }, tx);
         return { id };
       }),
@@ -229,7 +229,7 @@ export const MasterService = {
       const bagian = [p.pegawai && `${p.pegawai} pegawai`, p.kegiatan && `${p.kegiatan} kegiatan`, p.turunan && `${p.turunan} sub bidang`].filter(Boolean).join(", ");
       throw Unprocessable(`Tidak dapat dihapus karena masih punya ${bagian}. Nonaktifkan saja agar riwayatnya tetap utuh`);
     }
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await MasterRepository.hapusUnit(id, tx);
     });
     return { id };
@@ -251,7 +251,7 @@ export const MasterService = {
       const bagian = [p.kegiatan && `${p.kegiatan} kegiatan`, p.permintaan && `${p.permintaan} permintaan akun`].filter(Boolean).join(", ");
       throw Unprocessable(`Tidak dapat dihapus karena masih tercatat di ${bagian}. Nonaktifkan saja agar riwayatnya tetap utuh`);
     }
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await MasterRepository.hapusPegawai(id, tx);
     });
     return { id };
@@ -281,7 +281,7 @@ export const MasterService = {
   async buatPegawai(isi: IsiPegawai, email?: string | null) {
     const nilai = await validasiPegawai(isi, undefined, undefined, { email });
     return denganCekDuplikat("nip", "NIP sudah terdaftar", () =>
-      prisma.$transaction(async (tx) => {
+      db.transaction(async (tx) => {
         const id = await MasterRepository.insertPegawai(nilai, tx);
         return { id };
       }),
@@ -302,7 +302,7 @@ export const MasterService = {
       throw Unprocessable("Nomor telepon bisa diisi setelah pegawai punya akun", [{ field: "kontak", message: "Undang pegawai ini dulu, lalu isi nomor teleponnya" }]);
     }
     return denganCekDuplikat("nip", "NIP sudah terdaftar", () =>
-      prisma.$transaction(async (tx) => {
+      db.transaction(async (tx) => {
         await MasterRepository.updatePegawai(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif, ...(isi.roleUndangan ? { roleUndangan: isi.roleUndangan } : {}) }, tx);
 
         /**
@@ -334,7 +334,7 @@ export const MasterService = {
   async buatJenis(isi: IsiJenis) {
     const nama = validasiNamaJenis(isi.nama);
     return denganCekDuplikat("nama", "Nama jenis sudah ada", () =>
-      prisma.$transaction(async (tx) => {
+      db.transaction(async (tx) => {
         const id = await MasterRepository.insertJenis({ nama }, tx);
         return { id };
       }),
@@ -349,7 +349,7 @@ export const MasterService = {
     if (!sebelum) throw NotFound("Jenis kegiatan tidak ditemukan");
     const nama = validasiNamaJenis(isi.nama);
     return denganCekDuplikat("nama", "Nama jenis sudah ada", () =>
-      prisma.$transaction(async (tx) => {
+      db.transaction(async (tx) => {
         await MasterRepository.updateJenis(id, { nama, aktif: isi.aktif ?? sebelum.aktif }, tx);
         return { id };
       }),

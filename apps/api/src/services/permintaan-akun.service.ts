@@ -1,7 +1,7 @@
 import { env } from "@/config/env";
 import { Conflict, NotFound, Unprocessable } from "@/lib/errors";
 import { kirimEmail } from "@/lib/mailer";
-import { prisma, type Db } from "@/lib/prisma";
+import { db, type Db } from "@/lib/db";
 import { PermintaanAkunRepository } from "@/repositories/permintaan-akun.repository";
 import { UndanganRepository } from "@/repositories/undangan.repository";
 import type { DaftarPermintaanQuery, IsiPermintaan, SetujuiPermintaan } from "@/types/permintaan-akun.types";
@@ -66,10 +66,10 @@ async function cocokkanNip(nip: string) {
  * hanya satu admin yang berhasil; admin lainnya menerima 409 Conflict.
  * @param id id permintaan
  * @param nilai status baru beserta data pemrosesnya
- * @param tx koneksi transaksi (bawaan: prisma biasa)
+ * @param tx koneksi transaksi (bawaan: koneksi biasa)
  * @returns data permintaan sebelum diubah
  */
-async function ambilAlih(id: number, nilai: Parameters<typeof PermintaanAkunRepository.selesaikanJikaMenunggu>[1], tx: Db = prisma) {
+async function ambilAlih(id: number, nilai: Parameters<typeof PermintaanAkunRepository.selesaikanJikaMenunggu>[1], tx: Db = db) {
   const p = await PermintaanAkunRepository.byId(id, tx);
   if (!p) throw NotFound("Permintaan akun tidak ditemukan");
   if (!(await PermintaanAkunRepository.selesaikanJikaMenunggu(id, nilai, tx))) throw Conflict("Permintaan ini sudah diproses administrator lain");
@@ -171,7 +171,7 @@ export const PermintaanAkunService = {
   async tolak(id: number, alasan: string, admin: Admin) {
     const bersih = alasan.trim();
     if (!bersih) throw Unprocessable("Alasan penolakan wajib diisi", [{ field: "alasan", message: "Alasan penolakan wajib diisi" }]);
-    const permintaan = await prisma.$transaction(async (tx) => {
+    const permintaan = await db.transaction(async (tx) => {
       return ambilAlih(id, { status: "DITOLAK", alasanTolak: bersih, diprosesOleh: admin.id }, tx);
     });
     await kirimTanpaGagal(() =>

@@ -1,4 +1,6 @@
-import { prisma, type Db } from "@/lib/prisma";
+import { and, desc, eq, gt, ne } from "drizzle-orm";
+import { session } from "@/db/schema";
+import { db, type Db } from "@/lib/db";
 
 /**
  * Sesi login (tabel session milik Better Auth). Kolom token tidak pernah dibaca keluar dari sini.
@@ -8,26 +10,26 @@ export const SesiRepository = {
    * Sesi yang masih berlaku milik seorang user, terbaru dipakai di atas
    */
   daftar(userId: string, sekarang = new Date()) {
-    return prisma.session.findMany({
-      where: { userId, expiresAt: { gt: sekarang } },
-      select: { id: true, ipAddress: true, userAgent: true, createdAt: true, updatedAt: true, expiresAt: true },
-      orderBy: { updatedAt: "desc" },
-    });
+    return db
+      .select({ id: session.id, ipAddress: session.ipAddress, userAgent: session.userAgent, createdAt: session.createdAt, updatedAt: session.updatedAt, expiresAt: session.expiresAt })
+      .from(session)
+      .where(and(eq(session.userId, userId), gt(session.expiresAt, sekarang)))
+      .orderBy(desc(session.updatedAt));
   },
 
   /**
    * Mencabut satu sesi milik user; mengembalikan true bila ada yang dicabut
    */
   async hapus(userId: string, id: string) {
-    const { count } = await prisma.session.deleteMany({ where: { id, userId } });
-    return count > 0;
+    const hasil = await db.delete(session).where(and(eq(session.id, id), eq(session.userId, userId)));
+    return (hasil.rowCount ?? 0) > 0;
   },
 
   /**
    * Mencabut semua sesi user, kecuali satu sesi (mis. sesi yang sedang dipakai); mengembalikan jumlahnya
    */
-  async hapusSemua(userId: string, kecualiId?: string, db: Db = prisma) {
-    const { count } = await db.session.deleteMany({ where: { userId, id: kecualiId ? { not: kecualiId } : undefined } });
-    return count;
+  async hapusSemua(userId: string, kecualiId?: string, tx: Db = db) {
+    const hasil = await tx.delete(session).where(and(eq(session.userId, userId), kecualiId ? ne(session.id, kecualiId) : undefined));
+    return hasil.rowCount ?? 0;
   },
 };

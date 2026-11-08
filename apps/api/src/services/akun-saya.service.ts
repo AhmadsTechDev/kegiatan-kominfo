@@ -1,5 +1,5 @@
 import { NotFound, Unprocessable } from "@/lib/errors";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { cocokSandi, hashSandi } from "@/lib/sandi";
 import { AuthRepository } from "@/repositories/auth.repository";
 import { PreferensiRepository } from "@/repositories/preferensi.repository";
@@ -42,7 +42,7 @@ export const AkunSayaService = {
     if (salah) throw Unprocessable("Kata sandi belum memenuhi syarat", [{ field: "sandiBaru", message: salah }]);
 
     const hashBaru = await hashSandi(sandiBaru);
-    const sesiDicabut = await prisma.$transaction(async (tx) => {
+    const sesiDicabut = await db.transaction(async (tx) => {
       await AuthRepository.gantiSandi(userId, hashBaru, tx);
       return cabutSesiLain ? SesiRepository.hapusSemua(userId, sesiId, tx) : 0;
     });

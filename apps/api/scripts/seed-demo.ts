@@ -4,7 +4,9 @@
  * Jalankan: bun run db:seed:demo (bisa diulang; data demo lama dihapus lalu dibuat ulang).
  * Prasyarat: bun run db:seed sudah dijalankan (bidang dan jenis kegiatan).
  */
-import { prisma } from "@/lib/prisma";
+import { eq, inArray, like, or } from "drizzle-orm";
+import { account, bidang, catatanPemeriksaan, jenisKegiatan, kegiatan, pegawai, user, verification } from "@/db/schema";
+import { db, pool } from "@/lib/db";
 import { hashSandi } from "@/lib/sandi";
 
 if (process.env.NODE_ENV === "production") throw new Error("seed-demo dilarang dijalankan di produksi");
@@ -71,23 +73,26 @@ const JUDUL: Record<string, string[]> = {
 const HARI = 24 * 3600_000;
 
 async function hapusDemoLama() {
-  const users = await prisma.user.findMany({ where: { email: { endsWith: `@${DOMAIN}` } }, select: { id: true, pegawaiId: true } });
+  const users = await db.select({ id: user.id, pegawaiId: user.pegawaiId }).from(user).where(like(user.email, `%@${DOMAIN}`));
   const userIds = users.map((u) => u.id);
-  const pegawai = await prisma.pegawai.findMany({ where: { OR: [{ id: { in: users.map((u) => u.pegawaiId!).filter(Boolean) } }, { nama: { in: ORANG.map((o) => o.nama) } }] }, select: { id: true } });
-  const pegawaiIds = pegawai.map((p) => p.id);
-  await prisma.$transaction([
-    prisma.kegiatan.deleteMany({ where: { OR: [{ dibuatOleh: { in: userIds } }, { penanggungJawabId: { in: pegawaiIds } }] } }),
-    prisma.verification.deleteMany({ where: { value: { in: userIds } } }),
-    prisma.user.deleteMany({ where: { id: { in: userIds } } }),
-    prisma.pegawai.deleteMany({ where: { id: { in: pegawaiIds } } }),
-  ]);
+  const pegawaiTerkait = await db
+    .select({ id: pegawai.id })
+    .from(pegawai)
+    .where(or(inArray(pegawai.id, users.map((u) => u.pegawaiId!).filter(Boolean)), inArray(pegawai.nama, ORANG.map((o) => o.nama))));
+  const pegawaiIds = pegawaiTerkait.map((p) => p.id);
+  await db.transaction(async (tx) => {
+    await tx.delete(kegiatan).where(or(inArray(kegiatan.dibuatOleh, userIds), inArray(kegiatan.penanggungJawabId, pegawaiIds)));
+    await tx.delete(verification).where(inArray(verification.value, userIds));
+    await tx.delete(user).where(inArray(user.id, userIds));
+    await tx.delete(pegawai).where(inArray(pegawai.id, pegawaiIds));
+  });
   return users.length;
 }
 
 const dihapus = await hapusDemoLama();
-const unit = new Map((await prisma.bidang.findMany({ select: { id: true, kode: true } })).map((u) => [u.kode, u.id]));
-const jenis = await prisma.jenisKegiatan.findMany({ select: { id: true, nama: true } });
-const admin = await prisma.user.findFirst({ where: { role: "ADMIN" }, select: { id: true } });
+const unit = new Map((await db.select({ id: bidang.id, kode: bidang.kode }).from(bidang)).map((u) => [u.kode, u.id]));
+const jenis = await db.select({ id: jenisKegiatan.id, nama: jenisKegiatan.nama }).from(jenisKegiatan);
+const [admin] = await db.select({ id: user.id }).from(user).where(eq(user.role, "ADMIN")).limit(1);
 if (!unit.size || !jenis.length || !admin) throw new Error("Jalankan dulu: bun run db:seed");
 
 const hash = await hashSandi(SANDI_DEMO);
@@ -97,29 +102,27 @@ let pimpinanId = admin.id;
 for (const [i, o] of ORANG.entries()) {
   const unitId = unit.get(o.unit);
   if (!unitId) throw new Error(`Unit ${o.unit} tidak ada`);
-  const p = await prisma.pegawai.create({ data: { nama: o.nama, bidangId: unitId, nip: o.nip ? nip(i + 1) : null } });
+  const [p] = await db.insert(pegawai).values({ nama: o.nama, bidangId: unitId, nip: o.nip ? nip(i + 1) : null }).returning({ id: pegawai.id });
   if (!o.akun) continue;
   const email = `${o.nama.toLowerCase().replace(/\s+/g, ".")}@${DOMAIN}`;
   const id = crypto.randomUUID();
-  await prisma.user.create({
-    data: {
-      id,
-      name: o.nama,
-      email,
-      role: o.akun.role,
-      pegawaiId: p.id,
-      emailVerified: o.akun.status !== "MENUNGGU",
-      banned: o.akun.status === "NONAKTIF",
-      banReason: o.akun.status === "NONAKTIF" ? "Pindah tugas" : null,
-      kontak: o.akun.status === "AKTIF" ? `0812-${String(1000 + i * 37).slice(-4)}-${String(2000 + i * 53).slice(-4)}` : null,
-    },
+  await db.insert(user).values({
+    id,
+    name: o.nama,
+    email,
+    role: o.akun.role,
+    pegawaiId: p!.id,
+    emailVerified: o.akun.status !== "MENUNGGU",
+    banned: o.akun.status === "NONAKTIF",
+    banReason: o.akun.status === "NONAKTIF" ? "Pindah tugas" : null,
+    kontak: o.akun.status === "AKTIF" ? `0812-${String(1000 + i * 37).slice(-4)}-${String(2000 + i * 53).slice(-4)}` : null,
   });
 
   /**
    * Akun MENUNGGU tidak punya kata sandi (belum aktivasi); selainnya bisa login dengan SANDI_DEMO
    */
-  if (o.akun.status !== "MENUNGGU") await prisma.account.create({ data: { id: crypto.randomUUID(), accountId: id, providerId: "credential", userId: id, password: hash } });
-  if (o.akun.role === "PEGAWAI" && o.akun.status === "AKTIF") pelaksana.push({ userId: id, pegawaiId: p.id, unitId });
+  if (o.akun.status !== "MENUNGGU") await db.insert(account).values({ id: crypto.randomUUID(), accountId: id, providerId: "credential", userId: id, password: hash });
+  if (o.akun.role === "PEGAWAI" && o.akun.status === "AKTIF") pelaksana.push({ userId: id, pegawaiId: p!.id, unitId });
   if (o.akun.role === "PIMPINAN" && pimpinanId === admin.id) pimpinanId = id;
 }
 
@@ -142,14 +145,15 @@ for (let i = 0; i < 48; i++) {
   const judul = pilih(JUDUL[j.nama] ?? [`Kegiatan ${j.nama}`]);
   const pemeriksaan = !lewat || batal ? "terkirim" : pilih(["terkirim", "terkirim", "terkirim", "perlu_perbaikan"] as const);
 
-  const k = await prisma.kegiatan.create({
-    data: {
+  const [k] = await db
+    .insert(kegiatan)
+    .values({
       judul,
       jenisId: j.id,
       uraian: `${judul} yang diselenggarakan Diskominfo Kota Palembang. Data demo untuk mencoba tampilan aplikasi.`,
       lokasiNama: lokasi.nama,
-      lat: lokasi.lat,
-      lng: lokasi.lng,
+      lat: lokasi.lat === null ? null : String(lokasi.lat),
+      lng: lokasi.lng === null ? null : String(lokasi.lng),
       tglMulai: mulai,
       tglSelesai: selesai,
       bidangId: orang.unitId,
@@ -160,17 +164,15 @@ for (let i = 0; i < 48; i++) {
       dibatalkanAt: batal ? new Date(mulai.getTime() - 2 * HARI) : null,
       alasanBatal: batal ? "Bentrok dengan agenda Wali Kota" : null,
       statusPemeriksaan: pemeriksaan,
-    },
-  });
+    })
+    .returning({ id: kegiatan.id });
   if (pemeriksaan !== "terkirim") {
-    await prisma.catatanPemeriksaan.create({
-      data: { kegiatanId: k.id, pemeriksaId: pimpinanId, status: pemeriksaan, isi: "Mohon lengkapi foto kegiatan dan jumlah peserta." },
-    });
+    await db.insert(catatanPemeriksaan).values({ kegiatanId: k!.id, pemeriksaId: pimpinanId, status: pemeriksaan, isi: "Mohon lengkapi foto kegiatan dan jumlah peserta." });
   }
   jumlah++;
 }
 
 console.log(`Data demo: ${ORANG.length} pegawai, ${ORANG.filter((o) => o.akun).length} akun, ${jumlah} kegiatan${dihapus ? ` (menggantikan ${dihapus} akun demo lama)` : ""}`);
 console.log(`Login akun demo: <nama.depan.belakang>@${DOMAIN} dengan sandi ${SANDI_DEMO}, mis. andi.saputra@${DOMAIN} (pegawai), rahmat.hidayat@${DOMAIN} (pimpinan)`);
-await prisma.$disconnect();
+await pool.end();
 process.exit(0);

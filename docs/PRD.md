@@ -112,7 +112,7 @@ Tiga lapisan, dengan **satu origin** untuk UI dan API.
 | Lapisan | Teknologi | Peran |
 | --- | --- | --- |
 | Frontend | Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query | Antarmuka. Meneruskan `/api/*` ke backend sehingga cookie sesi milik domain frontend dan tidak ada urusan CORS |
-| Backend | Bun, Elysia, Prisma, Better Auth | API REST berlapis: route, controller, service, repository. Autentikasi, validasi, hak akses, rekap, PDF, email, dan pengingat |
+| Backend | Bun, Elysia, Drizzle, Better Auth | API REST berlapis: route, controller, service, repository. Autentikasi, validasi, hak akses, rekap, PDF, email, dan pengingat |
 | Database | PostgreSQL 17 | Data kegiatan, akun, dan master data |
 | Berkas | Cloudinary (atau folder lokal bila tidak diisi) | Foto dan PDF, disimpan privat |
 | Email | Brevo API (atau SMTP) | Aktivasi, atur ulang sandi, dan pengingat |
@@ -160,7 +160,7 @@ Pemeriksaan manual di lingkungan produksi: email aktivasi sampai dan bisa dibuka
 
 ## 11. Skema data
 
-Tabel dan relasinya digambar di [docs/uml/05-erd.md](uml/05-erd.md), sumbernya `apps/api/prisma/schema.prisma`. Ringkasannya:
+Tabel dan relasinya digambar di [docs/uml/05-erd.md](uml/05-erd.md), sumbernya `apps/api/src/db/schema.ts`. Ringkasannya:
 
 | Kelompok | Tabel |
 | --- | --- |

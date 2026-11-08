@@ -1,6 +1,6 @@
 # Dokumentasi API
 
-API REST Aplikasi Pendataan Kegiatan (Bun, Elysia, Prisma, Better Auth). Alamat dasarnya `/api`. Di produksi, frontend meneruskan `/api/*` ke backend, jadi pemanggilnya cukup memakai alamat frontend.
+API REST Aplikasi Pendataan Kegiatan (Bun, Elysia, Drizzle, Better Auth). Alamat dasarnya `/api`. Di produksi, frontend meneruskan `/api/*` ke backend, jadi pemanggilnya cukup memakai alamat frontend.
 
 Kembali ke [README utama](../../README.md). Diagram alurnya ada di [UML](../uml/README.md).
 

@@ -1,5 +1,6 @@
-import { prisma, type Prisma } from "@/lib/prisma";
-import type { JenisPengingat } from "@/generated/prisma/enums";
+import { and, eq, gt, gte, isNull, lt, lte, notExists, or, sql, type SQL } from "drizzle-orm";
+import { dokumentasi, kegiatan, pengingat, preferensiPengguna, user, type JenisPengingat } from "@/db/schema";
+import { db } from "@/lib/db";
 
 const BATAS_PER_PUTARAN = 200;
 
@@ -15,46 +16,31 @@ export type KandidatPengingat = {
 };
 
 /**
- * Akun penerima pengingat: aktif dan tidak mematikan notifikasi jenis ini di Preferensi (belum punya preferensi = mau)
+ * Kegiatan yang perlu diingatkan + akun penanggung jawabnya, kecuali yang sudah pernah dikirimi pengingat jenis ini.
+ * Akun penerima harus aktif dan tidak mematikan notifikasi jenis ini di Preferensi (belum punya preferensi = mau)
  */
-function penerima(jenis: JenisPengingat): Prisma.UserWhereInput {
-  const notif = jenis === "H_MINUS_1" ? { notifPengingatKegiatan: true } : { notifPengingatDokumentasi: true };
-  return { banned: false, OR: [{ preferensi: { is: null } }, { preferensi: { is: notif } }] };
-}
-
-/**
- * Kegiatan yang perlu diingatkan + akun penanggung jawabnya, kecuali yang sudah pernah dikirimi pengingat jenis ini
- */
-async function kandidat(jenis: JenisPengingat, syarat: Prisma.KegiatanWhereInput): Promise<KandidatPengingat[]> {
-  const kepada = penerima(jenis);
-  const kegiatan = await prisma.kegiatan.findMany({
-    where: { deletedAt: null, dibatalkanAt: null, ...syarat, penanggungJawab: { users: { some: kepada } } },
-    select: {
-      id: true,
-      judul: true,
-      tglMulai: true,
-      tglSelesai: true,
-      lokasiNama: true,
-      penanggungJawab: { select: { users: { where: kepada, select: { id: true, email: true, name: true } } } },
-      pengingat: { where: { jenis }, select: { userId: true } },
-    },
-    take: BATAS_PER_PUTARAN,
-  });
-  return kegiatan.flatMap((k) => {
-    const sudah = new Set(k.pengingat.map((p) => p.userId));
-    return k.penanggungJawab.users
-      .filter((u) => !sudah.has(u.id))
-      .map((u) => ({
-        kegiatanId: k.id,
-        judul: k.judul,
-        tglMulai: k.tglMulai,
-        tglSelesai: k.tglSelesai,
-        lokasiNama: k.lokasiNama,
-        userId: u.id,
-        email: u.email,
-        nama: u.name,
-      }));
-  });
+function kandidat(jenis: JenisPengingat, syarat: SQL): Promise<KandidatPengingat[]> {
+  const notifNyala = eq(jenis === "H_MINUS_1" ? preferensiPengguna.notifPengingatKegiatan : preferensiPengguna.notifPengingatDokumentasi, true);
+  const sudahDikirim = db
+    .select({ satu: sql`1` })
+    .from(pengingat)
+    .where(and(eq(pengingat.kegiatanId, kegiatan.id), eq(pengingat.userId, user.id), eq(pengingat.jenis, jenis)));
+  return db
+    .select({
+      kegiatanId: kegiatan.id,
+      judul: kegiatan.judul,
+      tglMulai: kegiatan.tglMulai,
+      tglSelesai: kegiatan.tglSelesai,
+      lokasiNama: kegiatan.lokasiNama,
+      userId: user.id,
+      email: user.email,
+      nama: user.name,
+    })
+    .from(kegiatan)
+    .innerJoin(user, eq(user.pegawaiId, kegiatan.penanggungJawabId))
+    .leftJoin(preferensiPengguna, eq(preferensiPengguna.userId, user.id))
+    .where(and(isNull(kegiatan.deletedAt), isNull(kegiatan.dibatalkanAt), syarat, eq(user.banned, false), or(isNull(preferensiPengguna.userId), notifNyala), notExists(sudahDikirim)))
+    .limit(BATAS_PER_PUTARAN);
 }
 
 export const PengingatRepository = {
@@ -62,23 +48,26 @@ export const PengingatRepository = {
    * Kegiatan yang mulai dalam 24 jam ke depan
    */
   hMinus1(sekarang: Date) {
-    return kandidat("H_MINUS_1", { tglMulai: { gt: sekarang, lte: new Date(sekarang.getTime() + 24 * 3600_000) } });
+    return kandidat("H_MINUS_1", and(gt(kegiatan.tglMulai, sekarang), lte(kegiatan.tglMulai, new Date(sekarang.getTime() + 24 * 3600_000)))!);
   },
 
   /**
    * Kegiatan yang selesai (antara `batasMs` lalu sampai `jedaMs` lalu) tetapi belum berdokumentasi
    */
   tanpaDokumentasi(sekarang: Date, jedaMs: number, batasMs: number) {
-    return kandidat("DOKUMENTASI", {
-      tglSelesai: { lt: new Date(sekarang.getTime() - jedaMs), gte: new Date(sekarang.getTime() - batasMs) },
-      dokumentasi: { none: {} },
-    });
+    const tanpaBerkas = notExists(
+      db
+        .select({ satu: sql`1` })
+        .from(dokumentasi)
+        .where(eq(dokumentasi.kegiatanId, kegiatan.id)),
+    );
+    return kandidat("DOKUMENTASI", and(lt(kegiatan.tglSelesai, new Date(sekarang.getTime() - jedaMs)), gte(kegiatan.tglSelesai, new Date(sekarang.getTime() - batasMs)), tanpaBerkas)!);
   },
 
   /**
    * Mencatat bahwa pengingat sudah dikirim (abaikan bila sudah tercatat)
    */
   async catat(kegiatanId: number, jenis: JenisPengingat, userId: string) {
-    await prisma.pengingat.createMany({ data: [{ kegiatanId, jenis, userId }], skipDuplicates: true });
+    await db.insert(pengingat).values({ kegiatanId, jenis, userId }).onConflictDoNothing();
   },
 };

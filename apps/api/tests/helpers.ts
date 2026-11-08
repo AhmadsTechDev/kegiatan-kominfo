@@ -1,5 +1,7 @@
 import { app } from "@/app";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { bidang, jenisKegiatan, user } from "@/db/schema";
+import { db } from "@/lib/db";
 import type { Role } from "@/types/umum.types";
 import { suratTerakhir, tokenDari } from "./surel-palsu";
 
@@ -88,12 +90,14 @@ export async function loginAdmin() {
 
 // Id bidang dari kodenya
 export async function idUnit(kode: string) {
-  return (await prisma.bidang.findUniqueOrThrow({ where: { kode } })).id;
+  const [b] = await db.select({ id: bidang.id }).from(bidang).where(eq(bidang.kode, kode));
+  return b!.id;
 }
 
 // Id jenis kegiatan dari namanya
 export async function idJenis(nama = "Rapat") {
-  return (await prisma.jenisKegiatan.findUniqueOrThrow({ where: { nama } })).id;
+  const [j] = await db.select({ id: jenisKegiatan.id }).from(jenisKegiatan).where(eq(jenisKegiatan.nama, nama));
+  return j!.id;
 }
 
 // Membuat unit tertinggi baru (Bidang) dengan nama unik; berguna agar angka rekap uji tidak tercampur
@@ -101,7 +105,8 @@ export async function buatBidang(awalan = "Bidang Uji") {
   const admin = await loginAdmin();
   const res = await panggil("/admin/bidang", { cookie: admin, json: { nama: `${awalan} ${crypto.randomUUID().slice(0, 6)}`, parentId: null } });
   if (res.status !== 201) throw new Error(JSON.stringify(res.data));
-  return (await prisma.bidang.findUniqueOrThrow({ where: { id: res.data.id } })) as { id: number; kode: string; nama: string };
+  const [b] = await db.select().from(bidang).where(eq(bidang.id, res.data.id));
+  return b!;
 }
 
 type Pengguna = { cookie: string; userId: string; pegawaiId: number; email: string; nip: string };
@@ -117,7 +122,7 @@ export async function buatPengguna({ role = "PEGAWAI", unitId }: { role?: Role; 
   await aktifkan(email);
   const masuk = await login(email, SANDI);
   if (masuk.status !== 200) throw new Error(JSON.stringify(masuk.data));
-  const { pegawaiId } = await prisma.user.findUniqueOrThrow({ where: { id: akun.data.id }, select: { pegawaiId: true } });
+  const [{ pegawaiId }] = (await db.select({ pegawaiId: user.pegawaiId }).from(user).where(eq(user.id, akun.data.id))) as [{ pegawaiId: number | null }];
   return { cookie: masuk.cookie, userId: akun.data.id, pegawaiId: pegawaiId!, email, nip };
 }
 

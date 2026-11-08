@@ -1,7 +1,9 @@
 // Uji kegiatan: validasi isian, hak akses per role dan unit, konflik ubah bersamaan (409),
 // batal, periksa, hapus, filter daftar, dan draf kegiatan
 import { describe, expect, test } from "bun:test";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { pegawai } from "@/db/schema";
+import { db } from "@/lib/db";
 import { buatKegiatan, buatPengguna, formBerkas, idJenis, idUnit, isiKegiatan, jamLagi, loginAdmin, panggil, PNG } from "./helpers";
 
 describe("mencatat kegiatan", () => {
@@ -316,7 +318,7 @@ describe("pencarian nama pegawai", () => {
   test("kata kunci mencocokkan nama penanggung jawab, di daftar kegiatan dan ringkasan pantau", async () => {
     const pemilik = await buatPengguna();
     const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!));
-    const { nama } = await prisma.pegawai.findUniqueOrThrow({ where: { id: pemilik.pegawaiId }, select: { nama: true } });
+    const [{ nama }] = (await db.select({ nama: pegawai.nama }).from(pegawai).where(eq(pegawai.id, pemilik.pegawaiId))) as [{ nama: string }];
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
     const daftar = await panggil(`/kegiatan?q=${encodeURIComponent(nama)}&pageSize=100`, { cookie: pimpinan.cookie });
     expect(daftar.data.items.map((x: { id: number }) => x.id)).toContain(k.id);

@@ -1,7 +1,7 @@
 import { env } from "@/config/env";
 import { AppError, NotFound, Unprocessable } from "@/lib/errors";
 import { kirimEmail, type IsiEmail } from "@/lib/mailer";
-import { galatDuplikat, prisma, type Db } from "@/lib/prisma";
+import { db, galatDuplikat, type Db } from "@/lib/db";
 import { cocokSandi, hashSandi } from "@/lib/sandi";
 import { AuthRepository } from "@/repositories/auth.repository";
 import { SesiRepository } from "@/repositories/sesi.repository";
@@ -260,7 +260,7 @@ export const KredensialService = {
     const akun = await akunDariToken("aktivasi", token);
     if (!akun || akun.banned || akun.punyaKredensial) throw tokenTidakBerlaku("aktivasi");
     const hash = await hashSandiSah(password, akun.email);
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       if ((await TokenAkunRepository.pakai("aktivasi", token, tx)) !== akun.id) throw tokenTidakBerlaku("aktivasi");
       await AuthRepository.buatKredensial(akun.id, hash, tx);
       await AuthRepository.verifikasiDanBuka(akun.id, tx);
@@ -309,7 +309,7 @@ export const KredensialService = {
     const akun = await akunDariToken("reset-sandi", token);
     if (!akun || akun.banned || !akun.punyaKredensial) throw tokenTidakBerlaku("reset-sandi");
     const hash = await hashSandiSah(password, akun.email);
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       if ((await TokenAkunRepository.pakai("reset-sandi", token, tx)) !== akun.id) throw tokenTidakBerlaku("reset-sandi");
       await AuthRepository.gantiSandi(akun.id, hash, tx);
       await AuthRepository.verifikasiDanBuka(akun.id, tx);
@@ -348,7 +348,7 @@ export const KredensialService = {
     if (email === akun.email) throw Unprocessable("Email baru sama dengan email saat ini", [{ field: "email", message: "Email baru sama dengan email saat ini" }]);
     if (await AuthRepository.emailDipakai(email, userId)) throw Unprocessable("Email sudah dipakai akun lain", [{ field: "email", message: "Email sudah dipakai akun lain" }]);
 
-    const { token, kedaluwarsa } = await prisma.$transaction(async (tx) => {
+    const { token, kedaluwarsa } = await db.transaction(async (tx) => {
       await AuthRepository.setEmailBaru(userId, email, tx);
       return KredensialService.terbitkan("ganti-email", userId, tx);
     });
@@ -363,7 +363,7 @@ export const KredensialService = {
   async batalGantiEmail(userId: string) {
     const akun = await AuthRepository.akunKredensial({ id: userId });
     if (!akun?.emailBaru) throw Unprocessable("Tidak ada perubahan email yang menunggu verifikasi");
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await AuthRepository.setEmailBaru(userId, null, tx);
       await TokenAkunRepository.hapusMilik(userId, "ganti-email", tx);
     });
@@ -381,7 +381,7 @@ export const KredensialService = {
     const dipakai = () => Unprocessable("Email ini sudah dipakai akun lain. Ajukan email lain dari halaman Pengaturan.");
     if (await AuthRepository.emailDipakai(baru, akun.id)) throw dipakai();
     try {
-      await prisma.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         if ((await TokenAkunRepository.pakai("ganti-email", token, tx)) !== akun.id) throw tokenTidakBerlaku("ganti-email");
         await AuthRepository.terapkanEmailBaru(akun.id, baru, tx);
       });

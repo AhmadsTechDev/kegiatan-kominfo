@@ -1,6 +1,6 @@
 # 5. ERD
 
-Nama tabel dan kolom memakai snake_case seperti di PostgreSQL. Sumber: `apps/api/prisma/schema.prisma`.
+Nama tabel dan kolom memakai snake_case seperti di PostgreSQL. Sumber: `apps/api/src/db/schema.ts`.
 
 ```mermaid
 erDiagram

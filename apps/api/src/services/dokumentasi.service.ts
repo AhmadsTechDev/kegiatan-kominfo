@@ -1,5 +1,5 @@
 import { NotFound, PayloadTooLarge } from "@/lib/errors";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { storage } from "@/lib/storage";
 import { DokumentasiRepository } from "@/repositories/dokumentasi.repository";
 import { KegiatanRepository } from "@/repositories/kegiatan.repository";
@@ -51,7 +51,7 @@ export const DokumentasiService = {
     /**
      * Cek hak akses dan kuota dulu sebelum memproses berkas yang mungkin besar
      */
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const k = await KegiatanRepository.kunciAktif(kegiatanId, tx);
       if (!k) throw NotFound("Kegiatan tidak ditemukan");
       await pastikanBisaTulis(aktor, k, "Anda hanya dapat mengunggah dokumentasi pada kegiatan milik Anda");
@@ -63,7 +63,7 @@ export const DokumentasiService = {
     await storage.put(key, hasil.bytes);
 
     try {
-      const baru = await prisma.$transaction(async (tx) => {
+      const baru = await db.transaction(async (tx) => {
         /**
          * Cek ulang kuota di dalam kunci, karena bisa ada unggahan lain yang berjalan bersamaan
          */
@@ -98,7 +98,7 @@ export const DokumentasiService = {
     await storage.put(key, hasil.bytes);
 
     try {
-      const baru = await prisma.$transaction(async (tx) => {
+      const baru = await db.transaction(async (tx) => {
         if (!(await KegiatanRepository.kunciAktif(data.kegiatan.id, tx))) throw NotFound("Kegiatan tidak ditemukan");
         const baris = await DokumentasiRepository.ganti(
           id,
@@ -149,7 +149,7 @@ export const DokumentasiService = {
       await pastikanBisaTulis(aktor, data.kegiatan, "Anda hanya dapat menghapus dokumentasi pada kegiatan milik Anda", "Dokumentasi tidak ditemukan");
     }
 
-    await DokumentasiRepository.hapus(id, prisma);
+    await DokumentasiRepository.hapus(id, db);
     await hapusBerkasDiam(data.dokumentasi.path, "berkas yatim, hapus manual:");
   },
 };

@@ -1,5 +1,5 @@
 import { Conflict, Forbidden, NotFound, Unprocessable } from "@/lib/errors";
-import { prisma, type Db } from "@/lib/prisma";
+import { db, type Db } from "@/lib/db";
 import { DrafKegiatanRepository } from "@/repositories/draf-kegiatan.repository";
 import { KegiatanRepository } from "@/repositories/kegiatan.repository";
 import { ReferensiRepository } from "@/repositories/referensi.repository";
@@ -192,7 +192,7 @@ async function validasiIsi(isi: Omit<IsiKegiatan, "drafId">): Promise<NilaiKegia
     lokasiNama: teks(isi.lokasiNama),
 
     /**
-     * Kolom koordinat bertipe Decimal, jadi angkanya dikirim sebagai teks berisi 6 angka di belakang koma (ketelitian sekitar 10 cm) agar tidak ada galat pembulatan angka desimal.
+     * Kolom koordinat bertipe numeric, jadi angkanya dikirim sebagai teks berisi 6 angka di belakang koma (ketelitian sekitar 10 cm) agar tidak ada galat pembulatan angka desimal.
      */
     lat: lat == null ? null : lat.toFixed(6),
     lng: lng == null ? null : lng.toFixed(6),
@@ -232,7 +232,7 @@ async function muatUntukTulis(id: number, aktor: Aktor, tx: Db, versi?: string) 
 }
 
 /**
- * Kumpulan fungsi publik service kegiatan. Setiap fungsi tulis memakai prisma.$transaction supaya
+ * Kumpulan fungsi publik service kegiatan. Setiap fungsi tulis memakai db.transaction supaya
  * pemeriksaan dan perubahan data berjalan utuh: bila salah satu langkah gagal, semuanya dibatalkan.
  */
 export const KegiatanService = {
@@ -289,7 +289,7 @@ export const KegiatanService = {
   async buat({ drafId, ...isi }: IsiKegiatan, aktor: Aktor) {
     cekPenanggungJawab(aktor, isi.penanggungJawabId);
     const nilai = { ...(await validasiIsi(isi)), dibuatOleh: aktor.id };
-    return prisma.$transaction(async (tx) => {
+    return db.transaction(async (tx) => {
       /**
        * Bila kegiatan dikirim dari draf, draf milik aktor itu dihapus di transaksi yang sama; 0 baris terhapus berarti drafnya tidak ada.
        */
@@ -306,7 +306,7 @@ export const KegiatanService = {
   async ubah(id: number, isi: UbahKegiatan, aktor: Aktor) {
     const { expectedUpdatedAt, ...data } = isi;
     const nilai = await validasiIsi(data);
-    return prisma.$transaction(async (tx) => {
+    return db.transaction(async (tx) => {
       const sebelum = await muatUntukTulis(id, aktor, tx, expectedUpdatedAt);
       cekPenanggungJawab(aktor, nilai.penanggungJawabId, sebelum.penanggungJawabId);
 
@@ -326,7 +326,7 @@ export const KegiatanService = {
    * Status tetap dihitung dari waktu, jadi tidak ada status yang bisa tidak sinkron dengan waktunya
    */
   async selesaikan(id: number, isi: SelesaikanKegiatan, aktor: Aktor) {
-    return prisma.$transaction(async (tx) => {
+    return db.transaction(async (tx) => {
       const sebelum = await muatUntukTulis(id, aktor, tx, isi.expectedUpdatedAt);
       const sekarang = new Date();
 
@@ -361,7 +361,7 @@ export const KegiatanService = {
     if (!catatan) {
       throw Unprocessable("Tuliskan catatan perbaikan untuk pegawai", [{ field: "catatan", message: "Catatan perbaikan wajib diisi" }]);
     }
-    return prisma.$transaction(async (tx) => {
+    return db.transaction(async (tx) => {
       const sebelum = await KegiatanRepository.kunciAktif(id, tx);
       if (!sebelum) throw NotFound("Kegiatan tidak ditemukan");
       const pelaksanaan = hitungStatus(sebelum, new Date());
@@ -385,7 +385,7 @@ export const KegiatanService = {
   async batalkan(id: number, isi: BatalkanKegiatan, aktor: Aktor) {
     const alasan = isi.alasan.trim();
     if (!alasan) throw Unprocessable("Alasan pembatalan wajib diisi", [{ field: "alasan", message: "Alasan pembatalan wajib diisi" }]);
-    return prisma.$transaction(async (tx) => {
+    return db.transaction(async (tx) => {
       const sebelum = await muatUntukTulis(id, aktor, tx, isi.expectedUpdatedAt);
       if (sebelum.dibatalkanAt) throw Unprocessable("Kegiatan ini sudah dibatalkan");
       if (hitungStatus(sebelum, new Date()) === "selesai") throw Unprocessable("Kegiatan yang sudah selesai tidak dapat dibatalkan");
@@ -400,7 +400,7 @@ export const KegiatanService = {
    * Menghapus kegiatan secara lunak (tidak muncul lagi di daftar/rekap)
    */
   async hapus(id: number, aktor: Aktor) {
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await muatUntukTulis(id, aktor, tx);
 
       /**

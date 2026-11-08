@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { admin } from "better-auth/plugins";
 import { createAccessControl } from "better-auth/plugins/access";
@@ -7,7 +7,8 @@ import { defaultStatements } from "better-auth/plugins/admin/access";
 import { env, isProduction } from "@/config/env";
 import { AuthService, PATH_AUTH_PUBLIK, PATH_LOGIN } from "@/services/auth.service";
 import { SANDI_MAKS, SANDI_MIN } from "@/utils/kebijakan-sandi";
-import { prisma } from "./prisma";
+import { account, session, user, verification } from "@/db/schema";
+import { db } from "./db";
 import { cocokSandi, hashSandi } from "./sandi";
 
 /**
@@ -41,9 +42,9 @@ export const auth = betterAuth({
   trustedOrigins: [env.FRONTEND_URL],
 
   /**
-   * Better Auth menyimpan user dan sesi lewat Prisma yang sama dengan bagian aplikasi lainnya.
+   * Better Auth menyimpan user dan sesi lewat koneksi Drizzle yang sama dengan bagian aplikasi lainnya.
    */
-  database: prismaAdapter(prisma, { provider: "postgresql" }),
+  database: drizzleAdapter(db, { provider: "pg", schema: { user, session, account, verification } }),
 
   emailAndPassword: {
     enabled: true,

@@ -1,6 +1,8 @@
 // Uji data master: bidang dan sub bidang (aturan induk, kode otomatis, nonaktif), jenis kegiatan, pegawai
 import { describe, expect, test } from "bun:test";
-import { prisma } from "@/lib/prisma";
+import { asc, eq, inArray } from "drizzle-orm";
+import { bidang as tabelBidang } from "@/db/schema";
+import { db } from "@/lib/db";
 import { buatBidang, buatKegiatan, buatPengguna, formBerkas, idUnit, isiKegiatan, login, loginAdmin, nipAcak, panggil, SANDI } from "./helpers";
 
 const kodeAcak = () => crypto.randomUUID().slice(0, 6);
@@ -12,7 +14,7 @@ describe("bidang", () => {
     const a = await panggil("/admin/bidang", { cookie: admin, json: { nama, parentId: null } });
     const b = await panggil("/admin/bidang", { cookie: admin, json: { nama: `${nama} Dua`, parentId: null } });
     expect(a.status).toBe(201);
-    const unit = await prisma.bidang.findMany({ where: { id: { in: [a.data.id, b.data.id] } }, orderBy: { id: "asc" } });
+    const unit = await db.select().from(tabelBidang).where(inArray(tabelBidang.id, [a.data.id, b.data.id])).orderBy(asc(tabelBidang.id));
     expect(unit[0]!.kode).toStartWith("BID-SS");
     expect(new Set(unit.map((u) => u.kode)).size).toBe(2);
   });
@@ -28,7 +30,7 @@ describe("bidang", () => {
 
     const sah = await panggil("/admin/bidang", { cookie: admin, json: { nama: `Sub Bidang Uji ${kodeAcak()}`, parentId: await idUnit("BID-TIP") } });
     expect(sah.status).toBe(201);
-    expect((await prisma.bidang.findUniqueOrThrow({ where: { id: sah.data.id } })).kode).toStartWith("SUBBID-");
+    expect((await db.select().from(tabelBidang).where(eq(tabelBidang.id, sah.data.id)))[0]!.kode).toStartWith("SUBBID-");
     const daftar = await panggil("/admin/bidang", { cookie: admin });
     expect(daftar.data.find((u: { id: number }) => u.id === sah.data.id)).toMatchObject({ jenis: "Sub bidang", induk: expect.any(String) });
   });
@@ -73,7 +75,7 @@ describe("bidang", () => {
     expect(daftar.data.find((u: { id: number }) => u.id === bidang.id).bisaDihapus).toBe(true);
 
     expect((await panggil(`/admin/bidang/${bidang.id}`, { method: "DELETE", cookie: admin })).status).toBe(200);
-    expect(await prisma.bidang.findUnique({ where: { id: bidang.id } })).toBeNull();
+    expect(await db.$count(tabelBidang, eq(tabelBidang.id, bidang.id))).toBe(0);
     expect((await panggil(`/admin/bidang/${bidang.id}`, { method: "DELETE", cookie: admin })).status).toBe(404);
   });
 

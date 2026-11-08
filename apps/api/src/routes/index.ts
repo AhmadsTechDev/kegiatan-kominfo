@@ -24,7 +24,7 @@ import { userRoutes } from "./user.route";
  *   2. validators/*.ts        -> memeriksa bentuk data yang dikirim (body, query, params) sebelum diproses.
  *   3. controllers/*.ts       -> "penerima tamu": mengambil data dari permintaan lalu memanggil service.
  *   4. services/*.ts          -> logika bisnis: aturan hak akses, perhitungan, kirim email.
- *   5. repositories/*.ts      -> satu-satunya lapisan yang menulis query database lewat Prisma.
+ *   5. repositories/*.ts      -> satu-satunya lapisan yang menulis query database lewat Drizzle.
  * Pemisahan ini membuat setiap file punya satu tanggung jawab, sehingga mudah dicari dan diuji.
  * `prefix` ditambahkan di depan semua alamat milik rute di dalamnya.
  */

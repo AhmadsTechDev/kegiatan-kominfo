@@ -1,6 +1,8 @@
 // Uji manajemen akun oleh admin, dan permintaan akun dari halaman login
 import { describe, expect, test } from "bun:test";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { account, pegawai, user, verification } from "@/db/schema";
+import { db } from "@/lib/db";
 import { aktifkan, buatKegiatan, buatPengguna, emailAcak, idUnit, ipAcak, isiAkun, isiKegiatan, login, loginAdmin, nipAcak, panggil, SANDI, tokenTerakhir } from "./helpers";
 import { kotakSurat, suratTerakhir } from "./surel-palsu";
 
@@ -21,7 +23,7 @@ describe("membuat akun", () => {
     const isi = await isiAkun({ name: "Akun Baru", nip, role: "PIMPINAN", password: "sandidariadmin123" });
     const res = await panggil("/admin/akun", { cookie: admin, json: isi });
     expect(res.status).toBe(201);
-    expect(await prisma.account.count({ where: { userId: res.data.id } })).toBe(0);
+    expect(await db.$count(account, eq(account.userId, res.data.id))).toBe(0);
     expect((await login(isi.email as string, "sandidariadmin123")).status).toBe(401);
 
     const detail = await panggil(`/admin/akun/${res.data.id}`, { cookie: admin });
@@ -46,8 +48,8 @@ describe("membuat akun", () => {
     const p = await panggil("/admin/pegawai", { cookie: admin, json: { nip, nama: "Sudah Terdaftar", bidangId: await idUnit("SEKSI-DATA") } });
     const res = await panggil("/admin/akun", { cookie: admin, json: await isiAkun({ name: "Sudah Terdaftar", nip }) });
     expect(res.status).toBe(201);
-    expect((await prisma.user.findUniqueOrThrow({ where: { id: res.data.id } })).pegawaiId).toBe(p.data.id);
-    expect(await prisma.pegawai.count({ where: { nip } })).toBe(1);
+    expect((await db.select().from(user).where(eq(user.id, res.data.id)))[0]!.pegawaiId).toBe(p.data.id);
+    expect(await db.$count(pegawai, eq(pegawai.nip, nip))).toBe(1);
   });
 
   test("email kembar, NIP/pegawai yang sudah punya akun, dan unit tidak ada ditolak 422", async () => {
@@ -72,7 +74,7 @@ describe("membuat akun", () => {
       const res = await panggil("/admin/akun", { cookie: admin, json: isi });
       expect(res.status).toBe(201);
       expect(res.data.undangan.galat).toContain("gagal dikirim");
-      expect(await prisma.user.findUnique({ where: { email: isi.email as string } })).not.toBeNull();
+      expect(await db.$count(user, eq(user.email, isi.email as string))).toBe(1);
     } finally {
       mock.module("@/lib/mailer", () => ({ kirimEmail: asli }));
     }
@@ -156,12 +158,12 @@ describe("mengubah akun", () => {
     const akun = await panggil("/admin/akun", { cookie: admin, json: isi });
     expect((await panggil(`/admin/akun?q=${encodeURIComponent(isi.email as string)}`, { cookie: admin })).data.items[0].bisaDihapus).toBe(true);
     expect((await panggil(`/admin/akun/${akun.data.id}`, { method: "DELETE", cookie: admin })).status).toBe(200);
-    expect(await prisma.user.findUnique({ where: { email: isi.email as string } })).toBeNull();
-    expect(await prisma.verification.count({ where: { value: akun.data.id } })).toBe(0);
+    expect(await db.$count(user, eq(user.email, isi.email as string))).toBe(0);
+    expect(await db.$count(verification, eq(verification.value, akun.data.id))).toBe(0);
 
     const pernahLogin = await buatPengguna();
     expect((await panggil(`/admin/akun/${pernahLogin.userId}`, { method: "DELETE", cookie: admin })).status).toBe(200);
-    expect(await prisma.user.findUnique({ where: { id: pernahLogin.userId } })).toBeNull();
+    expect(await db.$count(user, eq(user.id, pernahLogin.userId))).toBe(0);
 
     const terpakai = await buatPengguna();
     await buatKegiatan(terpakai.cookie, await isiKegiatan(terpakai.pegawaiId));

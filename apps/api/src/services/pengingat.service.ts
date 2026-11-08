@@ -1,5 +1,5 @@
 import { env } from "@/config/env";
-import type { JenisPengingat } from "@/generated/prisma/enums";
+import type { JenisPengingat } from "@/db/schema";
 import { kirimEmail, type IsiEmail } from "@/lib/mailer";
 import { PengingatRepository, type KandidatPengingat } from "@/repositories/pengingat.repository";
 import { formatJam, formatRentang, tanggalWib } from "@/utils/format-waktu";

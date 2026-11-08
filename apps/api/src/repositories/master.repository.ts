@@ -1,18 +1,30 @@
-import { prisma, type Db, type Prisma } from "@/lib/prisma";
+import { and, asc, count, desc, eq, exists, inArray, isNotNull, notExists, or, sql, type SQL } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
+import { bidang, jenisKegiatan, kegiatan, pegawai, permintaanAkun, user } from "@/db/schema";
+import { berawalan, db, mengandung, type Db } from "@/lib/db";
 import type { FilterPegawai, NilaiJenis, NilaiPegawai, NilaiUnit } from "@/types/master.types";
 import type { Halaman } from "@/types/umum.types";
+import { punyaKredensial } from "@/utils/status-akun";
 
 /**
- * Menyusun `where` Prisma dari filter daftar pegawai
+ * Subquery akun yang tertaut ke pegawai pada baris yang sedang dibaca
  */
-function kondisiPegawai(f: FilterPegawai): Prisma.PegawaiWhereInput {
-  const cari = f.q ? ({ contains: f.q, mode: "insensitive" } as const) : undefined;
-  return {
-    OR: cari ? [{ nama: cari }, { nip: cari }] : undefined,
-    bidangId: f.unitIds ? { in: f.unitIds } : undefined,
-    aktif: f.aktif,
-    users: f.akun === "tanpa" ? { none: {} } : f.akun === "ada" ? { some: {} } : undefined,
-  };
+const akunTertaut = (syarat?: SQL) =>
+  db
+    .select({ satu: sql`1` })
+    .from(user)
+    .where(and(eq(user.pegawaiId, pegawai.id), syarat));
+
+/**
+ * Menyusun WHERE dari filter daftar pegawai
+ */
+function kondisiPegawai(f: FilterPegawai) {
+  return and(
+    f.q ? or(mengandung(pegawai.nama, f.q), mengandung(pegawai.nip, f.q)) : undefined,
+    f.unitIds ? inArray(pegawai.bidangId, f.unitIds) : undefined,
+    f.aktif === undefined ? undefined : eq(pegawai.aktif, f.aktif),
+    f.akun === "tanpa" ? notExists(akunTertaut()) : f.akun === "ada" ? exists(akunTertaut()) : undefined,
+  );
 }
 
 export const MasterRepository = {
@@ -24,45 +36,47 @@ export const MasterRepository = {
    * Semua bidang dan sub bidang beserta nama induknya. Tingkat (jenis) ditentukan ada-tidaknya induk
    */
   async daftarUnit() {
-    const baris = await prisma.bidang.findMany({
-      select: {
-        id: true,
-        kode: true,
-        nama: true,
-        parentId: true,
-        parent: { select: { nama: true } },
-        aktif: true,
-        updatedAt: true,
-      },
-      orderBy: { id: "asc" },
-    });
-    return baris.map(({ parent, ...u }) => ({ ...u, jenis: u.parentId === null ? "Bidang" : "Sub bidang", induk: parent?.nama ?? null }));
+    const induk = alias(bidang, "induk");
+    const baris = await db
+      .select({
+        id: bidang.id,
+        kode: bidang.kode,
+        nama: bidang.nama,
+        parentId: bidang.parentId,
+        induk: induk.nama,
+        aktif: bidang.aktif,
+        updatedAt: bidang.updatedAt,
+      })
+      .from(bidang)
+      .leftJoin(induk, eq(bidang.parentId, induk.id))
+      .orderBy(asc(bidang.id));
+    return baris.map((u) => ({ ...u, jenis: u.parentId === null ? "Bidang" : "Sub bidang" }));
   },
 
   /**
    * Jumlah pegawai aktif di setiap bidang
    */
-  async jumlahPegawaiPerUnit() {
-    const baris = await prisma.pegawai.groupBy({ by: ["bidangId"], where: { aktif: true }, _count: { _all: true } });
-    return baris.map((b) => ({ bidangId: b.bidangId, jumlah: b._count._all }));
+  jumlahPegawaiPerUnit() {
+    return db.select({ bidangId: pegawai.bidangId, jumlah: count() }).from(pegawai).where(eq(pegawai.aktif, true)).groupBy(pegawai.bidangId);
   },
 
   /**
    * Satu bidang berdasarkan id
    */
-  async unitById(id: number, db: Db = prisma) {
-    return (await db.bidang.findUnique({ where: { id } })) ?? undefined;
+  async unitById(id: number, tx: Db = db) {
+    const [b] = await tx.select().from(bidang).where(eq(bidang.id, id)).limit(1);
+    return b;
   },
 
   /**
    * Jumlah sub bidang di bawah sebuah bidang (semua) dan yang masih aktif
    */
   jumlahTurunan(id: number) {
-    return prisma.bidang.count({ where: { parentId: id } });
+    return db.$count(bidang, eq(bidang.parentId, id));
   },
 
   jumlahTurunanAktif(id: number) {
-    return prisma.bidang.count({ where: { parentId: id, aktif: true } });
+    return db.$count(bidang, and(eq(bidang.parentId, id), eq(bidang.aktif, true)));
   },
 
   /**
@@ -70,15 +84,15 @@ export const MasterRepository = {
    * kunci asingnya tetap menahan), dan sub bidangnya. Bidang yang ketiganya nol boleh dihapus
    */
   async pemakaian(ids: number[]) {
-    const [pegawai, kegiatan, turunan] = await Promise.all([
-      prisma.pegawai.groupBy({ by: ["bidangId"], where: { bidangId: { in: ids } }, _count: { _all: true } }),
-      prisma.kegiatan.groupBy({ by: ["bidangId"], where: { bidangId: { in: ids } }, _count: { _all: true } }),
-      prisma.bidang.groupBy({ by: ["parentId"], where: { parentId: { in: ids } }, _count: { _all: true } }),
+    const [jumlahPegawai, jumlahKegiatan, jumlahTurunan] = await Promise.all([
+      db.select({ id: pegawai.bidangId, jumlah: count() }).from(pegawai).where(inArray(pegawai.bidangId, ids)).groupBy(pegawai.bidangId),
+      db.select({ id: kegiatan.bidangId, jumlah: count() }).from(kegiatan).where(inArray(kegiatan.bidangId, ids)).groupBy(kegiatan.bidangId),
+      db.select({ id: bidang.parentId, jumlah: count() }).from(bidang).where(inArray(bidang.parentId, ids)).groupBy(bidang.parentId),
     ]);
     const peta = new Map<number, { pegawai: number; kegiatan: number; turunan: number }>(ids.map((id) => [id, { pegawai: 0, kegiatan: 0, turunan: 0 }]));
-    for (const b of pegawai) peta.get(b.bidangId)!.pegawai = b._count._all;
-    for (const b of kegiatan) peta.get(b.bidangId)!.kegiatan = b._count._all;
-    for (const b of turunan) if (b.parentId !== null) peta.get(b.parentId)!.turunan = b._count._all;
+    for (const b of jumlahPegawai) peta.get(b.id)!.pegawai = b.jumlah;
+    for (const b of jumlahKegiatan) peta.get(b.id)!.kegiatan = b.jumlah;
+    for (const b of jumlahTurunan) if (b.id !== null) peta.get(b.id)!.turunan = b.jumlah;
     return peta;
   },
 
@@ -86,21 +100,21 @@ export const MasterRepository = {
    * Menghapus bidang secara permanen (hanya dipanggil setelah dicek tidak dipakai)
    */
   async hapusUnit(id: number, tx: Db) {
-    await tx.bidang.delete({ where: { id } });
+    await tx.delete(bidang).where(eq(bidang.id, id));
   },
 
   /**
    * Jumlah pegawai aktif di sebuah unit
    */
   jumlahPegawaiAktif(unitId: number) {
-    return prisma.pegawai.count({ where: { bidangId: unitId, aktif: true } });
+    return db.$count(pegawai, and(eq(pegawai.bidangId, unitId), eq(pegawai.aktif, true)));
   },
 
   /**
    * Kode unit yang diawali teks tertentu (untuk membuat kode unik otomatis)
    */
   async kodeUnitBerawalan(awalan: string) {
-    const baris = await prisma.bidang.findMany({ where: { kode: { startsWith: awalan } }, select: { kode: true } });
+    const baris = await db.select({ kode: bidang.kode }).from(bidang).where(berawalan(bidang.kode, awalan));
     return new Set(baris.map((b) => b.kode));
   },
 
@@ -108,14 +122,15 @@ export const MasterRepository = {
    * Menyimpan bidang baru dan mengembalikan id-nya
    */
   async insertUnit(nilai: NilaiUnit, tx: Db) {
-    return (await tx.bidang.create({ data: nilai, select: { id: true } })).id;
+    const [baru] = await tx.insert(bidang).values(nilai).returning({ id: bidang.id });
+    return baru!.id;
   },
 
   /**
    * Mengubah bidang
    */
   async updateUnit(id: number, nilai: Partial<NilaiUnit>, tx: Db) {
-    await tx.bidang.update({ where: { id }, data: nilai });
+    await tx.update(bidang).set(nilai).where(eq(bidang.id, id));
   },
 
   /**
@@ -123,116 +138,114 @@ export const MasterRepository = {
    */
 
   /**
-   * Daftar pegawai dengan filter dan paginasi, beserta bidang dan akun loginnya (bila ada)
+   * Daftar pegawai dengan filter dan paginasi, beserta bidang dan akun loginnya (bila ada).
+   * Pegawai yang punya nomor telepon (kontak akun) tampil lebih dulu, tiap kelompok urut nama
    */
   async daftarPegawai(f: FilterPegawai, halaman: Halaman) {
     const where = kondisiPegawai(f);
-    const pilih = {
-      id: true,
-      nip: true,
-      nama: true,
-      bidang: { select: { id: true, nama: true } },
-      aktif: true,
-      roleUndangan: true,
-      users: { select: { id: true, email: true, kontak: true, accounts: { where: { providerId: "credential" }, select: { id: true } } }, take: 1 },
-      updatedAt: true,
-    } satisfies Prisma.PegawaiSelect;
-    const urut = [{ nama: "asc" }, { id: "asc" }] satisfies Prisma.PegawaiOrderByWithRelationInput[];
-
-    /**
-     * Pegawai yang punya nomor telepon (kontak akun) tampil lebih dulu, tiap kelompok urut nama.
-     * Kedua kelompok dipaginasi sebagai satu daftar
-     */
-    const adaTelp: Prisma.PegawaiWhereInput = { users: { some: { kontak: { not: null } } } };
-    const kelompok: Prisma.PegawaiWhereInput[] = [adaTelp, { NOT: adaTelp }];
-    const jumlah = await Promise.all(kelompok.map((k) => prisma.pegawai.count({ where: { AND: [where, k] } })));
-    const total = jumlah[0]! + jumlah[1]!;
-    const awal = (halaman.page - 1) * halaman.pageSize;
-    const akhir = awal + halaman.pageSize;
-
-    const baris: Prisma.PegawaiGetPayload<{ select: typeof pilih }>[] = [];
-    let mulai = 0;
-    for (const [n, k] of kelompok.entries()) {
-      const batas = mulai + jumlah[n]!;
-      const dari = Math.max(awal, mulai);
-      const sampai = Math.min(akhir, batas);
-      if (sampai > dari) baris.push(...(await prisma.pegawai.findMany({ where: { AND: [where, k] }, select: pilih, orderBy: urut, skip: dari - mulai, take: sampai - dari })));
-      mulai = batas;
-    }
-    const items = baris.map(({ users, ...p }) => {
-      const akun = users[0];
-      return { ...p, kontak: akun?.kontak ?? null, akun: akun ? { id: akun.id, email: akun.email, aktif: akun.accounts.length > 0 } : null };
-    });
+    const adaTelp = exists(akunTertaut(isNotNull(user.kontak)));
+    const [baris, total] = await Promise.all([
+      db
+        .select({
+          id: pegawai.id,
+          nip: pegawai.nip,
+          nama: pegawai.nama,
+          bidang: { id: bidang.id, nama: bidang.nama },
+          aktif: pegawai.aktif,
+          roleUndangan: pegawai.roleUndangan,
+          updatedAt: pegawai.updatedAt,
+          akun: { id: user.id, email: user.email, kontak: user.kontak },
+          punyaKredensial,
+        })
+        .from(pegawai)
+        .innerJoin(bidang, eq(pegawai.bidangId, bidang.id))
+        .leftJoin(user, eq(user.pegawaiId, pegawai.id))
+        .where(where)
+        .orderBy(desc(adaTelp), asc(pegawai.nama), asc(pegawai.id))
+        .limit(halaman.pageSize)
+        .offset((halaman.page - 1) * halaman.pageSize),
+      db.$count(pegawai, where),
+    ]);
+    const items = baris.map(({ akun, punyaKredensial: aktif, ...p }) => ({
+      ...p,
+      kontak: akun?.kontak ?? null,
+      akun: akun ? { id: akun.id, email: akun.email, aktif } : null,
+    }));
     return { items, total };
   },
 
   /**
    * Satu pegawai berdasarkan id
    */
-  async pegawaiById(id: number, db: Db = prisma) {
-    return (await db.pegawai.findUnique({ where: { id } })) ?? undefined;
+  async pegawaiById(id: number, tx: Db = db) {
+    const [p] = await tx.select().from(pegawai).where(eq(pegawai.id, id)).limit(1);
+    return p;
   },
 
   /**
    * Menyimpan pegawai baru dan mengembalikan id-nya
    */
   async insertPegawai(nilai: NilaiPegawai, tx: Db) {
-    return (await tx.pegawai.create({ data: nilai, select: { id: true } })).id;
+    const [baru] = await tx.insert(pegawai).values(nilai).returning({ id: pegawai.id });
+    return baru!.id;
   },
 
   /**
    * Mengubah data pegawai
    */
   async updatePegawai(id: number, nilai: Partial<NilaiPegawai>, tx: Db) {
-    await tx.pegawai.update({ where: { id }, data: nilai });
+    await tx.update(pegawai).set(nilai).where(eq(pegawai.id, id));
   },
 
   /**
    * Pegawai pemilik NIP tertentu
    */
   async pegawaiDenganNip(nip: string) {
-    return (await prisma.pegawai.findUnique({ where: { nip }, select: { id: true, nama: true } })) ?? undefined;
+    const [p] = await db.select({ id: pegawai.id, nama: pegawai.nama }).from(pegawai).where(eq(pegawai.nip, nip)).limit(1);
+    return p;
   },
 
   /**
    * Akun yang memakai email tertentu
    */
   async akunDenganEmail(email: string) {
-    return (await prisma.user.findUnique({ where: { email }, select: { id: true, name: true } })) ?? undefined;
+    const [u] = await db.select({ id: user.id, name: user.name }).from(user).where(eq(user.email, email)).limit(1);
+    return u;
   },
 
   /**
    * Menyamakan nama akun dengan nama pegawai yang baru diubah
    */
   async samakanNamaAkun(pegawaiId: number, nama: string, tx: Db) {
-    await tx.user.updateMany({ where: { pegawaiId }, data: { name: nama } });
+    await tx.update(user).set({ name: nama }).where(eq(user.pegawaiId, pegawaiId));
   },
 
   /**
    * Pemakaian satu pegawai: akun tertaut, kegiatan yang ditanggungjawabi (termasuk terhapus lunak), permintaan akun
    */
   async pemakaianPegawai(id: number) {
-    const [akun, kegiatan, permintaan] = await Promise.all([
-      prisma.user.count({ where: { pegawaiId: id } }),
-      prisma.kegiatan.count({ where: { penanggungJawabId: id } }),
-      prisma.permintaanAkun.count({ where: { pegawaiId: id } }),
+    const [akun, jumlahKegiatan, permintaan] = await Promise.all([
+      db.$count(user, eq(user.pegawaiId, id)),
+      db.$count(kegiatan, eq(kegiatan.penanggungJawabId, id)),
+      db.$count(permintaanAkun, eq(permintaanAkun.pegawaiId, id)),
     ]);
-    return { akun, kegiatan, permintaan };
+    return { akun, kegiatan: jumlahKegiatan, permintaan };
   },
 
   async hapusPegawai(id: number, tx: Db) {
-    await tx.pegawai.delete({ where: { id } });
+    await tx.delete(pegawai).where(eq(pegawai.id, id));
   },
 
   /**
    * Akun tertaut pegawai (satu pegawai paling banyak satu akun)
    */
-  async akunPegawai(pegawaiId: number, tx: Db = prisma) {
-    return tx.user.findFirst({ where: { pegawaiId }, select: { id: true, kontak: true } });
+  async akunPegawai(pegawaiId: number, tx: Db = db) {
+    const [u] = await tx.select({ id: user.id, kontak: user.kontak }).from(user).where(eq(user.pegawaiId, pegawaiId)).limit(1);
+    return u;
   },
 
   async ubahKontakAkun(userId: string, kontak: string | null, tx: Db) {
-    await tx.user.update({ where: { id: userId }, data: { kontak } });
+    await tx.update(user).set({ kontak }).where(eq(user.id, userId));
   },
 
   /**
@@ -243,35 +256,36 @@ export const MasterRepository = {
    * Semua jenis kegiatan, urut nama
    */
   daftarJenis() {
-    return prisma.jenisKegiatan.findMany({ select: { id: true, nama: true, aktif: true, updatedAt: true }, orderBy: { nama: "asc" } });
+    return db.select({ id: jenisKegiatan.id, nama: jenisKegiatan.nama, aktif: jenisKegiatan.aktif, updatedAt: jenisKegiatan.updatedAt }).from(jenisKegiatan).orderBy(asc(jenisKegiatan.nama));
   },
 
   /**
    * Jumlah kegiatan (termasuk yang dihapus) untuk setiap jenis
    */
-  async jumlahKegiatanPerJenis() {
-    const baris = await prisma.kegiatan.groupBy({ by: ["jenisId"], _count: { _all: true } });
-    return baris.map((b) => ({ jenisId: b.jenisId, jumlah: b._count._all }));
+  jumlahKegiatanPerJenis() {
+    return db.select({ jenisId: kegiatan.jenisId, jumlah: count() }).from(kegiatan).groupBy(kegiatan.jenisId);
   },
 
   /**
    * Satu jenis kegiatan berdasarkan id
    */
-  async jenisById(id: number, db: Db = prisma) {
-    return (await db.jenisKegiatan.findUnique({ where: { id } })) ?? undefined;
+  async jenisById(id: number, tx: Db = db) {
+    const [j] = await tx.select().from(jenisKegiatan).where(eq(jenisKegiatan.id, id)).limit(1);
+    return j;
   },
 
   /**
    * Menyimpan jenis kegiatan baru dan mengembalikan id-nya
    */
   async insertJenis(nilai: NilaiJenis, tx: Db) {
-    return (await tx.jenisKegiatan.create({ data: nilai, select: { id: true } })).id;
+    const [baru] = await tx.insert(jenisKegiatan).values(nilai).returning({ id: jenisKegiatan.id });
+    return baru!.id;
   },
 
   /**
    * Mengubah jenis kegiatan
    */
   async updateJenis(id: number, nilai: Partial<NilaiJenis>, tx: Db) {
-    await tx.jenisKegiatan.update({ where: { id }, data: nilai });
+    await tx.update(jenisKegiatan).set(nilai).where(eq(jenisKegiatan.id, id));
   },
 };

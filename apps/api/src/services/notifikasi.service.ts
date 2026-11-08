@@ -1,4 +1,4 @@
-import { type Db } from "@/lib/prisma";
+import { type Db } from "@/lib/db";
 import { NotifikasiRepository } from "@/repositories/notifikasi.repository";
 
 /**

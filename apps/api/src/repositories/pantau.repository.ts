@@ -1,4 +1,6 @@
-import { prisma, type Prisma } from "@/lib/prisma";
+import { and, count, eq, inArray } from "drizzle-orm";
+import { drafKegiatan, kegiatan, pegawai, user } from "@/db/schema";
+import { db } from "@/lib/db";
 import type { FilterDaftar } from "@/types/kegiatan.types";
 import { kondisiDaftar } from "./kegiatan.repository";
 
@@ -6,18 +8,20 @@ export const PantauRepository = {
   /**
    * Jumlah kegiatan per status pemeriksaan (terkirim, perlu_perbaikan)
    */
-  async perStatus(f: FilterDaftar, sekarang: Date) {
-    const baris = await prisma.kegiatan.groupBy({ by: ["statusPemeriksaan"], where: kondisiDaftar(f, sekarang), _count: { _all: true } });
-    return baris.map((b) => ({ status: b.statusPemeriksaan, jumlah: b._count._all }));
+  perStatus(f: FilterDaftar, sekarang: Date) {
+    return db.select({ status: kegiatan.statusPemeriksaan, jumlah: count() }).from(kegiatan).where(kondisiDaftar(f, sekarang)).groupBy(kegiatan.statusPemeriksaan);
   },
 
   /**
    * Jumlah draf yang belum dikirim, bisa dibatasi per pegawai atau per bidang pemiliknya
    */
   jumlahDraf(f: Pick<FilterDaftar, "unitIds" | "pegawaiId">) {
-    const pemilik: Prisma.UserWhereInput = {};
-    if (f.pegawaiId) pemilik.pegawaiId = f.pegawaiId;
-    if (f.unitIds) pemilik.pegawai = { is: { bidangId: { in: f.unitIds } } };
-    return prisma.drafKegiatan.count({ where: { pemilik: { is: pemilik } } });
+    if (!f.pegawaiId && !f.unitIds) return db.$count(drafKegiatan);
+    const pegawaiBidang = f.unitIds ? db.select({ id: pegawai.id }).from(pegawai).where(inArray(pegawai.bidangId, f.unitIds)) : undefined;
+    const pemilik = db
+      .select({ id: user.id })
+      .from(user)
+      .where(and(f.pegawaiId ? eq(user.pegawaiId, f.pegawaiId) : undefined, pegawaiBidang ? inArray(user.pegawaiId, pegawaiBidang) : undefined));
+    return db.$count(drafKegiatan, inArray(drafKegiatan.pemilikId, pemilik));
   },
 };

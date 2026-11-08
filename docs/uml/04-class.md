@@ -2,7 +2,7 @@
 
 ## 4.1 Kelas domain
 
-Diturunkan dari model Prisma. Atribut teknis (`createdAt`, `updatedAt`, token Better Auth) tidak ditulis agar diagram tetap terbaca; daftar kolom lengkap ada di [ERD](05-erd.md).
+Diturunkan dari skema Drizzle. Atribut teknis (`createdAt`, `updatedAt`, token Better Auth) tidak ditulis agar diagram tetap terbaca; daftar kolom lengkap ada di [ERD](05-erd.md).
 
 ```mermaid
 classDiagram
@@ -147,26 +147,26 @@ classDiagram
         <<service>>
         +daftar(query, aktor)
         +detail(id, aktor)
-        +buat(isi, aktor, meta)
-        +ubah(id, isi, aktor, meta)
-        +batalkan(id, isi, aktor, meta)
-        +periksa(id, isi, aktor, meta)
-        +hapus(id, aktor, meta)
+        +buat(isi, aktor)
+        +ubah(id, isi, aktor)
+        +batalkan(id, isi, aktor)
+        +periksa(id, isi, aktor)
+        +hapus(id, aktor)
     }
     class KegiatanRepository {
         <<repository>>
-        query Prisma, kondisi lingkup baca,
+        query Drizzle, kondisi lingkup baca,
         updateDenganVersi (409 bila bentrok)
     }
-    class PrismaClient {
-        <<lib/prisma>>
+    class Drizzle {
+        <<lib/db>>
     }
 
     kegiatanRoute ..> KegiatanValidator : memvalidasi dengan
     kegiatanRoute --> KegiatanController : memanggil
     KegiatanController --> KegiatanService : memanggil
     KegiatanService --> KegiatanRepository : memakai
-    KegiatanRepository --> PrismaClient
+    KegiatanRepository --> Drizzle
 ```
 
 | Lapisan | Tanggung jawab | Contoh berkas |
@@ -174,4 +174,4 @@ classDiagram
 | Route | Alamat, metode HTTP, role yang diizinkan, validator | `routes/kegiatan.route.ts` |
 | Controller | Mengambil params, body, pengguna, dan meta permintaan | `controllers/kegiatan.controller.ts` |
 | Service | Aturan bisnis, hak akses, transaksi | `services/kegiatan.service.ts` |
-| Repository | Query Prisma saja | `repositories/kegiatan.repository.ts` |
+| Repository | Query Drizzle saja | `repositories/kegiatan.repository.ts` |

@@ -1,4 +1,6 @@
-import type { Prisma } from "@/lib/prisma";
+import { and, eq, exists, not, sql, type SQL } from "drizzle-orm";
+import { account, user } from "@/db/schema";
+import { db } from "@/lib/db";
 import type { StatusAkun } from "@/types/umum.types";
 
 /**
@@ -12,20 +14,29 @@ export function statusAkun(a: { banned: boolean; punyaKredensial: boolean }): St
   return a.punyaKredensial ? "AKTIF" : "MENUNGGU_AKTIVASI";
 }
 
+export const PROVIDER_KREDENSIAL = "credential";
+
 /**
  * Akun "punya kredensial" berarti punya baris di tabel account dengan provider "credential" (email + kata sandi).
+ * Setara SQL: EXISTS (SELECT 1 FROM account WHERE account.user_id = user.id AND account.provider_id = 'credential')
  */
-const KREDENSIAL = { providerId: "credential" } satisfies Prisma.AccountWhereInput;
+const adaKredensial = exists(
+  db
+    .select({ satu: sql`1` })
+    .from(account)
+    .where(and(eq(account.userId, user.id), eq(account.providerId, PROVIDER_KREDENSIAL))),
+);
 
 /**
- * Syarat Prisma untuk menyaring user berdasarkan status
+ * Kolom hitungan true/false untuk dipakai di dalam select
  */
-export function kondisiStatus(status: StatusAkun): Prisma.UserWhereInput {
-  if (status === "NONAKTIF") return { banned: true };
+export const punyaKredensial = sql<boolean>`${adaKredensial}`;
 
-  /**
-   * `some` = punya minimal satu baris relasi yang cocok, `none` = tidak punya sama sekali.
-   */
-  if (status === "AKTIF") return { banned: false, accounts: { some: KREDENSIAL } };
-  return { banned: false, accounts: { none: KREDENSIAL } };
+/**
+ * Syarat SQL untuk menyaring user berdasarkan status
+ */
+export function kondisiStatus(status: StatusAkun): SQL {
+  if (status === "NONAKTIF") return eq(user.banned, true);
+  if (status === "AKTIF") return and(eq(user.banned, false), adaKredensial)!;
+  return and(eq(user.banned, false), not(adaKredensial))!;
 }

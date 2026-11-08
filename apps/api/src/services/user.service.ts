@@ -1,5 +1,5 @@
 import { NotFound, Unprocessable } from "@/lib/errors";
-import { galatDuplikat, prisma, type Db } from "@/lib/prisma";
+import { db, galatDuplikat, type Db } from "@/lib/db";
 import { AuthRepository } from "@/repositories/auth.repository";
 import { MasterRepository } from "@/repositories/master.repository";
 import { SesiRepository } from "@/repositories/sesi.repository";
@@ -90,7 +90,7 @@ async function simpanPegawai(pegawaiId: number | null, nilai: NilaiPegawai, tx: 
  */
 async function transaksiAman<T>(kerja: (tx: Db) => Promise<T>) {
   try {
-    return await prisma.$transaction(kerja);
+    return await db.transaction(kerja);
   } catch (e) {
     if (galatDuplikat(e)) throw Unprocessable("Email atau NIP baru saja dipakai data lain. Periksa kembali isian akun.");
     throw e;
@@ -217,7 +217,7 @@ export const UserService = {
     const sebelum = await muat(id);
     tolakDiriSendiri(id, admin, "Anda tidak dapat menonaktifkan akun Anda sendiri");
     if (sebelum.banned) throw Unprocessable("Akun ini sudah nonaktif");
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await UserRepository.update(id, { banned: true, banReason: alasan?.trim() || "Dinonaktifkan admin", emailBaru: null }, tx);
       await SesiRepository.hapusSemua(id, undefined, tx);
 
@@ -235,7 +235,7 @@ export const UserService = {
   async aktifkan(id: string) {
     const sebelum = await muat(id);
     if (!sebelum.banned) throw Unprocessable("Akun ini sudah aktif");
-    const status = await prisma.$transaction(async (tx) => {
+    const status = await db.transaction(async (tx) => {
       await UserRepository.update(id, { banned: false, banReason: null, banExpires: null }, tx);
       const sesudah = (await UserRepository.byId(id, tx))!;
       return statusAkun(sesudah);
@@ -257,7 +257,7 @@ export const UserService = {
     if ((await UserRepository.terpakai([id])).size) {
       throw Unprocessable("Akun ini tercatat sebagai pembuat, pengunggah, atau pemeriksa kegiatan sehingga tidak dapat dihapus. Nonaktifkan saja agar jejak kegiatannya tetap utuh.");
     }
-    await prisma.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await TokenAkunRepository.hapusMilik(id, undefined, tx);
       await UserRepository.hapus(id, tx);
     });
@@ -286,7 +286,7 @@ export const UserService = {
     const status = statusAkun(akun);
     if (status === "MENUNGGU_AKTIVASI") throw Unprocessable("Akun ini belum diaktivasi. Kirim ulang undangan aktivasi.");
     if (status === "NONAKTIF") throw Unprocessable("Akun ini nonaktif. Aktifkan dulu sebelum mengatur ulang kata sandi.");
-    const { token, sesiDicabut } = await prisma.$transaction(async (tx) => {
+    const { token, sesiDicabut } = await db.transaction(async (tx) => {
       await AuthRepository.resetLoginGagal(id, tx);
 
       /**

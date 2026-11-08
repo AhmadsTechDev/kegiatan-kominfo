@@ -19,7 +19,7 @@ export type QueryFilter = Pick<DaftarQuery, "unit" | "jenis" | "status" | "perio
 export type LingkupBaca = { unitIds: number[]; milik: Milik };
 
 /**
- * Filter yang sudah diolah service, siap diubah menjadi `where` Prisma oleh repository
+ * Filter yang sudah diolah service, siap diubah menjadi WHERE oleh repository
  */
 export type FilterDaftar = {
   unitIds?: number[];

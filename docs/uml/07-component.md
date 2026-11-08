@@ -20,7 +20,7 @@ flowchart LR
         routes["routes/ + validators/"]
         ctrl["controllers/"]
         svc["services/ (aturan bisnis, hak akses)"]
-        repo["repositories/ (Prisma)"]
+        repo["repositories/ (Drizzle)"]
         auth["lib/auth.ts (Better Auth:<br/>sesi, login, kunci akun, batas laju)"]
         mailer["lib/mailer.ts"]
         storage["lib/storage.ts"]

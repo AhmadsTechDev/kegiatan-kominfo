@@ -1,7 +1,9 @@
 // Uji pengaturan akun sendiri: profil (data kepegawaian hanya dibaca), ganti email dengan verifikasi,
 // ganti kata sandi, sesi aktif, dan preferensi
 import { describe, expect, test } from "bun:test";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { user } from "@/db/schema";
+import { db } from "@/lib/db";
 import { buatPengguna, emailAcak, formBerkas, login, loginAdmin, panggil, PNG, SANDI, tokenTerakhir } from "./helpers";
 import { kotakSurat, suratTerakhir } from "./surel-palsu";
 
@@ -117,9 +119,9 @@ describe("ganti email", () => {
     const rebutan = emailAcak("rebutan");
     await panggil("/me/email", { method: "PATCH", cookie: u.cookie, json: { email: rebutan, password: SANDI } });
     const token = tokenTerakhir(rebutan);
-    await prisma.user.update({ where: { id: (await buatPengguna()).userId }, data: { email: rebutan } });
+    await db.update(user).set({ email: rebutan }).where(eq(user.id, (await buatPengguna()).userId));
     expect((await panggil("/konfirmasi-email", { json: { token } })).status).toBe(422);
-    expect((await prisma.user.findUniqueOrThrow({ where: { id: u.userId } })).email).toBe(u.email);
+    expect((await db.select().from(user).where(eq(user.id, u.userId)))[0]!.email).toBe(u.email);
   });
 });
 

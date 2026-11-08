@@ -1,4 +1,7 @@
-import { prisma, type Db, type Prisma } from "@/lib/prisma";
+import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, or, type SQL } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
+import { bidang, catatanPemeriksaan, dokumentasi, jenisKegiatan, kegiatan, pegawai, user } from "@/db/schema";
+import { db, mengandung, type Db } from "@/lib/db";
 import type { FilterDaftar, LingkupBaca, NilaiKegiatan } from "@/types/kegiatan.types";
 import type { Halaman, Milik, Rentang, StatusPelaksanaan } from "@/types/umum.types";
 import { angka, hitungStatus } from "@/utils/status-kegiatan";
@@ -8,102 +11,116 @@ import { angka, hitungStatus } from "@/utils/status-kegiatan";
  * KONSEP repository: satu-satunya lapisan yang berbicara dengan database. Service tidak menulis query sendiri,
  * cukup memanggil fungsi di sini, jadi bila struktur tabel berubah, yang diubah hanya file repository.
  *
- * Cara membaca query Prisma di file ini:
- * - where   = syarat baris (seperti WHERE di SQL). Objek di dalam AND/OR digabung sesuai namanya.
- * - select  = kolom yang diambil; relasi (mis. bidang) bisa ikut diambil dengan select bersarang.
- * - orderBy = urutan hasil; take = jumlah maksimal baris; skip = jumlah baris yang dilewati.
- *
- * `satisfies Prisma.KegiatanWhereInput` memeriksa bahwa objek ini syarat yang sah tanpa mengubah tipenya.
+ * Cara membaca query Drizzle di file ini (urutannya sama seperti SQL):
+ * - select({...})      = kolom yang diambil; objek bersarang membuat hasilnya bersarang juga.
+ * - from(tabel)        = tabel utama; innerJoin/leftJoin = tabel lain yang digabung.
+ * - where(syarat)      = syarat baris; and(...) dan or(...) menggabungkan beberapa syarat.
+ * - orderBy, limit, offset = urutan hasil, jumlah maksimal baris, dan jumlah baris yang dilewati.
  */
-export const KEGIATAN_AKTIF = { deletedAt: null } satisfies Prisma.KegiatanWhereInput;
+export const KEGIATAN_AKTIF = isNull(kegiatan.deletedAt);
 
 /**
  * Kondisi kegiatan milik user: dibuat olehnya, atau dia penanggung jawabnya
  */
-export function kondisiMilik({ userId, pegawaiId }: Milik): Prisma.KegiatanWhereInput {
-  return pegawaiId == null ? { dibuatOleh: userId } : { OR: [{ dibuatOleh: userId }, { penanggungJawabId: pegawaiId }] };
+export function kondisiMilik({ userId, pegawaiId }: Milik): SQL {
+  return pegawaiId == null ? eq(kegiatan.dibuatOleh, userId) : or(eq(kegiatan.dibuatOleh, userId), eq(kegiatan.penanggungJawabId, pegawaiId))!;
 }
 
 /**
  * Kondisi kegiatan yang boleh dilihat PEGAWAI: bidangnya, atau kegiatan miliknya
  */
-export function kondisiLingkup({ unitIds, milik }: LingkupBaca): Prisma.KegiatanWhereInput {
-  return unitIds.length > 0 ? { OR: [{ bidangId: { in: unitIds } }, kondisiMilik(milik)] } : kondisiMilik(milik);
+export function kondisiLingkup({ unitIds, milik }: LingkupBaca): SQL {
+  return unitIds.length > 0 ? or(inArray(kegiatan.bidangId, unitIds), kondisiMilik(milik))! : kondisiMilik(milik);
 }
 
 /**
  * Kondisi status pelaksanaan (dihitung dari waktu sekarang, tidak disimpan di tabel)
  */
-export function kondisiStatus(status: StatusPelaksanaan, sekarang: Date): Prisma.KegiatanWhereInput {
+export function kondisiStatus(status: StatusPelaksanaan, sekarang: Date): SQL {
   switch (status) {
     case "dibatalkan":
-      return { dibatalkanAt: { not: null } };
+      return isNotNull(kegiatan.dibatalkanAt);
     case "akan_datang":
-      return { dibatalkanAt: null, tglMulai: { gt: sekarang } };
+      return and(isNull(kegiatan.dibatalkanAt), gt(kegiatan.tglMulai, sekarang))!;
     case "berlangsung":
-      return { dibatalkanAt: null, tglMulai: { lte: sekarang }, tglSelesai: { gte: sekarang } };
+      return and(isNull(kegiatan.dibatalkanAt), lte(kegiatan.tglMulai, sekarang), gte(kegiatan.tglSelesai, sekarang))!;
     case "selesai":
-      return { dibatalkanAt: null, tglSelesai: { lt: sekarang } };
+      return and(isNull(kegiatan.dibatalkanAt), lt(kegiatan.tglSelesai, sekarang))!;
   }
 }
 
 /**
  * Kondisi kegiatan yang mulai di dalam rentang waktu
  */
-export const kondisiRentang = ({ mulai, akhir }: Rentang): Prisma.KegiatanWhereInput => ({ tglMulai: { gte: mulai, lt: akhir } });
+export const kondisiRentang = ({ mulai, akhir }: Rentang) => and(gte(kegiatan.tglMulai, mulai), lt(kegiatan.tglMulai, akhir))!;
 
 /**
- * Menyusun `where` Prisma dari filter daftar kegiatan (dipakai juga oleh rekap, pantau, ekspor)
+ * Menyusun WHERE dari filter daftar kegiatan (dipakai juga oleh rekap, pantau, ekspor)
  *
  * Setiap filter yang diisi menambah satu syarat ke array, lalu semuanya digabung dengan AND
  * (kegiatan harus memenuhi semua syarat). Filter yang kosong tidak menambah syarat apa pun.
  * @param f filter yang sudah disiapkan service (bidang, jenis, status, rentang, kata kunci, lingkup)
  * @param sekarang waktu acuan untuk filter status pelaksanaan
- * @returns objek `where` Prisma
+ * @returns syarat SQL
  */
-export function kondisiDaftar(f: FilterDaftar, sekarang: Date): Prisma.KegiatanWhereInput {
-  const syarat: Prisma.KegiatanWhereInput[] = [KEGIATAN_AKTIF];
-  if (f.unitIds) syarat.push({ bidangId: { in: f.unitIds } });
-  if (f.jenisId) syarat.push({ jenisId: f.jenisId });
-  if (f.pegawaiId) syarat.push({ penanggungJawabId: f.pegawaiId });
+export function kondisiDaftar(f: FilterDaftar, sekarang: Date): SQL {
+  const syarat: (SQL | undefined)[] = [KEGIATAN_AKTIF];
+  if (f.unitIds) syarat.push(inArray(kegiatan.bidangId, f.unitIds));
+  if (f.jenisId) syarat.push(eq(kegiatan.jenisId, f.jenisId));
+  if (f.pegawaiId) syarat.push(eq(kegiatan.penanggungJawabId, f.pegawaiId));
   if (f.status) syarat.push(kondisiStatus(f.status, sekarang));
-  if (f.pemeriksaan) syarat.push({ statusPemeriksaan: f.pemeriksaan });
+  if (f.pemeriksaan) syarat.push(eq(kegiatan.statusPemeriksaan, f.pemeriksaan));
   if (f.rentang) syarat.push(kondisiRentang(f.rentang));
   if (f.q) {
     /**
-     * contains + insensitive = mencari potongan teks tanpa membedakan huruf besar dan kecil (seperti ILIKE '%kata%' di PostgreSQL).
-     */
-    const cari = { contains: f.q, mode: "insensitive" } as const;
-
-    /**
      * Nama penanggung jawab ikut dicari agar pimpinan bisa mengetik nama pegawai di kolom cari
      */
-    syarat.push({ OR: [{ judul: cari }, { lokasiNama: cari }, { uraian: cari }, { penanggungJawab: { nama: cari } }] });
+    const pegawaiCocok = db.select({ id: pegawai.id }).from(pegawai).where(mengandung(pegawai.nama, f.q));
+    syarat.push(or(mengandung(kegiatan.judul, f.q), mengandung(kegiatan.lokasiNama, f.q), mengandung(kegiatan.uraian, f.q), inArray(kegiatan.penanggungJawabId, pegawaiCocok)));
   }
   if (f.milik) syarat.push(kondisiMilik(f.milik));
   if (f.lingkup) syarat.push(kondisiLingkup(f.lingkup));
-  return { AND: syarat };
+  return and(...syarat)!;
 }
 
 /**
  * Kolom ringkas kegiatan untuk kalender dan dashboard
  */
 export const PILIH_RINGKAS = {
-  id: true,
-  judul: true,
-  tglMulai: true,
-  tglSelesai: true,
-  lokasiNama: true,
-  dibatalkanAt: true,
-  bidang: { select: { id: true, nama: true } },
-  jenis: { select: { nama: true } },
-  penanggungJawab: { select: { nama: true } },
-} satisfies Prisma.KegiatanSelect;
+  id: kegiatan.id,
+  judul: kegiatan.judul,
+  tglMulai: kegiatan.tglMulai,
+  tglSelesai: kegiatan.tglSelesai,
+  lokasiNama: kegiatan.lokasiNama,
+  dibatalkanAt: kegiatan.dibatalkanAt,
+  bidang: { id: bidang.id, nama: bidang.nama },
+  jenis: { nama: jenisKegiatan.nama },
+  penanggungJawab: { nama: pegawai.nama },
+};
+
+type BarisRingkas = {
+  id: number;
+  judul: string;
+  tglMulai: Date;
+  tglSelesai: Date;
+  lokasiNama: string | null;
+  dibatalkanAt: Date | null;
+  bidang: { id: number; nama: string };
+  jenis: { nama: string };
+  penanggungJawab: { nama: string };
+};
 
 /**
- * Tipe baris hasil query disimpulkan otomatis dari PILIH_RINGKAS, jadi menambah kolom di sana otomatis memperbarui tipenya.
+ * SELECT kolom ringkas FROM kegiatan JOIN bidang, jenis_kegiatan, pegawai
  */
-type BarisRingkas = Prisma.KegiatanGetPayload<{ select: typeof PILIH_RINGKAS }>;
+export function kueriRingkas() {
+  return db
+    .select(PILIH_RINGKAS)
+    .from(kegiatan)
+    .innerJoin(bidang, eq(kegiatan.bidangId, bidang.id))
+    .innerJoin(jenisKegiatan, eq(kegiatan.jenisId, jenisKegiatan.id))
+    .innerJoin(pegawai, eq(kegiatan.penanggungJawabId, pegawai.id));
+}
 
 /**
  * Meratakan baris ringkas: nama jenis & penanggung jawab jadi teks, plus status pelaksanaan
@@ -124,35 +141,38 @@ export const KegiatanRepository = {
   async daftar(f: FilterDaftar, sekarang: Date, halaman: Halaman) {
     const where = kondisiDaftar(f, sekarang);
     const [baris, total] = await Promise.all([
-      prisma.kegiatan.findMany({
-        where,
-        select: {
-          id: true,
-          judul: true,
-          tglMulai: true,
-          tglSelesai: true,
-          lokasiNama: true,
-          dibatalkanAt: true,
-          bidang: { select: { id: true, nama: true } },
-          jenis: { select: { id: true, nama: true } },
-          penanggungJawab: { select: { id: true, nama: true } },
-          dibuatOleh: true,
-          statusPemeriksaan: true,
-          updatedAt: true,
-        },
-        orderBy: [{ tglMulai: "desc" }, { id: "desc" }],
+      db
+        .select({
+          id: kegiatan.id,
+          judul: kegiatan.judul,
+          tglMulai: kegiatan.tglMulai,
+          tglSelesai: kegiatan.tglSelesai,
+          lokasiNama: kegiatan.lokasiNama,
+          dibatalkanAt: kegiatan.dibatalkanAt,
+          bidang: { id: bidang.id, nama: bidang.nama },
+          jenis: { id: jenisKegiatan.id, nama: jenisKegiatan.nama },
+          penanggungJawab: { id: pegawai.id, nama: pegawai.nama },
+          dibuatOleh: kegiatan.dibuatOleh,
+          statusPemeriksaan: kegiatan.statusPemeriksaan,
+          updatedAt: kegiatan.updatedAt,
+        })
+        .from(kegiatan)
+        .innerJoin(bidang, eq(kegiatan.bidangId, bidang.id))
+        .innerJoin(jenisKegiatan, eq(kegiatan.jenisId, jenisKegiatan.id))
+        .innerJoin(pegawai, eq(kegiatan.penanggungJawabId, pegawai.id))
+        .where(where)
+        .orderBy(desc(kegiatan.tglMulai), desc(kegiatan.id))
 
         /**
-         * KONSEP paginasi: halaman 3 dengan 20 baris per halaman berarti lewati 40 baris pertama (skip) lalu ambil 20 (take).
+         * KONSEP paginasi: halaman 3 dengan 20 baris per halaman berarti lewati 40 baris pertama (offset) lalu ambil 20 (limit).
          */
-        take: halaman.pageSize,
-        skip: (halaman.page - 1) * halaman.pageSize,
-      }),
+        .limit(halaman.pageSize)
+        .offset((halaman.page - 1) * halaman.pageSize),
 
       /**
        * Jumlah total dihitung terpisah agar frontend bisa menampilkan "1-20 dari 134" dan jumlah halaman.
        */
-      prisma.kegiatan.count({ where }),
+      db.$count(kegiatan, where),
     ]);
     const items = baris.map(({ dibatalkanAt, ...k }) => ({ ...k, statusPelaksanaan: hitungStatus({ dibatalkanAt, ...k }, sekarang) }));
     return { items, total };
@@ -162,17 +182,21 @@ export const KegiatanRepository = {
    * Kegiatan yang beririsan dengan rentang waktu (untuk kalender), maksimal `batas` baris
    */
   async kalender(rentang: Rentang, lingkup: LingkupBaca | undefined, sekarang: Date, batas: number) {
-    const baris = await prisma.kegiatan.findMany({
-      where: {
-        /**
-         * Syarat "beririsan": kegiatan mulai sebelum rentang berakhir DAN selesai setelah rentang dimulai, jadi kegiatan beberapa hari yang melewati awal bulan tetap tampil.
-         */
-        AND: [KEGIATAN_AKTIF, { tglMulai: { lt: rentang.akhir }, tglSelesai: { gte: rentang.mulai } }, lingkup ? kondisiLingkup(lingkup) : {}],
-      },
-      select: PILIH_RINGKAS,
-      orderBy: [{ tglMulai: "asc" }, { id: "asc" }],
-      take: batas,
-    });
+    const baris = await kueriRingkas()
+      .where(
+        and(
+          KEGIATAN_AKTIF,
+
+          /**
+           * Syarat "beririsan": kegiatan mulai sebelum rentang berakhir DAN selesai setelah rentang dimulai, jadi kegiatan beberapa hari yang melewati awal bulan tetap tampil.
+           */
+          lt(kegiatan.tglMulai, rentang.akhir),
+          gte(kegiatan.tglSelesai, rentang.mulai),
+          lingkup ? kondisiLingkup(lingkup) : undefined,
+        ),
+      )
+      .orderBy(asc(kegiatan.tglMulai), asc(kegiatan.id))
+      .limit(batas);
     return baris.map((k) => ratakanRingkas(k, sekarang));
   },
 
@@ -180,150 +204,154 @@ export const KegiatanRepository = {
    * Detail satu kegiatan aktif beserta jenis, unit (dan induknya), penanggung jawab, dan pembuat
    */
   async detail(id: number, sekarang: Date) {
-    const k = await prisma.kegiatan.findFirst({
-      where: { id, ...KEGIATAN_AKTIF },
-      select: {
-        id: true,
-        judul: true,
-        uraian: true,
-        hasil: true,
-        tglMulai: true,
-        tglSelesai: true,
-        lokasiNama: true,
-        lat: true,
-        lng: true,
-        jumlahPeserta: true,
-        refEksternal: true,
-        dibatalkanAt: true,
-        alasanBatal: true,
-        jenis: { select: { id: true, nama: true } },
-        bidang: { select: { id: true, nama: true, parent: { select: { id: true, nama: true } } } },
-        penanggungJawab: { select: { id: true, nama: true } },
-        pembuat: { select: { id: true, name: true } },
-        statusPemeriksaan: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const induk = alias(bidang, "induk");
+    const [k] = await db
+      .select({
+        id: kegiatan.id,
+        judul: kegiatan.judul,
+        uraian: kegiatan.uraian,
+        hasil: kegiatan.hasil,
+        tglMulai: kegiatan.tglMulai,
+        tglSelesai: kegiatan.tglSelesai,
+        lokasiNama: kegiatan.lokasiNama,
+        lat: kegiatan.lat,
+        lng: kegiatan.lng,
+        jumlahPeserta: kegiatan.jumlahPeserta,
+        refEksternal: kegiatan.refEksternal,
+        dibatalkanAt: kegiatan.dibatalkanAt,
+        alasanBatal: kegiatan.alasanBatal,
+        jenis: { id: jenisKegiatan.id, nama: jenisKegiatan.nama },
+        bidang: { id: bidang.id, nama: bidang.nama },
+        unitInduk: { id: induk.id, nama: induk.nama },
+        penanggungJawab: { id: pegawai.id, nama: pegawai.nama },
+        pembuat: { id: user.id, nama: user.name },
+        statusPemeriksaan: kegiatan.statusPemeriksaan,
+        createdAt: kegiatan.createdAt,
+        updatedAt: kegiatan.updatedAt,
+      })
+      .from(kegiatan)
+      .innerJoin(jenisKegiatan, eq(kegiatan.jenisId, jenisKegiatan.id))
+      .innerJoin(bidang, eq(kegiatan.bidangId, bidang.id))
+      .leftJoin(induk, eq(bidang.parentId, induk.id))
+      .innerJoin(pegawai, eq(kegiatan.penanggungJawabId, pegawai.id))
+      .innerJoin(user, eq(kegiatan.dibuatOleh, user.id))
+      .where(and(eq(kegiatan.id, id), KEGIATAN_AKTIF))
+      .limit(1);
     if (!k) return undefined;
-    const { bidang, pembuat, ...sisa } = k;
-    return {
-      ...sisa,
-      lat: angka(k.lat),
-      lng: angka(k.lng),
-      bidang: { id: bidang.id, nama: bidang.nama },
-      unitInduk: bidang.parent,
-      pembuat: { id: pembuat.id, nama: pembuat.name },
-      statusPelaksanaan: hitungStatus(k, sekarang),
-    };
+    return { ...k, lat: angka(k.lat), lng: angka(k.lng), statusPelaksanaan: hitungStatus(k, sekarang) };
   },
 
   /**
    * Daftar berkas dokumentasi sebuah kegiatan
    */
   daftarDokumentasi(kegiatanId: number) {
-    return prisma.dokumentasi.findMany({
-      where: { kegiatanId },
-      select: { id: true, namaAsli: true, mime: true, ukuran: true, createdAt: true },
-      orderBy: { id: "asc" },
-    });
+    return db
+      .select({ id: dokumentasi.id, namaAsli: dokumentasi.namaAsli, mime: dokumentasi.mime, ukuran: dokumentasi.ukuran, createdAt: dokumentasi.createdAt })
+      .from(dokumentasi)
+      .where(eq(dokumentasi.kegiatanId, kegiatanId))
+      .orderBy(asc(dokumentasi.id));
   },
 
   /**
    * Riwayat catatan pemeriksaan pimpinan, terbaru di atas
    */
-  async daftarCatatan(kegiatanId: number) {
-    const baris = await prisma.catatanPemeriksaan.findMany({
-      where: { kegiatanId },
-      select: { id: true, status: true, isi: true, createdAt: true, pemeriksa: { select: { name: true } } },
-      orderBy: { id: "desc" },
-    });
-    return baris.map((c) => ({ id: c.id, status: c.status, isi: c.isi, pemeriksa: c.pemeriksa.name, waktu: c.createdAt }));
+  daftarCatatan(kegiatanId: number) {
+    return db
+      .select({ id: catatanPemeriksaan.id, status: catatanPemeriksaan.status, isi: catatanPemeriksaan.isi, pemeriksa: user.name, waktu: catatanPemeriksaan.createdAt })
+      .from(catatanPemeriksaan)
+      .innerJoin(user, eq(catatanPemeriksaan.pemeriksaId, user.id))
+      .where(eq(catatanPemeriksaan.kegiatanId, kegiatanId))
+      .orderBy(desc(catatanPemeriksaan.id));
   },
 
   /**
    * Mengubah status pemeriksaan tanpa menaikkan versi (updatedAt diisi nilai lama)
    */
   async setPemeriksaan(id: number, status: string, versi: Date, tx: Db) {
-    await tx.kegiatan.update({ where: { id }, data: { statusPemeriksaan: status, updatedAt: versi } });
+    await tx.update(kegiatan).set({ statusPemeriksaan: status, updatedAt: versi }).where(eq(kegiatan.id, id));
   },
 
   /**
    * Menyimpan satu catatan pemeriksaan
    */
   async insertCatatan(nilai: { kegiatanId: number; pemeriksaId: string; status: string; isi: string | null }, tx: Db) {
-    await tx.catatanPemeriksaan.create({ data: nilai });
+    await tx.insert(catatanPemeriksaan).values(nilai);
   },
 
   /**
    * Mengunci baris kegiatan aktif (SELECT ... FOR UPDATE) lalu mengambil isinya; harus di dalam transaksi
    */
   async kunciAktif(id: number, tx: Db) {
-    /**
-     * $queryRaw dengan tanda kutip terbalik (tagged template) mengirim ${id} sebagai PARAMETER, bukan menempelkannya
-     * ke teks SQL, sehingga aman dari SQL injection. Prisma tidak punya cara bawaan untuk FOR UPDATE, karena itu memakai SQL langsung.
-     */
-    const terkunci = await tx.$queryRaw<{ id: number }[]>`SELECT id FROM kegiatan WHERE id = ${id} AND deleted_at IS NULL FOR UPDATE`;
-    if (!terkunci.length) return undefined;
-    return (await tx.kegiatan.findUnique({ where: { id } })) ?? undefined;
+    const [k] = await tx
+      .select()
+      .from(kegiatan)
+      .where(and(eq(kegiatan.id, id), KEGIATAN_AKTIF))
+      .for("update");
+    return k;
   },
 
   /**
    * Menyimpan kegiatan baru dan mengembalikan id-nya
    */
   async insert(nilai: NilaiKegiatan & { dibuatOleh: string }, tx: Db) {
-    const baru = await tx.kegiatan.create({ data: nilai, select: { id: true } });
-    return baru.id;
+    const [baru] = await tx.insert(kegiatan).values(nilai).returning({ id: kegiatan.id });
+    return baru!.id;
   },
 
   /**
    * Mengubah kegiatan hanya bila versinya (updatedAt) masih sama; mengembalikan jumlah baris yang berubah
    */
-  async updateDenganVersi(id: number, versi: Date, nilai: Prisma.KegiatanUncheckedUpdateManyInput, tx: Db) {
-    const hasil = await tx.kegiatan.updateMany({ where: { id, updatedAt: versi, ...KEGIATAN_AKTIF }, data: nilai });
-    return hasil.count;
+  async updateDenganVersi(id: number, versi: Date, nilai: Partial<typeof kegiatan.$inferInsert>, tx: Db) {
+    const hasil = await tx
+      .update(kegiatan)
+      .set(nilai)
+      .where(and(eq(kegiatan.id, id), eq(kegiatan.updatedAt, versi), KEGIATAN_AKTIF));
+    return hasil.rowCount ?? 0;
   },
 
   /**
    * Menghapus kegiatan secara lunak (mengisi deletedAt)
    */
   async softDelete(id: number, tx: Db) {
-    await tx.kegiatan.updateMany({ where: { id, ...KEGIATAN_AKTIF }, data: { deletedAt: new Date() } });
+    await tx
+      .update(kegiatan)
+      .set({ deletedAt: new Date() })
+      .where(and(eq(kegiatan.id, id), KEGIATAN_AKTIF));
   },
 
   /**
    * Baris kegiatan lengkap untuk berkas ekspor PDF
    */
   async untukEkspor(f: FilterDaftar, sekarang: Date, batas: number) {
-    const baris = await prisma.kegiatan.findMany({
-      where: kondisiDaftar(f, sekarang),
-      select: {
-        id: true,
-        judul: true,
-        jenis: { select: { nama: true } },
-        bidang: { select: { nama: true } },
-        bidangId: true,
-        penanggungJawab: { select: { nama: true } },
-        tglMulai: true,
-        tglSelesai: true,
-        lokasiNama: true,
-        lat: true,
-        lng: true,
-        jumlahPeserta: true,
-        uraian: true,
-        hasil: true,
-        alasanBatal: true,
-        refEksternal: true,
-        dibatalkanAt: true,
-      },
-      orderBy: [{ tglMulai: "desc" }, { id: "desc" }],
-      take: batas,
-    });
-    return baris.map(({ jenis, bidang, penanggungJawab, dibatalkanAt, ...k }) => ({
+    const baris = await db
+      .select({
+        id: kegiatan.id,
+        judul: kegiatan.judul,
+        jenis: jenisKegiatan.nama,
+        bidang: bidang.nama,
+        bidangId: kegiatan.bidangId,
+        penanggungJawab: pegawai.nama,
+        tglMulai: kegiatan.tglMulai,
+        tglSelesai: kegiatan.tglSelesai,
+        lokasiNama: kegiatan.lokasiNama,
+        lat: kegiatan.lat,
+        lng: kegiatan.lng,
+        jumlahPeserta: kegiatan.jumlahPeserta,
+        uraian: kegiatan.uraian,
+        hasil: kegiatan.hasil,
+        alasanBatal: kegiatan.alasanBatal,
+        refEksternal: kegiatan.refEksternal,
+        dibatalkanAt: kegiatan.dibatalkanAt,
+      })
+      .from(kegiatan)
+      .innerJoin(jenisKegiatan, eq(kegiatan.jenisId, jenisKegiatan.id))
+      .innerJoin(bidang, eq(kegiatan.bidangId, bidang.id))
+      .innerJoin(pegawai, eq(kegiatan.penanggungJawabId, pegawai.id))
+      .where(kondisiDaftar(f, sekarang))
+      .orderBy(desc(kegiatan.tglMulai), desc(kegiatan.id))
+      .limit(batas);
+    return baris.map(({ dibatalkanAt, ...k }) => ({
       ...k,
-      jenis: jenis.nama,
-      bidang: bidang.nama,
-      penanggungJawab: penanggungJawab.nama,
       lat: angka(k.lat),
       lng: angka(k.lng),
       statusPelaksanaan: hitungStatus({ dibatalkanAt, ...k }, sekarang),
@@ -333,7 +361,8 @@ export const KegiatanRepository = {
   /**
    * Mengambil satu baris kegiatan apa adanya
    */
-  async findById(id: number, tx: Db = prisma) {
-    return (await tx.kegiatan.findUnique({ where: { id } })) ?? undefined;
+  async findById(id: number, tx: Db = db) {
+    const [k] = await tx.select().from(kegiatan).where(eq(kegiatan.id, id)).limit(1);
+    return k;
   },
 };

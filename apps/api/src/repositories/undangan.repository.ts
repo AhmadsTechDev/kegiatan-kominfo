@@ -1,35 +1,48 @@
-import { prisma } from "@/lib/prisma";
+import { and, eq } from "drizzle-orm";
+import { pegawai, user } from "@/db/schema";
+import { db } from "@/lib/db";
+import { punyaKredensial } from "@/utils/status-akun";
+
+const PILIH_PEGAWAI = { id: pegawai.id, nip: pegawai.nip, nama: pegawai.nama };
 
 export const UndanganRepository = {
   /**
    * Pegawai aktif berdasarkan id
    */
   async pegawaiAktif(id: number) {
-    return (await prisma.pegawai.findFirst({ where: { id, aktif: true }, select: { id: true, nip: true, nama: true } })) ?? undefined;
+    const [p] = await db
+      .select(PILIH_PEGAWAI)
+      .from(pegawai)
+      .where(and(eq(pegawai.id, id), eq(pegawai.aktif, true)))
+      .limit(1);
+    return p;
   },
 
   /**
    * Pegawai aktif berdasarkan NIP
    */
   async pegawaiAktifByNip(nip: string) {
-    return (await prisma.pegawai.findFirst({ where: { nip, aktif: true }, select: { id: true, nip: true, nama: true } })) ?? undefined;
+    const [p] = await db
+      .select(PILIH_PEGAWAI)
+      .from(pegawai)
+      .where(and(eq(pegawai.nip, nip), eq(pegawai.aktif, true)))
+      .limit(1);
+    return p;
   },
 
   /**
    * Akun milik pegawai; `aktif` = sudah membuat kata sandi (punya kredensial)
    */
   async akunPegawai(pegawaiId: number) {
-    const u = await prisma.user.findFirst({
-      where: { pegawaiId },
-      select: { id: true, email: true, banned: true, accounts: { where: { providerId: "credential" }, select: { id: true } } },
-    });
-    return u ? { id: u.id, email: u.email, banned: u.banned, aktif: u.accounts.length > 0 } : undefined;
+    const [u] = await db.select({ id: user.id, email: user.email, banned: user.banned, aktif: punyaKredensial }).from(user).where(eq(user.pegawaiId, pegawaiId)).limit(1);
+    return u;
   },
 
   /**
    * Akun pemilik email tertentu
    */
   async akunByEmail(email: string) {
-    return (await prisma.user.findUnique({ where: { email }, select: { id: true, pegawaiId: true } })) ?? undefined;
+    const [u] = await db.select({ id: user.id, pegawaiId: user.pegawaiId }).from(user).where(eq(user.email, email)).limit(1);
+    return u;
   },
 };

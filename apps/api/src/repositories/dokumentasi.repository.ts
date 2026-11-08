@@ -1,4 +1,6 @@
-import { prisma, type Db } from "@/lib/prisma";
+import { and, asc, eq, inArray } from "drizzle-orm";
+import { dokumentasi, kegiatan } from "@/db/schema";
+import { db, type Db } from "@/lib/db";
 import { KEGIATAN_AKTIF } from "./kegiatan.repository";
 
 type NilaiDokumentasi = {
@@ -16,53 +18,64 @@ export const DokumentasiRepository = {
    * Berkas dokumentasi banyak kegiatan sekaligus (untuk laporan), urut waktu unggah
    */
   untukKegiatan(kegiatanIds: number[]) {
-    return prisma.dokumentasi.findMany({
-      where: { kegiatanId: { in: kegiatanIds } },
-      select: { id: true, kegiatanId: true, path: true, namaAsli: true, mime: true, ukuran: true, createdAt: true },
-      orderBy: { id: "asc" },
-    });
+    return db
+      .select({
+        id: dokumentasi.id,
+        kegiatanId: dokumentasi.kegiatanId,
+        path: dokumentasi.path,
+        namaAsli: dokumentasi.namaAsli,
+        mime: dokumentasi.mime,
+        ukuran: dokumentasi.ukuran,
+        createdAt: dokumentasi.createdAt,
+      })
+      .from(dokumentasi)
+      .where(inArray(dokumentasi.kegiatanId, kegiatanIds))
+      .orderBy(asc(dokumentasi.id));
   },
 
   /**
    * Satu dokumentasi beserta data kegiatannya (untuk cek hak akses); undefined bila kegiatan sudah dihapus
    */
   async findDenganKegiatan(id: number) {
-    const baris = await prisma.dokumentasi.findFirst({
-      where: { id, kegiatan: KEGIATAN_AKTIF },
-      include: { kegiatan: { select: { id: true, bidangId: true, dibuatOleh: true, penanggungJawabId: true } } },
-    });
-    if (!baris) return undefined;
-    const { kegiatan, ...dokumentasi } = baris;
-    return { dokumentasi, kegiatan };
+    const [baris] = await db
+      .select({
+        dokumentasi,
+        kegiatan: { id: kegiatan.id, bidangId: kegiatan.bidangId, dibuatOleh: kegiatan.dibuatOleh, penanggungJawabId: kegiatan.penanggungJawabId },
+      })
+      .from(dokumentasi)
+      .innerJoin(kegiatan, eq(dokumentasi.kegiatanId, kegiatan.id))
+      .where(and(eq(dokumentasi.id, id), KEGIATAN_AKTIF))
+      .limit(1);
+    return baris;
   },
 
   /**
    * Jumlah berkas dokumentasi sebuah kegiatan
    */
-  hitung(kegiatanId: number, db: Db = prisma) {
-    return db.dokumentasi.count({ where: { kegiatanId } });
+  hitung(kegiatanId: number, tx: Db = db) {
+    return tx.$count(dokumentasi, eq(dokumentasi.kegiatanId, kegiatanId));
   },
 
   /**
    * Menyimpan metadata berkas baru dan mengembalikan barisnya
    */
-  insert(nilai: NilaiDokumentasi, tx: Db) {
-    return tx.dokumentasi.create({ data: nilai });
+  async insert(nilai: NilaiDokumentasi, tx: Db) {
+    const [baris] = await tx.insert(dokumentasi).values(nilai).returning();
+    return baris!;
   },
 
   /**
    * Mengganti metadata berkas (berkas lama diganti); undefined bila dokumentasi tidak ada
    */
   async ganti(id: number, nilai: Omit<NilaiDokumentasi, "kegiatanId"> & { createdAt: Date }, tx: Db) {
-    const hasil = await tx.dokumentasi.updateMany({ where: { id }, data: nilai });
-    if (hasil.count === 0) return undefined;
-    return (await tx.dokumentasi.findUnique({ where: { id } })) ?? undefined;
+    const [baris] = await tx.update(dokumentasi).set(nilai).where(eq(dokumentasi.id, id)).returning();
+    return baris;
   },
 
   /**
    * Menghapus metadata berkas
    */
   async hapus(id: number, tx: Db) {
-    await tx.dokumentasi.deleteMany({ where: { id } });
+    await tx.delete(dokumentasi).where(eq(dokumentasi.id, id));
   },
 };

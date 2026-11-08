@@ -2,7 +2,9 @@
 // aktivasi akun dari email undangan, serta lupa/atur ulang kata sandi
 import { describe, expect, test } from "bun:test";
 import { hashPassword as hashScrypt } from "better-auth/crypto";
-import { prisma } from "@/lib/prisma";
+import { and, eq, like } from "drizzle-orm";
+import { account, user, verification } from "@/db/schema";
+import { db } from "@/lib/db";
 import { hashToken } from "@/utils/token";
 import { aktifkan, buatPengguna, emailAcak, idUnit, ipAcak, isiAkun, login, loginAdmin, nipAcak, panggil, SANDI, tokenTerakhir } from "./helpers";
 import { kotakSurat, suratTerakhir } from "./surel-palsu";
@@ -117,7 +119,7 @@ describe("endpoint Better Auth yang tidak dipakai ditutup", () => {
     const me = await panggil("/me", { cookie: u.cookie });
     expect(me.data).toMatchObject({ role: "PEGAWAI" });
     expect(me.data.name).not.toBe("Ganti Nama Sendiri");
-    expect(await prisma.user.findFirst({ where: { name: "Daftar Sendiri" } })).toBeNull();
+    expect(await db.$count(user, eq(user.name, "Daftar Sendiri"))).toBe(0);
   });
 });
 
@@ -134,12 +136,12 @@ describe("CSRF dan hash kata sandi", () => {
 
   test("kata sandi disimpan sebagai Argon2id; hash scrypt lama tetap bisa login lalu diperbarui", async () => {
     const u = await buatPengguna();
-    const akun = await prisma.account.findFirstOrThrow({ where: { userId: u.userId, providerId: "credential" } });
+    const [akun] = (await db.select().from(account).where(and(eq(account.userId, u.userId), eq(account.providerId, "credential")))) as [typeof account.$inferSelect];
     expect(akun.password).toStartWith("$argon2id$");
 
-    await prisma.account.update({ where: { id: akun.id }, data: { password: await hashScrypt(SANDI) } });
+    await db.update(account).set({ password: await hashScrypt(SANDI) }).where(eq(account.id, akun.id));
     expect((await login(u.email, SANDI)).status).toBe(200);
-    expect((await prisma.account.findUniqueOrThrow({ where: { id: akun.id } })).password).toStartWith("$argon2id$");
+    expect((await db.select().from(account).where(eq(account.id, akun.id)))[0]!.password).toStartWith("$argon2id$");
   });
 });
 
@@ -181,7 +183,7 @@ describe("aktivasi akun dari email undangan", () => {
     const token = tokenTerakhir(email);
 
     // Basis data hanya menyimpan hash token
-    const baris = await prisma.verification.findMany({ where: { value: id } });
+    const baris = await db.select().from(verification).where(eq(verification.value, id));
     expect(baris.map((b) => b.identifier)).toEqual([`aktivasi:${hashToken(token)}`]);
     expect(JSON.stringify(baris)).not.toContain(token);
     expect(baris[0]!.expiresAt.getTime() - Date.now()).toBeGreaterThan(71 * 3600_000);
@@ -199,8 +201,8 @@ describe("aktivasi akun dari email undangan", () => {
     expect((await panggil(`/aktivasi?token=${token}`)).data.code).toBe("TOKEN_TIDAK_BERLAKU");
     expect((await login(email, "sandiaktivasi123")).status).toBe(200);
 
-    const user = await prisma.user.findUniqueOrThrow({ where: { id } });
-    expect(user.emailVerified).toBe(true);
+    const [akun] = (await db.select().from(user).where(eq(user.id, id))) as [typeof user.$inferSelect];
+    expect(akun.emailVerified).toBe(true);
   });
 
   test("admin menambah pegawai dengan email dari Master data: undangan terkirim dan bisa diaktivasi", async () => {
@@ -233,7 +235,7 @@ describe("aktivasi akun dari email undangan", () => {
     expect((await panggil("/aktivasi", { json: { token: "tokenpalsu12345", password: "sandibaru12345" } })).status).toBe(410);
 
     const kedaluwarsa = await akunMenunggu();
-    await prisma.verification.updateMany({ where: { value: kedaluwarsa.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
+    await db.update(verification).set({ expiresAt: new Date(Date.now() - 1000) }).where(eq(verification.value, kedaluwarsa.id));
     expect((await panggil("/aktivasi", { json: { token: tokenTerakhir(kedaluwarsa.email), password: "sandibaru12345" } })).status).toBe(410);
 
     const dinonaktifkan = await akunMenunggu();
@@ -246,7 +248,7 @@ describe("aktivasi akun dari email undangan", () => {
     const token = tokenTerakhir(email);
     const hasil = await Promise.all([1, 2].map((i) => panggil("/aktivasi", { json: { token, password: `sandiganda${i}2345` } })));
     expect(hasil.map((h) => h.status).sort()).toEqual([200, 410]);
-    expect(await prisma.account.count({ where: { userId: id, providerId: "credential" } })).toBe(1);
+    expect(await db.$count(account, and(eq(account.userId, id), eq(account.providerId, "credential")))).toBe(1);
   });
 });
 
@@ -266,7 +268,7 @@ describe("lupa dan atur ulang kata sandi", () => {
     const baru = kotakSurat.slice(sebelum);
     expect(baru.map((s) => s.kepada)).toEqual([u.email]);
     expect(baru[0]!.subjek).toBe("Atur ulang kata sandi");
-    const v = await prisma.verification.findFirstOrThrow({ where: { value: u.userId, identifier: { startsWith: "reset-sandi:" } } });
+    const [v] = (await db.select().from(verification).where(and(eq(verification.value, u.userId), like(verification.identifier, "reset-sandi:%")))) as [typeof verification.$inferSelect];
     expect(v.expiresAt.getTime() - Date.now()).toBeLessThanOrEqual(3600_000);
   });
 

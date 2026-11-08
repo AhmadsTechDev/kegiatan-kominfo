@@ -1,48 +1,40 @@
-import { prisma, type Db, type Prisma } from "@/lib/prisma";
+import { and, asc, desc, eq, gt, inArray, ne, not, or } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
+import { bidang, catatanPemeriksaan, dokumentasi, kegiatan, pegawai, session, user } from "@/db/schema";
+import { db, memuat, mengandung, type Db } from "@/lib/db";
 import type { Halaman, Role, StatusAkun } from "@/types/umum.types";
 import type { FilterAkun } from "@/types/user.types";
-import { kondisiStatus } from "@/utils/status-akun";
-
-const KREDENSIAL = { where: { providerId: "credential" }, select: { id: true } } as const;
+import { kondisiStatus, punyaKredensial } from "@/utils/status-akun";
 
 /**
  * Kolom akun yang ditampilkan
  */
 const PILIH_AKUN = {
-  id: true,
-  name: true,
-  email: true,
-  emailBaru: true,
-  emailVerified: true,
-  role: true,
-  banned: true,
-  banReason: true,
-  pegawaiId: true,
-  lockedUntil: true,
-  createdAt: true,
-  accounts: KREDENSIAL,
-} satisfies Prisma.UserSelect;
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  emailBaru: user.emailBaru,
+  emailVerified: user.emailVerified,
+  role: user.role,
+  banned: user.banned,
+  banReason: user.banReason,
+  pegawaiId: user.pegawaiId,
+  lockedUntil: user.lockedUntil,
+  createdAt: user.createdAt,
+  punyaKredensial,
+};
 
 /**
- * Mengganti daftar akun kredensial dengan penanda punyaKredensial
+ * Menyusun WHERE dari filter daftar akun
  */
-function ringkas<T extends { accounts: unknown[] }>({ accounts, ...a }: T) {
-  return { ...a, punyaKredensial: accounts.length > 0 };
-}
-
-/**
- * Menyusun `where` Prisma dari filter daftar akun
- */
-function kondisi(f: FilterAkun): Prisma.UserWhereInput {
-  const cari = f.q ? ({ contains: f.q, mode: "insensitive" } as const) : undefined;
-  return {
-    AND: [
-      cari ? { OR: [{ name: cari }, { email: cari }, { pegawai: { nip: { contains: f.q } } }] } : {},
-      f.status ? kondisiStatus(f.status) : {},
-      f.nonaktif === undefined ? {} : f.nonaktif ? kondisiStatus("NONAKTIF") : { NOT: kondisiStatus("NONAKTIF") },
-    ],
-    role: f.role,
-  };
+function kondisi(f: FilterAkun) {
+  const nipCocok = f.q ? db.select({ id: pegawai.id }).from(pegawai).where(memuat(pegawai.nip, f.q)) : undefined;
+  return and(
+    f.q && nipCocok ? or(mengandung(user.name, f.q), mengandung(user.email, f.q), inArray(user.pegawaiId, nipCocok)) : undefined,
+    f.status ? kondisiStatus(f.status) : undefined,
+    f.nonaktif === undefined ? undefined : f.nonaktif ? kondisiStatus("NONAKTIF") : not(kondisiStatus("NONAKTIF")),
+    f.role ? eq(user.role, f.role) : undefined,
+  );
 }
 
 export const UserRepository = {
@@ -50,58 +42,38 @@ export const UserRepository = {
    * Jumlah akun dengan status tertentu
    */
   hitungStatus(status: StatusAkun) {
-    return prisma.user.count({ where: kondisiStatus(status) });
+    return db.$count(user, kondisiStatus(status));
   },
 
   /**
    * Daftar akun dengan filter dan paginasi, beserta pegawai tertaut dan status kredensialnya.
-   * Akun yang menunggu aktivasi selalu di atas (admin perlu memantaunya), lalu urut nama; keduanya dipaginasi sebagai satu daftar
+   * Akun yang menunggu aktivasi selalu di atas (admin perlu memantaunya), lalu urut nama
    */
   async daftar(f: FilterAkun, halaman: Halaman) {
     const where = kondisi(f);
-    const menunggu = kondisiStatus("MENUNGGU_AKTIVASI");
-    const pilih = {
-      ...PILIH_AKUN,
-      image: true,
-      pegawai: {
-        select: {
-          id: true,
-          nama: true,
-          nip: true,
-          bidang: { select: { id: true, nama: true, parent: { select: { nama: true } } } },
-        },
-      },
-    } satisfies Prisma.UserSelect;
-    const urut = [{ name: "asc" }, { id: "asc" }] satisfies Prisma.UserOrderByWithRelationInput[];
-
-    const [total, jumlahMenunggu] = await Promise.all([
-      prisma.user.count({ where }),
-      prisma.user.count({ where: { AND: [where, menunggu] } }),
+    const induk = alias(bidang, "induk");
+    const [baris, total] = await Promise.all([
+      db
+        .select({
+          ...PILIH_AKUN,
+          image: user.image,
+          pegawai: { id: pegawai.id, nama: pegawai.nama, nip: pegawai.nip },
+          bidang: { id: bidang.id, nama: bidang.nama },
+          unitInduk: induk.nama,
+        })
+        .from(user)
+        .leftJoin(pegawai, eq(user.pegawaiId, pegawai.id))
+        .leftJoin(bidang, eq(pegawai.bidangId, bidang.id))
+        .leftJoin(induk, eq(bidang.parentId, induk.id))
+        .where(where)
+        .orderBy(desc(kondisiStatus("MENUNGGU_AKTIVASI")), asc(user.name), asc(user.id))
+        .limit(halaman.pageSize)
+        .offset((halaman.page - 1) * halaman.pageSize),
+      db.$count(user, where),
     ]);
-    const awal = (halaman.page - 1) * halaman.pageSize;
-    const akhir = awal + halaman.pageSize;
-    const diAtas =
-      awal < jumlahMenunggu
-        ? await prisma.user.findMany({ where: { AND: [where, menunggu] }, select: pilih, orderBy: urut, skip: awal, take: Math.min(jumlahMenunggu, akhir) - awal })
-        : [];
-    const sisaTake = halaman.pageSize - diAtas.length;
-    const lainnya =
-      sisaTake > 0
-        ? await prisma.user.findMany({ where: { AND: [where, { NOT: menunggu }] }, select: pilih, orderBy: urut, skip: Math.max(0, awal - jumlahMenunggu), take: sisaTake })
-        : [];
-    const baris = [...diAtas, ...lainnya];
-    const items = baris.map(({ pegawai, ...a }) => ({
-      ...ringkas(a),
-      pegawai: pegawai
-        ? {
-            id: pegawai.id,
-            nama: pegawai.nama,
-            nip: pegawai.nip,
-            bidangId: pegawai.bidang.id,
-            bidang: pegawai.bidang.nama,
-            unitInduk: pegawai.bidang.parent?.nama ?? null,
-          }
-        : null,
+    const items = baris.map(({ pegawai: p, bidang: b, unitInduk, ...a }) => ({
+      ...a,
+      pegawai: p && b ? { id: p.id, nama: p.nama, nip: p.nip, bidangId: b.id, bidang: b.nama, unitInduk } : null,
     }));
     return { items, total };
   },
@@ -109,84 +81,89 @@ export const UserRepository = {
   /**
    * Satu akun berdasarkan id
    */
-  async byId(id: string, db: Db = prisma) {
-    const a = await db.user.findUnique({ where: { id }, select: PILIH_AKUN });
-    return a ? ringkas(a) : undefined;
+  async byId(id: string, tx: Db = db) {
+    const [a] = await tx.select(PILIH_AKUN).from(user).where(eq(user.id, id)).limit(1);
+    return a;
   },
 
   /**
    * Detail akun untuk halaman detail admin: data akun, pegawai beserta bidangnya, dan sesi yang masih berlaku
    */
   async detail(id: string, sekarang = new Date()) {
-    const a = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        ...PILIH_AKUN,
-        image: true,
-        kontak: true,
-        updatedAt: true,
-        pegawai: {
-          select: {
-            id: true,
-            nip: true,
-            nama: true,
-            aktif: true,
-            bidang: { select: { id: true, nama: true, parent: { select: { id: true, nama: true } } } },
-          },
-        },
-        sessions: {
-          where: { expiresAt: { gt: sekarang } },
-          select: { id: true, ipAddress: true, userAgent: true, createdAt: true, updatedAt: true, expiresAt: true },
-          orderBy: { updatedAt: "desc" },
-        },
-      },
-    });
-    return a ? ringkas(a) : undefined;
+    const induk = alias(bidang, "induk");
+    const [baris] = await db
+      .select({
+        akun: { ...PILIH_AKUN, image: user.image, kontak: user.kontak, updatedAt: user.updatedAt },
+        pegawai: { id: pegawai.id, nip: pegawai.nip, nama: pegawai.nama, aktif: pegawai.aktif },
+        bidang: { id: bidang.id, nama: bidang.nama },
+        induk: { id: induk.id, nama: induk.nama },
+      })
+      .from(user)
+      .leftJoin(pegawai, eq(user.pegawaiId, pegawai.id))
+      .leftJoin(bidang, eq(pegawai.bidangId, bidang.id))
+      .leftJoin(induk, eq(bidang.parentId, induk.id))
+      .where(eq(user.id, id))
+      .limit(1);
+    if (!baris) return undefined;
+    const sessions = await db
+      .select({ id: session.id, ipAddress: session.ipAddress, userAgent: session.userAgent, createdAt: session.createdAt, updatedAt: session.updatedAt, expiresAt: session.expiresAt })
+      .from(session)
+      .where(and(eq(session.userId, id), gt(session.expiresAt, sekarang)))
+      .orderBy(desc(session.updatedAt));
+    return {
+      ...baris.akun,
+      pegawai: baris.pegawai ? { ...baris.pegawai, bidang: { ...baris.bidang!, parent: baris.induk } } : null,
+      sessions,
+    };
   },
 
   /**
    * Membuat akun tanpa kata sandi (status MENUNGGU_AKTIVASI sampai pemiliknya mengaktifkan lewat email)
    */
   async insert(nilai: { id: string; name: string; email: string; role: Role; pegawaiId: number | null }, tx: Db) {
-    await tx.user.create({ data: { ...nilai, emailVerified: false } });
+    await tx.insert(user).values({ ...nilai, emailVerified: false });
   },
 
   /**
    * Mengubah kolom akun
    */
-  async update(id: string, data: Prisma.UserUncheckedUpdateInput, tx: Db) {
-    await tx.user.update({ where: { id }, data });
+  async update(id: string, data: Partial<typeof user.$inferInsert>, tx: Db) {
+    await tx.update(user).set(data).where(eq(user.id, id));
   },
 
   /**
    * Menghapus akun (sesi, kredensial, dan draf ikut terhapus lewat ON DELETE CASCADE)
    */
   async hapus(id: string, tx: Db) {
-    await tx.user.delete({ where: { id } });
+    await tx.delete(user).where(eq(user.id, id));
   },
 
   /**
    * Akun lain (selain kecualiUserId) yang sudah tertaut ke pegawai ini
    */
   async akunLainUntukPegawai(pegawaiId: number, kecualiUserId?: string) {
-    return (
-      (await prisma.user.findFirst({ where: { pegawaiId, id: kecualiUserId ? { not: kecualiUserId } : undefined }, select: { id: true, email: true } })) ??
-      undefined
-    );
+    const [u] = await db
+      .select({ id: user.id, email: user.email })
+      .from(user)
+      .where(and(eq(user.pegawaiId, pegawaiId), kecualiUserId ? ne(user.id, kecualiUserId) : undefined))
+      .limit(1);
+    return u;
   },
 
   /**
    * Pegawai pemilik NIP tertentu
    */
   async pegawaiByNip(nip: string) {
-    return (await prisma.pegawai.findUnique({ where: { nip }, select: { id: true, nama: true, aktif: true } })) ?? undefined;
+    const [p] = await db.select({ id: pegawai.id, nama: pegawai.nama, aktif: pegawai.aktif }).from(pegawai).where(eq(pegawai.nip, nip)).limit(1);
+    return p;
   },
 
   /**
    * Pegawai berdasarkan id
    */
   async pegawai(id: number) {
-    return (await prisma.pegawai.findUnique({ where: { id }, select: { id: true, nip: true, bidangId: true, aktif: true } })) ?? undefined;
+    const [p] = await db.select({ id: pegawai.id, nip: pegawai.nip, bidangId: pegawai.bidangId, aktif: pegawai.aktif }).from(pegawai).where(eq(pegawai.id, id)).limit(1);
+    return p;
   },
 
   /**
@@ -195,10 +172,10 @@ export const UserRepository = {
   async terpakai(ids: string[]) {
     if (!ids.length) return new Set<string>();
     const [pembuat, pengunggah, pemeriksa] = await Promise.all([
-      prisma.kegiatan.findMany({ where: { dibuatOleh: { in: ids } }, distinct: ["dibuatOleh"], select: { dibuatOleh: true } }),
-      prisma.dokumentasi.findMany({ where: { diunggahOleh: { in: ids } }, distinct: ["diunggahOleh"], select: { diunggahOleh: true } }),
-      prisma.catatanPemeriksaan.findMany({ where: { pemeriksaId: { in: ids } }, distinct: ["pemeriksaId"], select: { pemeriksaId: true } }),
+      db.selectDistinct({ id: kegiatan.dibuatOleh }).from(kegiatan).where(inArray(kegiatan.dibuatOleh, ids)),
+      db.selectDistinct({ id: dokumentasi.diunggahOleh }).from(dokumentasi).where(inArray(dokumentasi.diunggahOleh, ids)),
+      db.selectDistinct({ id: catatanPemeriksaan.pemeriksaId }).from(catatanPemeriksaan).where(inArray(catatanPemeriksaan.pemeriksaId, ids)),
     ]);
-    return new Set([...pembuat.map((b) => b.dibuatOleh), ...pengunggah.map((b) => b.diunggahOleh), ...pemeriksa.map((b) => b.pemeriksaId)]);
+    return new Set([...pembuat, ...pengunggah, ...pemeriksa].map((b) => b.id));
   },
 };

@@ -4,7 +4,7 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 
 | Folder | Isi |
 | --- | --- |
-| [`apps/api/`](apps/api/README.md) | API REST: Bun, Elysia, Prisma (PostgreSQL), Better Auth. Arsitektur berlapis: route, controller, service, repository |
+| [`apps/api/`](apps/api/README.md) | API REST: Bun, Elysia, Drizzle (PostgreSQL), Better Auth. Arsitektur berlapis: route, controller, service, repository |
 | [`apps/web/`](apps/web/README.md) | Antarmuka: Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query, MapLibre GL |
 | [`docs/api/`](docs/api/README.md) | Dokumentasi API: ringkasan semua endpoint, aturan umum, hak akses, serta rincian header, body, dan respons |
 | [`docs/features/`](docs/features/README.md) | Spesifikasi per fitur: tujuan, kriteria selesai, dan daftar tugas |
@@ -68,7 +68,7 @@ Tidak ada pendaftaran mandiri. Admin membuat akun (nama, email pribadi, NIP opsi
 
 ## API
 
-API REST di `apps/api` (Bun, Elysia, Prisma, Better Auth), alamat dasar `/api`. Ringkasan semua endpoint, aturan umum (cookie sesi, perlindungan CSRF, format galat, batas laju), dan hak akses per endpoint ada di [docs/api/README.md](docs/api/README.md).
+API REST di `apps/api` (Bun, Elysia, Drizzle, Better Auth), alamat dasar `/api`. Ringkasan semua endpoint, aturan umum (cookie sesi, perlindungan CSRF, format galat, batas laju), dan hak akses per endpoint ada di [docs/api/README.md](docs/api/README.md).
 
 | Kelompok | Contoh endpoint | Rincian |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ API REST di `apps/api` (Bun, Elysia, Prisma, Better Auth), alamat dasar `/api`. 
 | Dashboard, kalender, rekap, pantau, ekspor | `/api/dashboard`, `/api/kalender`, `/api/rekap`, `/api/ekspor/kegiatan.pdf` | [api-laporan.md](docs/api/api-laporan.md) |
 | Administrasi | `/api/admin/akun`, `/api/admin/pegawai`, `/api/admin/bidang` | [api-admin.md](docs/api/api-admin.md) |
 
-Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses) → **repository** (query Prisma). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram class](docs/uml/04-class.md#42-lapisan-backend).
+Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses) → **repository** (query Drizzle). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram class](docs/uml/04-class.md#42-lapisan-backend).
 
 ## Diagram UML
 
@@ -103,7 +103,7 @@ Prasyarat: [Bun](https://bun.sh) 1.4, PostgreSQL 17 (mis. lewat Docker, lihat `a
 cd apps/api
 bun install
 cp .env.example .env            # isi BETTER_AUTH_SECRET dan SEED_ADMIN_PASSWORD
-bun run db:migrate:prod         # menerapkan migrasi Prisma
+bun run db:migrate              # menerapkan migrasi basis data
 bun run db:seed                 # bidang, jenis kegiatan, akun admin
 bun run db:seed:demo            # opsional: pegawai, akun, dan kegiatan fiktif untuk mencoba tampilan (ditolak di produksi)
 bun run dev                     # http://localhost:3001/api
@@ -238,9 +238,9 @@ Setelah admin pertama bisa masuk, ganti sandinya lewat **Pengaturan → Keamanan
 
 ### Memperbarui aplikasi
 
-Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala (`prisma migrate deploy`).
+Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala (`bun scripts/migrate.ts`).
 
-**Mengubah skema database.** Ubah `apps/api/prisma/schema.prisma`, lalu di komputer sendiri jalankan `bun run db:migrate` (membuat folder migrasi baru dan menerapkannya ke database lokal). Periksa `migration.sql`, jalankan tes, lalu commit folder migrasinya bersama kodenya dan `git push`. Jangan mengedit migrasi yang sudah ter-deploy dan jangan mengubah skema langsung di database Railway. Menambah tabel atau kolom aman bagi data lama (kolom wajib baru butuh nilai bawaan). **Menghapus atau mengganti nama kolom dan tabel menghilangkan datanya**; buat cadangan lebih dulu (Railway → Postgres → Backups) dan ubah penggantian nama menjadi `RENAME` manual di SQL migrasi.
+**Mengubah skema database.** Ubah `apps/api/src/db/schema.ts`, lalu di komputer sendiri jalankan `bun run db:generate` (membuat file SQL baru di `apps/api/drizzle/`) dan `bun run db:migrate` (menerapkannya ke database lokal). Periksa file SQL-nya, jalankan tes, lalu commit folder `drizzle/` bersama kodenya dan `git push`. Jangan mengedit migrasi yang sudah ter-deploy dan jangan mengubah skema langsung di database Railway. Menambah tabel atau kolom aman bagi data lama (kolom wajib baru butuh nilai bawaan). **Menghapus atau mengganti nama kolom dan tabel menghilangkan datanya**; buat cadangan lebih dulu (Railway → Postgres → Backups) dan ubah penggantian nama menjadi `RENAME` manual di SQL migrasi.
 
 ### Bila ada masalah
 
