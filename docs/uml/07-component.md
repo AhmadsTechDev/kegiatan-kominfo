@@ -19,7 +19,7 @@ flowchart LR
         direction TB
         routes["routes/ + validators/"]
         ctrl["controllers/"]
-        svc["services/ (aturan bisnis, hak akses, audit)"]
+        svc["services/ (aturan bisnis, hak akses)"]
         repo["repositories/ (Prisma)"]
         auth["lib/auth.ts (Better Auth:<br/>sesi, login, kunci akun, batas laju)"]
         mailer["lib/mailer.ts"]
@@ -56,7 +56,7 @@ flowchart LR
 | --- | --- |
 | Rewrite `/api/*` | UI dan API tampil di satu origin, sehingga cookie sesi milik domain frontend dan tidak ada masalah CORS |
 | Better Auth | Login email dan sandi, sesi di database, penguncian akun lewat hook, batas laju per IP |
-| Service | Satu-satunya tempat aturan bisnis dan pemeriksaan hak akses; setiap perubahan data dicatat ke audit log dalam transaksi yang sama |
+| Service | Satu-satunya tempat aturan bisnis dan pemeriksaan hak akses |
 | Storage | Cloudinary bila `CLOUDINARY_URL` diisi, selain itu folder lokal `STORAGE_DIR` |
 | Mailer | API Brevo bila `BREVO_API_KEY` diisi, selain itu SMTP |
 | Penjadwal | Berjalan di dalam proses backend; tidak dijalankan saat pengujian |

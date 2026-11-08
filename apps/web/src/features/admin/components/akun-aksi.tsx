@@ -60,7 +60,7 @@ const ROLE: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
 const KETERANGAN_ROLE: Record<Role, string> = {
   PEGAWAI: "Mencatat dan mengubah kegiatan unitnya",
   PIMPINAN: "Melihat dashboard, rekap, dan laporan tanpa mengubah data",
-  ADMIN: "Mengelola akun, master data, dan audit log",
+  ADMIN: "Mengelola akun dan master data",
 };
 
 const schemaAkun = z.object({

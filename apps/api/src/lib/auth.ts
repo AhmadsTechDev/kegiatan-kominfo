@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { admin } from "better-auth/plugins";
 import { createAccessControl } from "better-auth/plugins/access";
 import { defaultStatements } from "better-auth/plugins/admin/access";
@@ -122,20 +122,11 @@ export const auth = betterAuth({
    */
   hooks: {
     /**
-     * Sebelum Better Auth bekerja: tutup endpoint yang tidak dipakai, catat logout, tolak login bila akun terkunci.
+     * Sebelum Better Auth bekerja: tutup endpoint yang tidak dipakai dan tolak login bila akun terkunci.
      * ctx.request hanya ada untuk permintaan HTTP; panggilan auth.api dari server tidak dibatasi
      */
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.request && !PATH_AUTH_PUBLIK.includes(ctx.path)) AuthService.tolakEndpointTertutup();
-
-      /**
-       * Logout dicatat ke audit log selagi sesinya masih ada; `return` membiarkan Better Auth melanjutkan proses logout.
-       */
-      if (ctx.path === "/sign-out") {
-        const sesi = await getSessionFromCtx(ctx);
-        if (sesi) await AuthService.catatLogout(sesi.user.id, ctx.request?.headers);
-        return;
-      }
 
       if (ctx.path === PATH_LOGIN) await AuthService.tolakJikaTerkunci(ctx.body);
     }),
@@ -145,19 +136,18 @@ export const auth = betterAuth({
      */
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== PATH_LOGIN) return;
-      const headers = ctx.request?.headers;
 
       /**
        * Login berhasil ditandai dengan adanya sesi baru; kalau tidak ada dan jawabannya 401, berarti sandi salah.
        */
       const sesiBaru = ctx.context.newSession;
       if (sesiBaru) {
-        await AuthService.catatLoginBerhasil(sesiBaru.user.id, ctx.body, headers);
+        await AuthService.catatLoginBerhasil(sesiBaru.user.id, ctx.body);
         return;
       }
 
       const hasil = ctx.context.returned;
-      if (hasil instanceof APIError && hasil.statusCode === 401) await AuthService.catatLoginGagal(ctx.body, headers);
+      if (hasil instanceof APIError && hasil.statusCode === 401) await AuthService.catatLoginGagal(ctx.body);
     }),
   },
 });

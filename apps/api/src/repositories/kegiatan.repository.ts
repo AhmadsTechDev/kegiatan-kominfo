@@ -331,7 +331,7 @@ export const KegiatanRepository = {
   },
 
   /**
-   * Mengambil satu baris kegiatan apa adanya (untuk data audit sebelum/sesudah)
+   * Mengambil satu baris kegiatan apa adanya
    */
   async findById(id: number, tx: Db = prisma) {
     return (await tx.kegiatan.findUnique({ where: { id } })) ?? undefined;

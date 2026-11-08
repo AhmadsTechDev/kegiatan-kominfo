@@ -1,7 +1,7 @@
 import { KegiatanService } from "@/services/kegiatan.service";
 import type { BatalkanKegiatan, DaftarQuery, IsiKegiatan, PeriksaKegiatan, SelesaikanKegiatan, UbahKegiatan } from "@/types/kegiatan.types";
 import type { Konteks } from "@/types/umum.types";
-import { aktorDari, requestMeta } from "@/utils/konteks";
+import { aktorDari } from "@/utils/konteks";
 
 /**
  * Bentuk parameter URL :id. Validator sudah mengubahnya dari teks menjadi angka sebelum sampai ke sini.
@@ -28,39 +28,39 @@ export const KegiatanController = {
   /**
    * POST /api/kegiatan
    */
-  buat: ({ body, user, request, set }: Konteks<IsiKegiatan>) => {
+  buat: ({ body, user, set }: Konteks<IsiKegiatan>) => {
     set.status = 201;
-    return KegiatanService.buat(body, aktorDari(user), requestMeta(request.headers));
+    return KegiatanService.buat(body, aktorDari(user));
   },
 
   /**
    * PATCH /api/kegiatan/:id
    */
-  ubah: ({ params, body, user, request }: Konteks<UbahKegiatan, Id>) => KegiatanService.ubah(params.id, body, aktorDari(user), requestMeta(request.headers)),
+  ubah: ({ params, body, user }: Konteks<UbahKegiatan, Id>) => KegiatanService.ubah(params.id, body, aktorDari(user)),
 
   /**
    * POST /api/kegiatan/:id/pemeriksaan
    */
-  periksa: ({ params, body, user, request }: Konteks<PeriksaKegiatan, Id>) =>
-    KegiatanService.periksa(params.id, body, aktorDari(user), requestMeta(request.headers)),
+  periksa: ({ params, body, user }: Konteks<PeriksaKegiatan, Id>) =>
+    KegiatanService.periksa(params.id, body, aktorDari(user)),
 
   /**
    * POST /api/kegiatan/:id/selesai
    */
-  selesaikan: ({ params, body, user, request }: Konteks<SelesaikanKegiatan, Id>) =>
-    KegiatanService.selesaikan(params.id, body, aktorDari(user), requestMeta(request.headers)),
+  selesaikan: ({ params, body, user }: Konteks<SelesaikanKegiatan, Id>) =>
+    KegiatanService.selesaikan(params.id, body, aktorDari(user)),
 
   /**
    * POST /api/kegiatan/:id/batalkan
    */
-  batalkan: ({ params, body, user, request }: Konteks<BatalkanKegiatan, Id>) =>
-    KegiatanService.batalkan(params.id, body, aktorDari(user), requestMeta(request.headers)),
+  batalkan: ({ params, body, user }: Konteks<BatalkanKegiatan, Id>) =>
+    KegiatanService.batalkan(params.id, body, aktorDari(user)),
 
   /**
    * DELETE /api/kegiatan/:id — balasan kosong 204
    */
-  hapus: async ({ params, user, request, set }: Konteks<unknown, Id>) => {
-    await KegiatanService.hapus(params.id, aktorDari(user), requestMeta(request.headers));
+  hapus: async ({ params, user, set }: Konteks<unknown, Id>) => {
+    await KegiatanService.hapus(params.id, aktorDari(user));
     set.status = 204;
   },
 };

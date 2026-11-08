@@ -27,7 +27,7 @@ Dokumen kebutuhan produk, diselaraskan dengan aplikasi yang sudah berjalan. Nomo
 | Pencatatan kegiatan beserta lokasi di peta dan dokumentasi foto atau PDF | Alur persetujuan bertingkat (lihat bagian 12) |
 | Rekap, dashboard, kalender, dan laporan PDF | Ekspor Excel |
 | Pemeriksaan opsional oleh pimpinan | Pendaftaran akun mandiri |
-| Akun, peran, master data, dan audit log | Aplikasi seluler asli (antarmuka web responsif sudah ramah ponsel) |
+| Akun, peran, dan master data | Aplikasi seluler asli (antarmuka web responsif sudah ramah ponsel) |
 | Email aktivasi, atur ulang sandi, dan pengingat | Notifikasi lewat WhatsApp atau SMS |
 
 ## 3. Peran dan hak akses
@@ -36,9 +36,9 @@ Dokumen kebutuhan produk, diselaraskan dengan aplikasi yang sudah berjalan. Nomo
 | --- | --- | --- | --- |
 | Pegawai | `PEGAWAI` | Kegiatan bidangnya (termasuk sub bidang) dan kegiatan miliknya | Satu-satunya peran yang mencatat, mengubah, membatalkan, dan menghapus kegiatan (miliknya), draf, unggah dokumentasi, isi hasil; menerima notifikasi pemeriksaan |
 | Pimpinan | `PIMPINAN` | Seluruh dinas | Membaca kegiatan, dokumentasi, hasil, rekap, laporan; memeriksa dan memberi catatan perbaikan |
-| Admin | `ADMIN` | Seluruh dinas | Membaca dan memeriksa kegiatan (memberi catatan perbaikan), mengelola akun, permintaan akun, master data, dan audit log. Tidak menulis kegiatan |
+| Admin | `ADMIN` | Seluruh dinas | Membaca dan memeriksa kegiatan (memberi catatan perbaikan), mengelola akun, permintaan akun, dan master data. Tidak menulis kegiatan |
 
-- Pemeriksaan dan halaman Pantau untuk Pimpinan dan Admin. Status pemeriksaan terpisah dari status pelaksanaan; setiap pemeriksaan tercatat di riwayat pemeriksaan dan audit log, dan pegawai pembuat serta penanggung jawab mendapat notifikasi dalam aplikasi (lonceng).
+- Pemeriksaan dan halaman Pantau untuk Pimpinan dan Admin. Status pemeriksaan terpisah dari status pelaksanaan; setiap pemeriksaan tercatat di riwayat pemeriksaan, dan pegawai pembuat serta penanggung jawab mendapat notifikasi dalam aplikasi (lonceng).
 - Pembatasan ditegakkan di backend (403), bukan hanya dengan menyembunyikan tombol.
 - Kegiatan di luar lingkup baca dijawab 404 (bukan 403), agar keberadaannya tidak bocor.
 - Di antarmuka, `PEGAWAI` ditampilkan sebagai "Pegawai".
@@ -49,7 +49,6 @@ Dokumen kebutuhan produk, diselaraskan dengan aplikasi yang sudah berjalan. Nomo
 | --- | --- | --- |
 | FR-01 | **Masuk dan keamanan akun.** Login hanya dengan email pribadi. Tidak ada pendaftaran mandiri: akun dibuat admin lalu diaktivasi pemiliknya lewat tautan email. Lupa dan atur ulang sandi, ganti email dengan verifikasi, sesi aktif, dan preferensi | Login berhasil dan gagal tercatat; akun terkunci 15 menit setelah 5 kali salah sandi; tautan aktivasi (72 jam) dan atur ulang (1 jam) sekali pakai; pengguna bisa mengeluarkan perangkat lain |
 | FR-02 | **Master data dan akun.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, jenis kegiatan, dan akun beserta bidangnya. Permintaan akun dari halaman login ditinjau admin | Data master dinonaktifkan; bidang dan sub bidang yang belum dipakai pegawai, kegiatan, atau sub bidang boleh dihapus, dan yang nonaktif dipisah ke tab Nonaktif. Akun yang belum membuat kegiatan, mengunggah dokumentasi, atau memeriksa kegiatan bisa dihapus; selebihnya dinonaktifkan agar jejaknya utuh |
-| FR-03 | **Audit log.** Setiap perubahan data dan kejadian keamanan dicatat dengan pelaku, waktu, IP, serta nilai sebelum dan sesudah | Hanya bisa ditambah (append-only, dijaga sampai hak basis data); admin dapat memfilter dan membuka detail |
 | FR-04 | **Catat kegiatan.** Dua langkah: judul, jenis, waktu, penanggung jawab, bidang, lalu lokasi, uraian, peserta, dan nomor surat. Draf bisa disimpan dan dilanjutkan | Lokasi opsional; waktu mulai terisi waktu sekarang; validasi tanggal terbalik dijawab 422 |
 | FR-05 | **Kelola kegiatan.** Ubah, isi hasil, selesaikan sekarang (untuk kegiatan yang sedang berlangsung), batalkan (alasan wajib), dan hapus | Status pelaksanaan dihitung otomatis; pengubahan bersamaan dijawab 409; pembatalan tidak dapat diurungkan |
 | FR-06 | **Dokumentasi.** Unggah foto atau PDF, pratinjau, ganti, dan hapus | Maks. 20 MB per berkas dan 10 berkas per kegiatan; jenis dicek lewat magic bytes; foto dikompres dan EXIF atau GPS dibuang; unduhan hanya untuk yang login dan berhak membaca kegiatan |
@@ -86,7 +85,6 @@ Diagramnya ada di [docs/uml](uml/README.md): [use case](uml/01-use-case.md), [ac
 | NFR-02 | **Validasi di backend.** Validasi klien hanya kemudahan | Semua input divalidasi ulang; galat 422 menunjuk kolom yang salah |
 | NFR-03 | **Otorisasi di backend.** Menyembunyikan tombol bukan pengamanan | Peran dan lingkup baca dicek di setiap permintaan |
 | NFR-04 | **Berkas privat.** Tidak ada URL publik | Berkas hanya bisa dibuka lewat backend dengan cookie sesi |
-| NFR-05 | **Audit tanpa data rahasia.** Kredensial tidak masuk log | Nilai sensitif dibuang dari data sebelum dan sesudah |
 | NFR-06 | **Kata sandi dan token.** Disimpan aman | Sandi di-hash Argon2id; token aktivasi, atur ulang, dan ganti email disimpan sebagai hash SHA-256; kebijakan sandi minimal 8 karakter berisi huruf dan angka |
 | NFR-07 | **Performa.** Daftar dan laporan tetap responsif | Paginasi di server, indeks pada kolom yang sering dicari, dan pemilih berpencarian untuk daftar pegawai yang panjang |
 | NFR-08 | **Konsistensi data.** Data dan format seragam | Kategori dan bidang dari master data; waktu disimpan UTC dan ditampilkan WIB (Asia/Jakarta) |
@@ -115,7 +113,7 @@ Tiga lapisan, dengan **satu origin** untuk UI dan API.
 | --- | --- | --- |
 | Frontend | Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query | Antarmuka. Meneruskan `/api/*` ke backend sehingga cookie sesi milik domain frontend dan tidak ada urusan CORS |
 | Backend | Bun, Elysia, Prisma, Better Auth | API REST berlapis: route, controller, service, repository. Autentikasi, validasi, hak akses, rekap, PDF, email, dan pengingat |
-| Database | PostgreSQL 17 | Data kegiatan, akun, master data, dan audit log |
+| Database | PostgreSQL 17 | Data kegiatan, akun, dan master data |
 | Berkas | Cloudinary (atau folder lokal bila tidak diisi) | Foto dan PDF, disimpan privat |
 | Email | Brevo API (atau SMTP) | Aktivasi, atur ulang sandi, dan pengingat |
 
@@ -147,17 +145,16 @@ Setiap butir diuji otomatis di `apps/api/tests`.
 
 | No | Kriteria | Hasil yang diharapkan |
 | --- | --- | --- |
-| 1 | Lima kali salah sandi | Akun terkunci 15 menit, kejadian tercatat di audit log |
+| 1 | Lima kali salah sandi | Akun terkunci 15 menit |
 | 2 | Pegawai membuka kegiatan di luar lingkupnya | 404 |
 | 3 | Pegawai atau pimpinan mengubah kegiatan orang lain | 403 |
 | 4 | Dua orang mengubah kegiatan yang sama bersamaan | Yang kedua dijawab 409 |
 | 5 | Tanggal selesai sebelum tanggal mulai | 422 |
 | 6 | Mengunggah berkas `.exe` atau berkas 20,01 MB | Ditolak |
 | 7 | Mengunduh dokumentasi tanpa login | Ditolak |
-| 8 | Setiap aksi yang mengubah data | Tercatat di audit log |
-| 9 | Angka dashboard, rekap, dan ekspor untuk filter yang sama | Konsisten |
-| 10 | Akun yang sudah membuat kegiatan dihapus | Ditolak; cukup dinonaktifkan |
-| 11 | Tautan aktivasi atau atur ulang dipakai dua kali | Ditolak pada pemakaian kedua |
+| 8 | Angka dashboard, rekap, dan ekspor untuk filter yang sama | Konsisten |
+| 9 | Akun yang sudah membuat kegiatan dihapus | Ditolak; cukup dinonaktifkan |
+| 10 | Tautan aktivasi atau atur ulang dipakai dua kali | Ditolak pada pemakaian kedua |
 
 Pemeriksaan manual di lingkungan produksi: email aktivasi sampai dan bisa dibuka, unggah foto dan PDF berhasil dibuka kembali, dan PDF laporan terunduh dengan kop dinas.
 
@@ -170,9 +167,9 @@ Tabel dan relasinya digambar di [docs/uml/05-erd.md](uml/05-erd.md), sumbernya `
 | Autentikasi | `user`, `session`, `account`, `verification`, `preferensi_pengguna` |
 | Master data | `bidang` (bidang dan sub bidang), `pegawai`, `jenis_kegiatan` |
 | Kegiatan | `kegiatan`, `dokumentasi`, `catatan_pemeriksaan`, `draf_kegiatan`, `pengingat` |
-| Pendukung | `audit_log`, `permintaan_akun` |
+| Pendukung | `permintaan_akun` |
 
-Prinsip data: akun terpisah dari data pegawai; status akun diturunkan, tidak disimpan; data master dinonaktifkan, dan hanya bidang yang belum dipakai yang boleh dihapus; kegiatan dihapus secara lunak; `audit_log` hanya bertambah dan tidak punya kunci asing ke akun agar riwayat tetap utuh.
+Prinsip data: akun terpisah dari data pegawai; status akun diturunkan, tidak disimpan; data master dinonaktifkan, dan hanya bidang yang belum dipakai yang boleh dihapus; kegiatan dihapus secara lunak.
 
 ## 12. Keputusan dan batasan
 
@@ -195,4 +192,4 @@ Fitur dikerjakan bertahap:
 | 2. Pengelolaan dan dokumentasi | Daftar kegiatan, pencarian, filter, detail; unggah, pratinjau, ganti, dan hapus dokumentasi | [02](features/02-daftar-kegiatan.md), [03](features/03-bukti-foto-dokumen.md) |
 | 3. Rekap dan pelaporan | Rekap otomatis, ringkasan angka, grafik; pratinjau dan unduh laporan | [04](features/04-rekap-otomatis.md), [05](features/05-cetak-unduh-laporan.md) |
 | 4. Pantau dan akun | Pantau pimpinan; masuk, kelola akun, dan profil | [06](features/06-pantau-pimpinan.md), [07](features/07-masuk-kelola-akun.md) |
-| Tambahan | Kalender, pengingat email, audit log, permintaan akun, peta 3D, pencarian cepat | [README](../README.md#fitur) |
+| Tambahan | Kalender, pengingat email, permintaan akun, peta 3D, pencarian cepat | [README](../README.md#fitur) |

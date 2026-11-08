@@ -1,10 +1,10 @@
-# API Admin: Data Master, Akun, Undangan, Permintaan Akun, Audit Log
+# API Admin: Data Master, Akun, Undangan, Permintaan Akun
 
 Kembali ke [ringkasan](README.md).
 
 Semua endpoint di sini hanya untuk **ADMIN** dan butuh header `Cookie`. Endpoint dengan body memakai `Content-Type: application/json`.
 
-Data master tidak pernah dihapus; nonaktifkan dengan `"aktif": false` agar data lama tetap utuh. Setiap perubahan dicatat di audit log.
+Data master tidak pernah dihapus; nonaktifkan dengan `"aktif": false` agar data lama tetap utuh.
 
 ---
 
@@ -61,7 +61,7 @@ Tingkat (`jenis` pada respons) tidak disimpan: dihitung dari `parentId`, yaitu `
 
 ### `DELETE /api/admin/bidang/:id`
 
-Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai: tidak punya pegawai (aktif maupun tidak), kegiatan (termasuk yang sudah dihapus lunak), atau sub bidang. Yang sudah dipakai cukup dinonaktifkan lewat `PATCH`. Field `bisaDihapus` pada daftar menunjukkan apakah hapus diperbolehkan. Tercatat di audit log (`hapus`).
+Menghapus bidang atau sub bidang secara permanen. Hanya boleh bila belum dipakai: tidak punya pegawai (aktif maupun tidak), kegiatan (termasuk yang sudah dihapus lunak), atau sub bidang. Yang sudah dipakai cukup dinonaktifkan lewat `PATCH`. Field `bisaDihapus` pada daftar menunjukkan apakah hapus diperbolehkan.
 
 **Respons 200**: `{ "id": 12 }`
 
@@ -144,7 +144,7 @@ Menambah pegawai, sekaligus mengirim undangan akun bila `email` diisi.
 
 ### `DELETE /api/admin/pegawai/:id`
 
-Menghapus permanen pegawai yang **belum punya akun** dan belum dipakai sebagai penanggung jawab kegiatan (termasuk yang terhapus lunak) maupun permintaan akun. Dipakai untuk membersihkan data salah input di tab Perlu diundang. Tercatat di audit log (`hapus`).
+Menghapus permanen pegawai yang **belum punya akun** dan belum dipakai sebagai penanggung jawab kegiatan (termasuk yang terhapus lunak) maupun permintaan akun. Dipakai untuk membersihkan data salah input di tab Perlu diundang.
 
 **Respons 200**: `{ "id": 7 }`
 
@@ -235,7 +235,7 @@ Akun dibuat tanpa kata sandi. Sistem mengirim tautan aktivasi ke email pribadi p
 
 ### `GET /api/admin/akun/:id`
 
-Detail akun: semua field daftar, ditambah `kontak`, `updatedAt`, data pegawai lengkap (`bidang: { id, nama, parent }`), `undangan` (`{ "kedaluwarsa": "..." }` untuk akun `MENUNGGU_AKTIVASI`, selain itu `null`), `sesi` (sesi aktif tanpa token), dan `riwayat` (15 catatan audit terbaru terkait akun).
+Detail akun: semua field daftar, ditambah `kontak`, `updatedAt`, data pegawai lengkap (`bidang: { id, nama, parent }`), `undangan` (`{ "kedaluwarsa": "..." }` untuk akun `MENUNGGU_AKTIVASI`, selain itu `null`), dan `sesi` (sesi aktif tanpa token).
 
 **Galat**: 404 bila tidak ada.
 
@@ -420,68 +420,3 @@ Pemohon diberi tahu lewat email.
 **Respons 200**: `{ "id": 1 }`
 
 **Galat**: 404 bila tidak ada, 409 bila sudah diproses.
-
----
-
-## Audit log
-
-Catatan aktivitas yang tidak bisa diubah atau dihapus. Data rahasia (kata sandi, token, cookie) tidak pernah disimpan.
-
-### `GET /api/audit-log`
-
-**Query** (opsional)
-
-| Field | Tipe | Keterangan |
-| --- | --- | --- |
-| `aktor` | string | Id user |
-| `aksi` | string | Salah satu nilai di `GET /api/audit-log/pilihan` → `aksi` |
-| `entitas` | string | Mis. `kegiatan`, `user`, `pegawai` |
-| `dari`, `sampai` | `YYYY-MM-DD` | Rentang tanggal (WIB) |
-| `page`, `pageSize` | angka | Bawaan 1 dan 25 (maks. 100) |
-
-**Respons 200**
-
-```json
-{
-  "items": [
-    {
-      "id": 20,
-      "waktu": "2026-11-01T22:11:41.606Z",
-      "aksi": "login",
-      "entitas": "user",
-      "entitasId": "1ef5cd20-31a9-4698-a05d-ab22baaf7821",
-      "ip": "10.0.0.5",
-      "aktor": { "id": "1ef5cd20-...", "nama": "Administrator", "email": "admin@diskominfo.local" }
-    }
-  ],
-  "total": 20,
-  "page": 1,
-  "pageSize": 25
-}
-```
-
-`aktor` bernilai `null` untuk aksi tanpa pelaku (mis. login gagal dengan email tak dikenal). Bila akunnya sudah dihapus, `aktor.nama` berisi `"Akun dihapus"`.
-
-### `GET /api/audit-log/:id`
-
-**Respons 200**: sama dengan item daftar, ditambah:
-
-| Field | Keterangan |
-| --- | --- |
-| `dataSebelum` | Isi data sebelum diubah (JSON) atau `null` |
-| `dataSesudah` | Isi data sesudah diubah (JSON) atau `null` |
-| `userAgent` | Peramban/perangkat pelaku |
-
-### `GET /api/audit-log/pilihan`
-
-Isi pilihan filter.
-
-**Respons 200**
-
-```json
-{
-  "aktor": [{ "id": "1ef5cd20-...", "nama": "Administrator", "email": "admin@diskominfo.local" }],
-  "entitas": ["dokumentasi", "kegiatan", "pegawai", "permintaan_akun", "bidang", "user"],
-  "aksi": ["login", "login_gagal", "akun_terkunci", "logout", "buat", "ubah", "hapus", "batal", "unggah", "hapus_file", "ganti_file", "periksa", "ekspor", "aktifkan", "nonaktifkan", "reset_sandi", "undang", "aktivasi", "minta_akun", "setujui", "tolak", "minta_reset_sandi", "kirim_reset_sandi", "ganti_sandi", "minta_ganti_email", "ganti_email", "batal_ganti_email", "cabut_sesi"]
-}
-```

@@ -137,18 +137,6 @@ erDiagram
         varchar user_id FK
         timestamptz created_at
     }
-    audit_log {
-        bigint id PK
-        varchar aktor_id "tanpa kunci asing"
-        varchar aksi
-        varchar entitas
-        varchar entitas_id
-        json data_sebelum
-        json data_sesudah
-        varchar ip
-        text user_agent
-        timestamptz created_at
-    }
 
     pegawai |o--o{ user : "tertaut (SET NULL)"
     user ||--o{ session : "CASCADE"
@@ -179,7 +167,6 @@ erDiagram
 - **Token** aktivasi, atur ulang sandi, dan ganti email disimpan di `verification` sebagai hash SHA-256, bukan teks asli.
 - **Data master** (`bidang`, `pegawai`, `jenis_kegiatan`) dinonaktifkan lewat kolom `aktif`. Hanya `bidang` yang belum dipakai pegawai, kegiatan, atau sub bidang yang boleh dihapus permanen.
 - **Tabel `bidang`** berisi bidang dan sub bidang. Tingkatnya ditentukan `parent_id`: kosong berarti bidang, terisi berarti sub bidang (maksimal dua tingkat). Tabel ini dulu bernama `unit_kerja` (migrasi `2_ganti_nama_unit_kerja_jadi_bidang`, data tetap utuh), dan tabel `jenis_unit` sudah dihapus (migrasi `3_hapus_jenis_unit`).
-- **Kegiatan dihapus secara lunak** (`deleted_at`), sehingga riwayat audit tetap merujuk ke data yang ada.
-- **`audit_log` append-only.** `aktor_id` sengaja tanpa kunci asing agar riwayat tetap utuh setelah akun dihapus.
+- **Kegiatan dihapus secara lunak** (`deleted_at`), sehingga barisnya tetap tersimpan di basis data.
 - Aturan `RESTRICT` pada pembuat kegiatan, pengunggah dokumentasi, dan pemeriksa adalah alasan akun yang sudah meninggalkan data kegiatan tidak bisa dihapus (cukup dinonaktifkan).
 - `pengingat` unik per (`kegiatan_id`, `jenis`, `user_id`), sehingga setiap pengingat hanya terkirim sekali.

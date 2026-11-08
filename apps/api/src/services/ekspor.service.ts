@@ -4,12 +4,11 @@ import { DokumentasiRepository } from "@/repositories/dokumentasi.repository";
 import { KegiatanRepository } from "@/repositories/kegiatan.repository";
 import type { FormatEkspor, InfoEkspor } from "@/types/ekspor.types";
 import type { DokumentasiZipQuery, RekapQuery } from "@/types/rekap.types";
-import type { Aktor, MetaRequest } from "@/types/umum.types";
+import type { Aktor } from "@/types/umum.types";
 import { formatTanggalPanjang, namaBulan, tanggalWib } from "@/utils/format-waktu";
 import { buatPdf, isiSel, JUDUL_LAPORAN, KOLOM, KOP, subjudul } from "@/utils/laporan-pdf";
 import { buatPembatasLaju } from "@/utils/rate-limit";
 import { aliranZip, type EntriZip } from "@/utils/zip";
-import { AuditLogService } from "./audit-log.service";
 import { filterDariQuery } from "./kegiatan.service";
 
 /**
@@ -138,7 +137,7 @@ export const EksporService = {
    * @returns aliran ZIP, nama berkas unduhan, dan jumlah berkas di dalamnya
    * @throws NotFound bila kegiatan yang diminta di luar cakupan, Unprocessable bila kosong atau melebihi 300 MB
    */
-  async dokumentasiZip(query: DokumentasiZipQuery, aktor: Pembuat, meta: MetaRequest, sekarang = new Date()) {
+  async dokumentasiZip(query: DokumentasiZipQuery, aktor: Pembuat, sekarang = new Date()) {
     periksaLaju(aktor.id);
     const { kegiatan: idKegiatan, ...cakupan } = query;
     const { baris } = await barisLaporan(cakupan, aktor, sekarang);
@@ -170,8 +169,6 @@ export const EksporService = {
       };
     });
 
-    await AuditLogService.catat({ aktorId: aktor.id, aksi: "ekspor", entitas: "kegiatan", sesudah: { format: "zip", filter: query, jumlah: berkas.length }, ...meta });
-
     const nama = idKegiatan
       ? `dokumentasi-${namaAman(dipilih[0]!.judul, 60).replace(/ /g, "-").toLowerCase()}.zip`
       : `dokumentasi-kegiatan-${rentangBerkas(cakupan)}-${tanggalWib(sekarang)}.zip`;
@@ -179,16 +176,14 @@ export const EksporService = {
   },
 
   /**
-   * Membuat berkas PDF dan mencatatnya ke audit log
+   * Membuat berkas PDF
    */
-  async buat(format: FormatEkspor, query: RekapQuery, aktor: Pembuat, meta: MetaRequest, sekarang = new Date()) {
+  async buat(format: FormatEkspor, query: RekapQuery, aktor: Pembuat, sekarang = new Date()) {
     periksaLaju(aktor.id);
 
     const { baris } = await barisLaporan(query, aktor, sekarang);
     const info: InfoEkspor = { periode: uraianRentang(query), dibuatOleh: aktor.nama, dibuatPada: sekarang };
     const isi = await buatPdf(baris, info);
-
-    await AuditLogService.catat({ aktorId: aktor.id, aksi: "ekspor", entitas: "kegiatan", sesudah: { format, filter: query, jumlah: baris.length }, ...meta });
 
     return { isi, nama: `rekap-kegiatan-${rentangBerkas(query)}-${tanggalWib(sekarang)}.${format}`, jumlah: baris.length };
   },

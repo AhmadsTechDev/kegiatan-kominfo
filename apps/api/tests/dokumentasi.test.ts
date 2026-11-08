@@ -1,6 +1,6 @@
 // Uji unggah dokumentasi: jenis berkas dicek dari isinya, batas 20 MB dan 10 berkas, hak akses, unduh, ganti, hapus
 import { describe, expect, test } from "bun:test";
-import { auditUntuk, buatKegiatan, buatPengguna, formBerkas, idUnit, isiKegiatan, loginAdmin, panggil, PNG } from "./helpers";
+import { buatKegiatan, buatPengguna, formBerkas, idUnit, isiKegiatan, loginAdmin, panggil, PNG } from "./helpers";
 
 // Pegawai beserta satu kegiatan miliknya
 async function siapkan() {
@@ -10,7 +10,7 @@ async function siapkan() {
 }
 
 describe("unggah dokumentasi", () => {
-  test("foto PNG diterima, tampil di detail kegiatan, dan tercatat di audit", async () => {
+  test("foto PNG diterima, dan tampil di detail kegiatan", async () => {
     const { u, k } = await siapkan();
     const res = await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie: u.cookie, form: formBerkas(PNG, "C:\\foto\\rapat.png") });
     expect(res.status).toBe(201);
@@ -19,8 +19,6 @@ describe("unggah dokumentasi", () => {
 
     const detail = await panggil(`/kegiatan/${k.id}`, { cookie: u.cookie });
     expect(detail.data.dokumentasi).toHaveLength(1);
-    expect(detail.data.riwayat[0].aksi).toBe("unggah");
-    expect((await auditUntuk("dokumentasi", res.data.id))[0]?.aksi).toBe("unggah");
   });
 
   test("PDF diterima", async () => {
@@ -98,7 +96,6 @@ describe("unduh, ganti, hapus dokumentasi", () => {
 
     expect((await panggil(`/dokumentasi/${d.data.id}`, { method: "DELETE", cookie: u.cookie })).status).toBe(204);
     expect((await panggil(`/dokumentasi/${d.data.id}`, { cookie: u.cookie })).status).toBe(404);
-    expect((await auditUntuk("dokumentasi", d.data.id)).map((a) => a.aksi)).toEqual(["hapus_file", "ganti_file", "unggah"]);
   });
 
   test("admin boleh menghapus dokumentasi kegiatan pegawai, pimpinan tidak", async () => {

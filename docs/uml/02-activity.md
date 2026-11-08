@@ -15,7 +15,7 @@ flowchart TD
     langkah2 --> simpan[Simpan]
     simpan --> valid{Valid di backend?}
     valid -- "Tidak (422)" --> perbaiki[Tampilkan galat per kolom] --> langkah2
-    valid -- Ya --> tercatat[(Kegiatan tersimpan + audit log)]
+    valid -- Ya --> tercatat[(Kegiatan tersimpan)]
     tercatat --> status{"Status pelaksanaan<br/>(dihitung dari waktu)"}
     status -- Akan datang --> h1[Penjadwal mengirim pengingat H-1]
     h1 --> status
@@ -54,6 +54,6 @@ flowchart TD
     klik --> berlaku{Token berlaku?}
     berlaku -- "Tidak (kedaluwarsa/dipakai)" --> ulang
     berlaku -- Ya --> sandi["Pemilik membuat sandi<br/>(min. 8 karakter, huruf dan angka)"]
-    sandi --> aktif[(Akun AKTIF + audit log)]
+    sandi --> aktif[(Akun AKTIF)]
     aktif --> login[Login dengan email dan sandi] --> akhir([Selesai])
 ```

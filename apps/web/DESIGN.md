@@ -143,7 +143,7 @@ Aturan pemakaian warna:
 
 **Aksen peran pimpinan.** Akun pimpinan memakai emas lambang kota sebagai aksen (`--aksen-peran`, `--sidebar-primary` di bawah `:root[data-peran="pimpinan"]`): penanda menu aktif, avatar sidebar, garis eyebrow, dan titik di label peran. Terang `#8a6d1f` (4,9:1 di putih), gelap `#e2c46f` dengan teks `#241a00`. Pegawai dan admin tetap biru.
 
-**Daftar panjang.** Pilihan yang bisa berisi ratusan baris (pegawai, aktor audit) memakai `PilihCari` (`components/shared/pilih-cari.tsx`), bukan `Select`: ketik untuk menyaring, maksimal 50 hasil dirender.
+**Daftar panjang.** Pilihan yang bisa berisi ratusan baris (pegawai) memakai `PilihCari` (`components/shared/pilih-cari.tsx`), bukan `Select`: ketik untuk menyaring, maksimal 50 hasil dirender.
 
 Mode gelap tidak termasuk versi pertama. Token sudah dipisah, jadi menambahkannya nanti cukup dengan blok `.dark`.
 
@@ -221,7 +221,6 @@ Menu sidebar per role (item yang tidak diizinkan **tidak ditampilkan**, bukan di
 | Rekap dan ekspor | Ya | Ya | Ya |
 | Master data | Tidak | Tidak | Ya |
 | Akun | Tidak | Tidak | Ya |
-| Audit log | Tidak | Tidak | Ya |
 
 ---
 
@@ -411,7 +410,7 @@ Bila server membalas 409 (kegiatan sudah diubah orang lain), tampilkan `AlertDia
 Header: judul besar, `StatusBadge`, dan aksi (Ubah, Batalkan, Hapus) untuk yang berhak. Isi dua kolom di `lg`:
 
 - **Kiri:** informasi (grid label dan nilai), uraian, hasil, galeri dokumentasi.
-- **Kanan:** peta mini dengan marker, kartu penanggung jawab dan bidang, keterangan "Dibuat oleh X pada tanggal, terakhir diubah oleh Y".
+- **Kanan:** peta mini dengan marker, kartu penanggung jawab dan bidang, keterangan "Dibuat oleh X pada tanggal".
 
 Galeri berupa grid thumbnail 3 kolom; klik membuka dialog pratinjau. PDF tampil sebagai kartu dengan ikon dan nama berkas. Tidak ada dokumentasi: `EmptyState` dengan tombol "Unggah dokumentasi" bagi yang berhak.
 
@@ -421,7 +420,7 @@ Galeri berupa grid thumbnail 3 kolom; klik membuka dialog pratinjau. PDF tampil 
 
 ### 5.7 Admin
 
-Master data (bidang, seksi, pegawai, jenis kegiatan) dan akun memakai pola yang sama: `DataTable` dan dialog untuk tambah atau ubah. Nonaktifkan lebih diutamakan daripada hapus. Audit log: `DataTable` read-only dengan filter aktor, aksi, entitas, dan rentang waktu; baris dapat dibuka untuk melihat nilai sebelum dan sesudah (JSON ditampilkan terformat, kunci sensitif tidak pernah ada).
+Master data (bidang, seksi, pegawai, jenis kegiatan) dan akun memakai pola yang sama: `DataTable` dan dialog untuk tambah atau ubah. Nonaktifkan lebih diutamakan daripada hapus.
 
 ---
 
@@ -738,7 +737,7 @@ Hubungan antar lapisan: halaman di `app/` hanya merangkai komponen dari `feature
 6. Setiap layar pengambilan data wajib punya keadaan memuat, kosong, dan error.
 7. Setiap form wajib validasi Zod dan memetakan error 422 server ke kolom.
 8. Komentar kode dalam Bahasa Indonesia dan menjelaskan alasan, bukan mengulang kode (sesuai `AGENTS.md`).
-9. Jangan menampilkan data sensitif di UI: kata sandi, token, atau kunci rahasia pada audit log.
+9. Jangan menampilkan data sensitif di UI: kata sandi, token, atau kunci rahasia.
 10. Bila ragu antara dua pola, pilih yang sudah ada di halaman lain.
 11. Gerak mengikuti bagian 8: hanya `transform` dan `opacity`, durasi sesuai tabel, tidak ada gerak berulang, dan selalu menghormati `prefers-reduced-motion`. Jangan menambah pustaka animasi.
 

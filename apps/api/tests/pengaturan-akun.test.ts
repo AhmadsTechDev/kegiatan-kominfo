@@ -2,7 +2,7 @@
 // ganti kata sandi, sesi aktif, dan preferensi
 import { describe, expect, test } from "bun:test";
 import { prisma } from "@/lib/prisma";
-import { auditUntuk, buatPengguna, emailAcak, formBerkas, login, loginAdmin, panggil, PNG, SANDI, tokenTerakhir } from "./helpers";
+import { buatPengguna, emailAcak, formBerkas, login, loginAdmin, panggil, PNG, SANDI, tokenTerakhir } from "./helpers";
 import { kotakSurat, suratTerakhir } from "./surel-palsu";
 
 describe("profil", () => {
@@ -96,7 +96,6 @@ describe("ganti email", () => {
     expect(masuk.status).toBe(200);
     expect((await panggil("/me", { cookie: masuk.cookie })).data).toMatchObject({ email: baru, emailBaru: null, emailVerified: true });
     expect(suratTerakhir(u.email)!.subjek).toBe("Email akun Anda diganti");
-    expect((await auditUntuk("user", u.userId)).map((a) => a.aksi)).toEqual(expect.arrayContaining(["minta_ganti_email", "ganti_email"]));
   });
 
   test("permintaan baru membatalkan tautan lama; batal menghapus permintaan", async () => {

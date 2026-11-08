@@ -6,7 +6,7 @@ import { kondisiStatus } from "@/utils/status-akun";
 const KREDENSIAL = { where: { providerId: "credential" }, select: { id: true } } as const;
 
 /**
- * Kolom akun yang ditampilkan dan dicatat di audit log
+ * Kolom akun yang ditampilkan
  */
 const PILIH_AKUN = {
   id: true,
@@ -191,7 +191,6 @@ export const UserRepository = {
 
   /**
    * Id akun yang meninggalkan data kegiatan (membuat kegiatan, mengunggah dokumentasi, atau memeriksa) sehingga tidak boleh dihapus.
-   * Riwayat audit tidak ikut dihitung: audit_log menyimpan id aktor sebagai teks, jadi tetap utuh setelah akun dihapus
    */
   async terpakai(ids: string[]) {
     if (!ids.length) return new Set<string>();

@@ -138,12 +138,6 @@ Detail kegiatan.
   "createdAt": "2026-11-01T22:10:53.110Z",
   "updatedAt": "2026-11-01T22:10:53.394Z",
   "dokumentasi": [{ "id": 1, "namaAsli": "foto.png", "mime": "image/png", "ukuran": 91, "createdAt": "2026-11-01T22:10:53.598Z" }],
-  "pengubahTerakhir": { "nama": "Andi Saputra", "waktu": "2026-11-01T22:10:53.404Z" },
-  "riwayat": [
-    { "id": 11, "aksi": "unggah", "aktor": "Andi Saputra", "waktu": "2026-11-01T22:10:53.603Z" },
-    { "id": 9, "aksi": "ubah", "aktor": "Andi Saputra", "waktu": "2026-11-01T22:10:53.404Z" },
-    { "id": 7, "aksi": "buat", "aktor": "Andi Saputra", "waktu": "2026-11-01T22:10:53.123Z" }
-  ],
   "catatanPemeriksaan": [
     { "id": 1, "status": "perlu_perbaikan", "isi": "Lengkapi hasil", "pemeriksa": "Administrator", "waktu": "2026-11-01T22:10:53.498Z" }
   ],
@@ -155,8 +149,6 @@ Detail kegiatan.
 | Field | Keterangan |
 | --- | --- |
 | `unitInduk` | Unit di atas `bidang`; `null` bila bidangnya sudah unit tertinggi |
-| `pengubahTerakhir` | Terakhir diubah/dibatalkan; `null` bila belum pernah |
-| `riwayat` | 20 aksi terakhir pada kegiatan dan dokumentasinya |
 | `updatedAt` | **Versi data.** Kirim kembali sebagai `expectedUpdatedAt` saat mengubah atau membatalkan |
 
 ### `POST /api/kegiatan`
@@ -235,7 +227,7 @@ Mengubah kegiatan. Body sama dengan `POST /api/kegiatan` (tanpa `drafId`), ditam
 
 ### `POST /api/kegiatan/:id/selesai`
 
-Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti menjadi waktu sekarang, sehingga status pelaksanaannya langsung `selesai`. Status tetap dihitung dari waktu, bukan disimpan terpisah. Tanda "perlu perbaikan" ikut hilang (status pemeriksaan kembali `terkirim`), seperti saat kegiatan diubah, dan perubahannya tercatat di audit log (`ubah`).
+Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti menjadi waktu sekarang, sehingga status pelaksanaannya langsung `selesai`. Status tetap dihitung dari waktu, bukan disimpan terpisah. Tanda "perlu perbaikan" ikut hilang (status pemeriksaan kembali `terkirim`), seperti saat kegiatan diubah.
 
 **Akses**: PEGAWAI (pemilik kegiatan); ADMIN dan PIMPINAN ditolak 403
 
@@ -274,7 +266,7 @@ Menyelesaikan kegiatan yang **sedang berlangsung**: waktu selesainya diganti men
 
 Pimpinan/admin menandai kegiatan perlu perbaikan beserta catatannya. Versi data (`updatedAt`) tidak berubah.
 
-**Akses**: PIMPINAN, ADMIN. Membuat catatan di riwayat pemeriksaan, audit log (`periksa`), dan notifikasi untuk pegawai pembuat dan penanggung jawab (kecuali pemeriksa sendiri). Status pelaksanaan tidak berubah. Hanya untuk kegiatan yang sedang berlangsung atau selesai; kegiatan yang belum dimulai atau dibatalkan dijawab 422.
+**Akses**: PIMPINAN, ADMIN. Membuat catatan di riwayat pemeriksaan dan notifikasi untuk pegawai pembuat dan penanggung jawab (kecuali pemeriksa sendiri). Status pelaksanaan tidak berubah. Hanya untuk kegiatan yang sedang berlangsung atau selesai; kegiatan yang belum dimulai atau dibatalkan dijawab 422.
 
 **Body**
 

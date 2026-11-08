@@ -29,13 +29,12 @@ sequenceDiagram
         alt Sandi benar dan akun aktif
             A->>DB: INSERT session
             A->>S: hook after: catatLoginBerhasil
-            S->>DB: Reset failed_login_count, INSERT audit_log (login)
+            S->>DB: Reset failed_login_count
             A-->>W: 200 + Set-Cookie sesi
             W-->>U: Masuk ke dashboard
         else Sandi salah
             A->>S: hook after: catatLoginGagal
             S->>DB: failed_login_count + 1, kunci 15 menit bila mencapai 5
-            S->>DB: INSERT audit_log (login_gagal / akun_terkunci)
             A-->>W: 401
             W-->>U: "Email atau kata sandi salah"
         end
@@ -57,7 +56,7 @@ sequenceDiagram
 
     Adm->>W: Buat akun (Manajemen akun)
     W->>A: POST /api/admin/akun
-    A->>DB: INSERT user (+ pegawai bila baru), audit_log
+    A->>DB: INSERT user (+ pegawai bila baru)
     A->>K: buatTokenAktivasi
     K->>DB: INSERT verification (hash SHA-256 token)
     K->>B: Kirim email undangan berisi tautan /aktivasi?token=...
@@ -76,7 +75,7 @@ sequenceDiagram
     W->>A: POST /api/me/aktivasi {token, password}
     A->>K: aktivasi
     K->>DB: INSERT account (hash sandi), email_verified = true
-    K->>DB: DELETE verification, INSERT audit_log (aktivasi)
+    K->>DB: DELETE verification
     A-->>W: 200 {email}
     W-->>P: Arahkan ke halaman login
 ```
@@ -110,7 +109,7 @@ sequenceDiagram
         else Lolos
             D->>C: Simpan berkas (tipe authenticated, privat)
             D->>DB: Kunci baris kegiatan, cek ulang kuota
-            D->>DB: INSERT dokumentasi, INSERT audit_log
+            D->>DB: INSERT dokumentasi
             D-->>W: 201 + data dokumentasi (tanpa path)
             W-->>U: Berkas tampil di galeri
         end

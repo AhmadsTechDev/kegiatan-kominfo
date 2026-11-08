@@ -3,7 +3,7 @@ import type { FormatEkspor } from "@/types/ekspor.types";
 import type { DokumentasiZipQuery, RekapQuery } from "@/types/rekap.types";
 import { disposisi } from "@/utils/berkas";
 import type { Konteks } from "@/types/umum.types";
-import { aktorDari, requestMeta } from "@/utils/konteks";
+import { aktorDari } from "@/utils/konteks";
 
 const MIME: Record<FormatEkspor, string> = {
   pdf: "application/pdf",
@@ -14,8 +14,8 @@ type KonteksEkspor = Konteks<unknown, unknown, RekapQuery>;
 /**
  * Membuat handler unduh berkas untuk format tertentu (saat ini hanya PDF)
  */
-const unduh = (format: FormatEkspor) => async ({ query, user, request }: KonteksEkspor) => {
-  const hasil = await EksporService.buat(format, query, { ...aktorDari(user), nama: user.name }, requestMeta(request.headers));
+const unduh = (format: FormatEkspor) => async ({ query, user }: KonteksEkspor) => {
+  const hasil = await EksporService.buat(format, query, { ...aktorDari(user), nama: user.name });
   return new Response(hasil.isi, {
     headers: {
       "Content-Type": MIME[format],
@@ -40,8 +40,8 @@ export const EksporController = {
   /**
    * GET /api/ekspor/dokumentasi.zip — semua dokumentasi pada cakupan, atau satu kegiatan bila ?kegiatan= diisi
    */
-  dokumentasiZip: async ({ query, user, request }: Konteks<unknown, unknown, DokumentasiZipQuery>) => {
-    const hasil = await EksporService.dokumentasiZip(query, { ...aktorDari(user), nama: user.name }, requestMeta(request.headers));
+  dokumentasiZip: async ({ query, user }: Konteks<unknown, unknown, DokumentasiZipQuery>) => {
+    const hasil = await EksporService.dokumentasiZip(query, { ...aktorDari(user), nama: user.name });
     return new Response(hasil.aliran, {
       headers: {
         "Content-Type": "application/zip",

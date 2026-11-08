@@ -1,4 +1,4 @@
-// Uji manajemen akun oleh admin, permintaan akun dari halaman login, dan audit log
+// Uji manajemen akun oleh admin, dan permintaan akun dari halaman login
 import { describe, expect, test } from "bun:test";
 import { prisma } from "@/lib/prisma";
 import { aktifkan, buatKegiatan, buatPengguna, emailAcak, idUnit, ipAcak, isiAkun, isiKegiatan, login, loginAdmin, nipAcak, panggil, SANDI, tokenTerakhir } from "./helpers";
@@ -31,7 +31,7 @@ describe("membuat akun", () => {
       role: "PIMPINAN",
       status: "MENUNGGU_AKTIVASI",
       emailVerified: false,
-      pegawai: { nip, nama: "Akun Baru", bidang: { nama: "Seksi Pengelolaan Data dan Persediaan" } },
+      pegawai: { nip, nama: "Akun Baru", bidang: { nama: "Seksi Pengelolaan Data dan Statistik" } },
     });
     expect(new Date(detail.data.undangan.kedaluwarsa).getTime()).toBeGreaterThan(Date.now());
     expect(JSON.stringify(detail.data)).not.toMatch(/password|token/i);
@@ -106,14 +106,13 @@ describe("daftar dan detail akun", () => {
     expect((await panggil("/admin/akun?status=SALAH", { cookie: admin })).status).toBe(422);
   });
 
-  test("detail akun aktif berisi sesi (tanpa token) dan riwayat; 404 bila tidak ada", async () => {
+  test("detail akun aktif berisi sesi (tanpa token); 404 bila tidak ada", async () => {
     const admin = await loginAdmin();
     const u = await buatPengguna();
     const detail = await panggil(`/admin/akun/${u.userId}`, { cookie: admin });
     expect(detail.data).toMatchObject({ status: "AKTIF", emailVerified: true, undangan: null, bisaDihapus: true });
     expect(detail.data.sesi).toHaveLength(1);
     expect(Object.keys(detail.data.sesi[0]).sort()).toEqual(["createdAt", "expiresAt", "id", "ipAddress", "updatedAt", "userAgent"]);
-    expect(detail.data.riwayat.map((r: { aksi: string }) => r.aksi)).toEqual(expect.arrayContaining(["login", "aktivasi", "buat"]));
     expect((await panggil("/admin/akun/tidak-ada", { cookie: admin })).status).toBe(404);
   });
 });
@@ -249,7 +248,7 @@ describe("permintaan akun", () => {
     const daftar = await panggil("/admin/permintaan-akun?status=MENUNGGU&pageSize=100", { cookie: admin });
     expect(daftar.data.items.find((p: { id: number }) => p.id === ajukan.data.id)).toMatchObject({
       pegawai: { nip, nama: "Pegawai Belum Berakun" },
-      bidang: "Seksi Pengelolaan Data dan Persediaan",
+      bidang: "Seksi Pengelolaan Data dan Statistik",
     });
     const kedua = await panggil("/permintaan-akun", { json: { nama: "X", nip, email: emailAcak() } });
     expect(kedua.status).toBe(422);
@@ -284,30 +283,7 @@ describe("permintaan akun", () => {
   });
 });
 
-describe("audit log", () => {
-  test("aksi admin tercatat; kata sandi dan token tidak pernah tersimpan", async () => {
-    const admin = await loginAdmin();
-    const u = await buatPengguna();
-    await panggil(`/admin/akun/${u.userId}/reset-sandi`, { method: "POST", cookie: admin });
-    const hariIni = new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10);
-    const daftar = await panggil(`/audit-log?aksi=kirim_reset_sandi&dari=${hariIni}&sampai=${hariIni}`, { cookie: admin });
-    expect(daftar.data.items.some((a: { entitasId: string }) => a.entitasId === u.userId)).toBe(true);
-
-    const semua = await prisma.auditLog.findMany({ select: { dataSebelum: true, dataSesudah: true } });
-    const teks = JSON.stringify(semua);
-    expect(teks).not.toContain(SANDI);
-    expect(teks).not.toMatch(/"(password|token)"/i);
-    for (const s of kotakSurat.filter((s) => s.isi.tombol?.url.includes("token="))) {
-      expect(teks).not.toContain(new URL(s.isi.tombol!.url).searchParams.get("token")!);
-    }
-
-    expect((await panggil(`/audit-log?dari=2026-05-10&sampai=2026-05-01`, { cookie: admin })).status).toBe(422);
-    expect((await panggil("/audit-log/999999999", { cookie: admin })).status).toBe(404);
-    const pilihan = await panggil("/audit-log/pilihan", { cookie: admin });
-    expect(pilihan.data.entitas).toContain("user");
-    expect(pilihan.data.aksi).toContain("kirim_reset_sandi");
-  });
-
+describe("email uji", () => {
   test("email yang terkirim selama uji tertangkap, tidak ada yang keluar sungguhan", () => {
     expect(kotakSurat.length).toBeGreaterThan(0);
   });

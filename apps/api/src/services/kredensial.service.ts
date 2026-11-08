@@ -12,7 +12,6 @@ import { formatWaktu } from "@/utils/format-waktu";
 import { periksaSandi } from "@/utils/kebijakan-sandi";
 import { buatPembatasLaju } from "@/utils/rate-limit";
 import { buatToken, MASA_TOKEN_MS, type TujuanToken } from "@/utils/token";
-import { AuditLogService } from "./audit-log.service";
 
 /**
  * Alur yang memakai tautan email sekali pakai: aktivasi akun, lupa/atur ulang kata sandi, dan verifikasi email baru.
@@ -265,7 +264,6 @@ export const KredensialService = {
       if ((await TokenAkunRepository.pakai("aktivasi", token, tx)) !== akun.id) throw tokenTidakBerlaku("aktivasi");
       await AuthRepository.buatKredensial(akun.id, hash, tx);
       await AuthRepository.verifikasiDanBuka(akun.id, tx);
-      await AuditLogService.catat({ aktorId: akun.id, aksi: "aktivasi", entitas: "user", entitasId: akun.id, ...meta }, tx);
     });
     return { email: akun.email };
   },
@@ -288,7 +286,6 @@ export const KredensialService = {
     const akun = await AuthRepository.akunKredensial({ email });
     if (akun && !akun.banned && akun.punyaKredensial && dalamBatas(lajuLupaEmail, email)) {
       const { token } = await KredensialService.terbitkan("reset-sandi", akun.id);
-      await AuditLogService.catat({ aktorId: null, aksi: "minta_reset_sandi", entitas: "user", entitasId: akun.id, ...meta });
       kirimDiBelakang(akun.email, SURAT.reset(akun.name, token));
     }
     return { message: PESAN_LUPA_SANDI };
@@ -320,11 +317,7 @@ export const KredensialService = {
       /**
        * Semua sesi login lama dicabut, jadi orang yang mungkin mengetahui sandi lama langsung keluar dari semua perangkat.
        */
-      const sesiDicabut = await SesiRepository.hapusSemua(akun.id, undefined, tx);
-      await AuditLogService.catat(
-        { aktorId: akun.id, aksi: "reset_sandi", entitas: "user", entitasId: akun.id, sesudah: { metode: "tautan_email", sesiDicabut }, ...meta },
-        tx,
-      );
+      await SesiRepository.hapusSemua(akun.id, undefined, tx);
     });
     KredensialService.beritahuSandiDiubah(akun);
     return { email: akun.email };
@@ -343,7 +336,7 @@ export const KredensialService = {
    * @returns email baru dan waktu kedaluwarsa tautan verifikasinya
    * @throws Unprocessable bila sandi salah, email sama, atau email sudah dipakai akun lain
    */
-  async mintaGantiEmail(userId: string, { email: emailMentah, password }: GantiEmail, meta: MetaRequest) {
+  async mintaGantiEmail(userId: string, { email: emailMentah, password }: GantiEmail) {
     lajuGantiEmail(userId);
     const akun = await AuthRepository.akunKredensial({ id: userId });
     if (!akun) throw NotFound("Pengguna tidak ditemukan");
@@ -357,9 +350,7 @@ export const KredensialService = {
 
     const { token, kedaluwarsa } = await prisma.$transaction(async (tx) => {
       await AuthRepository.setEmailBaru(userId, email, tx);
-      const hasil = await KredensialService.terbitkan("ganti-email", userId, tx);
-      await AuditLogService.catat({ aktorId: userId, aksi: "minta_ganti_email", entitas: "user", entitasId: userId, sebelum: { email: akun.email }, sesudah: { emailBaru: email }, ...meta }, tx);
-      return hasil;
+      return KredensialService.terbitkan("ganti-email", userId, tx);
     });
     await kirimWajib(email, SURAT.verifikasiEmail(akun.name, token), "Email verifikasi gagal dikirim. Coba lagi beberapa saat.");
     kirimDiBelakang(akun.email, SURAT.permintaanGantiEmail(akun.name, email));
@@ -369,13 +360,12 @@ export const KredensialService = {
   /**
    * Membatalkan perubahan email yang belum diverifikasi
    */
-  async batalGantiEmail(userId: string, meta: MetaRequest) {
+  async batalGantiEmail(userId: string) {
     const akun = await AuthRepository.akunKredensial({ id: userId });
     if (!akun?.emailBaru) throw Unprocessable("Tidak ada perubahan email yang menunggu verifikasi");
     await prisma.$transaction(async (tx) => {
       await AuthRepository.setEmailBaru(userId, null, tx);
       await TokenAkunRepository.hapusMilik(userId, "ganti-email", tx);
-      await AuditLogService.catat({ aktorId: userId, aksi: "batal_ganti_email", entitas: "user", entitasId: userId, sebelum: { emailBaru: akun.emailBaru }, ...meta }, tx);
     });
     return { emailBaru: null };
   },
@@ -394,7 +384,6 @@ export const KredensialService = {
       await prisma.$transaction(async (tx) => {
         if ((await TokenAkunRepository.pakai("ganti-email", token, tx)) !== akun.id) throw tokenTidakBerlaku("ganti-email");
         await AuthRepository.terapkanEmailBaru(akun.id, baru, tx);
-        await AuditLogService.catat({ aktorId: akun.id, aksi: "ganti_email", entitas: "user", entitasId: akun.id, sebelum: { email: akun.email }, sesudah: { email: baru }, ...meta }, tx);
       });
 
     /**

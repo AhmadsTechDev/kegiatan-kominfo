@@ -1,8 +1,8 @@
 // Uji kegiatan: validasi isian, hak akses per role dan unit, konflik ubah bersamaan (409),
-// batal, periksa, hapus, filter daftar, audit log, dan draf kegiatan
+// batal, periksa, hapus, filter daftar, dan draf kegiatan
 import { describe, expect, test } from "bun:test";
 import { prisma } from "@/lib/prisma";
-import { auditUntuk, buatKegiatan, buatPengguna, formBerkas, idJenis, idUnit, isiKegiatan, jamLagi, loginAdmin, panggil, PNG } from "./helpers";
+import { buatKegiatan, buatPengguna, formBerkas, idJenis, idUnit, isiKegiatan, jamLagi, loginAdmin, panggil, PNG } from "./helpers";
 
 describe("mencatat kegiatan", () => {
   test("PEGAWAI mencatat kegiatannya sendiri; bidang mengikuti penanggung jawab", async () => {
@@ -22,7 +22,6 @@ describe("mencatat kegiatan", () => {
       bisaUbah: true,
       bisaPeriksa: false,
     });
-    expect(detail.data.riwayat[0].aksi).toBe("buat");
   });
 
   test("lokasi opsional: kegiatan tanpa nama lokasi dan titik peta tersimpan", async () => {
@@ -147,7 +146,7 @@ describe("lingkup baca dan hak ubah", () => {
     expect((await panggil(`/kegiatan/${k.id}/pemeriksaan`, { cookie: pemilik.cookie, json: { catatan: "Lengkapi foto" } })).status).toBe(403);
   });
 
-  test("catatan perbaikan masuk ke notifikasi pegawai, terpisah dari status pelaksanaan, dan tercatat di riwayat", async () => {
+  test("catatan perbaikan masuk ke notifikasi pegawai, dan terpisah dari status pelaksanaan", async () => {
     const pemilik = await buatPengguna();
     const k = await buatKegiatan(pemilik.cookie, await isiKegiatan(pemilik.pegawaiId!, { tglMulai: jamLagi(-3), tglSelesai: jamLagi(-1) }));
     const admin = await loginAdmin();
@@ -244,7 +243,6 @@ describe("ubah, batal, periksa, hapus", () => {
     expect(detail.data.statusPelaksanaan).toBe("selesai");
     expect(new Date(detail.data.tglSelesai).getTime()).toBeLessThanOrEqual(Date.now());
     expect(new Date(detail.data.tglSelesai).getTime()).toBeGreaterThan(Date.now() - 60_000);
-    expect((await auditUntuk("kegiatan", berlangsung.id)).map((a) => a.aksi)).toEqual(["ubah", "buat"]);
 
     const lagi = await panggil(`/kegiatan/${berlangsung.id}/selesai`, { cookie: u.cookie, json: { expectedUpdatedAt: selesai.data.updatedAt } });
     expect(lagi.status).toBe(422);
@@ -268,7 +266,7 @@ describe("ubah, batal, periksa, hapus", () => {
     expect([403, 404]).toContain(orang.status);
   });
 
-  test("hapus kegiatan: 204, lalu tidak ditemukan lagi; tercatat lengkap di audit", async () => {
+  test("hapus kegiatan: 204, lalu tidak ditemukan lagi", async () => {
     const u = await buatPengguna();
     const k = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!));
     const ubah = await panggil(`/kegiatan/${k.id}`, { method: "PATCH", cookie: u.cookie, json: { ...(await isiKegiatan(u.pegawaiId!)), expectedUpdatedAt: k.updatedAt } });
@@ -276,11 +274,6 @@ describe("ubah, batal, periksa, hapus", () => {
     expect((await panggil(`/kegiatan/${k.id}`, { method: "DELETE", cookie: u.cookie })).status).toBe(204);
     expect((await panggil(`/kegiatan/${k.id}`, { cookie: u.cookie })).status).toBe(404);
     expect((await panggil(`/kegiatan/${k.id}`, { method: "DELETE", cookie: u.cookie })).status).toBe(404);
-
-    const audit = await auditUntuk("kegiatan", k.id);
-    expect(audit.map((a) => a.aksi)).toEqual(["hapus", "ubah", "buat"]);
-    expect(audit.every((a) => a.aktorId === u.userId && a.ip)).toBe(true);
-    expect((audit[1]!.dataSebelum as { judul: string }).judul).not.toBe((audit[1]!.dataSesudah as { judul: string }).judul);
   });
 
   test("id tidak ada 404, id bukan angka 422", async () => {

@@ -58,7 +58,6 @@ Semua halaman memakai bahasa Indonesia. Menu yang terlihat bergantung pada peran
 | `/pantau` | Pantau dan periksa kegiatan | Pimpinan |
 | `/admin/akun`, `/admin/akun/[id]` | Manajemen akun, permintaan akses, dan detail akun | Admin |
 | `/admin/master` | Pegawai, bidang dan sub bidang, jenis kegiatan | Admin |
-| `/admin/audit-log` | Audit log dengan filter | Admin |
 | `/pengaturan` | Profil, kontak, email, sandi, sesi aktif, dan preferensi | Semua peran |
 
 `proxy.ts` hanya mengarahkan berdasarkan **keberadaan cookie sesi**: tanpa cookie, halaman non-publik dialihkan ke `/login?next=...`; sudah login, `/login` dialihkan ke `/dashboard`. Otorisasi sebenarnya ada di backend.
@@ -127,7 +126,7 @@ Komponen → hook (TanStack Query) → features/<fitur>/api → lib/api-client (
 - Pencarian cepat **Ctrl/⌘ + K**: lompat ke menu, aksi, atau kegiatan (judul dan lokasi) sesuai lingkup peran.
 - Dashboard dinas untuk pimpinan dan admin. Dashboard pegawai berisi sapaan, tugas (perlu dokumentasi, agenda), dan agenda bidang 7 hari.
 - Formulir kegiatan dua langkah dengan peta, daftar periksa langsung, simpan draf, dan unggah dokumentasi.
-- Halaman detail dengan galeri dan pratinjau dokumentasi, peta lokasi, dan riwayat perubahan serta pemeriksaan.
+- Halaman detail dengan galeri dan pratinjau dokumentasi, peta lokasi, dan riwayat pemeriksaan.
 - Kalender bulanan dengan penyaringan per bidang dan panel agenda per tanggal.
 - Pantau untuk pimpinan dengan pencarian dan pemilih pegawai yang tetap ringan untuk ratusan pegawai (`PilihCari`).
 - Manajemen akun dengan tab Akun, Belum punya akun, Nonaktif, dan Permintaan akses; aksi undang, nonaktifkan, reset sandi, dan hapus.

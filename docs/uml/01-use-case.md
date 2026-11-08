@@ -32,7 +32,6 @@ flowchart LR
         uc_akun(["Kelola akun: buat/undang, ubah role,<br/>nonaktifkan, hapus, reset sandi, cabut sesi"])
         uc_tinjau(["Setujui / tolak permintaan akun"])
         uc_master(["Kelola master data: bidang, sub bidang,<br/>pegawai, jenis kegiatan"])
-        uc_audit(["Lihat audit log"])
 
         uc_ingat(["Kirim email pengingat<br/>H-1 dan dokumentasi"])
     end
@@ -42,7 +41,7 @@ flowchart LR
     pegawai --- uc_pengaturan & uc_catat & uc_ubah & uc_unggah & uc_lihat & uc_rekap
     pimpinan --- uc_pengaturan & uc_lihat & uc_rekap & uc_pantau & uc_periksa
     admin --- uc_pengaturan & uc_catat & uc_ubah & uc_unggah & uc_lihat & uc_rekap
-    admin --- uc_akun & uc_tinjau & uc_master & uc_audit
+    admin --- uc_akun & uc_tinjau & uc_master
 
     jadwal --- uc_ingat
 
@@ -58,5 +57,5 @@ flowchart LR
 | Tamu | Login, minta akun, aktivasi lewat tautan email, lupa sandi |
 | Pegawai | Catat dan ubah kegiatan miliknya, unggah dokumentasi, lihat kegiatan bidangnya, rekap, Pengaturan |
 | Pimpinan | Lihat seluruh dinas (dashboard, kalender, rekap, ekspor), pantau dan periksa kegiatan, tanpa mengubah data kegiatan |
-| Admin | Semua yang dilakukan Pegawai untuk seluruh dinas, ditambah akun, permintaan akun, master data, dan audit log |
+| Admin | Semua yang dilakukan Pegawai untuk seluruh dinas, ditambah akun, permintaan akun, dan master data |
 | Penjadwal | Setiap 15 menit mengirim pengingat kegiatan H-1 dan pengingat dokumentasi bagi kegiatan yang sudah selesai |

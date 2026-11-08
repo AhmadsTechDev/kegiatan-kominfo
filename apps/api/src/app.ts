@@ -19,7 +19,7 @@ import { asalTerpercaya } from "@/utils/konteks";
 export const app = new Elysia({ serve: { maxRequestBodySize: 21 * 1024 * 1024 } })
 
   /**
-   * Untuk setiap permintaan: catat IP asli (untuk audit log), pasang header keamanan, dan tolak permintaan
+   * Untuk setiap permintaan: catat IP asli (untuk pembatas laju), pasang header keamanan, dan tolak permintaan
    * pengubah data yang tidak berasal dari frontend (perlindungan CSRF untuk cookie sesi)
    *
    * KONSEP lifecycle hook: onRequest dijalankan PALING AWAL untuk setiap permintaan, sebelum rute dicari.
@@ -29,7 +29,7 @@ export const app = new Elysia({ serve: { maxRequestBodySize: 21 * 1024 * 1024 } 
   .onRequest(({ request, server, set }) => {
     /**
      * Bila API berada di belakang reverse proxy (mis. Caddy, lihat Caddyfile), proxy yang mengisi header IP. Tanpa proxy,
-     * IP diambil dari koneksi agar audit log tetap tahu asal permintaan.
+     * IP diambil dari koneksi agar pembatas laju tetap tahu asal permintaan.
      */
     if (!request.headers.has("x-real-ip") && !request.headers.has("x-forwarded-for")) {
       const ip = server?.requestIP(request)?.address;

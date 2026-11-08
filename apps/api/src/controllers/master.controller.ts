@@ -2,7 +2,6 @@ import { MasterService } from "@/services/master.service";
 import { UndanganService } from "@/services/undangan.service";
 import type { DaftarPegawaiQuery, IsiJenis, IsiPegawai, IsiPegawaiBaru, IsiUnit } from "@/types/master.types";
 import type { Konteks } from "@/types/umum.types";
-import { adminDari, aktorDari, requestMeta } from "@/utils/konteks";
 
 type Id = { id: number };
 
@@ -19,25 +18,25 @@ export const MasterController = {
   /**
    * POST /api/admin/bidang
    */
-  buatUnit: ({ body, user, request, set }: Konteks<IsiUnit>) => {
+  buatUnit: ({ body, set }: Konteks<IsiUnit>) => {
     set.status = 201;
-    return MasterService.buatUnit(body, aktorDari(user), requestMeta(request.headers));
+    return MasterService.buatUnit(body);
   },
 
   /**
    * PATCH /api/admin/bidang/:id
    */
-  ubahUnit: ({ params, body, user, request }: Konteks<IsiUnit, Id>) => MasterService.ubahUnit(params.id, body, aktorDari(user), requestMeta(request.headers)),
+  ubahUnit: ({ params, body }: Konteks<IsiUnit, Id>) => MasterService.ubahUnit(params.id, body),
 
   /**
    * DELETE /api/admin/bidang/:id — hanya bila belum dipakai pegawai, kegiatan, atau sub bidang
    */
-  hapusUnit: ({ params, user, request }: Konteks<unknown, Id>) => MasterService.hapusUnit(params.id, aktorDari(user), requestMeta(request.headers)),
+  hapusUnit: ({ params }: Konteks<unknown, Id>) => MasterService.hapusUnit(params.id),
 
   /**
    * DELETE /api/admin/pegawai/:id
    */
-  hapusPegawai: ({ params, user, request }: Konteks<unknown, Id>) => MasterService.hapusPegawai(params.id, aktorDari(user), requestMeta(request.headers)),
+  hapusPegawai: ({ params }: Konteks<unknown, Id>) => MasterService.hapusPegawai(params.id),
 
   /**
    * GET /api/admin/pegawai
@@ -48,14 +47,14 @@ export const MasterController = {
    * POST /api/admin/pegawai — bila email diisi, langsung dikirimi undangan akun.
    * Gagal kirim undangan tidak membatalkan pegawai yang sudah tersimpan; galatnya dikembalikan di `undangan.galat`
    */
-  buatPegawai: async ({ body, user, request, set }: Konteks<IsiPegawaiBaru>) => {
+  buatPegawai: async ({ body, set }: Konteks<IsiPegawaiBaru>) => {
     const { email: emailMentah, role, ...isi } = body;
     const email = emailMentah?.trim().toLowerCase() || null;
-    const { id } = await MasterService.buatPegawai(isi, aktorDari(user), requestMeta(request.headers), email);
+    const { id } = await MasterService.buatPegawai(isi, email);
     set.status = 201;
     if (!email) return { id, undangan: null };
     try {
-      const hasil = await UndanganService.undang({ pegawaiId: id, email, role: role ?? "PEGAWAI" }, adminDari(user, request));
+      const hasil = await UndanganService.undang({ pegawaiId: id, email, role: role ?? "PEGAWAI" });
       return { id, undangan: { email: hasil.email, galat: null } };
     } catch (e) {
       return { id, undangan: { email, galat: e instanceof Error ? e.message : "Undangan gagal dikirim" } };
@@ -65,8 +64,8 @@ export const MasterController = {
   /**
    * PATCH /api/admin/pegawai/:id
    */
-  ubahPegawai: ({ params, body, user, request }: Konteks<IsiPegawai, Id>) =>
-    MasterService.ubahPegawai(params.id, body, aktorDari(user), requestMeta(request.headers)),
+  ubahPegawai: ({ params, body }: Konteks<IsiPegawai, Id>) =>
+    MasterService.ubahPegawai(params.id, body),
 
   /**
    * GET /api/admin/jenis-kegiatan
@@ -76,13 +75,13 @@ export const MasterController = {
   /**
    * POST /api/admin/jenis-kegiatan
    */
-  buatJenis: ({ body, user, request, set }: Konteks<IsiJenis>) => {
+  buatJenis: ({ body, set }: Konteks<IsiJenis>) => {
     set.status = 201;
-    return MasterService.buatJenis(body, aktorDari(user), requestMeta(request.headers));
+    return MasterService.buatJenis(body);
   },
 
   /**
    * PATCH /api/admin/jenis-kegiatan/:id
    */
-  ubahJenis: ({ params, body, user, request }: Konteks<IsiJenis, Id>) => MasterService.ubahJenis(params.id, body, aktorDari(user), requestMeta(request.headers)),
+  ubahJenis: ({ params, body }: Konteks<IsiJenis, Id>) => MasterService.ubahJenis(params.id, body),
 };

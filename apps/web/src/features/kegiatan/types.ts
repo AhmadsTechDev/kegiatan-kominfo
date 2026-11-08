@@ -54,8 +54,6 @@ export type KegiatanDetail = {
   createdAt: string;
   updatedAt: string;
   dokumentasi: Dokumentasi[];
-  pengubahTerakhir: { nama: string; waktu: string } | null;
-  riwayat: { id: number; aksi: string; aktor: string | null; waktu: string }[];
   bisaUbah: boolean;
   bisaHapusDokumentasi: boolean;
 };

@@ -1,7 +1,6 @@
 /**
  * Membuat (atau memperbarui) user PostgreSQL khusus aplikasi dengan hak terbatas.
  * Hanya berjalan bila APP_DB_USER dan APP_DB_PASSWORD diisi; DATABASE_URL harus user dengan hak DDL.
- * audit_log hanya diberi SELECT dan INSERT agar catatan audit tidak bisa diubah/dihapus
  */
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
@@ -39,13 +38,12 @@ async function aturHakAkses(db: PrismaClient, user: string, sandi: string) {
     await db.$executeRawUnsafe(`REVOKE ALL PRIVILEGES ON ${tabel} FROM ${nama(user)}`);
 
     /**
-     * View hanya bisa dibaca; audit_log hanya boleh dibaca dan ditambah; tabel lain boleh baca-tulis penuh.
+     * View hanya bisa dibaca; tabel lain boleh baca-tulis penuh.
      */
     if (o.jenis === "VIEW") await db.$executeRawUnsafe(`GRANT SELECT ON ${tabel} TO ${nama(user)}`);
-    else if (o.nama === "audit_log") await db.$executeRawUnsafe(`GRANT SELECT, INSERT ON ${tabel} TO ${nama(user)}`);
     else await db.$executeRawUnsafe(`GRANT SELECT, INSERT, UPDATE, DELETE ON ${tabel} TO ${nama(user)}`);
   }
-  console.log(`Hak akses ${user} diatur untuk ${objek.length} tabel/view (audit_log: SELECT, INSERT).`);
+  console.log(`Hak akses ${user} diatur untuk ${objek.length} tabel/view.`);
 }
 
 if (!appUser) {

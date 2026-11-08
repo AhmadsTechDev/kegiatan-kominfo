@@ -15,7 +15,7 @@ routes  ->  controllers  ->  services  ->  repositories  ->  Prisma (basis data)
 | `src/routes/` | Daftar URL, siapa yang boleh akses (`auth`), dan validator yang dipakai | `kegiatan.route.ts` |
 | `src/validators/` | Aturan isian body/query/params (pesan galat dalam bahasa Indonesia) | `kegiatan.validator.ts` |
 | `src/controllers/` | Mengambil data dari request (user, body, params), memanggil service, mengatur status/header HTTP | `kegiatan.controller.ts` |
-| `src/services/` | Logika bisnis: aturan hak akses, validasi lanjutan, transaksi, audit log | `kegiatan.service.ts` |
+| `src/services/` | Logika bisnis: aturan hak akses, validasi lanjutan, transaksi | `kegiatan.service.ts` |
 | `src/repositories/` | Semua query ke basis data lewat Prisma. Tidak ada logika bisnis | `kegiatan.repository.ts` |
 | `src/types/` | Tipe TypeScript per modul | `kegiatan.types.ts` |
 | `src/plugins/` | Plugin Elysia: login (`auth`), galat, koneksi DB, log permintaan | `auth.plugin.ts` |

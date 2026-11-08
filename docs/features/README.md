@@ -12,4 +12,4 @@ Tiap berkas berisi spesifikasi satu fitur: tujuan, kriteria selesai per sub-fitu
 | [06-pantau-pimpinan.md](06-pantau-pimpinan.md) | Memantau kegiatan dan menandai yang perlu perbaikan | Pimpinan | `GET /api/pantau/ringkasan`, `POST /api/kegiatan/:id/pemeriksaan` |
 | [07-masuk-kelola-akun.md](07-masuk-kelola-akun.md) | Login, kelola akun dan peran, profil dan Pengaturan | Semua peran (kelola akun: Admin) | `/api/auth/*`, `/api/me`, `/api/admin/akun` |
 
-Fitur yang tidak punya berkas tersendiri (kalender, master data, audit log, permintaan akun, pengingat email) dijelaskan di [README utama](../../README.md#fitur) dan [dokumentasi API](../api/README.md).
+Fitur yang tidak punya berkas tersendiri (kalender, master data, permintaan akun, pengingat email) dijelaskan di [README utama](../../README.md#fitur) dan [dokumentasi API](../api/README.md).

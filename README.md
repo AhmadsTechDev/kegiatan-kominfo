@@ -1,6 +1,6 @@
 # Aplikasi Pendataan Kegiatan Diskominfo Kota Palembang
 
-Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai mencatat kegiatan dan dokumentasinya, pimpinan memantau lewat dashboard, kalender, dan rekap, dan admin mengelola pegawai, bidang, akun, serta audit log.
+Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai mencatat kegiatan dan dokumentasinya, pimpinan memantau lewat dashboard, kalender, dan rekap, dan admin mengelola pegawai, bidang, serta akun.
 
 | Folder | Isi |
 | --- | --- |
@@ -20,9 +20,9 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | --- | --- | --- |
 | **Pegawai** | Satu-satunya peran yang mencatat, mengubah, membatalkan, dan menghapus kegiatan (miliknya), mengunggah dokumentasi, mengisi hasil, serta menerima notifikasi catatan perbaikan | Kegiatan saya, Dashboard, Semua kegiatan (bidang dan sub bidangnya), Kalender, Perlu perbaikan, Pengaturan, lonceng notifikasi. Tanpa Rekap dan Laporan |
 | **Pimpinan** | Melihat seluruh kegiatan, dokumentasi, hasil, rekap, dan laporan; memeriksa dan memberi catatan perbaikan. Tidak mengubah data | Monitoring: Dashboard, Semua kegiatan, Kalender, Rekap, Laporan. Pengawasan: Pemeriksaan kegiatan. Pengaturan |
-| **Admin** | Melihat seluruh kegiatan, memeriksa dan memberi catatan perbaikan, mengelola akun, master data, dan audit log. Tidak menambah, mengubah, atau menghapus kegiatan | Dashboard, Kegiatan, Kalender, Rekap, Laporan, Pantau, Manajemen akun, Master data, Audit log, Pengaturan |
+| **Admin** | Melihat seluruh kegiatan, memeriksa dan memberi catatan perbaikan, mengelola akun dan master data. Tidak menambah, mengubah, atau menghapus kegiatan | Dashboard, Kegiatan, Kalender, Rekap, Laporan, Pantau, Manajemen akun, Master data, Pengaturan |
 
-Aturan hak akses ditegakkan di backend pada setiap permintaan. Kegiatan di luar lingkup baca dijawab 404 (bukan 403), agar keberadaannya tidak bocor. Pemeriksaan (status terpisah dari status pelaksanaan) dilakukan pimpinan atau admin; setiap pemeriksaan tercatat di riwayat dan audit log, dan pegawai terkait mendapat notifikasi di lonceng.
+Aturan hak akses ditegakkan di backend pada setiap permintaan. Kegiatan di luar lingkup baca dijawab 404 (bukan 403), agar keberadaannya tidak bocor. Pemeriksaan (status terpisah dari status pelaksanaan) dilakukan pimpinan atau admin; setiap pemeriksaan tercatat di riwayat pemeriksaan, dan pegawai terkait mendapat notifikasi di lonceng.
 
 ### Alur kerja singkat
 
@@ -41,7 +41,6 @@ Alurnya digambar lengkap di [diagram activity](docs/uml/02-activity.md), dan per
 | FR-01 | **Masuk dan keamanan akun.** Login hanya dengan email pribadi; akun terkunci 15 menit setelah 5 kali salah sandi. Lupa dan atur ulang sandi, ganti email dengan verifikasi, melihat dan mencabut sesi aktif, foto profil, dan preferensi (tema, notifikasi) | Semua peran | `/login`, `/pengaturan` |
 | FR-02 | **Akun dan permintaan akun.** Tanpa pendaftaran mandiri: akun dibuat admin atau dari permintaan akun, lalu diaktivasi pemiliknya lewat email. Akun bisa dinonaktifkan atau dihapus; akun yang sudah membuat kegiatan, mengunggah dokumentasi, atau memeriksa hanya bisa dinonaktifkan agar jejaknya utuh | Admin | `/admin/akun` |
 | FR-02 | **Master data.** Pegawai (NIP opsional untuk non-ASN), bidang dan sub bidang, dan jenis kegiatan. Pegawai dan jenis kegiatan dinonaktifkan, tidak dihapus. Bidang dan sub bidang yang belum dipakai pegawai, kegiatan, atau sub bidang bisa dihapus; yang nonaktif dipisah ke tab Nonaktif | Admin | `/admin/master` |
-| FR-03 | **Audit log** append-only (dijaga sampai hak basis data) dengan filter serta nilai sebelum dan sesudah | Admin | `/admin/audit-log` |
 | FR-04, FR-05 | **Kegiatan.** Catat dalam dua langkah, simpan draf, ubah, isi hasil, selesaikan sekarang (saat berlangsung), batalkan (alasan wajib), dan hapus. Status pelaksanaan (akan datang, berlangsung, selesai, dibatalkan) dihitung otomatis dari waktu. Pengubahan bersamaan oleh dua orang dijawab 409 | Pegawai, Admin | `/kegiatan`, `/kegiatan/baru` |
 | FR-06 | **Dokumentasi.** Unggah foto atau PDF maksimal 20 MB (jenis berkas dicek lewat magic bytes, foto dikompres, EXIF dan GPS dibuang), maksimal 10 berkas per kegiatan. Unduhan hanya untuk yang login dan berhak membaca kegiatannya | Pegawai, Admin (lihat: semua peran) | Detail kegiatan |
 | FR-07 | **Peta dan lokasi.** Peta 2D dan 3D (MapLibre GL dengan OpenFreeMap), pencarian tempat, nama lokasi terisi otomatis dari titik peta, atau koordinat manual. Lokasi opsional | Pegawai, Admin | Formulir dan detail kegiatan |
@@ -76,9 +75,9 @@ API REST di `apps/api` (Bun, Elysia, Prisma, Better Auth), alamat dasar `/api`. 
 | Autentikasi dan akun sendiri | `POST /api/auth/sign-in/email`, `/api/aktivasi`, `/api/lupa-sandi`, `/api/me/*` | [api-auth.md](docs/api/api-auth.md) |
 | Kegiatan, draf, dokumentasi | `/api/kegiatan`, `/api/draf-kegiatan`, `/api/kegiatan/:id/dokumentasi` | [api-kegiatan.md](docs/api/api-kegiatan.md) |
 | Dashboard, kalender, rekap, pantau, ekspor | `/api/dashboard`, `/api/kalender`, `/api/rekap`, `/api/ekspor/kegiatan.pdf` | [api-laporan.md](docs/api/api-laporan.md) |
-| Administrasi | `/api/admin/akun`, `/api/admin/pegawai`, `/api/admin/bidang`, `/api/audit-log` | [api-admin.md](docs/api/api-admin.md) |
+| Administrasi | `/api/admin/akun`, `/api/admin/pegawai`, `/api/admin/bidang` | [api-admin.md](docs/api/api-admin.md) |
 
-Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses, audit) → **repository** (query Prisma). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram class](docs/uml/04-class.md#42-lapisan-backend).
+Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses) → **repository** (query Prisma). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram class](docs/uml/04-class.md#42-lapisan-backend).
 
 ## Diagram UML
 
@@ -130,7 +129,7 @@ Uji backend butuh PostgreSQL khusus uji dan berkas `apps/api/.env.test` (salin d
 docker run -d --name kominfo-pg-test -e POSTGRES_PASSWORD=uji123 -e POSTGRES_DB=kominfo_pd_kg_test -p 5435:5432 postgres:17
 ```
 
-Uji backend mencakup kriteria penerimaan PRD bagian 10: penguncian akun, 403 untuk pegawai lain dan pimpinan, 409 pengubahan bersamaan, 422 tanggal terbalik, berkas .exe dan 20,01 MB ditolak, unduhan tanpa login ditolak, audit log untuk setiap aksi, serta angka dashboard, rekap, dan ekspor yang konsisten. Basis data uji dibuat ulang otomatis setiap kali uji dijalankan; uji menolak berjalan bila `DATABASE_URL` tidak berakhiran `_test`. Email tidak pernah benar-benar dikirim saat pengujian; email ditangkap di memori agar isinya (mis. tautan aktivasi) bisa diperiksa.
+Uji backend mencakup kriteria penerimaan PRD bagian 10: penguncian akun, 403 untuk pegawai lain dan pimpinan, 409 pengubahan bersamaan, 422 tanggal terbalik, berkas .exe dan 20,01 MB ditolak, unduhan tanpa login ditolak, serta angka dashboard, rekap, dan ekspor yang konsisten. Basis data uji dibuat ulang otomatis setiap kali uji dijalankan; uji menolak berjalan bila `DATABASE_URL` tidak berakhiran `_test`. Email tidak pernah benar-benar dikirim saat pengujian; email ditangkap di memori agar isinya (mis. tautan aktivasi) bisa diperiksa.
 
 ## File `.env`: mana yang dipakai di mana
 

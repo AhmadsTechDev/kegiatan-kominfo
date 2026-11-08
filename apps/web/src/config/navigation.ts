@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   MessageSquareWarning,
   Settings,
-  ShieldCheck,
   UserRound,
   Users,
   type LucideIcon,
@@ -51,7 +50,6 @@ const NAV_ADMIN: NavGroup[] = [
     items: [
       { label: "Manajemen akun", href: "/admin/akun", icon: Users },
       { label: "Master data", href: "/admin/master", icon: Database },
-      { label: "Audit log", href: "/admin/audit-log", icon: ShieldCheck },
     ],
   },
 ];

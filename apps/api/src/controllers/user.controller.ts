@@ -23,9 +23,9 @@ export const UserController = {
   /**
    * POST /api/admin/akun
    */
-  buat: ({ body, user, request, set }: Konteks<IsiAkun>) => {
+  buat: ({ body, set }: Konteks<IsiAkun>) => {
     set.status = 201;
-    return UserService.buat(body, adminDari(user, request));
+    return UserService.buat(body);
   },
 
   /**
@@ -42,7 +42,7 @@ export const UserController = {
   /**
    * POST /api/admin/akun/:id/aktifkan
    */
-  aktifkan: ({ params, user, request }: Konteks<unknown, Id>) => UserService.aktifkan(params.id, adminDari(user, request)),
+  aktifkan: ({ params }: Konteks<unknown, Id>) => UserService.aktifkan(params.id),
 
   /**
    * DELETE /api/admin/akun/:id
@@ -52,7 +52,7 @@ export const UserController = {
   /**
    * POST /api/admin/akun/:id/kirim-ulang-undangan
    */
-  kirimUlangUndangan: ({ params, user, request }: Konteks<unknown, Id>) => UserService.kirimUlangUndangan(params.id, adminDari(user, request)),
+  kirimUlangUndangan: ({ params }: Konteks<unknown, Id>) => UserService.kirimUlangUndangan(params.id),
 
   /**
    * POST /api/admin/akun/:id/reset-sandi

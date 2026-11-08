@@ -8,7 +8,6 @@ import type { DaftarPermintaanQuery, IsiPermintaan, SetujuiPermintaan } from "@/
 import type { Admin, MetaRequest } from "@/types/umum.types";
 import { periksaNip } from "@/utils/nip";
 import { buatPembatasLaju } from "@/utils/rate-limit";
-import { AuditLogService } from "./audit-log.service";
 import { MasterService } from "./master.service";
 import { UndanganService } from "./undangan.service";
 
@@ -94,7 +93,6 @@ export const PermintaanAkunService = {
     if (pemilikEmail) throw Unprocessable("Email sudah dipakai akun lain", [{ field: "email", message: "Email sudah dipakai akun lain" }]);
 
     const id = await PermintaanAkunRepository.insert({ pegawaiId: pegawai?.id ?? null, nama, email, catatan: isi.catatan?.trim() || null, ip: meta.ip });
-    await AuditLogService.catat({ aktorId: null, aksi: "minta_akun", entitas: "permintaan_akun", entitasId: id, sesudah: { pegawaiId: pegawai?.id ?? null, email }, ...meta });
 
     /**
      * Semua email admin aktif diambil; email pemberitahuan dikirim paralel lewat Promise.all dan kegagalannya tidak membatalkan permintaan.
@@ -157,16 +155,10 @@ export const PermintaanAkunService = {
          */
         if (!isi.bidangId) throw Unprocessable("Lengkapi data pegawai pemohon", [{ field: "bidangId", message: "Bidang wajib dipilih" }]);
         pegawaiId = (
-          await MasterService.buatPegawai(
-            { nip: null, nama: permintaan.nama, bidangId: isi.bidangId },
-            { id: admin.id, role: "ADMIN", pegawaiId: null },
-            admin.meta,
-          )
+          await MasterService.buatPegawai({ nip: null, nama: permintaan.nama, bidangId: isi.bidangId })
         ).id;
       }
-      const hasil = await UndanganService.undang({ pegawaiId, email, role: isi.role }, admin);
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "setujui", entitas: "permintaan_akun", entitasId: id, sesudah: { role: isi.role, email: hasil.email }, ...admin.meta });
-      return hasil;
+      return await UndanganService.undang({ pegawaiId, email, role: isi.role });
     } catch (e) {
       await PermintaanAkunRepository.kembalikanMenunggu(id);
       throw e;
@@ -180,9 +172,7 @@ export const PermintaanAkunService = {
     const bersih = alasan.trim();
     if (!bersih) throw Unprocessable("Alasan penolakan wajib diisi", [{ field: "alasan", message: "Alasan penolakan wajib diisi" }]);
     const permintaan = await prisma.$transaction(async (tx) => {
-      const p = await ambilAlih(id, { status: "DITOLAK", alasanTolak: bersih, diprosesOleh: admin.id }, tx);
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "tolak", entitas: "permintaan_akun", entitasId: id, sebelum: p, sesudah: { alasan: bersih }, ...admin.meta }, tx);
-      return p;
+      return ambilAlih(id, { status: "DITOLAK", alasanTolak: bersih, diprosesOleh: admin.id }, tx);
     });
     await kirimTanpaGagal(() =>
       kirimEmail(permintaan.email, "Permintaan akun Anda belum disetujui", {

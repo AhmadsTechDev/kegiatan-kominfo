@@ -25,17 +25,17 @@ export const AuthController = {
   /**
    * PATCH /api/me
    */
-  ubahProfil: ({ user, request, body }: Konteks<UbahProfil>) => AuthService.ubahProfil(user.id, body, requestMeta(request.headers)),
+  ubahProfil: ({ user, body }: Konteks<UbahProfil>) => AuthService.ubahProfil(user.id, body),
 
   /**
    * POST /api/me/foto
    */
-  unggahFoto: ({ user, request, body }: Konteks<{ berkas: File }>) => AuthService.unggahFoto(user.id, body.berkas, requestMeta(request.headers)),
+  unggahFoto: ({ user, body }: Konteks<{ berkas: File }>) => AuthService.unggahFoto(user.id, body.berkas),
 
   /**
    * DELETE /api/me/foto
    */
-  hapusFoto: ({ user, request }: Konteks) => AuthService.hapusFoto(user.id, requestMeta(request.headers)),
+  hapusFoto: ({ user }: Konteks) => AuthService.hapusFoto(user.id),
 
   /**
    * GET /api/me/foto/:userId — mengirim gambar WebP (boleh di-cache 1 hari karena URL-nya berversi)
@@ -48,18 +48,18 @@ export const AuthController = {
   /**
    * PATCH /api/me/email — minta ganti email (perlu verifikasi email baru)
    */
-  gantiEmail: ({ user, request, body }: Konteks<GantiEmail>) => KredensialService.mintaGantiEmail(user.id, body, requestMeta(request.headers)),
+  gantiEmail: ({ user, body }: Konteks<GantiEmail>) => KredensialService.mintaGantiEmail(user.id, body),
 
   /**
    * DELETE /api/me/email — batalkan ganti email yang belum diverifikasi
    */
-  batalGantiEmail: ({ user, request }: Konteks) => KredensialService.batalGantiEmail(user.id, requestMeta(request.headers)),
+  batalGantiEmail: ({ user }: Konteks) => KredensialService.batalGantiEmail(user.id),
 
   /**
    * PATCH /api/me/sandi
    */
-  gantiSandi: ({ user, session, request, body }: Konteks<GantiSandi>) =>
-    AkunSayaService.gantiSandi(user.id, session.id, body, requestMeta(request.headers)),
+  gantiSandi: ({ user, session, body }: Konteks<GantiSandi>) =>
+    AkunSayaService.gantiSandi(user.id, session.id, body),
 
   /**
    * GET /api/me/sesi
@@ -69,13 +69,13 @@ export const AuthController = {
   /**
    * DELETE /api/me/sesi/:id
    */
-  cabutSesi: ({ user, session, params, request }: Konteks<unknown, { id: string }>) =>
-    AkunSayaService.cabutSesi(user.id, session.id, params.id, requestMeta(request.headers)),
+  cabutSesi: ({ user, session, params }: Konteks<unknown, { id: string }>) =>
+    AkunSayaService.cabutSesi(user.id, session.id, params.id),
 
   /**
    * DELETE /api/me/sesi — cabut semua sesi selain sesi ini
    */
-  cabutSesiLain: ({ user, session, request }: Konteks) => AkunSayaService.cabutSesiLain(user.id, session.id, requestMeta(request.headers)),
+  cabutSesiLain: ({ user, session }: Konteks) => AkunSayaService.cabutSesiLain(user.id, session.id),
 
   /**
    * GET /api/me/preferensi

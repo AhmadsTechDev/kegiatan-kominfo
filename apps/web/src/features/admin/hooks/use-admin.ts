@@ -11,13 +11,10 @@ import {
   cabutSesiAkun,
   getAkun,
   getDetailAkun,
-  getAuditDetail,
   getJumlahPermintaan,
   getPermintaanAkun,
-  getAuditLog,
   getJenisKegiatan,
   getPegawai,
-  getPilihanAudit,
   getBidang,
   hapusAkun,
   hapusBidang,
@@ -33,10 +30,10 @@ import {
   ubahPegawai,
   ubahBidang,
 } from "../api/admin";
-import type { FilterAkun, FilterAudit, FilterPegawai, IsiAkun, IsiPegawaiBaru, HasilPegawaiBaru, IsiUndangan, IsiUnit, StatusPermintaan } from "../types";
+import type { FilterAkun, FilterPegawai, IsiAkun, IsiPegawaiBaru, HasilPegawaiBaru, IsiUndangan, IsiUnit, StatusPermintaan } from "../types";
 
 /**
- * Hook TanStack Query untuk master data, akun, audit log, dan permintaan akun
+ * Hook TanStack Query untuk master data, akun, dan permintaan akun
  */
 
 export const adminKeys = {
@@ -47,10 +44,6 @@ export const adminKeys = {
   akun: ["admin", "akun"] as const,
   daftarAkun: (f: FilterAkun) => [...adminKeys.akun, "daftar", f] as const,
   detailAkun: (id: string) => [...adminKeys.akun, "detail", id] as const,
-  audit: ["admin", "audit-log"] as const,
-  daftarAudit: (f: FilterAudit) => [...adminKeys.audit, "daftar", f] as const,
-  detailAudit: (id: number) => [...adminKeys.audit, "detail", id] as const,
-  pilihanAudit: ["admin", "audit-log", "pilihan"] as const,
   permintaan: ["admin", "permintaan-akun"] as const,
   daftarPermintaan: (f: { status: StatusPermintaan | null; page: number }) => [...adminKeys.permintaan, "daftar", f] as const,
   jumlahPermintaan: ["admin", "permintaan-akun", "jumlah"] as const,
@@ -58,14 +51,13 @@ export const adminKeys = {
 
 /**
  * `...kunci` (rest parameter) menampung berapa pun query key yang dikirim, lalu semuanya disegarkan.
- * Referensi kegiatan dan audit log selalu ikut disegarkan, karena perubahan master data mengubah pilihan form
- * dan setiap perubahan admin tercatat di audit log.
+ * Referensi kegiatan selalu ikut disegarkan, karena perubahan master data mengubah pilihan form.
  */
 function useSegarkan(...kunci: (readonly unknown[])[]) {
   const queryClient = useQueryClient();
   return () =>
     Promise.all(
-      [...kunci, kegiatanKeys.referensi, adminKeys.audit].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+      [...kunci, kegiatanKeys.referensi].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
     );
 }
 
@@ -148,15 +140,6 @@ export function useCabutSesiAkun() {
   const segarkan = useSegarkan(adminKeys.akun);
   return useMutation({ mutationFn: cabutSesiAkun, onSuccess: segarkan });
 }
-
-export const useAuditLog = (f: FilterAudit) =>
-  useQuery({ queryKey: adminKeys.daftarAudit(f), queryFn: () => getAuditLog(f), placeholderData: keepPreviousData });
-
-export const useAuditDetail = (id: number | null) =>
-  useQuery({ queryKey: adminKeys.detailAudit(id ?? 0), queryFn: () => getAuditDetail(id!), enabled: id != null });
-
-export const usePilihanAudit = () =>
-  useQuery({ queryKey: adminKeys.pilihanAudit, queryFn: getPilihanAudit, staleTime: 60_000 });
 
 export function useHapusPegawai() {
   const segarkan = useSegarkan(adminKeys.pegawai);

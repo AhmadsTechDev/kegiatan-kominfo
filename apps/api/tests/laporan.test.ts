@@ -71,17 +71,6 @@ describe("angka laporan konsisten", () => {
     expect(pantau.data).toEqual({ total: 3, draf: 0, perluPerbaikan: 0 });
   });
 
-  test("ekspor tercatat di audit log beserta filter dan jumlahnya", async () => {
-    const { bidang } = await siapkanMaret2031();
-    const u = await buatPengguna({ role: "PIMPINAN", unitId: bidang.id });
-    await panggil(`/ekspor/kegiatan.pdf?unit=${bidang.id}`, { cookie: u.cookie });
-    const admin = await loginAdmin();
-    const audit = await panggil(`/audit-log?aktor=${u.userId}&aksi=ekspor`, { cookie: admin });
-    expect(audit.data.total).toBe(1);
-    const detail = await panggil(`/audit-log/${audit.data.items[0].id}`, { cookie: admin });
-    expect(detail.data.dataSesudah).toMatchObject({ format: "pdf", jumlah: 3, filter: { unit: bidang.id } });
-  });
-
   test("PEGAWAI tidak bisa membuka rekap dan laporan (403)", async () => {
     const { u } = await siapkanMaret2031();
     expect((await panggil("/rekap?periode=2031-03", { cookie: u.cookie })).status).toBe(403);

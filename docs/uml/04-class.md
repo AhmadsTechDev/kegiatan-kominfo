@@ -83,15 +83,6 @@ classDiagram
         +JenisPengingat jenis
         +DateTime dikirimAt
     }
-    class AuditLog {
-        +BigInt id
-        +String aktorId
-        +String aksi
-        +String entitas
-        +String entitasId
-        +Json dataSebelum
-        +Json dataSesudah
-    }
     class Session {
         +String id
         +String ipAddress
@@ -124,7 +115,6 @@ classDiagram
     Pengingat "0..*" --> "1" User : penerima
     User "1" *-- "0..*" Session : memiliki
     User "1" *-- "0..1" PreferensiPengguna : memiliki
-    AuditLog ..> User : aktorId (teks, tanpa kunci asing)
 ```
 
 ## 4.2 Lapisan backend
@@ -168,10 +158,6 @@ classDiagram
         query Prisma, kondisi lingkup baca,
         updateDenganVersi (409 bila bentrok)
     }
-    class AuditLogService {
-        <<service>>
-        +catat(aksi, entitas, sebelum, sesudah)
-    }
     class PrismaClient {
         <<lib/prisma>>
     }
@@ -180,14 +166,12 @@ classDiagram
     kegiatanRoute --> KegiatanController : memanggil
     KegiatanController --> KegiatanService : memanggil
     KegiatanService --> KegiatanRepository : memakai
-    KegiatanService --> AuditLogService : mencatat
     KegiatanRepository --> PrismaClient
-    AuditLogService --> PrismaClient
 ```
 
 | Lapisan | Tanggung jawab | Contoh berkas |
 | --- | --- | --- |
 | Route | Alamat, metode HTTP, role yang diizinkan, validator | `routes/kegiatan.route.ts` |
 | Controller | Mengambil params, body, pengguna, dan meta permintaan | `controllers/kegiatan.controller.ts` |
-| Service | Aturan bisnis, hak akses, transaksi, audit log | `services/kegiatan.service.ts` |
+| Service | Aturan bisnis, hak akses, transaksi | `services/kegiatan.service.ts` |
 | Repository | Query Prisma saja | `repositories/kegiatan.repository.ts` |

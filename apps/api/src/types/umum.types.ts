@@ -1,4 +1,4 @@
-import type { AKSI_AUDIT, ROLES, SATUAN_REKAP, STATUS_AKUN, STATUS_PELAKSANAAN, STATUS_PEMERIKSAAN, STATUS_PERMINTAAN } from "@/utils/konstanta";
+import type { ROLES, SATUAN_REKAP, STATUS_AKUN, STATUS_PELAKSANAAN, STATUS_PEMERIKSAAN, STATUS_PERMINTAAN } from "@/utils/konstanta";
 
 /**
  * Tipe yang dipakai bersama oleh banyak modul
@@ -14,7 +14,6 @@ export type StatusPelaksanaan = (typeof STATUS_PELAKSANAAN)[number];
 export type StatusPemeriksaan = (typeof STATUS_PEMERIKSAAN)[number];
 export type StatusPermintaan = (typeof STATUS_PERMINTAAN)[number];
 export type SatuanRekap = (typeof SATUAN_REKAP)[number];
-export type AksiAudit = (typeof AKSI_AUDIT)[number];
 
 /**
  * Data user yang sedang login, diisi oleh auth.plugin.ts
@@ -27,14 +26,14 @@ export type UserSesi = { id: string; name: string; email: string; role: Role; pe
 export type Aktor = { id: string; role: Role; pegawaiId: number | null };
 
 /**
- * IP dan user-agent pemanggil, untuk audit log
+ * IP pemanggil, untuk pembatas laju
  */
-export type MetaRequest = { ip: string | null; userAgent: string | null };
+export type MetaRequest = { ip: string | null };
 
 /**
  * Admin yang menjalankan aksi manajemen akun; sesiId = sesi yang sedang dipakai admin (tidak ikut dicabut)
  */
-export type Admin = { id: string; headers: Headers; meta: MetaRequest; sesiId?: string };
+export type Admin = { id: string; headers: Headers; sesiId?: string };
 
 /**
  * Rentang waktu [mulai, akhir)

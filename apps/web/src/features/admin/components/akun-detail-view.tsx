@@ -21,10 +21,9 @@ import { useDetailAkun } from "../hooks/use-admin";
 import type { AkunDetail } from "../types";
 import { AdminGuard } from "./admin-shared";
 import { dariDetail, ItemAksiAkun, useAksiAkun, type AkunRingkas, type JenisAksi } from "./akun-aksi";
-import { ChipAksi, labelEntitas } from "./audit-log-view";
 
 /**
- * Detail satu akun: identitas, status, kepegawaian, undangan, sesi, dan riwayat
+ * Detail satu akun: identitas, status, kepegawaian, undangan, dan sesi
  */
 
 function Kepala({ a, idSaya, buka }: { a: AkunDetail; idSaya?: string; buka: (j: JenisAksi, akun: AkunRingkas) => void }) {
@@ -121,32 +120,6 @@ function PanelSesiAkun({ a, buka }: { a: AkunDetail; buka: (j: JenisAksi, akun: 
   );
 }
 
-function PanelRiwayat({ a }: { a: AkunDetail }) {
-  return (
-    <Panel>
-      <PanelHeader title="Riwayat terbaru" />
-      {a.riwayat.length ? (
-        <ol className="divide-y divide-muted border-t border-muted">
-          {a.riwayat.map((r) => (
-            <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-5 py-3 text-sm md:px-6">
-              <ChipAksi aksi={r.aksi} />
-              <span className="min-w-0 flex-1 text-muted-foreground">
-                {r.aktor ? (r.aktor.id === a.id ? "oleh pemilik akun" : `oleh ${r.aktor.nama}`) : "oleh sistem atau pengguna tak dikenal"}
-                {r.entitas !== "user" && ` · ${labelEntitas(r.entitas)}${r.entitasId ? ` #${r.entitasId}` : ""}`}
-              </span>
-              <time dateTime={r.waktu} className="text-xs text-muted-foreground tabular-nums">
-                {formatTanggalJam(r.waktu)}
-              </time>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <PanelBody className="border-t border-muted pt-4 text-sm text-muted-foreground md:pt-5">Belum ada catatan.</PanelBody>
-      )}
-    </Panel>
-  );
-}
-
 function IsiDetail({ id }: { id: string }) {
   const { user } = useCurrentUser();
   const router = useRouter();
@@ -233,7 +206,6 @@ function IsiDetail({ id }: { id: string }) {
         </Panel>
       </div>
       <PanelSesiAkun a={a} buka={buka} />
-      <PanelRiwayat a={a} />
       {dialog}
     </div>
   );

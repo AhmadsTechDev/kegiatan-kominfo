@@ -8,14 +8,13 @@ import type {
   IsiUnit,
   NilaiPegawai,
 } from "@/types/master.types";
-import type { AksiAudit, Aktor, GalatField, MetaRequest } from "@/types/umum.types";
+import type { GalatField } from "@/types/umum.types";
 import { periksaNip } from "@/utils/nip";
-import { AuditLogService } from "./audit-log.service";
 import { ReferensiService } from "./referensi.service";
 
 /**
  * Service master data: bidang/sub bidang, pegawai, dan jenis kegiatan (khusus admin).
- * Pola umum di file ini: validasi isian -> simpan di dalam transaksi bersama audit log ->
+ * Pola umum di file ini: validasi isian -> simpan di dalam transaksi ->
  * ubah galat UNIQUE dari database menjadi pesan yang ramah (denganCekDuplikat).
  * Data yang sudah dipakai kegiatan tidak dihapus, cukup dinonaktifkan, supaya riwayat lama tetap bisa dibaca.
  *
@@ -51,14 +50,6 @@ async function denganCekDuplikat<T>(field: string, pesan: string, kerja: () => P
     if (galatDuplikat(e)) throw Unprocessable(pesan, [{ field, message: pesan }]);
     throw e;
   }
-}
-
-/**
- * Menentukan aksi audit saat mengubah data master: ubah, aktifkan, atau nonaktifkan
- */
-function aksiUbah(sebelum: { aktif: boolean }, aktifBaru: boolean | undefined): AksiAudit {
-  if (aktifBaru === undefined || aktifBaru === sebelum.aktif) return "ubah";
-  return aktifBaru ? "aktifkan" : "nonaktifkan";
 }
 
 /**
@@ -189,14 +180,12 @@ export const MasterService = {
   /**
    * Membuat bidang; kode dibuat otomatis bila dikosongkan
    */
-  async buatUnit(isi: IsiUnit, aktor: Aktor, meta: MetaRequest) {
+  async buatUnit(isi: IsiUnit) {
     const { nilai: isian, namaJenis } = await validasiUnit(isi);
     const nilai = { ...isian, kode: isian.kode ?? (await buatKodeUnit(isian.nama, namaJenis)) };
     return denganCekDuplikat("kode", "Kode unit sudah dipakai", () =>
       prisma.$transaction(async (tx) => {
         const id = await MasterRepository.insertUnit(nilai, tx);
-        const sesudah = await MasterRepository.unitById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: "buat", entitas: "bidang", entitasId: id, sesudah, ...meta }, tx);
         return { id };
       }),
     );
@@ -205,7 +194,7 @@ export const MasterService = {
   /**
    * Mengubah atau (non)aktifkan bidang; ditolak bila masih punya turunan/pegawai aktif
    */
-  async ubahUnit(id: number, isi: IsiUnit, aktor: Aktor, meta: MetaRequest) {
+  async ubahUnit(id: number, isi: IsiUnit) {
     const sebelum = await MasterRepository.unitById(id);
     if (!sebelum) throw NotFound("Bidang tidak ditemukan");
     const { nilai: isian } = await validasiUnit(isi, sebelum);
@@ -221,8 +210,6 @@ export const MasterService = {
     return denganCekDuplikat("kode", "Kode unit sudah dipakai", () =>
       prisma.$transaction(async (tx) => {
         await MasterRepository.updateUnit(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif }, tx);
-        const sesudah = await MasterRepository.unitById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: aksiUbah(sebelum, isi.aktif), entitas: "bidang", entitasId: id, sebelum, sesudah, ...meta }, tx);
         return { id };
       }),
     );
@@ -232,9 +219,8 @@ export const MasterService = {
    * Menghapus bidang atau sub bidang secara permanen; ditolak bila masih punya pegawai, kegiatan, atau sub bidang
    * (yang sudah dipakai cukup dinonaktifkan agar riwayat kegiatannya tetap utuh)
    */
-  async hapusUnit(id: number, aktor: Aktor, meta: MetaRequest) {
-    const sebelum = await MasterRepository.unitById(id);
-    if (!sebelum) throw NotFound("Bidang tidak ditemukan");
+  async hapusUnit(id: number) {
+    if (!(await MasterRepository.unitById(id))) throw NotFound("Bidang tidak ditemukan");
     const p = (await MasterRepository.pemakaian([id])).get(id)!;
     if (p.pegawai + p.kegiatan + p.turunan > 0) {
       /**
@@ -245,7 +231,6 @@ export const MasterService = {
     }
     await prisma.$transaction(async (tx) => {
       await MasterRepository.hapusUnit(id, tx);
-      await AuditLogService.catat({ aktorId: aktor.id, aksi: "hapus", entitas: "bidang", entitasId: id, sebelum, ...meta }, tx);
     });
     return { id };
   },
@@ -258,9 +243,8 @@ export const MasterService = {
    * Hapus permanen pegawai yang belum punya akun dan belum dipakai kegiatan atau permintaan akun.
    * Yang sudah dipakai cukup dinonaktifkan agar riwayatnya tetap utuh
    */
-  async hapusPegawai(id: number, aktor: Aktor, meta: MetaRequest) {
-    const sebelum = await MasterRepository.pegawaiById(id);
-    if (!sebelum) throw NotFound("Pegawai tidak ditemukan");
+  async hapusPegawai(id: number) {
+    if (!(await MasterRepository.pegawaiById(id))) throw NotFound("Pegawai tidak ditemukan");
     const p = await MasterRepository.pemakaianPegawai(id);
     if (p.akun > 0) throw Unprocessable("Pegawai ini sudah punya akun. Kelola lewat tab Akun");
     if (p.kegiatan + p.permintaan > 0) {
@@ -269,7 +253,6 @@ export const MasterService = {
     }
     await prisma.$transaction(async (tx) => {
       await MasterRepository.hapusPegawai(id, tx);
-      await AuditLogService.catat({ aktorId: aktor.id, aksi: "hapus", entitas: "pegawai", entitasId: id, sebelum, ...meta }, tx);
     });
     return { id };
   },
@@ -295,13 +278,11 @@ export const MasterService = {
   /**
    * Membuat pegawai baru (email opsional hanya dicek keunikannya; undangan dikirim oleh controller)
    */
-  async buatPegawai(isi: IsiPegawai, aktor: Aktor, meta: MetaRequest, email?: string | null) {
+  async buatPegawai(isi: IsiPegawai, email?: string | null) {
     const nilai = await validasiPegawai(isi, undefined, undefined, { email });
     return denganCekDuplikat("nip", "NIP sudah terdaftar", () =>
       prisma.$transaction(async (tx) => {
         const id = await MasterRepository.insertPegawai(nilai, tx);
-        const sesudah = await MasterRepository.pegawaiById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: "buat", entitas: "pegawai", entitasId: id, sesudah, ...meta }, tx);
         return { id };
       }),
     );
@@ -311,7 +292,7 @@ export const MasterService = {
    * Mengubah atau (non)aktifkan pegawai; bila nama berubah, nama akun tertaut ikut disamakan.
    * Nomor telepon (kontak) disimpan di akun tertaut, jadi hanya bisa diisi bila akunnya ada
    */
-  async ubahPegawai(id: number, isi: IsiPegawai, aktor: Aktor, meta: MetaRequest) {
+  async ubahPegawai(id: number, isi: IsiPegawai) {
     const sebelum = await MasterRepository.pegawaiById(id);
     if (!sebelum) throw NotFound("Pegawai tidak ditemukan");
     const nilai = await validasiPegawai(isi, sebelum.bidangId, sebelum.nip, { pegawaiId: id });
@@ -329,19 +310,6 @@ export const MasterService = {
          */
         if (nilai.nama !== sebelum.nama) await MasterRepository.samakanNamaAkun(id, nilai.nama, tx);
         if (akun && kontak !== undefined && kontak !== akun.kontak) await MasterRepository.ubahKontakAkun(akun.id, kontak, tx);
-        const sesudah = await MasterRepository.pegawaiById(id, tx);
-        await AuditLogService.catat(
-          {
-            aktorId: aktor.id,
-            aksi: aksiUbah(sebelum, isi.aktif),
-            entitas: "pegawai",
-            entitasId: id,
-            sebelum: { ...sebelum, kontak: akun?.kontak ?? null },
-            sesudah: { ...sesudah, kontak: akun ? (kontak === undefined ? akun.kontak : kontak) : null },
-            ...meta,
-          },
-          tx,
-        );
         return { id };
       }),
     );
@@ -363,13 +331,11 @@ export const MasterService = {
   /**
    * Membuat jenis kegiatan baru
    */
-  async buatJenis(isi: IsiJenis, aktor: Aktor, meta: MetaRequest) {
+  async buatJenis(isi: IsiJenis) {
     const nama = validasiNamaJenis(isi.nama);
     return denganCekDuplikat("nama", "Nama jenis sudah ada", () =>
       prisma.$transaction(async (tx) => {
         const id = await MasterRepository.insertJenis({ nama }, tx);
-        const sesudah = await MasterRepository.jenisById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: "buat", entitas: "jenis_kegiatan", entitasId: id, sesudah, ...meta }, tx);
         return { id };
       }),
     );
@@ -378,15 +344,13 @@ export const MasterService = {
   /**
    * Mengubah atau (non)aktifkan jenis kegiatan
    */
-  async ubahJenis(id: number, isi: IsiJenis, aktor: Aktor, meta: MetaRequest) {
+  async ubahJenis(id: number, isi: IsiJenis) {
     const sebelum = await MasterRepository.jenisById(id);
     if (!sebelum) throw NotFound("Jenis kegiatan tidak ditemukan");
     const nama = validasiNamaJenis(isi.nama);
     return denganCekDuplikat("nama", "Nama jenis sudah ada", () =>
       prisma.$transaction(async (tx) => {
         await MasterRepository.updateJenis(id, { nama, aktif: isi.aktif ?? sebelum.aktif }, tx);
-        const sesudah = await MasterRepository.jenisById(id, tx);
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: aksiUbah(sebelum, isi.aktif), entitas: "jenis_kegiatan", entitasId: id, sebelum, sesudah, ...meta }, tx);
         return { id };
       }),
     );

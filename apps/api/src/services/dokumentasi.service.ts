@@ -3,9 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
 import { DokumentasiRepository } from "@/repositories/dokumentasi.repository";
 import { KegiatanRepository } from "@/repositories/kegiatan.repository";
-import type { Aktor, MetaRequest } from "@/types/umum.types";
+import type { Aktor } from "@/types/umum.types";
 import { JUMLAH_MAKS_DOKUMENTASI, prosesBerkas } from "@/utils/berkas";
-import { AuditLogService } from "./audit-log.service";
 import { dalamLingkup, lingkupBaca, pastikanBisaTulis } from "./kegiatan.service";
 
 /**
@@ -45,11 +44,10 @@ export const DokumentasiService = {
    * @param kegiatanId kegiatan tujuan
    * @param berkas berkas dari form (foto atau PDF)
    * @param aktor pengguna yang mengunggah
-   * @param meta IP dan user-agent untuk audit log
    * @returns data dokumentasi yang aman dikirim ke frontend
    * @throws NotFound bila kegiatan tidak ada, Forbidden bila bukan pemiliknya, PayloadTooLarge bila kuota 10 berkas penuh
    */
-  async unggah(kegiatanId: number, berkas: File, aktor: Aktor, meta: MetaRequest) {
+  async unggah(kegiatanId: number, berkas: File, aktor: Aktor) {
     /**
      * Cek hak akses dan kuota dulu sebelum memproses berkas yang mungkin besar
      */
@@ -71,12 +69,10 @@ export const DokumentasiService = {
          */
         if (!(await KegiatanRepository.kunciAktif(kegiatanId, tx))) throw NotFound("Kegiatan tidak ditemukan");
         if ((await DokumentasiRepository.hitung(kegiatanId, tx)) >= JUMLAH_MAKS_DOKUMENTASI) throw PayloadTooLarge(PESAN_KUOTA);
-        const baris = await DokumentasiRepository.insert(
+        return DokumentasiRepository.insert(
           { kegiatanId, path: key, namaAsli: hasil.namaAsli, mime: hasil.mime, ukuran: hasil.bytes.byteLength, sha256: hasil.sha256, diunggahOleh: aktor.id },
           tx,
         );
-        await AuditLogService.catat({ aktorId: aktor.id, aksi: "unggah", entitas: "dokumentasi", entitasId: baris.id, sesudah: baris, ...meta }, tx);
-        return baris;
       });
       return publik(baru);
 
@@ -92,7 +88,7 @@ export const DokumentasiService = {
   /**
    * Mengganti berkas dokumentasi yang sudah ada dengan berkas baru
    */
-  async ganti(id: number, berkas: File, aktor: Aktor, meta: MetaRequest) {
+  async ganti(id: number, berkas: File, aktor: Aktor) {
     const data = await DokumentasiRepository.findDenganKegiatan(id);
     if (!data) throw NotFound("Dokumentasi tidak ditemukan");
     await pastikanBisaTulis(aktor, data.kegiatan, "Anda hanya dapat mengganti dokumentasi pada kegiatan milik Anda", "Dokumentasi tidak ditemukan");
@@ -110,10 +106,6 @@ export const DokumentasiService = {
           tx,
         );
         if (!baris) throw NotFound("Dokumentasi tidak ditemukan");
-        await AuditLogService.catat(
-          { aktorId: aktor.id, aksi: "ganti_file", entitas: "dokumentasi", entitasId: id, sebelum: data.dokumentasi, sesudah: baris, ...meta },
-          tx,
-        );
         return baris;
       });
 
@@ -146,7 +138,7 @@ export const DokumentasiService = {
   /**
    * Menghapus berkas dokumentasi
    */
-  async hapus(id: number, aktor: Aktor, meta: MetaRequest) {
+  async hapus(id: number, aktor: Aktor) {
     const data = await DokumentasiRepository.findDenganKegiatan(id);
     if (!data) throw NotFound("Dokumentasi tidak ditemukan");
 
@@ -157,10 +149,7 @@ export const DokumentasiService = {
       await pastikanBisaTulis(aktor, data.kegiatan, "Anda hanya dapat menghapus dokumentasi pada kegiatan milik Anda", "Dokumentasi tidak ditemukan");
     }
 
-    await prisma.$transaction(async (tx) => {
-      await DokumentasiRepository.hapus(id, tx);
-      await AuditLogService.catat({ aktorId: aktor.id, aksi: "hapus_file", entitas: "dokumentasi", entitasId: id, sebelum: data.dokumentasi, ...meta }, tx);
-    });
+    await DokumentasiRepository.hapus(id, prisma);
     await hapusBerkasDiam(data.dokumentasi.path, "berkas yatim, hapus manual:");
   },
 };

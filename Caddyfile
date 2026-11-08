@@ -18,6 +18,6 @@
 	header Strict-Transport-Security "max-age=31536000"
 
 	# Caddy mengisi X-Forwarded-For dengan IP asli pengunjung (nilai kiriman pengunjung tidak dipercaya),
-	# dan backend membaca IP pertama di header itu untuk audit log dan pembatas laju login
+	# dan backend membaca IP pertama di header itu untuk pembatas laju login
 	reverse_proxy frontend:3000
 }

@@ -1,7 +1,7 @@
 import type { Admin, Aktor, MetaRequest, UserSesi } from "@/types/umum.types";
 
 /**
- * Mengambil IP asli (melewati proxy) dan user-agent dari header permintaan
+ * Mengambil IP asli (melewati proxy) dari header permintaan
  *
  * x-forwarded-for bisa berisi beberapa IP ("klien, proxy1, proxy2"); yang paling kiri adalah IP klien asli.
  * `a || b || null` artinya: pakai a bila ada, kalau kosong pakai b, kalau masih kosong null.
@@ -10,7 +10,6 @@ export function requestMeta(headers: Headers): MetaRequest {
   const forwarded = headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   return {
     ip: forwarded || headers.get("x-real-ip") || null,
-    userAgent: headers.get("user-agent"),
   };
 }
 
@@ -23,12 +22,11 @@ export function requestMeta(headers: Headers): MetaRequest {
 export const aktorDari = (user: UserSesi): Aktor => ({ id: user.id, role: user.role, pegawaiId: user.pegawaiId ?? null });
 
 /**
- * Menyiapkan data admin (id, header, meta, sesi aktif) untuk service manajemen akun
+ * Menyiapkan data admin (id, header, sesi aktif) untuk service manajemen akun
  */
 export const adminDari = (user: { id: string }, request: Request, session?: { id: string }): Admin => ({
   id: user.id,
   headers: request.headers,
-  meta: requestMeta(request.headers),
   sesiId: session?.id,
 });
 

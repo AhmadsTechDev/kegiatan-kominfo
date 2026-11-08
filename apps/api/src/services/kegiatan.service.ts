@@ -1,6 +1,5 @@
 import { Conflict, Forbidden, NotFound, Unprocessable } from "@/lib/errors";
 import { prisma, type Db } from "@/lib/prisma";
-import { AuditLogRepository } from "@/repositories/audit-log.repository";
 import { DrafKegiatanRepository } from "@/repositories/draf-kegiatan.repository";
 import { KegiatanRepository } from "@/repositories/kegiatan.repository";
 import { ReferensiRepository } from "@/repositories/referensi.repository";
@@ -16,16 +15,15 @@ import type {
   QueryFilter,
   UbahKegiatan,
 } from "@/types/kegiatan.types";
-import type { Aktor, GalatField, MetaRequest, Rentang } from "@/types/umum.types";
+import type { Aktor, GalatField, Rentang } from "@/types/umum.types";
 import { awalHariJakarta, parsePeriode, rentangPeriode } from "@/utils/periode";
 import { hitungStatus } from "@/utils/status-kegiatan";
 import { PEMERIKSA } from "@/utils/konstanta";
-import { AuditLogService } from "./audit-log.service";
 import { NotifikasiService } from "./notifikasi.service";
 import { ReferensiService } from "./referensi.service";
 
 /**
- * Service kegiatan: pusat aturan bisnis kegiatan (siapa boleh melihat/mengubah, validasi isian, audit log).
+ * Service kegiatan: pusat aturan bisnis kegiatan (siapa boleh melihat/mengubah, validasi isian).
  * Dipanggil oleh KegiatanController; fungsi hak aksesnya juga dipakai ulang oleh service lain
  * (dokumentasi, rekap, ekspor, kalender) agar aturannya hanya ditulis di satu tempat.
  *
@@ -235,7 +233,7 @@ async function muatUntukTulis(id: number, aktor: Aktor, tx: Db, versi?: string) 
 
 /**
  * Kumpulan fungsi publik service kegiatan. Setiap fungsi tulis memakai prisma.$transaction supaya
- * perubahan data dan catatan audit log tersimpan bersamaan: bila salah satu gagal, keduanya dibatalkan.
+ * pemeriksaan dan perubahan data berjalan utuh: bila salah satu langkah gagal, semuanya dibatalkan.
  */
 export const KegiatanService = {
   /**
@@ -261,7 +259,7 @@ export const KegiatanService = {
   },
 
   /**
-   * Detail kegiatan lengkap: dokumentasi, riwayat, catatan pemeriksaan, dan hak aktor
+   * Detail kegiatan lengkap: dokumentasi, catatan pemeriksaan, dan hak aktor
    */
   async detail(id: number, aktor: Aktor, sekarang = new Date()) {
     const k = await KegiatanRepository.detail(id, sekarang);
@@ -269,19 +267,15 @@ export const KegiatanService = {
     if (!pemilik || !dalamLingkup(await lingkupBaca(aktor), pemilik)) throw NotFound("Kegiatan tidak ditemukan");
 
     /**
-     * Empat data pelengkap detail dibaca paralel. Tanda bisa* memberi tahu frontend tombol apa yang boleh ditampilkan.
+     * Dua data pelengkap detail dibaca paralel. Tanda bisa* memberi tahu frontend tombol apa yang boleh ditampilkan.
      */
-    const [dokumentasi, pengubahTerakhir, riwayat, catatanPemeriksaan] = await Promise.all([
+    const [dokumentasi, catatanPemeriksaan] = await Promise.all([
       KegiatanRepository.daftarDokumentasi(id),
-      AuditLogRepository.pengubahTerakhirKegiatan(id),
-      AuditLogRepository.riwayatKegiatan(id),
       KegiatanRepository.daftarCatatan(id),
     ]);
     return {
       ...k,
       dokumentasi,
-      pengubahTerakhir,
-      riwayat,
       catatanPemeriksaan,
       bisaPeriksa: (PEMERIKSA as readonly string[]).includes(aktor.role) && sudahTerlaksana(k.statusPelaksanaan),
       bisaUbah: bisaUbah(aktor, pemilik),
@@ -292,7 +286,7 @@ export const KegiatanService = {
   /**
    * Mencatat kegiatan baru; bila berasal dari draf, drafnya ikut dihapus
    */
-  async buat({ drafId, ...isi }: IsiKegiatan, aktor: Aktor, meta: MetaRequest) {
+  async buat({ drafId, ...isi }: IsiKegiatan, aktor: Aktor) {
     cekPenanggungJawab(aktor, isi.penanggungJawabId);
     const nilai = { ...(await validasiIsi(isi)), dibuatOleh: aktor.id };
     return prisma.$transaction(async (tx) => {
@@ -302,7 +296,6 @@ export const KegiatanService = {
       if (drafId && (await DrafKegiatanRepository.hapus(drafId, aktor.id, tx)) === 0) throw NotFound("Draf tidak ditemukan");
       const id = await KegiatanRepository.insert(nilai, tx);
       const baru = await KegiatanRepository.findById(id, tx);
-      await AuditLogService.catat({ aktorId: aktor.id, aksi: "buat", entitas: "kegiatan", entitasId: id, sesudah: baru, ...meta }, tx);
       return { id, updatedAt: baru!.updatedAt };
     });
   },
@@ -310,7 +303,7 @@ export const KegiatanService = {
   /**
    * Mengubah kegiatan; ditolak 409 bila versi (expectedUpdatedAt) sudah berbeda. Status pemeriksaan kembali "terkirim"
    */
-  async ubah(id: number, isi: UbahKegiatan, aktor: Aktor, meta: MetaRequest) {
+  async ubah(id: number, isi: UbahKegiatan, aktor: Aktor) {
     const { expectedUpdatedAt, ...data } = isi;
     const nilai = await validasiIsi(data);
     return prisma.$transaction(async (tx) => {
@@ -324,7 +317,6 @@ export const KegiatanService = {
       const berubah = await KegiatanRepository.updateDenganVersi(id, sebelum.updatedAt, { ...nilai, statusPemeriksaan: "terkirim" }, tx);
       if (berubah === 0) throw Conflict();
       const sesudah = await KegiatanRepository.findById(id, tx);
-      await AuditLogService.catat({ aktorId: aktor.id, aksi: "ubah", entitas: "kegiatan", entitasId: id, sebelum, sesudah, ...meta }, tx);
       return { id, updatedAt: sesudah!.updatedAt };
     });
   },
@@ -333,7 +325,7 @@ export const KegiatanService = {
    * Menyelesaikan kegiatan yang sedang berlangsung: waktu selesai menjadi sekarang, sehingga statusnya langsung "selesai".
    * Status tetap dihitung dari waktu, jadi tidak ada status yang bisa tidak sinkron dengan waktunya
    */
-  async selesaikan(id: number, isi: SelesaikanKegiatan, aktor: Aktor, meta: MetaRequest) {
+  async selesaikan(id: number, isi: SelesaikanKegiatan, aktor: Aktor) {
     return prisma.$transaction(async (tx) => {
       const sebelum = await muatUntukTulis(id, aktor, tx, isi.expectedUpdatedAt);
       const sekarang = new Date();
@@ -354,7 +346,6 @@ export const KegiatanService = {
       const berubah = await KegiatanRepository.updateDenganVersi(id, sebelum.updatedAt, { tglSelesai: sekarang, statusPemeriksaan: "terkirim" }, tx);
       if (berubah === 0) throw Conflict();
       const sesudah = await KegiatanRepository.findById(id, tx);
-      await AuditLogService.catat({ aktorId: aktor.id, aksi: "ubah", entitas: "kegiatan", entitasId: id, sebelum, sesudah, ...meta }, tx);
       return { id, updatedAt: sesudah!.updatedAt };
     });
   },
@@ -364,7 +355,7 @@ export const KegiatanService = {
    * Status pemeriksaan terpisah dari status pelaksanaan.
    * Pegawai pembuat dan penanggung jawab mendapat notifikasi dalam aplikasi
    */
-  async periksa(id: number, isi: PeriksaKegiatan, aktor: Aktor, meta: MetaRequest) {
+  async periksa(id: number, isi: PeriksaKegiatan, aktor: Aktor) {
     const status = "perlu_perbaikan";
     const catatan = isi.catatan.trim();
     if (!catatan) {
@@ -384,18 +375,6 @@ export const KegiatanService = {
        * Notifikasi ikut masuk transaksi: bila pencatatan pemeriksaan gagal, notifikasinya juga tidak terkirim.
        */
       await NotifikasiService.perluPerbaikan({ ...sebelum, catatan, pemeriksaId: aktor.id }, tx);
-      await AuditLogService.catat(
-        {
-          aktorId: aktor.id,
-          aksi: "periksa",
-          entitas: "kegiatan",
-          entitasId: id,
-          sebelum: { statusPemeriksaan: sebelum.statusPemeriksaan },
-          sesudah: { statusPemeriksaan: status, catatan },
-          ...meta,
-        },
-        tx,
-      );
       return { id, statusPemeriksaan: status };
     });
   },
@@ -403,7 +382,7 @@ export const KegiatanService = {
   /**
    * Membatalkan kegiatan dengan alasan (kegiatan tetap tersimpan, statusnya "dibatalkan")
    */
-  async batalkan(id: number, isi: BatalkanKegiatan, aktor: Aktor, meta: MetaRequest) {
+  async batalkan(id: number, isi: BatalkanKegiatan, aktor: Aktor) {
     const alasan = isi.alasan.trim();
     if (!alasan) throw Unprocessable("Alasan pembatalan wajib diisi", [{ field: "alasan", message: "Alasan pembatalan wajib diisi" }]);
     return prisma.$transaction(async (tx) => {
@@ -413,7 +392,6 @@ export const KegiatanService = {
       const berubah = await KegiatanRepository.updateDenganVersi(id, sebelum.updatedAt, { dibatalkanAt: new Date(), alasanBatal: alasan }, tx);
       if (berubah === 0) throw Conflict();
       const sesudah = await KegiatanRepository.findById(id, tx);
-      await AuditLogService.catat({ aktorId: aktor.id, aksi: "batal", entitas: "kegiatan", entitasId: id, sebelum, sesudah, ...meta }, tx);
       return { id, updatedAt: sesudah!.updatedAt };
     });
   },
@@ -421,16 +399,15 @@ export const KegiatanService = {
   /**
    * Menghapus kegiatan secara lunak (tidak muncul lagi di daftar/rekap)
    */
-  async hapus(id: number, aktor: Aktor, meta: MetaRequest) {
+  async hapus(id: number, aktor: Aktor) {
     await prisma.$transaction(async (tx) => {
-      const sebelum = await muatUntukTulis(id, aktor, tx);
+      await muatUntukTulis(id, aktor, tx);
 
       /**
        * KONSEP soft delete: data tidak benar-benar dihapus dari database, hanya diberi tanda waktu hapus.
-       * Kegiatan itu tidak tampil lagi di aplikasi, tetapi jejaknya tetap ada untuk audit.
+       * Kegiatan itu tidak tampil lagi di aplikasi, tetapi barisnya tetap tersimpan di database.
        */
       await KegiatanRepository.softDelete(id, tx);
-      await AuditLogService.catat({ aktorId: aktor.id, aksi: "hapus", entitas: "kegiatan", entitasId: id, sebelum, ...meta }, tx);
     });
   },
 };

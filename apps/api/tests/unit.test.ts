@@ -1,9 +1,8 @@
-// Uji fungsi murni (tanpa basis data): NIP, periode WIB, status kegiatan, rekap, audit, berkas, pembatas laju,
+// Uji fungsi murni (tanpa basis data): NIP, periode WIB, status kegiatan, rekap, berkas, pembatas laju,
 // kebijakan kata sandi, token tautan email, status akun, hash kata sandi, dan perlindungan CSRF
 import { describe, expect, test } from "bun:test";
 import { hashPassword as hashScrypt } from "better-auth/crypto";
 import { cocokSandi, hashSandi, perluHashUlang } from "@/lib/sandi";
-import { redaksi } from "@/services/audit-log.service";
 import { uraianRentang } from "@/services/ekspor.service";
 import { isiTren, kunciBerikutnya } from "@/services/rekap.service";
 import { cariIndukTertinggi, unitDanTurunan } from "@/services/referensi.service";
@@ -129,20 +128,6 @@ describe("pohon bidang", () => {
   });
 });
 
-describe("redaksi audit", () => {
-  test("kunci rahasia dibuang dan tipe khusus diubah ke JSON", () => {
-    const hasil = redaksi({
-      nama: "A",
-      password: "x",
-      sesi: { token: "y", ok: 1 },
-      waktu: new Date("2026-01-01T00:00:00Z"),
-      id: 5n,
-      lat: { toJSON: () => "-2.976074" },
-    });
-    expect(hasil).toEqual({ nama: "A", sesi: { ok: 1 }, waktu: "2026-01-01T00:00:00.000Z", id: 5, lat: "-2.976074" });
-  });
-});
-
 describe("berkas", () => {
   const awal = (teks: string) => new TextEncoder().encode(teks);
 
@@ -165,8 +150,8 @@ describe("berkas", () => {
 
 describe("utilitas lain", () => {
   test("IP diambil dari entri pertama x-forwarded-for", () => {
-    const h = new Headers({ "x-forwarded-for": "1.2.3.4, 10.0.0.1", "user-agent": "uji" });
-    expect(requestMeta(h)).toEqual({ ip: "1.2.3.4", userAgent: "uji" });
+    const h = new Headers({ "x-forwarded-for": "1.2.3.4, 10.0.0.1" });
+    expect(requestMeta(h)).toEqual({ ip: "1.2.3.4" });
     expect(requestMeta(new Headers({ "x-real-ip": "5.6.7.8" })).ip).toBe("5.6.7.8");
   });
 

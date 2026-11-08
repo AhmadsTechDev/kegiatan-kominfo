@@ -272,11 +272,6 @@ export function KegiatanDetailView({ id }: { id: number }) {
                   <span className="truncate text-xs text-muted-foreground">{k.bidang.nama}</span>
                 </div>
               </div>
-              {k.pengubahTerakhir && (
-                <p className="border-t border-muted pt-3 text-xs text-muted-foreground">
-                  Terakhir diubah {k.pengubahTerakhir.nama}, {formatTanggalJam(k.pengubahTerakhir.waktu)}
-                </p>
-              )}
             </PanelBody>
           </Panel>
 

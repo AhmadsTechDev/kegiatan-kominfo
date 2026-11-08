@@ -11,7 +11,7 @@ Kembali ke [README utama](../../README.md). Diagram alurnya ada di [UML](../uml/
 | [api-auth.md](api-auth.md) | Login, aktivasi akun, lupa dan atur ulang sandi, verifikasi email baru, dan akun sendiri (`/api/me`: profil, foto, email, sandi, sesi, preferensi) |
 | [api-kegiatan.md](api-kegiatan.md) | Referensi pilihan formulir, kegiatan (catat, ubah, batalkan, periksa, hapus), draf kegiatan, dan dokumentasi foto/PDF |
 | [api-laporan.md](api-laporan.md) | Dashboard, kalender, rekap, pantau pemeriksaan, dan ekspor PDF |
-| [api-admin.md](api-admin.md) | Data master (bidang dan sub bidang, pegawai, jenis kegiatan), manajemen akun, undangan, permintaan akun, dan audit log |
+| [api-admin.md](api-admin.md) | Data master (bidang dan sub bidang, pegawai, jenis kegiatan), manajemen akun, undangan, dan permintaan akun |
 
 ## Aturan umum
 
@@ -23,7 +23,6 @@ Kembali ke [README utama](../../README.md). Diagram alurnya ada di [UML](../uml/
 | Format galat | `{ "code": "...", "message": "...", "details": [{ "field": "...", "message": "..." }] }` |
 | Pengubahan bersamaan | Ubah kegiatan memakai `expectedUpdatedAt`; bila sudah diubah orang lain, dijawab 409 |
 | Batas laju | Login dibatasi 30 percobaan per menit per IP; akun terkunci 15 menit setelah 5 kali salah sandi; ekspor PDF maksimal 10 per menit per akun |
-| Audit | Setiap perubahan data dicatat ke audit log dalam transaksi yang sama |
 
 ## Peran dan hak akses
 
@@ -31,7 +30,7 @@ Kembali ke [README utama](../../README.md). Diagram alurnya ada di [UML](../uml/
 | --- | --- | --- |
 | `PEGAWAI` | Kegiatan bidangnya (termasuk sub bidang) dan kegiatan miliknya | Satu-satunya peran yang menulis kegiatan: catat dan ubah kegiatan miliknya, draf, unggah dokumentasi, isi hasil |
 | `PIMPINAN` | Seluruh dinas | Membaca, memeriksa kegiatan, dan memberi catatan perbaikan. Tidak mengubah data kegiatan |
-| `ADMIN` | Seluruh dinas | Membaca dan memeriksa kegiatan, ditambah master data, akun, permintaan akun, dan audit log. Tidak menulis kegiatan (403) |
+| `ADMIN` | Seluruh dinas | Membaca dan memeriksa kegiatan, ditambah master data, akun, dan permintaan akun. Tidak menulis kegiatan (403) |
 
 ## Ringkasan endpoint
 
@@ -97,7 +96,6 @@ Kolom **Akses**: *Login* berarti semua peran yang sudah masuk. Rincian header, b
 | `POST /api/admin/pegawai/:id/undang` | Undang pegawai yang sudah ada |
 | `GET /api/admin/permintaan-akun`, `.../jumlah` | Daftar dan jumlah permintaan akun |
 | `POST /api/admin/permintaan-akun/:id/setujui`, `.../tolak` | Setujui atau tolak permintaan |
-| `GET /api/audit-log`, `GET /api/audit-log/pilihan`, `GET /api/audit-log/:id` | Audit log dengan filter dan nilai sebelum/sesudah |
 
 ### Notifikasi (semua role, hanya milik sendiri)
 

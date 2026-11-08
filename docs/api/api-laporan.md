@@ -228,7 +228,7 @@ Jumlah kegiatan dan yang perlu perbaikan, untuk pimpinan.
 
 ### `GET /api/ekspor/pratinjau`
 
-Isi laporan PDF dalam bentuk JSON, untuk ditampilkan sebelum diunduh. Tidak dihitung ke batas laju dan tidak dicatat di audit log.
+Isi laporan PDF dalam bentuk JSON, untuk ditampilkan sebelum diunduh. Tidak dihitung ke batas laju.
 
 **Respons 200**
 

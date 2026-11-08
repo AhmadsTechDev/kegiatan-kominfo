@@ -1,6 +1,5 @@
 import { NotFound, Unprocessable } from "@/lib/errors";
 import { galatDuplikat, prisma, type Db } from "@/lib/prisma";
-import { AuditLogRepository } from "@/repositories/audit-log.repository";
 import { AuthRepository } from "@/repositories/auth.repository";
 import { MasterRepository } from "@/repositories/master.repository";
 import { SesiRepository } from "@/repositories/sesi.repository";
@@ -10,7 +9,6 @@ import type { NilaiPegawai } from "@/types/master.types";
 import type { Admin, GalatField } from "@/types/umum.types";
 import type { DaftarAkunQuery, IsiAkun } from "@/types/user.types";
 import { statusAkun } from "@/utils/status-akun";
-import { AuditLogService } from "./audit-log.service";
 import { urlFoto } from "./auth.service";
 import { KredensialService } from "./kredensial.service";
 import { validasiPegawai } from "./master.service";
@@ -73,24 +71,11 @@ async function siapkanPegawai(isi: IsiAkun, akun?: { id: string; pegawaiId: numb
 }
 
 /**
- * Menyimpan data pegawai milik akun di dalam transaksi (baru atau perubahan), lengkap dengan audit
+ * Menyimpan data pegawai milik akun di dalam transaksi (baru atau perubahan)
  */
-async function simpanPegawai(pegawaiId: number | null, nilai: NilaiPegawai, admin: Admin, tx: Db) {
-  if (pegawaiId == null) {
-    const id = await MasterRepository.insertPegawai(nilai, tx);
-    await AuditLogService.catat({ aktorId: admin.id, aksi: "buat", entitas: "pegawai", entitasId: id, sesudah: nilai, ...admin.meta }, tx);
-    return id;
-  }
-  const sebelum = await MasterRepository.pegawaiById(pegawaiId, tx);
+async function simpanPegawai(pegawaiId: number | null, nilai: NilaiPegawai, tx: Db) {
+  if (pegawaiId == null) return MasterRepository.insertPegawai(nilai, tx);
   await MasterRepository.updatePegawai(pegawaiId, nilai, tx);
-  const sesudah = await MasterRepository.pegawaiById(pegawaiId, tx);
-
-  /**
-   * Audit log hanya dicatat bila isi pegawai benar-benar berubah. updatedAt diabaikan karena selalu berubah setiap kali disimpan.
-   */
-  if (JSON.stringify({ ...sebelum, updatedAt: null }) !== JSON.stringify({ ...sesudah, updatedAt: null })) {
-    await AuditLogService.catat({ aktorId: admin.id, aksi: "ubah", entitas: "pegawai", entitasId: pegawaiId, sebelum, sesudah, ...admin.meta }, tx);
-  }
   return pegawaiId;
 }
 
@@ -154,15 +139,14 @@ export const UserService = {
   },
 
   /**
-   * Detail satu akun: data akun & pegawai, status, undangan yang masih berlaku, sesi aktif, dan riwayat terbaru
+   * Detail satu akun: data akun & pegawai, status, undangan yang masih berlaku, dan sesi aktif
    */
   async detail(id: string) {
     const a = await UserRepository.detail(id);
     if (!a) throw NotFound("Akun tidak ditemukan");
     const status = statusAkun(a);
-    const [terpakai, riwayat, kedaluwarsaUndangan] = await Promise.all([
+    const [terpakai, kedaluwarsaUndangan] = await Promise.all([
       UserRepository.terpakai([id]),
-      AuditLogRepository.riwayatAkun(id),
       status === "MENUNGGU_AKTIVASI" ? TokenAkunRepository.kedaluwarsaAktivasi(id) : null,
     ]);
     const { lockedUntil, punyaKredensial, image, sessions, ...akun } = a;
@@ -174,14 +158,13 @@ export const UserService = {
       bisaDihapus: !terpakai.has(id),
       undangan: status === "MENUNGGU_AKTIVASI" ? { kedaluwarsa: kedaluwarsaUndangan } : null,
       sesi: sessions,
-      riwayat,
     };
   },
 
   /**
    * Membuat akun beserta data pegawainya dalam satu transaksi, lalu mengirim email aktivasi ke email pribadi pemiliknya
    */
-  async buat(isi: IsiAkun, admin: Admin) {
+  async buat(isi: IsiAkun) {
     const email = isi.email.trim().toLowerCase();
     if (await AuthRepository.emailDipakai(email)) throw emailDipakai();
     const { pegawaiId, nilai } = await siapkanPegawai(isi);
@@ -191,11 +174,9 @@ export const UserService = {
      */
     const id = crypto.randomUUID();
     const { token } = await transaksiAman(async (tx) => {
-      const pid = await simpanPegawai(pegawaiId, nilai, admin, tx);
+      const pid = await simpanPegawai(pegawaiId, nilai, tx);
       await UserRepository.insert({ id, name: nilai.nama, email, role: isi.role, pegawaiId: pid }, tx);
-      const hasil = await KredensialService.terbitkan("aktivasi", id, tx);
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "buat", entitas: "user", entitasId: id, sesudah: await UserRepository.byId(id, tx), ...admin.meta }, tx);
-      return hasil;
+      return KredensialService.terbitkan("aktivasi", id, tx);
     });
     return { id, undangan: await kirimUndanganAman({ name: nilai.nama, email }, token) };
   },
@@ -219,12 +200,11 @@ export const UserService = {
     const menunggu = statusAkun(sebelum) === "MENUNGGU_AKTIVASI";
 
     const undanganBaru = await transaksiAman(async (tx) => {
-      const pid = await simpanPegawai(pegawaiId, nilai, admin, tx);
+      const pid = await simpanPegawai(pegawaiId, nilai, tx);
       await UserRepository.update(id, { name: nilai.nama, email, role: isi.role, pegawaiId: pid, ...(gantiEmail ? { emailVerified: false, emailBaru: null } : {}) }, tx);
       if (gantiRole) await SesiRepository.hapusSemua(id, undefined, tx);
       if (gantiEmail) await TokenAkunRepository.hapusMilik(id, "ganti-email", tx);
       const token = gantiEmail && menunggu ? await KredensialService.terbitkan("aktivasi", id, tx) : null;
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "ubah", entitas: "user", entitasId: id, sebelum, sesudah: await UserRepository.byId(id, tx), ...admin.meta }, tx);
       return token;
     });
     return { id, undangan: undanganBaru ? await kirimUndanganAman({ name: nilai.nama, email }, undanganBaru.token) : null };
@@ -245,7 +225,6 @@ export const UserService = {
        * Tautan email yang belum dipakai (aktivasi, reset, ganti email) ikut dibatalkan agar tidak bisa dipakai untuk mengaktifkan akun yang dinonaktifkan.
        */
       await TokenAkunRepository.hapusMilik(id, undefined, tx);
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "nonaktifkan", entitas: "user", entitasId: id, sebelum, sesudah: await UserRepository.byId(id, tx), ...admin.meta }, tx);
     });
     return { id };
   },
@@ -253,13 +232,12 @@ export const UserService = {
   /**
    * Mengaktifkan kembali akun yang dinonaktifkan (akun yang belum pernah diaktivasi kembali ke MENUNGGU_AKTIVASI)
    */
-  async aktifkan(id: string, admin: Admin) {
+  async aktifkan(id: string) {
     const sebelum = await muat(id);
     if (!sebelum.banned) throw Unprocessable("Akun ini sudah aktif");
     const status = await prisma.$transaction(async (tx) => {
       await UserRepository.update(id, { banned: false, banReason: null, banExpires: null }, tx);
       const sesudah = (await UserRepository.byId(id, tx))!;
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "aktifkan", entitas: "user", entitasId: id, sebelum, sesudah, ...admin.meta }, tx);
       return statusAkun(sesudah);
     });
     return { id, status };
@@ -270,7 +248,7 @@ export const UserService = {
    * selebihnya cukup dinonaktifkan. Data pegawainya tetap ada
    */
   async hapus(id: string, admin: Admin) {
-    const sebelum = await muat(id);
+    await muat(id);
     tolakDiriSendiri(id, admin, "Anda tidak dapat menghapus akun Anda sendiri");
 
     /**
@@ -282,7 +260,6 @@ export const UserService = {
     await prisma.$transaction(async (tx) => {
       await TokenAkunRepository.hapusMilik(id, undefined, tx);
       await UserRepository.hapus(id, tx);
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "hapus", entitas: "user", entitasId: id, sebelum, ...admin.meta }, tx);
     });
     return { id };
   },
@@ -290,16 +267,12 @@ export const UserService = {
   /**
    * Mengirim ulang email aktivasi untuk akun yang belum diaktivasi; tautan lama tidak berlaku lagi
    */
-  async kirimUlangUndangan(id: string, admin: Admin) {
+  async kirimUlangUndangan(id: string) {
     const akun = await muat(id);
     const status = statusAkun(akun);
     if (status === "NONAKTIF") throw Unprocessable("Akun ini nonaktif. Aktifkan dulu sebelum mengirim undangan.");
     if (status === "AKTIF") throw Unprocessable("Akun ini sudah aktif sehingga tidak perlu undangan. Gunakan Atur ulang kata sandi bila pemiliknya lupa kata sandi.");
-    const { token, kedaluwarsa } = await prisma.$transaction(async (tx) => {
-      const hasil = await KredensialService.terbitkan("aktivasi", id, tx);
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "undang", entitas: "user", entitasId: id, sesudah: { email: akun.email, kirimUlang: true }, ...admin.meta }, tx);
-      return hasil;
-    });
+    const { token, kedaluwarsa } = await KredensialService.terbitkan("aktivasi", id);
     await KredensialService.kirimUndangan(akun, token);
     return { id, email: akun.email, kedaluwarsa };
   },
@@ -321,7 +294,6 @@ export const UserService = {
        */
       const n = await SesiRepository.hapusSemua(id, id === admin.id ? admin.sesiId : undefined, tx);
       const hasil = await KredensialService.terbitkan("reset-sandi", id, tx);
-      await AuditLogService.catat({ aktorId: admin.id, aksi: "kirim_reset_sandi", entitas: "user", entitasId: id, sesudah: { sesiDicabut: n }, ...admin.meta }, tx);
       return { ...hasil, sesiDicabut: n };
     });
     await KredensialService.kirimTautanReset(akun, token);
@@ -334,7 +306,6 @@ export const UserService = {
   async cabutSesi(id: string, admin: Admin) {
     await muat(id);
     const jumlah = await SesiRepository.hapusSemua(id, id === admin.id ? admin.sesiId : undefined);
-    await AuditLogService.catat({ aktorId: admin.id, aksi: "cabut_sesi", entitas: "user", entitasId: id, sesudah: { jumlah }, ...admin.meta });
     return { id, jumlah };
   },
 };

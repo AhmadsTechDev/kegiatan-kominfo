@@ -154,8 +154,3 @@ export function formBerkas(isi: Uint8Array, nama = "foto.png") {
   fd.append("berkas", new File([isi], nama));
   return fd;
 }
-
-// Catatan audit untuk entitas tertentu, terbaru di atas
-export function auditUntuk(entitas: string, entitasId: string | number) {
-  return prisma.auditLog.findMany({ where: { entitas, entitasId: String(entitasId) }, orderBy: { id: "desc" } });
-}

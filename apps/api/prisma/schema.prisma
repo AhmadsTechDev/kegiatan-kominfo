@@ -282,26 +282,8 @@ model DrafKegiatan {
 }
 
 // ---------------------------------------------------------------------------
-// Pendukung: audit log (append-only), permintaan akun, log pengingat email
+// Pendukung: permintaan akun, log pengingat email
 // ---------------------------------------------------------------------------
-
-model AuditLog {
-  id          BigInt   @id @default(autoincrement())
-  aktorId     String?  @map("aktor_id") @db.VarChar(36)
-  aksi        String   @db.VarChar(30)
-  entitas     String   @db.VarChar(50)
-  entitasId   String?  @map("entitas_id") @db.VarChar(64)
-  dataSebelum Json?    @map("data_sebelum")
-  dataSesudah Json?    @map("data_sesudah")
-  ip          String?  @db.VarChar(45)
-  userAgent   String?  @map("user_agent")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-
-  @@index([entitas, entitasId], map: "audit_log_entitas_idx")
-  @@index([aktorId], map: "audit_log_aktor_id_idx")
-  @@index([createdAt], map: "audit_log_created_at_idx")
-  @@map("audit_log")
-}
 
 model PermintaanAkun {
   id           Int              @id @default(autoincrement())

@@ -3,10 +3,7 @@ import type {
   AkunAdmin,
   AkunDetail,
   HasilSimpanAkun,
-  AuditDetail,
-  AuditItem,
   FilterAkun,
-  FilterAudit,
   FilterPegawai,
   Halaman,
   IsiAkun,
@@ -19,16 +16,14 @@ import type {
   PegawaiAdmin,
   PermintaanAkun,
   StatusPermintaan,
-  PilihanAudit,
   BidangAdmin,
 } from "../types";
 
 /**
- * Pemanggil endpoint admin: master data, akun, audit log, dan permintaan akun
+ * Pemanggil endpoint admin: master data, akun, dan permintaan akun
  */
 
 export const UKURAN_HALAMAN_ADMIN = 20;
-export const UKURAN_HALAMAN_AUDIT = 25;
 
 const params = (nilai: Record<string, unknown>) =>
   Object.fromEntries(Object.entries(nilai).filter(([, v]) => v !== null && v !== "" && v !== undefined));
@@ -73,11 +68,6 @@ export const kirimUlangUndangan = (id: string) =>
 export const resetSandiAkun = (id: string) =>
   apiClient.post<{ id: string; email: string; sesiDicabut: number }>(`/admin/akun/${id}/reset-sandi`).then((r) => r.data);
 export const cabutSesiAkun = (id: string) => apiClient.post<{ id: string; jumlah: number }>(`/admin/akun/${id}/cabut-sesi`).then((r) => r.data);
-
-export const getAuditLog = (f: FilterAudit) =>
-  apiClient.get<Halaman<AuditItem>>("/audit-log", { params: params({ ...f, pageSize: UKURAN_HALAMAN_AUDIT }) }).then((r) => r.data);
-export const getAuditDetail = (id: number) => apiClient.get<AuditDetail>(`/audit-log/${id}`).then((r) => r.data);
-export const getPilihanAudit = () => apiClient.get<PilihanAudit>("/audit-log/pilihan").then((r) => r.data);
 
 export const undangPegawai = (pegawaiId: number, isi: IsiUndangan) =>
   apiClient.post<{ userId: string; email: string; kirimUlang: boolean }>(`/admin/pegawai/${pegawaiId}/undang`, isi).then((r) => r.data);

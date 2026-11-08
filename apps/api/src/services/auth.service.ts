@@ -4,14 +4,11 @@ import { hashSandi, perluHashUlang } from "@/lib/sandi";
 import { storage } from "@/lib/storage";
 import { AuthRepository } from "@/repositories/auth.repository";
 import type { UbahProfil } from "@/types/auth.types";
-import type { MetaRequest } from "@/types/umum.types";
 import { prosesFotoProfil } from "@/utils/berkas";
-import { requestMeta } from "@/utils/konteks";
 import { statusAkun } from "@/utils/status-akun";
-import { AuditLogService } from "./audit-log.service";
 
 /**
- * Service autentikasi: aturan login tambahan (penguncian akun, pencatatan login/logout) dan profil pengguna yang sedang login.
+ * Service autentikasi: aturan login tambahan (penguncian akun) dan profil pengguna yang sedang login.
  * Fungsi-fungsi bagian login dipanggil dari hook Better Auth di lib/auth.ts, bukan dari controller.
  */
 export const BATAS_GAGAL_LOGIN = 5;
@@ -20,7 +17,7 @@ export const PATH_LOGIN = "/sign-in/email";
 
 /**
  * Endpoint Better Auth yang boleh dipanggil dari luar (HTTP). Selebihnya (daftar mandiri, reset sandi bawaan,
- * ubah user, endpoint admin, dll.) ditutup; fitur akun memakai endpoint aplikasi sendiri yang punya validasi dan audit
+ * ubah user, endpoint admin, dll.) ditutup; fitur akun memakai endpoint aplikasi sendiri yang punya validasi
  */
 export const PATH_AUTH_PUBLIK = [PATH_LOGIN, "/sign-out", "/get-session"];
 
@@ -34,11 +31,6 @@ export const urlFoto = (userId: string, key: string | null) => (key ? `/api/me/f
  * Email yang sedang dipakai untuk login (dari body permintaan)
  */
 const emailLogin = (body: unknown) => (body as { email?: unknown } | undefined)?.email;
-
-/**
- * Meta request dari header (bila ada)
- */
-const metaDari = (headers?: Headers) => (headers ? requestMeta(headers) : {});
 
 export const AuthService = {
   /**
@@ -74,9 +66,9 @@ export const AuthService = {
   },
 
   /**
-   * Login berhasil: hapus hitungan gagal, perbarui hash lama ke Argon2id, dan catat ke audit log
+   * Login berhasil: hapus hitungan gagal dan perbarui hash lama ke Argon2id
    */
-  async catatLoginBerhasil(userId: string, body: unknown, headers?: Headers) {
+  async catatLoginBerhasil(userId: string, body: unknown) {
     await AuthRepository.resetLoginGagal(userId);
     const sandi = (body as { password?: unknown } | undefined)?.password;
     const hash = await AuthRepository.hashSandi(userId);
@@ -85,27 +77,18 @@ export const AuthService = {
      * Hash lama (scrypt) diperbarui ke Argon2id memanfaatkan sandi asli yang baru saja diketik pengguna; sandi asli tidak pernah disimpan.
      */
     if (typeof sandi === "string" && hash && perluHashUlang(hash)) await AuthRepository.gantiSandi(userId, await hashSandi(sandi));
-    await AuditLogService.catat({ aktorId: userId, aksi: "login", entitas: "user", entitasId: userId, ...metaDari(headers) });
   },
 
   /**
    * Login gagal: tambah hitungan gagal; setelah 5 kali akun dikunci 15 menit
    *
    * @param body isi permintaan login (untuk mengambil email yang dicoba)
-   * @param headers header permintaan untuk IP dan user-agent; tidak ada bila dipanggil dari server sendiri
    */
-  async catatLoginGagal(body: unknown, headers?: Headers) {
-    const meta = metaDari(headers);
+  async catatLoginGagal(body: unknown) {
     const email = emailLogin(body);
     const akun = typeof email === "string" ? await AuthRepository.findByEmail(email) : null;
 
-    /**
-     * Email yang tidak terdaftar tetap dicatat (tanpa aktor) agar admin bisa melihat pola percobaan login mencurigakan.
-     */
-    if (!akun) {
-      await AuditLogService.catat({ aktorId: null, aksi: "login_gagal", entitas: "user", ...meta });
-      return;
-    }
+    if (!akun) return;
 
     const jumlahGagal = akun.failedLoginCount + 1;
 
@@ -115,22 +98,6 @@ export const AuthService = {
     const harusDikunci = jumlahGagal >= BATAS_GAGAL_LOGIN;
     if (harusDikunci) await AuthRepository.kunci(akun.id, new Date(Date.now() + LAMA_KUNCI_MS));
     else await AuthRepository.tambahLoginGagal(akun.id);
-
-    await AuditLogService.catat({
-      aktorId: akun.id,
-      aksi: harusDikunci ? "akun_terkunci" : "login_gagal",
-      entitas: "user",
-      entitasId: akun.id,
-      sesudah: { percobaanGagal: jumlahGagal },
-      ...meta,
-    });
-  },
-
-  /**
-   * Mencatat logout ke audit log
-   */
-  async catatLogout(userId: string, headers?: Headers) {
-    await AuditLogService.catat({ aktorId: userId, aksi: "logout", entitas: "user", entitasId: userId, ...metaDari(headers) });
   },
 
   /**
@@ -150,19 +117,17 @@ export const AuthService = {
   /**
    * Mengubah nomor kontak. Nama, NIP, dan bidang hanya bisa diubah admin
    */
-  async ubahProfil(userId: string, isi: UbahProfil, meta: MetaRequest) {
-    const sebelum = await AuthRepository.findProfil(userId);
-    if (!sebelum) throw NotFound("Pengguna tidak ditemukan");
+  async ubahProfil(userId: string, isi: UbahProfil) {
+    if (!(await AuthRepository.findProfil(userId))) throw NotFound("Pengguna tidak ditemukan");
     const kontak = isi.kontak?.trim() || null;
     await AuthRepository.ubahKontak(userId, kontak);
-    await AuditLogService.catat({ aktorId: userId, aksi: "ubah", entitas: "user", entitasId: userId, sebelum: { kontak: sebelum.kontak }, sesudah: { kontak }, ...meta });
     return AuthService.profil(userId);
   },
 
   /**
    * Mengganti foto profil: proses ke WebP, simpan, lalu hapus foto lama
    */
-  async unggahFoto(userId: string, berkas: File, meta: MetaRequest) {
+  async unggahFoto(userId: string, berkas: File) {
     const bytes = await prosesFotoProfil(berkas);
     const lama = await AuthRepository.fotoKey(userId);
     const key = `avatar/${userId}/${crypto.randomUUID()}.webp`;
@@ -173,19 +138,17 @@ export const AuthService = {
      * Foto lama dihapus setelah foto baru tersimpan; kegagalan menghapus diabaikan karena tidak memengaruhi pengguna.
      */
     if (lama) await storage.delete(lama).catch(() => {});
-    await AuditLogService.catat({ aktorId: userId, aksi: "ubah", entitas: "user", entitasId: userId, sesudah: { foto: "diganti" }, ...meta });
     return { foto: urlFoto(userId, key) };
   },
 
   /**
    * Menghapus foto profil
    */
-  async hapusFoto(userId: string, meta: MetaRequest) {
+  async hapusFoto(userId: string) {
     const lama = await AuthRepository.fotoKey(userId);
     if (!lama) return { foto: null };
     await AuthRepository.setFoto(userId, null);
     await storage.delete(lama).catch(() => {});
-    await AuditLogService.catat({ aktorId: userId, aksi: "ubah", entitas: "user", entitasId: userId, sesudah: { foto: "dihapus" }, ...meta });
     return { foto: null };
   },
 

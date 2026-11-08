@@ -1,7 +1,7 @@
 import type { Role, StatusAkun } from "@/types/auth";
 
 /**
- * Tipe data fitur admin: master data, akun, dan audit log
+ * Tipe data fitur admin: master data dan akun
  */
 
 export type BidangAdmin = {
@@ -92,7 +92,6 @@ export type AkunDetail = Omit<AkunAdmin, "pegawai"> & {
   } | null;
   undangan: { kedaluwarsa: string | null } | null;
   sesi: SesiAkun[];
-  riwayat: AuditItem[];
 };
 
 /**
@@ -106,29 +105,6 @@ export type HasilSimpanAkun = { id: string; undangan: { email: string; galat: st
  * nonaktif: "1" hanya akun nonaktif, "0" menyembunyikannya
  */
 export type FilterAkun = { q: string; role: Role | null; status: StatusAkun | null; nonaktif: "1" | "0" | null; page: number };
-
-export type AuditItem = {
-  id: number;
-  waktu: string;
-  aktor: { id: string; nama: string; email: string | null } | null;
-  aksi: string;
-  entitas: string;
-  entitasId: string | null;
-  ip: string | null;
-};
-
-export type AuditDetail = AuditItem & { dataSebelum: unknown; dataSesudah: unknown; userAgent: string | null };
-
-export type FilterAudit = {
-  aktor: string | null;
-  aksi: string | null;
-  entitas: string | null;
-  dari: string | null;
-  sampai: string | null;
-  page: number;
-};
-
-export type PilihanAudit = { aktor: { id: string; nama: string; email: string }[]; entitas: string[]; aksi: string[] };
 
 export type StatusPermintaan = "MENUNGGU" | "DISETUJUI" | "DITOLAK";
 

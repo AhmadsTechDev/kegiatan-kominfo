@@ -4,7 +4,7 @@ import { describe, expect, test } from "bun:test";
 import { hashPassword as hashScrypt } from "better-auth/crypto";
 import { prisma } from "@/lib/prisma";
 import { hashToken } from "@/utils/token";
-import { aktifkan, auditUntuk, buatPengguna, emailAcak, idUnit, ipAcak, isiAkun, login, loginAdmin, nipAcak, panggil, SANDI, tokenTerakhir } from "./helpers";
+import { aktifkan, buatPengguna, emailAcak, idUnit, ipAcak, isiAkun, login, loginAdmin, nipAcak, panggil, SANDI, tokenTerakhir } from "./helpers";
 import { kotakSurat, suratTerakhir } from "./surel-palsu";
 
 // Membuat akun lewat admin tanpa mengaktifkannya
@@ -41,12 +41,11 @@ describe("login dan sesi", () => {
     expect((await panggil("/auth/get-session")).data).toBeNull();
   });
 
-  test("kata sandi salah 401 dan tercatat login_gagal; email tidak terdaftar memberi galat yang sama", async () => {
+  test("kata sandi salah 401; email tidak terdaftar memberi galat yang sama", async () => {
     const u = await buatPengguna();
     const salah = await login(u.email, "salah-sandi-123");
     expect(salah.status).toBe(401);
     expect(salah.data.code).toBe("INVALID_EMAIL_OR_PASSWORD");
-    expect((await auditUntuk("user", u.userId))[0]?.aksi).toBe("login_gagal");
     const tidakAda = await login(emailAcak("tidakada"), "salah-sandi-123");
     expect(tidakAda.status).toBe(401);
     expect(tidakAda.data.code).toBe(salah.data.code);
@@ -59,7 +58,6 @@ describe("login dan sesi", () => {
     const terkunci = await login(u.email, SANDI);
     expect(terkunci.status).toBe(429);
     expect(terkunci.data.code).toBe("ACCOUNT_LOCKED");
-    expect((await auditUntuk("user", u.userId)).some((a) => a.aksi === "akun_terkunci")).toBe(true);
 
     const admin = await loginAdmin();
     const daftar = await panggil(`/admin/akun?q=${encodeURIComponent(u.email)}`, { cookie: admin });
@@ -78,11 +76,10 @@ describe("login dan sesi", () => {
     expect(status[30]).toBe(429);
   }, 30_000);
 
-  test("logout mengakhiri sesi dan tercatat di audit", async () => {
+  test("logout mengakhiri sesi", async () => {
     const u = await buatPengguna();
     expect((await panggil("/auth/sign-out", { cookie: u.cookie, json: {} })).status).toBe(200);
     expect((await panggil("/me", { cookie: u.cookie })).status).toBe(401);
-    expect((await auditUntuk("user", u.userId)).some((a) => a.aksi === "logout")).toBe(true);
   });
 
   test("akun yang dinonaktifkan tidak bisa login dan sesinya dicabut", async () => {
@@ -150,7 +147,7 @@ describe("hak akses role", () => {
   test("PEGAWAI dan PIMPINAN ditolak 403 di semua endpoint admin", async () => {
     const pegawai = await buatPengguna();
     const pimpinan = await buatPengguna({ role: "PIMPINAN" });
-    const dapat = ["/admin/akun", `/admin/akun/${pegawai.userId}`, "/admin/pegawai", "/admin/bidang", "/audit-log", "/admin/permintaan-akun"];
+    const dapat = ["/admin/akun", `/admin/akun/${pegawai.userId}`, "/admin/pegawai", "/admin/bidang", "/admin/permintaan-akun"];
     const kirim = [`/admin/akun/${pegawai.userId}/kirim-ulang-undangan`, `/admin/akun/${pimpinan.userId}/reset-sandi`, `/admin/akun/${pimpinan.userId}/cabut-sesi`];
     for (const u of [pegawai, pimpinan]) {
       for (const path of dapat) expect((await panggil(path, { cookie: u.cookie })).status).toBe(403);
@@ -204,7 +201,6 @@ describe("aktivasi akun dari email undangan", () => {
 
     const user = await prisma.user.findUniqueOrThrow({ where: { id } });
     expect(user.emailVerified).toBe(true);
-    expect((await auditUntuk("user", id)).some((a) => a.aksi === "aktivasi")).toBe(true);
   });
 
   test("admin menambah pegawai dengan email dari Master data: undangan terkirim dan bisa diaktivasi", async () => {
@@ -290,7 +286,6 @@ describe("lupa dan atur ulang kata sandi", () => {
     expect((await login(u.email, SANDI)).status).toBe(401);
     expect((await login(u.email, "sandireset12345")).status).toBe(200);
     expect(suratTerakhir(u.email)?.subjek).toBe("Kata sandi Anda diubah");
-    expect((await auditUntuk("user", u.userId)).some((a) => a.aksi === "reset_sandi")).toBe(true);
   });
 
   test("maksimal 5 permintaan lupa sandi per 15 menit dari satu IP", async () => {

@@ -5,10 +5,8 @@ import { AuthRepository } from "@/repositories/auth.repository";
 import { PreferensiRepository } from "@/repositories/preferensi.repository";
 import { SesiRepository } from "@/repositories/sesi.repository";
 import type { GantiSandi, Preferensi, UbahPreferensi } from "@/types/auth.types";
-import type { MetaRequest } from "@/types/umum.types";
 import { periksaSandi } from "@/utils/kebijakan-sandi";
 import { buatPembatasLaju } from "@/utils/rate-limit";
-import { AuditLogService } from "./audit-log.service";
 import { KredensialService } from "./kredensial.service";
 
 /**
@@ -32,7 +30,7 @@ export const AkunSayaService = {
    * @returns jumlah sesi di perangkat lain yang dicabut
    * @throws Unprocessable bila sandi lama salah atau sandi baru tidak memenuhi syarat
    */
-  async gantiSandi(userId: string, sesiId: string, { sandiLama, sandiBaru, cabutSesiLain = true }: GantiSandi, meta: MetaRequest) {
+  async gantiSandi(userId: string, sesiId: string, { sandiLama, sandiBaru, cabutSesiLain = true }: GantiSandi) {
     lajuGantiSandi(userId);
     const [akun, hash] = await Promise.all([AuthRepository.akunKredensial({ id: userId }), AuthRepository.hashSandi(userId)]);
     if (!akun) throw NotFound("Pengguna tidak ditemukan");
@@ -46,9 +44,7 @@ export const AkunSayaService = {
     const hashBaru = await hashSandi(sandiBaru);
     const sesiDicabut = await prisma.$transaction(async (tx) => {
       await AuthRepository.gantiSandi(userId, hashBaru, tx);
-      const n = cabutSesiLain ? await SesiRepository.hapusSemua(userId, sesiId, tx) : 0;
-      await AuditLogService.catat({ aktorId: userId, aksi: "ganti_sandi", entitas: "user", entitasId: userId, sesudah: { sesiDicabut: n }, ...meta }, tx);
-      return n;
+      return cabutSesiLain ? SesiRepository.hapusSemua(userId, sesiId, tx) : 0;
     });
     KredensialService.beritahuSandiDiubah(akun);
     return { sesiDicabut };
@@ -64,19 +60,17 @@ export const AkunSayaService = {
   /**
    * Mencabut satu sesi di perangkat lain
    */
-  async cabutSesi(userId: string, sesiId: string, id: string, meta: MetaRequest) {
+  async cabutSesi(userId: string, sesiId: string, id: string) {
     if (id === sesiId) throw Unprocessable("Ini sesi yang sedang Anda pakai. Gunakan tombol Keluar untuk mengakhirinya.");
     if (!(await SesiRepository.hapus(userId, id))) throw NotFound("Sesi tidak ditemukan atau sudah berakhir");
-    await AuditLogService.catat({ aktorId: userId, aksi: "cabut_sesi", entitas: "user", entitasId: userId, sesudah: { jumlah: 1 }, ...meta });
     return { id };
   },
 
   /**
    * Mencabut semua sesi selain sesi yang sedang dipakai
    */
-  async cabutSesiLain(userId: string, sesiId: string, meta: MetaRequest) {
+  async cabutSesiLain(userId: string, sesiId: string) {
     const jumlah = await SesiRepository.hapusSemua(userId, sesiId);
-    await AuditLogService.catat({ aktorId: userId, aksi: "cabut_sesi", entitas: "user", entitasId: userId, sesudah: { jumlah }, ...meta });
     return { jumlah };
   },
 
