@@ -232,7 +232,6 @@ export function LaporanDokumentasi({ cakupan, data, galat, onUlang, mengulang, m
   }
 
   const adaBerkas = data.filter((k) => k.dokumentasi.length > 0);
-  const tanpa = data.filter((k) => k.dokumentasi.length === 0);
   const totalBerkas = hitungBerkas(data);
 
   return (
@@ -261,22 +260,6 @@ export function LaporanDokumentasi({ cakupan, data, galat, onUlang, mengulang, m
             />
           ))}
         </ul>
-      )}
-
-      {tanpa.length > 0 && (
-        <section className="rounded-xl border border-dashed p-4" aria-label="Kegiatan tanpa dokumentasi">
-          <h3 className="text-sm font-semibold">Belum ada dokumentasi</h3>
-          <ul className="mt-2 flex flex-col divide-y divide-muted text-sm">
-            {tanpa.map((k) => (
-              <li key={k.id} className="flex flex-wrap items-baseline justify-between gap-x-4 py-1.5">
-                <Link href={`/kegiatan/${k.id}`} className="font-medium hover:text-primary hover:underline">
-                  {k.judul}
-                </Link>
-                <span className="text-xs text-muted-foreground">{k.bidang}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
       )}
 
       <PratinjauFoto

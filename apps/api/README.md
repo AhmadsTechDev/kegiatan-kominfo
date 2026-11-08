@@ -52,7 +52,3 @@ bun run dev                   # http://localhost:3001/api
 | `bun run db:migrate` | Menerapkan migrasi yang ada ke basis data |
 | `bun run db:seed` | Mengisi data awal (aman diulang) |
 | `bun run db:studio` | Membuka Drizzle Studio untuk melihat isi tabel |
-
-## Pindah dari Prisma ke Drizzle
-
-Struktur tabel dan datanya tetap sama. `bun run db:migrate` membaca riwayat `_prisma_migrations` dan mencatat migrasi yang sudah pernah diterapkan, jadi tidak ada migrasi lama yang dijalankan dua kali. Tidak perlu langkah manual, dan basis data baru langsung memakai riwayat Drizzle.
