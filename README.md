@@ -265,7 +265,7 @@ Alternatif dari Railway + Vercel bila aplikasi dipasang di VPS sendiri (mis. ser
 
 1. Pasang Docker di VPS, lalu salin proyek ini ke sana (`git clone`).
 2. Arahkan DNS domain (mis. `kegiatan.palembang.go.id`) ke IP VPS. Belum punya domain? Pakai IP VPS dulu (peramban akan memberi peringatan sertifikat).
-3. Di root proyek: `cp docker.env.example .env`, lalu isi `DOMAIN`, `DB_PASSWORD`, `BETTER_AUTH_SECRET` (buat dengan `openssl rand -base64 48`), `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, dan pengaturan email (`SMTP_*` atau `BREVO_API_KEY`). File `.env` ini hanya ada di server dan tidak ikut ke Git.
+3. Di root proyek: `cp docker.env.example .env`, lalu isi `DOMAIN`, `APP_URL`, `DB_PASSWORD`, `BETTER_AUTH_SECRET` (buat dengan `openssl rand -base64 48`), `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, dan pengaturan email (`SMTP_*` atau `BREVO_API_KEY`). File `.env` ini hanya ada di server dan tidak ikut ke Git.
 4. Jalankan `docker compose up -d --build`. Backend otomatis menjalankan migrasi dan membuat akun admin pertama.
 5. Buka `https://DOMAIN`, login dengan akun admin dari langkah 3, lalu uji email dengan membuat satu akun untuk email Anda sendiri (lihat langkah 5 deploy Railway).
 

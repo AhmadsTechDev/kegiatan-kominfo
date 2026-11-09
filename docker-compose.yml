@@ -12,16 +12,13 @@
 
 name: kominfo-kegiatan
 
-# Alamat publik aplikasi; dipakai backend untuk cookie login (BETTER_AUTH_URL) dan CORS (FRONTEND_URL)
-x-alamat: &alamat ${APP_URL:-https://${DOMAIN:?Isi DOMAIN di .env}}
-
 services:
   postgres:
     image: postgres:17
     restart: unless-stopped
     environment:
       POSTGRES_DB: kominfo_pd_kg
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Isi DB_PASSWORD di .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       TZ: UTC
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -44,23 +41,23 @@ services:
       PORT: 3001
       # Kata sandi DB dipakai di dalam URL, jadi sebaiknya hanya huruf dan angka
       DATABASE_URL: postgres://postgres:${DB_PASSWORD}@postgres:5432/kominfo_pd_kg
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Isi BETTER_AUTH_SECRET di .env (minimal 32 karakter)}
-      BETTER_AUTH_URL: *alamat
-      FRONTEND_URL: *alamat
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${APP_URL}
+      FRONTEND_URL: ${APP_URL}
       STORAGE_DIR: /data/storage
       # Bila diisi, foto dan dokumen disimpan di Cloudinary (volume storage di bawah tidak terpakai)
-      CLOUDINARY_URL: ${CLOUDINARY_URL:-}
-      CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-kominfo-kegiatan}
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
+      CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER}
 
-      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
-      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
-      SMTP_HOST: ${SMTP_HOST:-smtp.zoho.com}
-      SMTP_PORT: ${SMTP_PORT:-465}
-      SMTP_SECURE: ${SMTP_SECURE:-true}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      SMTP_FROM: ${SMTP_FROM:-}
-      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURE: ${SMTP_SECURE}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      BREVO_API_KEY: ${BREVO_API_KEY}
       TZ: Asia/Jakarta
     volumes:
       # Foto dan dokumen kegiatan bila CLOUDINARY_URL kosong 
@@ -83,9 +80,9 @@ services:
     depends_on:
       - frontend
     ports:
-      - "${HTTP_PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
-      - "${HTTPS_PORT:-443}:443/udp"
+      - "${HTTP_PORT}:80"
+      - "${HTTPS_PORT}:443"
+      - "${HTTPS_PORT}:443/udp"
     environment:
       DOMAIN: ${DOMAIN}
     volumes:
