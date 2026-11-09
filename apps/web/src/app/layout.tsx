@@ -30,6 +30,7 @@ export const metadata: Metadata = {
     template: "%s · Pendataan Kegiatan",
   },
   description: "Pendataan Kegiatan Dinas Komunikasi dan Informatika Kota Palembang",
+  icons: { icon: "/icon.png", apple: "/apple-icon.png" },
 };
 
 /**
