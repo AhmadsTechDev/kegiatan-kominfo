@@ -28,8 +28,8 @@ export const app = new Elysia({ serve: { maxRequestBodySize: 21 * 1024 * 1024 } 
    */
   .onRequest(({ request, server, set }) => {
     /**
-     * Bila API berada di belakang reverse proxy (mis. Caddy, lihat Caddyfile), proxy yang mengisi header IP. Tanpa proxy,
-     * IP diambil dari koneksi agar pembatas laju tetap tahu asal permintaan.
+     * Saat dijalankan langsung tanpa reverse proxy (mis. development lokal), ambil IP dari koneksi
+     * agar pembatas laju (rate limit) dan pencatatan sesi tetap mengenali alamat IP pemanggil.
      */
     if (!request.headers.has("x-real-ip") && !request.headers.has("x-forwarded-for")) {
       const ip = server?.requestIP(request)?.address;

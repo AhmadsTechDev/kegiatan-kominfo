@@ -14,12 +14,6 @@ const API_URL = (process.env.API_URL || "http://localhost:3001").replace(/\/+$/,
  */
 const nextConfig: NextConfig = {
   /**
-   * Build Docker (apps/web/Dockerfile) mengisi NEXT_OUTPUT=standalone agar image hanya berisi berkas
-   * yang dipakai server. Vercel dan `next start` tetap memakai keluaran biasa.
-   */
-  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
-
-  /**
    * Header "X-Powered-By: Next.js" tidak perlu diumumkan
    */
   poweredByHeader: false,
