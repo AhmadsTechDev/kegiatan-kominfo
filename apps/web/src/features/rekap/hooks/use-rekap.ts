@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import type { NilaiFilter } from "@/components/shared/filter-bar";
+import type { NilaiFilter } from "@/components/common/filter-bar";
 import { getRekap, unduhEkspor } from "../api/rekap";
 import type { FormatEkspor, SatuanRekap } from "../types";
 

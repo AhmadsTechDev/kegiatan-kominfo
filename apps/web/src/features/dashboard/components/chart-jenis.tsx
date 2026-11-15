@@ -1,8 +1,8 @@
 import { PieChart } from "lucide-react";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/shared/panel";
-import { formatAngka } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/common/empty-state";
+import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/common/panel";
+import { formatAngka } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import type { DashboardData } from "../types";
 
 /**

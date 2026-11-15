@@ -2,10 +2,10 @@
 
 import { Users } from "lucide-react";
 import Link from "next/link";
-import type { NilaiFilter } from "@/components/shared/filter-bar";
-import { EmptyState } from "@/components/shared/empty-state";
+import type { NilaiFilter } from "@/components/common/filter-bar";
+import { EmptyState } from "@/components/common/empty-state";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatAngka } from "@/lib/format";
+import { formatAngka } from "@/utils/format";
 import type { RekapData } from "../types";
 
 /**

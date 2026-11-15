@@ -91,7 +91,7 @@ Diagramnya ada di [docs/uml](uml/README.md): [use case](uml/01-use-case.md), [ac
 | NFR-09 | **Pengubahan bersamaan.** Data tidak tertimpa diam-diam | Ubah kegiatan memakai versi data; bentrok dijawab 409 |
 | NFR-10 | **Header keamanan dan HTTPS.** | X-Frame-Options, nosniff, Referrer-Policy, dan Permissions-Policy; HTTPS dan HSTS oleh Vercel atau Caddy; cookie sesi hanya lewat HTTPS di produksi |
 | NFR-11 | **Aksesibilitas.** | Seluruh alur utama bisa dilalui dengan keyboard; kontras memenuhi AA; status tidak bergantung pada warna; area sentuh minimal 44 px di layar sentuh |
-| NFR-12 | **Pemasangan.** Mudah dipasang dan dipindah | Berbasis Docker; dipasang di Railway dan Vercel, atau di server dinas dengan Docker Compose |
+| NFR-12 | **Pemasangan.** Mudah dipasang dan dipindah | Berbasis Docker; dipasang di Render, Supabase, dan Vercel, atau di server dinas dengan Docker Compose |
 | NFR-13 | **Ramah ponsel.** Pegawai mengisi dari lapangan | Alur FR-04 sampai FR-06 selesai di layar 375 px; tabel menjadi daftar kartu di layar kecil |
 
 ## 7. Status kegiatan
@@ -115,9 +115,9 @@ Tiga lapisan, dengan **satu origin** untuk UI dan API.
 | Backend | Bun, Elysia, Drizzle, Better Auth | API REST berlapis: route, controller, service, repository. Autentikasi, validasi, hak akses, rekap, PDF, email, dan pengingat |
 | Database | PostgreSQL 17 | Data kegiatan, akun, dan master data |
 | Berkas | Cloudinary (atau folder lokal bila tidak diisi) | Foto dan PDF, disimpan privat |
-| Email | Brevo API (atau SMTP) | Aktivasi, atur ulang sandi, dan pengingat |
+| Email | Brevo API | Aktivasi, atur ulang sandi, dan pengingat |
 
-**Deployment.** Frontend di Vercel dan backend serta PostgreSQL di Railway, atau seluruhnya di server dinas dengan Docker Compose dan Caddy. Langkahnya ada di [README](../README.md#deploy-online-lewat-railway-dan-vercel), dan gambarnya di [docs/uml/08-deployment.md](uml/08-deployment.md) dan [docs/uml/07-component.md](uml/07-component.md).
+**Deployment.** Frontend di Vercel, backend di Render, dan PostgreSQL di Supabase, atau seluruhnya di server dinas dengan Docker Compose dan Caddy. Langkahnya ada di [README](../README.md#deploy-online-lewat-render-supabase-dan-vercel), dan gambarnya di [docs/uml/08-deployment.md](uml/08-deployment.md) dan [docs/uml/07-component.md](uml/07-component.md).
 
 ## 9. Penanganan galat
 
@@ -179,7 +179,7 @@ Prinsip data: akun terpisah dari data pegawai; status akun diturunkan, tidak dis
 - **Email wajib berfungsi.** Tanpa email, akun baru tidak bisa diaktivasi dan lupa sandi tidak bisa dipakai.
 - **Penghapusan akun dibatasi.** Akun yang sudah meninggalkan data kegiatan hanya dinonaktifkan.
 - **Alamat pengirim email.** Alamat gratis (mis. Gmail) lebih mudah masuk spam; untuk pemakaian sebenarnya pakai alamat dinas atau domain sendiri.
-- **Biaya layanan.** Railway berbayar setelah masa percobaan (sekitar US$5 per bulan); layanan lain memakai paket gratis dengan batasnya masing-masing.
+- **Biaya layanan.** Seluruh layanan cloud (Vercel, Render, Supabase, Cloudinary, dan Brevo) memakai paket gratis dengan batasnya masing-masing.
 - **Stack dikunci** (bagian 8). Tidak ada fitur di luar bagian 4 tanpa persetujuan.
 
 ## 13. Riwayat roadmap

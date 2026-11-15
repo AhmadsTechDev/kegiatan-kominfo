@@ -5,12 +5,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { FormDialog } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/common/form-dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useGantiSandi } from "@/features/pengaturan/hooks/use-akun-saya";
 import { ApiError } from "@/lib/api-client";
-import { periksaSandi } from "@/lib/sandi";
+import { periksaSandi } from "@/utils/sandi";
 import { useCurrentUser } from "../hooks/use-current-user";
 
 /**

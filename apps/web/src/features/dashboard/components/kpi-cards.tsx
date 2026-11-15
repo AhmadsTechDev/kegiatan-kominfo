@@ -1,7 +1,7 @@
 import { CalendarClock, CalendarRange, CheckCircle2, Minus, PlayCircle, TrendingDown, TrendingUp } from "lucide-react";
-import { StatCard } from "@/components/shared/stat-card";
-import { formatAngka, formatPeriode, periodeSebelumnya } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { StatCard } from "@/components/common/stat-card";
+import { formatAngka, formatPeriode, periodeSebelumnya } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import type { DashboardData } from "../types";
 
 /**

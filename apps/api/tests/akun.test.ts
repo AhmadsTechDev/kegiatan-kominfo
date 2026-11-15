@@ -68,7 +68,7 @@ describe("membuat akun", () => {
     const { mock } = await import("bun:test");
     const mailer = await import("@/lib/mailer");
     const asli = mailer.kirimEmail;
-    mock.module("@/lib/mailer", () => ({ kirimEmail: async () => Promise.reject(new Error("SMTP mati")) }));
+    mock.module("@/lib/mailer", () => ({ kirimEmail: async () => Promise.reject(new Error("Brevo gagal")) }));
     try {
       const isi = await isiAkun();
       const res = await panggil("/admin/akun", { cookie: admin, json: isi });

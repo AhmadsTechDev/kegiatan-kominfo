@@ -8,9 +8,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import { usePeriksaKegiatan } from "../hooks/use-kegiatan";
-import type { StatusPelaksanaan } from "@/components/shared/status-badge";
+import type { StatusPelaksanaan } from "@/components/common/status-badge";
 import type { StatusPemeriksaanKegiatan } from "../types";
 
 /**

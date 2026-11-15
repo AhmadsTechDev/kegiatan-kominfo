@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 /**
- * Alamat backend Elysia, hanya dipakai di server Next (bukan NEXT_PUBLIC_). Di Vercel diisi alamat backend Railway
+ * Alamat backend Elysia, hanya dipakai di server Next (bukan NEXT_PUBLIC_). Di Vercel diisi alamat backend Render
  */
 const API_URL = (process.env.API_URL || "http://localhost:3001").replace(/\/+$/, "");
 

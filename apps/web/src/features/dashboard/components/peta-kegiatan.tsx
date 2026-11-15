@@ -2,11 +2,11 @@
 
 import { ArrowRight, MapPinOff } from "lucide-react";
 import Link from "next/link";
-import { EmptyState } from "@/components/shared/empty-state";
-import { MapOverview } from "@/components/shared/map-overview";
-import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/shared/panel";
+import { EmptyState } from "@/components/common/empty-state";
+import { MapOverview } from "./map-overview";
+import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/common/panel";
 import { site } from "@/config/site";
-import { formatAngka } from "@/lib/format";
+import { formatAngka } from "@/utils/format";
 import type { DashboardData } from "../types";
 
 /**

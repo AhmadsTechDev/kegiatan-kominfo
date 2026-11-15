@@ -2,15 +2,15 @@
 
 import { Ellipsis, Pencil, Power, PowerOff, ShieldAlert, Trash2 } from "lucide-react";
 import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
-import { EmptyState } from "@/components/shared/empty-state";
+import { EmptyState } from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { ApiError } from "@/lib/api-client";
-import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
-import { cn } from "@/lib/utils";
+import { tabIndexPilihan, tanganiPanah } from "@/utils/navigasi-panah";
+import { cn } from "@/utils/cn";
 import type { BidangAdmin } from "../types";
 
 /**
@@ -133,7 +133,7 @@ export function terapkanGalatServer<T extends FieldValues>(
   return e instanceof Error ? e.message : "Terjadi kesalahan. Coba lagi beberapa saat.";
 }
 
-export { KolomCari } from "@/components/shared/kolom-cari";
+export { KolomCari } from "@/components/common/kolom-cari";
 
 /**
  * idPanel: id elemen role="tabpanel" yang isinya diganti tab ini; panel memakai aria-labelledby={idTab(idPanel, value)}

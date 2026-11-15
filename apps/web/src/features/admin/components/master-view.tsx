@@ -2,8 +2,8 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { PageHeader } from "@/components/shared/page-header";
-import { Panel } from "@/components/shared/panel";
+import { PageHeader } from "@/components/common/page-header";
+import { Panel } from "@/components/common/panel";
 import { AdminGuard, PilihanTab } from "./admin-shared";
 import { JenisTab } from "./jenis-tab";
 import { PegawaiTab } from "./pegawai-tab";

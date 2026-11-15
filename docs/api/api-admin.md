@@ -349,7 +349,7 @@ Membuat akun untuk pegawai di Master data lalu mengirim email aktivasi. Bisa dip
 | --- | --- |
 | 404 | Pegawai tidak ada atau nonaktif |
 | 422 | Pegawai sudah punya akun aktif, akunnya sedang nonaktif, atau email dipakai akun lain |
-| 502 | Email gagal dikirim (periksa pengaturan SMTP/Brevo) |
+| 502 | Email gagal dikirim (periksa pengaturan Brevo) |
 
 ---
 

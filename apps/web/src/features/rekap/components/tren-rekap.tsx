@@ -2,11 +2,11 @@
 
 import { BarChart3 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
+import { EmptyState } from "@/components/common/empty-state";
+import { Panel, PanelBody, PanelHeader } from "@/components/common/panel";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
-import { formatAngka, formatPeriode, formatTanggal } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatAngka, formatPeriode, formatTanggal } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
 import type { RekapData, SatuanRekap } from "../types";
 

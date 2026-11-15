@@ -20,7 +20,7 @@ export const authPlugin = new Elysia({ name: "auth" }).mount(auth.handler).macro
     /**
      * Membaca sesi dari cookie; 401 bila belum login, 403 bila akun nonaktif atau role tidak cocok
      *
-     * KONSEP resolve: fungsi yang berjalan sebelum handler, dan nilai yang di-return-nya (user, session)
+     * KONSEP resolve: fungsi yang berjalan sebelum handler / setelah validasi, dan nilai yang di-return-nya (user, session)
      * otomatis tersedia sebagai parameter handler. Fungsi ini `async` karena harus menunggu database membaca sesi.
      * Bila sebuah galat dilempar (throw), handler tidak dijalankan dan error.plugin mengubahnya menjadi JSON 401/403.
      */

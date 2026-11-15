@@ -5,15 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { EmptyState } from "@/components/shared/empty-state";
-import { ErrorState } from "@/components/shared/error-state";
+import { EmptyState } from "@/components/common/empty-state";
+import { ErrorState } from "@/components/common/error-state";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { urlDokumentasi } from "@/features/kegiatan/api/dokumentasi";
 import type { Dokumentasi } from "@/features/kegiatan/types";
-import { formatTanggalJam, formatUkuran } from "@/lib/format";
+import { formatTanggalJam, formatUkuran } from "@/utils/format";
 import { unduhDokumentasiZip } from "../api";
 import type { CakupanLaporan, KegiatanDokumentasi } from "../types";
 

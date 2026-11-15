@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
-import type { ItemUnggah } from "@/components/shared/file-dropzone";
+import type { ItemUnggah } from "@/components/common/file-dropzone";
 import { dashboardKeys } from "@/features/dashboard/hooks/use-dashboard";
 import { gantiDokumentasi, unggahDokumentasi } from "../api/dokumentasi";
 import { JENIS_FOTO, kompresGambar } from "../lib/kompres-gambar";

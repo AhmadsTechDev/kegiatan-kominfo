@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, ClipboardList, CornerDownLeft, Plus, Search, type LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
@@ -13,8 +13,8 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { getDaftarKegiatan } from "@/features/kegiatan/api/kegiatan";
 import type { KegiatanItem } from "@/features/kegiatan/types";
 import { lepasLapisan } from "@/hooks/use-tutup-lewat-kembali";
-import { formatRentangTanggal } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatRentangTanggal } from "@/utils/format";
+import { cn } from "@/utils/cn";
 
 /**
  * Pencarian cepat (command palette) untuk pindah halaman dan mencari kegiatan

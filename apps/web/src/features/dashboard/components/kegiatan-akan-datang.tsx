@@ -2,13 +2,13 @@
 
 import { ArrowRight, CalendarCheck } from "lucide-react";
 import Link from "next/link";
-import { AvatarInisial } from "@/components/shared/avatar-inisial";
-import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
-import { Panel, PanelFooter, PanelHeader } from "@/components/shared/panel";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { UnitChip } from "@/components/shared/unit-chip";
+import { AvatarInisial } from "@/components/common/avatar-inisial";
+import { DataTable, type DataTableColumn } from "@/components/common/data-table";
+import { Panel, PanelFooter, PanelHeader } from "@/components/common/panel";
+import { StatusBadge } from "@/components/common/status-badge";
+import { UnitChip } from "@/components/common/unit-chip";
 import { Button } from "@/components/ui/button";
-import { formatJam, formatRentangTanggal } from "@/lib/format";
+import { formatJam, formatRentangTanggal } from "@/utils/format";
 import type { KegiatanRingkas } from "../types";
 
 /**

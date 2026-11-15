@@ -3,11 +3,11 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import { toast } from "sonner";
-import { ErrorState } from "@/components/shared/error-state";
-import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
+import { ErrorState } from "@/components/common/error-state";
+import { Panel, PanelBody, PanelHeader } from "@/components/common/panel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
-import { cn } from "@/lib/utils";
+import { tabIndexPilihan, tanganiPanah } from "@/utils/navigasi-panah";
+import { cn } from "@/utils/cn";
 import type { Preferensi } from "../api/akun-saya";
 import { usePreferensi, useTema, useUbahPreferensi } from "../hooks/use-akun-saya";
 

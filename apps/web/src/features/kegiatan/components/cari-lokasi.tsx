@@ -4,7 +4,7 @@ import { MapPin, Search, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import { cariTempat, type Tempat } from "../lib/geokode";
 
 /**

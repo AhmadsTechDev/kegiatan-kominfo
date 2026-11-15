@@ -2,14 +2,14 @@
 
 import { ArrowRight, Hourglass, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { ErrorState } from "@/components/shared/error-state";
-import { PageHeader } from "@/components/shared/page-header";
+import { ErrorState } from "@/components/common/error-state";
+import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useAnimasiPertama } from "@/hooks/use-animasi-pertama";
 import { useSapaan } from "@/hooks/use-sapaan";
-import { formatAngka, formatJam } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatAngka, formatJam } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import { useDashboard } from "../hooks/use-dashboard";
 import { usePeriode } from "../hooks/use-periode";
 import { ChartJenis } from "./chart-jenis";

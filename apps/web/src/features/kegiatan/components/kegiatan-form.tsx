@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm, useWatch, type FieldPath } from "react-hook-form";
 import { toast } from "sonner";
-import { AvatarInisial } from "@/components/shared/avatar-inisial";
-import { DatePicker } from "@/components/shared/date-picker";
-import { JamPicker } from "@/components/shared/jam-picker";
-import { Panel } from "@/components/shared/panel";
+import { AvatarInisial } from "@/components/common/avatar-inisial";
+import { DatePicker } from "@/components/common/date-picker";
+import { JamPicker } from "@/components/common/jam-picker";
+import { Panel } from "@/components/common/panel";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -29,8 +29,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfil } from "@/features/auth/hooks/use-profil";
 import { ApiError } from "@/lib/api-client";
-import { formatTanggal } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatTanggal } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import { getKegiatan } from "../api/kegiatan";
 import { kegiatanKeys, useBuatKegiatan, useSimpanDraf, useUbahKegiatan } from "../hooks/use-kegiatan";
 import {

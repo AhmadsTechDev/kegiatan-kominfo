@@ -1,6 +1,6 @@
 import { ArrowLeft, FileQuestion, ShieldX } from "lucide-react";
 import Link from "next/link";
-import { EmptyState } from "@/components/shared/empty-state";
+import { EmptyState } from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";

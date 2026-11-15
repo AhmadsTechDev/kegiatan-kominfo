@@ -1,4 +1,4 @@
-import type { StatusPelaksanaan } from "@/components/shared/status-badge";
+import type { StatusPelaksanaan } from "@/components/common/status-badge";
 
 /**
  * Tipe data dashboard: statistik dinas dan aktivitas pegawai

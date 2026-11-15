@@ -10,7 +10,7 @@ import { AppError } from "@/lib/errors";
  */
 export const errorPlugin = new Elysia({ name: "error" }).onError({ as: "global" }, ({ code, error, set }) => {
   /**
-   * Galat buatan aplikasi (lib/errors.ts) sudah membawa status dan kode, jadi tinggal diteruskan.
+   * Galat buatan aplikasi (lib/errors.ts) yang sudah membawa status dan kode, jadi tinggal diteruskan.
    */
   if (error instanceof AppError) {
     set.status = error.status;

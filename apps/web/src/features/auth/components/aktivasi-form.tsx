@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ErrorState } from "@/components/shared/error-state";
+import { ErrorState } from "@/components/common/error-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";

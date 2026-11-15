@@ -3,10 +3,10 @@
 import { KeyRound, LogOut, MonitorX, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { DaftarSesi, namaPerangkat, type Sesi } from "@/components/shared/daftar-sesi";
-import { ErrorState } from "@/components/shared/error-state";
-import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { DaftarSesi, namaPerangkat, type Sesi } from "@/components/common/daftar-sesi";
+import { ErrorState } from "@/components/common/error-state";
+import { Panel, PanelBody, PanelHeader } from "@/components/common/panel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";

@@ -38,7 +38,6 @@ flowchart LR
     cloud[("Cloudinary<br/>(foto dan PDF, privat)")]
     lokal[("Folder storage/<br/>(bila Cloudinary kosong)")]
     brevo["Brevo API<br/>(email)"]
-    smtp["SMTP / Mailpit<br/>(development)"]
     peta["OpenFreeMap<br/>(ubin peta)"]
 
     pengguna -- HTTPS --> app
@@ -49,7 +48,6 @@ flowchart LR
     storage --> cloud
     storage -.-> lokal
     mailer --> brevo
-    mailer -.-> smtp
 ```
 
 | Komponen | Peran |
@@ -58,5 +56,5 @@ flowchart LR
 | Better Auth | Login email dan sandi, sesi di database, penguncian akun lewat hook, batas laju per IP |
 | Service | Satu-satunya tempat aturan bisnis dan pemeriksaan hak akses |
 | Storage | Cloudinary bila `CLOUDINARY_URL` diisi, selain itu folder lokal `STORAGE_DIR` |
-| Mailer | API Brevo bila `BREVO_API_KEY` diisi, selain itu SMTP |
+| Mailer | API Brevo |
 | Penjadwal | Berjalan di dalam proses backend; tidak dijalankan saat pengujian |

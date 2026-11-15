@@ -3,12 +3,12 @@
 import { Bell, CircleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ErrorState } from "@/components/shared/error-state";
+import { ErrorState } from "@/components/common/error-state";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatTanggalJam } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatTanggalJam } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import type { Notifikasi } from "../api/notifikasi";
 import { useBacaNotifikasi, useBacaSemuaNotifikasi, useNotifikasi } from "../hooks/use-notifikasi";
 

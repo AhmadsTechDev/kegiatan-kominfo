@@ -4,7 +4,7 @@ import { Check, IdCard, Pencil } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
+import { Panel, PanelBody, PanelHeader } from "@/components/common/panel";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";

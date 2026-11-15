@@ -11,27 +11,27 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AvatarInisial } from "@/components/shared/avatar-inisial";
+import { AvatarInisial } from "@/components/common/avatar-inisial";
 import {
   DataTable,
   type DataTableColumn,
-} from "@/components/shared/data-table";
-import { ErrorState } from "@/components/shared/error-state";
-import { FilterBar } from "@/components/shared/filter-bar";
-import { PageHeader } from "@/components/shared/page-header";
-import { PaginationBar } from "@/components/shared/pagination-bar";
-import { Panel, PanelFooter } from "@/components/shared/panel";
+} from "@/components/common/data-table";
+import { ErrorState } from "@/components/common/error-state";
+import { FilterBar } from "@/components/common/filter-bar";
+import { PageHeader } from "@/components/common/page-header";
+import { PaginationBar } from "@/components/common/pagination-bar";
+import { Panel, PanelFooter } from "@/components/common/panel";
 import {
   StatusBadge,
   StatusPemeriksaanBadge,
-} from "@/components/shared/status-badge";
-import { UnitChip } from "@/components/shared/unit-chip";
+} from "@/components/common/status-badge";
+import { UnitChip } from "@/components/common/unit-chip";
 import { Button } from "@/components/ui/button";
 import { useGrupNav } from "@/hooks/use-grup-nav";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
-import { formatJam, formatRentangTanggal } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatJam, formatRentangTanggal } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import { UKURAN_HALAMAN } from "../api/kegiatan";
 import { useDaftarKegiatan, useReferensi } from "../hooks/use-kegiatan";
 import { useKegiatanFilter } from "../hooks/use-kegiatan-filter";

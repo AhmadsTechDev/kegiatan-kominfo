@@ -5,8 +5,9 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client } from "pg";
 
-const url = process.env.DATABASE_URL;
-if (!url) throw new Error("DATABASE_URL wajib diisi");
+const rawUrl = process.env.DATABASE_URL;
+if (!rawUrl) throw new Error("DATABASE_URL wajib diisi");
+const url = rawUrl.replace(/(\.pooler\.supabase\.com):6543\b/, "$1:5432");
 
 const client = new Client({ connectionString: url });
 await client.connect();

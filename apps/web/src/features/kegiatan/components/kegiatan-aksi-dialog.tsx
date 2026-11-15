@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { lepasLapisan } from "@/hooks/use-tutup-lewat-kembali";
 import { ApiError } from "@/lib/api-client";
 import { kegiatanKeys, useHapusKegiatan, useSelesaikanKegiatan } from "../hooks/use-kegiatan";

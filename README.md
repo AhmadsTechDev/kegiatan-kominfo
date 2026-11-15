@@ -92,11 +92,11 @@ Delapan diagram Mermaid di [docs/uml](docs/uml/README.md), tampil langsung di Gi
 | [ERD](docs/uml/05-erd.md) | Apa saja tabel database dan relasinya? |
 | [State](docs/uml/06-state.md) | Bagaimana status kegiatan, akun, dan permintaan akun berubah? |
 | [Component](docs/uml/07-component.md) | Apa saja bagian sistem dan layanan luar yang dipakai? |
-| [Deployment](docs/uml/08-deployment.md) | Bagaimana aplikasi dipasang di Railway dan Vercel, atau di VPS? |
+| [Deployment](docs/uml/08-deployment.md) | Bagaimana aplikasi dipasang di Render, Supabase, dan Vercel, atau di VPS? |
 
 ## Menjalankan untuk pengembangan
 
-Prasyarat: [Bun](https://bun.sh) 1.4, PostgreSQL 17 (mis. lewat Docker, lihat `apps/api/.env.example`), dan Mailpit untuk melihat email (bawaan Laragon, http://localhost:8025).
+Prasyarat: [Bun](https://bun.sh) 1.4 dan PostgreSQL 17 (atau basis data PostgreSQL seperti Supabase).
 
 ```bash
 # 1. Backend
@@ -141,22 +141,22 @@ Setiap cara menjalankan aplikasi membaca pengaturan dari tempat yang berbeda. Se
 | Development frontend | `apps/web/.env` (opsional, hanya `API_URL`) | `apps/web/.env.example` |
 | Uji backend | `apps/api/.env.test` | `apps/api/.env.test.example` |
 | Deploy VPS dengan Docker | **`.env` di root proyek**, dibaca `docker-compose.yml` | `docker.env.example` |
-| Deploy Railway + Vercel | Tidak ada file; isi di tab **Variables** Railway dan **Environment Variables** Vercel | Daftar di bawah |
+| Deploy Render + Supabase + Vercel | Tidak ada file; isi di tab **Environment** Render dan **Environment Variables** Vercel | Daftar di bawah |
 
-Jadi `.env` di root hanya ada di server VPS. Di laptop atau saat memakai Railway + Vercel, file itu memang tidak perlu.
+Jadi `.env` di root hanya ada di server VPS. Di laptop atau saat memakai Render + Supabase + Vercel, file itu memang tidak perlu.
 
 Yang harus benar di produksi, apa pun caranya:
 
-- **Email** (`BREVO_API_KEY`, atau `SMTP_*`): tanpa email, akun baru tidak bisa diaktivasi dan lupa sandi tidak bisa dipakai.
+- **Email** (`BREVO_API_KEY` dan `EMAIL_FROM`): tanpa email, akun baru tidak bisa diaktivasi dan lupa sandi tidak bisa dipakai.
 - **`FRONTEND_URL` dan `BETTER_AUTH_URL`** sama persis dengan alamat publik aplikasi (`https://`, tanpa garis miring di akhir). Tautan di email dibuat dari `FRONTEND_URL`, dan backend menolak permintaan pengubah data yang `Origin`-nya tidak cocok (403 `ASAL_DITOLAK`, perlindungan CSRF).
 - **`SEED_ADMIN_PASSWORD`** mengikuti kebijakan kata sandi: minimal 8 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin.
 
-## Deploy (online lewat Railway dan Vercel)
+## Deploy (online lewat Render, Supabase, dan Vercel)
 
-Aplikasi dipasang di empat layanan. Semuanya cukup diatur lewat klik di situs masing-masing, tanpa server sendiri.
+Aplikasi dipasang di lima layanan dengan paket gratis. Semuanya cukup diatur lewat klik di situs masing-masing, tanpa server sendiri.
 
 ```
-Pengguna → Vercel (frontend Next.js) → Railway (backend Elysia) → Railway (PostgreSQL)
+Pengguna → Vercel (frontend Next.js) → Render (backend Elysia) → Supabase (PostgreSQL)
                                           ├→ Cloudinary (simpan foto dan dokumen)
                                           └→ Brevo (kirim email undangan dan pengingat)
 ```
@@ -164,12 +164,12 @@ Pengguna → Vercel (frontend Next.js) → Railway (backend Elysia) → Railway 
 | Bagian | Layanan | Catatan |
 | --- | --- | --- |
 | Frontend | [Vercel](https://vercel.com) | Gratis. Meneruskan `/api/*` ke backend, jadi cookie login tetap milik domain Vercel |
-| Backend | [Railway](https://railway.com) | Dibangun dari `apps/api/Dockerfile`. Setiap kali menyala (`bun run start`), backend menjalankan migrasi tabel dan data awal sendiri |
-| PostgreSQL | Railway | Satu klik, alamat koneksinya langsung tersedia untuk backend |
+| Backend | [Render](https://render.com) | Paket gratis (Web Service Docker dari `apps/api/Dockerfile` atau `render.yaml`). Setiap kali menyala (`bun run start`), backend menjalankan migrasi tabel dan data awal sendiri |
+| PostgreSQL | [Supabase](https://supabase.com) | Paket gratis (500 MB, aktif 24/7). Memakai alamat **Session pooler** (port `5432`, mendukung IPv4) |
 | Berkas | [Cloudinary](https://cloudinary.com) | Paket gratis. Foto dan PDF disimpan privat (tipe *authenticated*), hanya bisa dibuka lewat backend setelah login |
-| Email | [Brevo](https://www.brevo.com) | Paket gratis. Railway Hobby memblokir SMTP (termasuk Zoho), jadi email dikirim lewat API Brevo. Alamat Zoho tetap bisa menjadi pengirimnya. Wajib: aktivasi akun, lupa sandi, dan ganti email memakai tautan email |
+| Email | [Brevo](https://www.brevo.com) | Paket gratis. Pengiriman email memakai REST API Brevo. Alamat Zoho atau domain dinas tetap bisa menjadi pengirimnya. Wajib: aktivasi akun, lupa sandi, dan ganti email memakai tautan email |
 
-Railway memberi kredit percobaan, setelah itu paket Hobby berbayar (sekitar US$5 per bulan; cek harga terbaru di situsnya).
+Semua layanan di atas bisa dijalankan dengan paket gratis. Catatan untuk Render gratis: container akan tidur (*spin down*) setelah 15 menit tanpa trafik dan butuh ~30–50 detik untuk bangun saat ada permintaan pertama (bisa dijaga tetap bangun dengan ping terjadwal ke `/api/health`).
 
 ### Langkah 1: unggah kode ke GitHub
 
@@ -186,8 +186,8 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
 
 1. Daftar gratis di Brevo.
 2. Buka **Senders, Domains & Dedicated IPs → Senders → Add a sender**, isi email yang akan menjadi pengirim (mis. alamat Zoho dinas), lalu verifikasi lewat email yang masuk ke kotak tersebut. Alamat gratis seperti Gmail bisa dipakai untuk uji coba (pilih **Add this sender anyway**), tetapi emailnya lebih mudah masuk spam atau ditolak. Untuk pemakaian sebenarnya pakai alamat dinas atau domain sendiri.
-3. Buka **SMTP & API → tab API keys & MCP → Generate a new API key** (bukan tab SMTP; kunci SMTP tidak dipakai). Beri akses **Restricted** dan ubah **Transactional email** menjadi **All**, biarkan izin lain **None**. Salin kuncinya (berawalan `xkeysib-`). Simpan, karena hanya ditampilkan sekali. Kunci mati sendiri bila 90 hari tidak dipakai; bila itu terjadi, buat kunci baru dan ganti di Railway.
-4. Buka **Security → Authorized IPs**, lalu klik **Deactivate for API keys**. Railway memakai alamat IP yang berubah-ubah, sehingga tanpa ini panggilan API Brevo diblokir. Aktifkan **Two-factor authentication** di halaman yang sama untuk mengamankan akun.
+3. Buka **SMTP & API → tab API keys & MCP → Generate a new API key** (bukan tab SMTP; kunci SMTP tidak dipakai). Beri akses **Restricted** dan ubah **Transactional email** menjadi **All**, biarkan izin lain **None**. Salin kuncinya (berawalan `xkeysib-`). Simpan, karena hanya ditampilkan sekali. Kunci mati sendiri bila 90 hari tidak dipakai; bila itu terjadi, buat kunci baru dan ganti di Render.
+4. Buka **Security → Authorized IPs**, lalu klik **Deactivate for API keys**. Render memakai alamat IP yang berubah-ubah, sehingga tanpa ini panggilan API Brevo diblokir. Aktifkan **Two-factor authentication** di halaman yang sama untuk mengamankan akun.
 
 ### Langkah 2b: siapkan Cloudinary (penyimpanan berkas)
 
@@ -195,79 +195,96 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
 2. Di **Settings → API Keys**, klik **Generate New API Key** dengan nama khusus aplikasi ini (mis. `app-kegiatan`) dan peran **Master Admin** (peran lain tidak cukup untuk unggah dan hapus lewat API). Susun `cloudinary://API_KEY:API_SECRET@CLOUD_NAME`, dengan API Key dan API Secret dari kunci baru itu. `CLOUD_NAME` adalah yang tertulis setelah "Cloud name:" di halaman itu (bukan nama environment). Tanpa awalan `CLOUDINARY_URL=`, tanpa tanda kutip, spasi, atau tanda `<` `>`.
 3. Buka **Settings → Security**, centang **Allow delivery of PDF and ZIP files**, lalu simpan. Tanpa ini dokumen PDF tidak bisa dibuka.
 
-### Langkah 3: backend dan PostgreSQL di Railway
+### Langkah 3a: PostgreSQL di Supabase
 
-1. Masuk ke Railway dengan akun GitHub, lalu **New Project → Deploy from GitHub repo** dan pilih repository tadi.
-2. Klik layanan yang terbentuk, buka **Settings → Root Directory**, isi `apps/api`. Railway mengenali proyek Bun dari `package.json` dan `bun.lock`.
-3. Di kanvas proyek klik **+ Create → Database → PostgreSQL**.
-4. Buka tab **Variables** layanan backend. Railway membaca `apps/api/.env.example` dan menyodorkan semuanya sebagai *Suggested Variables*; hapus (klik ✕) yang tidak dipakai (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `APP_DB_USER`, `APP_DB_PASSWORD`, `STORAGE_DIR`, `PORT`, `DATABASE_POOL_MAX`), dan isi yang berikut (volume tidak diperlukan karena berkas disimpan di Cloudinary). Di **Settings**, matikan **Wait for CI** karena repository tidak punya GitHub Actions; bila dibiarkan menyala, deploy bisa tertahan:
+1. Daftar atau masuk ke [Supabase](https://supabase.com) dengan akun GitHub, lalu klik **New project**.
+2. Isi nama proyek, buat **Database Password** (hindari karakter spesial seperti `@`, `#`, `?`), lalu pilih region terdekat (mis. Singapore atau Tokyo).
+3. Setelah proyek siap, klik **Connect** di bagian atas → pilih **Connection Method: Session pooler** dan **Type: URI** → salin URI-nya dan ganti `[YOUR-PASSWORD]` dengan password database Anda:
+
+   ```text
+   postgresql://postgres.xxxxx:PASSWORD_ANDA@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres
+   ```
+
+   Pastikan memakai **Session pooler** (`pooler.supabase.com` port `5432`) karena mendukung jaringan IPv4 di Render dan kompatibel dengan migrasi serta query server (`apps/api/scripts/migrate.ts` juga otomatis mengalihkan `:6543` ke `:5432` saat migrasi).
+
+### Langkah 3b: backend di Render
+
+1. Masuk ke [Render](https://render.com) dengan akun GitHub, lalu **New + → Web Service** (atau gunakan **New + → Blueprint** memakai file `render.yaml` di root repository) dan pilih repository tadi.
+2. Atur konfigurasi layanan:
+   - **Root Directory**: `apps/api`
+   - **Language / Runtime**: `Docker`
+   - **Region**: Singapore (atau region terdekat)
+   - **Instance Type**: **Free**
+3. Pada bagian **Environment Variables**, tambahkan variabel berikut (tanpa tanda kutip):
 
    | Variable | Isi |
    | --- | --- |
-   | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (diketik persis begitu; Railway mengisinya otomatis. Sesuaikan `Postgres` bila nama layanan database Anda berbeda) |
    | `NODE_ENV` | `production` |
+   | `PORT` | `3001` |
+   | `DATABASE_URL` | URI **Session pooler** Supabase dari langkah 3a |
    | `BETTER_AUTH_SECRET` | Teks acak minimal 32 karakter, buat di Git Bash dengan `openssl rand -hex 32` |
-   | `BETTER_AUTH_URL` | **Alamat Vercel** (bukan alamat Railway), karena pengguna hanya melihat alamat itu. Sementara `https://contoh.vercel.app`, diganti di langkah 5. Variabel ini wajib; bila kosong, backend berhenti menyala |
+   | `BETTER_AUTH_URL` | **Alamat Vercel** (bukan alamat Render), karena pengguna hanya melihat alamat itu. Sementara `https://contoh.vercel.app`, diganti di langkah 5. Variabel ini wajib; bila kosong, backend berhenti menyala |
    | `FRONTEND_URL` | Sama dengan `BETTER_AUTH_URL` |
    | `CLOUDINARY_URL` | Nilai dari langkah 2b.2 (`cloudinary://...`) |
    | `SEED_ADMIN_EMAIL` | Email admin pertama |
    | `SEED_ADMIN_PASSWORD` | Sandi admin pertama: minimal 8 karakter, berisi huruf dan angka, tidak memuat bagian depan email admin |
    | `BREVO_API_KEY` | Kunci dari langkah 2 |
-   | `SMTP_FROM` | `Aplikasi Pendataan Kegiatan <alamat-yang-diverifikasi-di-brevo@domain>` (harus sama persis dengan sender yang aktif di Brevo) |
+   | `EMAIL_FROM` | `Aplikasi Pendataan Kegiatan <alamat-yang-diverifikasi-di-brevo@domain>` (harus sama persis dengan sender yang aktif di Brevo) |
 
    Variabel lain di `.env.example` (`PENGINGAT_AKTIF`, `CLOUDINARY_FOLDER`, dan seterusnya) opsional dan punya nilai bawaan.
 
-5. Buka **Settings → Networking → Generate Domain**. Anda mendapat alamat seperti `https://xxx.up.railway.app`. **Port domain harus sama dengan port yang dipakai backend.** Railway menyuntikkan `PORT` sendiri (mis. 8080), padahal Dockerfile menetapkan 3001. Cek **Deploy Logs**: baris `API berjalan di http://localhost:XXXX/api` menunjukkan port yang dipakai; samakan port domain dengan angka itu lewat ikon pensil di domain (atau isi variabel `PORT` agar sama dengan port domain). Bila tidak sama, Vercel akan menerima 502 "Application failed to respond". Setelah itu buka `https://xxx.up.railway.app/api/health`; bila tampil `{"status":"ok"}`, backend sudah jalan dan tersambung ke PostgreSQL.
+4. Buka bagian **Advanced** → isi **Health Check Path** dengan `/api/health`, lalu klik **Create Web Service**.
+5. Setelah build selesai dan status **Live**, salin alamat layanan Render di kiri atas (mis. `https://kominfo-kegiatan-api.onrender.com`). Buka `https://xxx.onrender.com/api/health`; bila tampil `{"status":"ok"}`, backend sudah jalan dan tersambung ke PostgreSQL Supabase.
 
 ### Langkah 4: frontend di Vercel
 
 1. Masuk ke Vercel dengan akun GitHub, lalu **Add New → Project** dan impor repository yang sama.
 2. Isi **Root Directory** dengan `apps/web`. Framework terdeteksi otomatis sebagai Next.js.
-3. Di **Environment Variables** tambahkan `API_URL` dengan alamat Railway dari langkah 3.5, tanpa garis miring di akhir. Variabel Vercel baru berlaku pada deployment berikutnya, jadi lakukan **Redeploy** bila Anda mengubahnya setelah deploy pertama.
+3. Di **Environment Variables** tambahkan `API_URL` dengan alamat Render dari langkah 3b.5, tanpa garis miring di akhir. Variabel Vercel baru berlaku pada deployment berikutnya, jadi lakukan **Redeploy** bila Anda mengubahnya setelah deploy pertama.
 4. Klik **Deploy**. Setelah selesai Anda mendapat alamat seperti `https://web-xxxx.vercel.app`. Untuk alamat yang lebih rapi, buka **Settings → Domains → Add Domain** dan tambahkan nama sendiri, mis. `kegiatan-diskominfo-plg.vercel.app` (alamat lama otomatis dialihkan). Tentukan alamat final sebelum langkah 5.
 
 ### Langkah 5: sambungkan keduanya
 
-Kembali ke Railway, ubah `BETTER_AUTH_URL` dan `FRONTEND_URL` menjadi alamat Vercel dari langkah 4.4. Railway akan menyalakan ulang backend otomatis. Setelah itu buka alamat Vercel dan login dengan `SEED_ADMIN_EMAIL` dan `SEED_ADMIN_PASSWORD`.
+Kembali ke Render, buka tab **Environment**, ubah `BETTER_AUTH_URL` dan `FRONTEND_URL` menjadi alamat Vercel dari langkah 4.4 lalu simpan (**Save, rebuild, and deploy** / restart otomatis). Setelah itu buka alamat Vercel dan login dengan `SEED_ADMIN_EMAIL` dan `SEED_ADMIN_PASSWORD`.
 
 Sebelum membuat akun pegawai, uji email: buat satu akun dengan email Anda sendiri di **Manajemen akun → Buat akun**, lalu pastikan tautan aktivasinya sampai dan bisa dibuka. Bila email gagal, akun tetap tersimpan dan halaman admin menampilkan pesan galatnya; setelah pengaturan email diperbaiki, pakai **Kirim ulang undangan**.
 
-Setelah admin pertama bisa masuk, ganti sandinya lewat **Pengaturan → Keamanan**, lalu hapus `SEED_ADMIN_PASSWORD` dari Railway.
+Setelah admin pertama bisa masuk, ganti sandinya lewat **Pengaturan → Keamanan**, lalu hapus `SEED_ADMIN_PASSWORD` dari Render.
 
 **Cara kerja akun seed.** Seed berjalan setiap kali backend menyala. Bila email di `SEED_ADMIN_EMAIL` sudah ada, akunnya dilewati dan sandi tidak ditimpa; bila belum ada, akun admin baru dibuat. Jadi mengganti `SEED_ADMIN_PASSWORD` tidak mengubah sandi admin yang sudah ada (ganti lewat aplikasi), dan setelah email admin diganti lewat Pengaturan, `SEED_ADMIN_PASSWORD` lama harus dihapus agar seed tidak membuat admin baru dengan email lama.
 
 ### Memperbarui aplikasi
 
-Cukup `git push`. Vercel dan Railway membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala (`bun scripts/migrate.ts`).
+Cukup `git push`. Vercel dan Render membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala (`bun scripts/migrate.ts`).
 
-**Mengubah skema database.** Ubah `apps/api/src/db/schema.ts`, lalu di komputer sendiri jalankan `bun run db:generate` (membuat file SQL baru di `apps/api/drizzle/`) dan `bun run db:migrate` (menerapkannya ke database lokal). Periksa file SQL-nya, jalankan tes, lalu commit folder `drizzle/` bersama kodenya dan `git push`. Jangan mengedit migrasi yang sudah ter-deploy dan jangan mengubah skema langsung di database Railway. Menambah tabel atau kolom aman bagi data lama (kolom wajib baru butuh nilai bawaan). **Menghapus atau mengganti nama kolom dan tabel menghilangkan datanya**; buat cadangan lebih dulu (Railway → Postgres → Backups) dan ubah penggantian nama menjadi `RENAME` manual di SQL migrasi.
+**Mengubah skema database.** Ubah `apps/api/src/db/schema.ts`, lalu di komputer sendiri jalankan `bun run db:generate` (membuat file SQL baru di `apps/api/drizzle/`) dan `bun run db:migrate` (menerapkannya ke database lokal). Periksa file SQL-nya, jalankan tes, lalu commit folder `drizzle/` bersama kodenya dan `git push`. Jangan mengedit migrasi yang sudah ter-deploy dan jangan mengubah skema langsung di database Supabase. Menambah tabel atau kolom aman bagi data lama (kolom wajib baru butuh nilai bawaan). **Menghapus atau mengganti nama kolom dan tabel menghilangkan datanya**; buat cadangan lebih dulu (`pg_dump` dari URI Supabase) dan ubah penggantian nama menjadi `RENAME` manual di SQL migrasi.
 
 ### Bila ada masalah
 
 | Gejala | Periksa |
 | --- | --- |
-| Halaman Vercel terbuka tapi login gagal atau "server tidak dapat dihubungi" | `API_URL` di Vercel, dan `BETTER_AUTH_URL`/`FRONTEND_URL` di Railway harus persis alamat Vercel (`https://`, tanpa garis miring di akhir) |
-| Backend Railway gagal menyala | Tab **Deployments → View logs**; biasanya ada variable wajib yang belum diisi (pesannya menyebut namanya) |
-| Login dijawab 502 "Application failed to respond" padahal log backend sehat | Port domain di **Settings → Networking** tidak sama dengan port di baris `API berjalan di http://localhost:XXXX/api` |
+| Halaman Vercel terbuka tapi login gagal atau "server tidak dapat dihubungi" | `API_URL` di Vercel, dan `BETTER_AUTH_URL`/`FRONTEND_URL` di Render harus persis alamat Vercel (`https://`, tanpa garis miring di akhir) |
+| Permintaan pertama terasa lambat (~30–50 detik) | Render paket gratis tidur (*spin down*) setelah 15 menit tidak ada trafik; gunakan ping terjadwal ke `/api/health` bila ingin selalu aktif |
+| Backend Render gagal menyala | Tab **Logs** di Render; biasanya ada variable wajib yang belum diisi atau `DATABASE_URL` memakai Direct connection (IPv6) bukan Session pooler (IPv4) |
 | Backend berhenti dengan "Invalid CLOUDINARY_URL protocol" | Nilai `CLOUDINARY_URL` tidak diawali `cloudinary://` (biasanya awalan `CLOUDINARY_URL=` ikut tersalin) |
-| Email gagal dengan galat soal alamat IP atau 401 dari Brevo | **Security → Authorized IPs** belum dinonaktifkan untuk API keys, atau `BREVO_API_KEY` salah (bukan kunci SMTP) |
-| Email tidak sampai | `BREVO_API_KEY` dan `SMTP_FROM` (harus sender yang sudah diverifikasi). Periksa juga folder spam |
-| Tautan di email mengarah ke alamat yang salah | `FRONTEND_URL` di Railway harus alamat publik frontend |
+| Email gagal dengan galat soal alamat IP atau 401 dari Brevo | **Security → Authorized IPs** belum dinonaktifkan untuk API keys, atau `BREVO_API_KEY` salah |
+| Email tidak sampai | `BREVO_API_KEY` dan `EMAIL_FROM` (harus sender yang sudah diverifikasi). Periksa juga folder spam |
+| Tautan di email mengarah ke alamat yang salah | `FRONTEND_URL` di Render harus alamat publik frontend |
 | Simpan data atau login dijawab 403 `ASAL_DITOLAK` | `FRONTEND_URL`/`BETTER_AUTH_URL` tidak sama dengan alamat yang dibuka di peramban |
 | Banyak pegawai mendapat "Terlalu banyak permintaan" saat login bersamaan | Login dibatasi 30 percobaan per menit per alamat IP (semua email dihitung) (`apps/api/src/lib/auth.ts`, `customRules`). Pegawai di satu kantor biasanya keluar lewat satu IP publik, jadi naikkan batas ini bila perlu |
-| Unggah foto gagal | `CLOUDINARY_URL` di Railway (harus diawali `cloudinary://`). Pesan galatnya ada di log backend |
+| Unggah foto gagal | `CLOUDINARY_URL` di Render (harus diawali `cloudinary://`). Pesan galatnya ada di log backend |
 | Dokumen PDF tidak bisa dibuka | Cloudinary **Settings → Security → Allow delivery of PDF and ZIP files** belum dicentang |
 | Berkas di atas 10 MB ditolak | Batas paket gratis Cloudinary untuk berkas non-gambar. Perkecil PDF-nya, atau naikkan paket Cloudinary |
 
 ## Deploy ke VPS dengan Docker
 
-Alternatif dari Railway + Vercel bila aplikasi dipasang di VPS sendiri (mis. server Diskominfo). Satu `docker compose` menjalankan empat container: PostgreSQL, backend (`apps/api/Dockerfile`), frontend (`apps/web/Dockerfile`), dan Caddy (`Caddyfile`) sebagai pintu masuk HTTPS. Hanya Caddy yang membuka port ke luar (80 dan 443).
+Alternatif dari Render + Supabase + Vercel bila aplikasi dipasang di VPS sendiri (mis. server Diskominfo). Satu `docker compose` menjalankan empat container: PostgreSQL, backend (`apps/api/Dockerfile`), frontend (`apps/web/Dockerfile`), dan Caddy (`Caddyfile`) sebagai pintu masuk HTTPS. Hanya Caddy yang membuka port ke luar (80 dan 443).
 
 1. Pasang Docker di VPS, lalu salin proyek ini ke sana (`git clone`).
 2. Arahkan DNS domain (mis. `kegiatan.palembang.go.id`) ke IP VPS. Belum punya domain? Pakai IP VPS dulu (peramban akan memberi peringatan sertifikat).
-3. Di root proyek: `cp docker.env.example .env`, lalu isi `DOMAIN`, `APP_URL`, `DB_PASSWORD`, `BETTER_AUTH_SECRET` (buat dengan `openssl rand -base64 48`), `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, dan pengaturan email (`SMTP_*` atau `BREVO_API_KEY`). File `.env` ini hanya ada di server dan tidak ikut ke Git.
+3. Di root proyek: `cp docker.env.example .env`, lalu isi `DOMAIN`, `APP_URL`, `DB_PASSWORD`, `BETTER_AUTH_SECRET` (buat dengan `openssl rand -base64 48`), `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, dan pengaturan email (`BREVO_API_KEY`, `EMAIL_FROM`). File `.env` ini hanya ada di server dan tidak ikut ke Git.
 4. Jalankan `docker compose up -d --build`. Backend otomatis menjalankan migrasi dan membuat akun admin pertama.
-5. Buka `https://DOMAIN`, login dengan akun admin dari langkah 3, lalu uji email dengan membuat satu akun untuk email Anda sendiri (lihat langkah 5 deploy Railway).
+5. Buka `https://DOMAIN`, login dengan akun admin dari langkah 3, lalu uji email dengan membuat satu akun untuk email Anda sendiri (lihat langkah 5 deploy online).
 
 HTTPS wajib, karena di produksi cookie login hanya dikirim lewat HTTPS. Caddy mengurus sertifikatnya sendiri.
 

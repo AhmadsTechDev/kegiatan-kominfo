@@ -2,17 +2,17 @@
 
 import { ArrowRight, CalendarDays, ChevronRight, CalendarRange, ClipboardList, FileWarning, MapPin, Plus, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/shared/panel";
-import { StatCard, StatCardSkeleton } from "@/components/shared/stat-card";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { EmptyState } from "@/components/common/empty-state";
+import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/common/panel";
+import { StatCard, StatCardSkeleton } from "@/components/common/stat-card";
+import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useProfil } from "@/features/auth/hooks/use-profil";
 import { useSapaan } from "@/hooks/use-sapaan";
-import { formatHari, formatJam, formatRentangTanggal, tanggalWib } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatHari, formatJam, formatRentangTanggal, tanggalWib } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import { useKegiatanSaya } from "../hooks/use-dashboard";
 import type { AgendaPekan } from "../types";
 import { KegiatanSayaPanel } from "./kegiatan-saya";

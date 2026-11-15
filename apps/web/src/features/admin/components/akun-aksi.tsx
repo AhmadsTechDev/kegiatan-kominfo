@@ -7,13 +7,13 @@ import { useCallback, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { FormDialog } from "@/components/shared/form-dialog";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { FormDialog } from "@/components/common/form-dialog";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { tabIndexPilihan, tanganiPanah } from "@/lib/navigasi-panah";
-import { cn } from "@/lib/utils";
+import { tabIndexPilihan, tanganiPanah } from "@/utils/navigasi-panah";
+import { cn } from "@/utils/cn";
 import { LABEL_ROLE, type Role, type StatusAkun } from "@/types/auth";
 import { useCabutSesiAkun, useHapusAkun, useKirimUlangUndangan, useResetSandi, useSimpanAkun, useStatusAkun, useBidangAdmin } from "../hooks/use-admin";
 import type { AkunAdmin, AkunDetail, HasilSimpanAkun } from "../types";
@@ -114,7 +114,7 @@ function PilihRole({ value, onChange, terkunci }: { value: Role; onChange: (r: R
  */
 function beriTahu(h: HasilSimpanAkun, baru: boolean) {
   if (h.undangan?.galat) {
-    toast.warning(`${baru ? "Akun dibuat" : "Akun diperbarui"}, tetapi email undangan gagal dikirim. Gunakan Kirim ulang undangan setelah SMTP diperbaiki.`);
+    toast.warning(`${baru ? "Akun dibuat" : "Akun diperbarui"}, tetapi email undangan gagal dikirim. Gunakan Kirim ulang undangan setelah konfigurasi email diperbaiki.`);
   } else if (h.undangan) {
     toast.success(`${baru ? "Akun dibuat" : "Akun diperbarui"}. Tautan aktivasi dikirim ke ${h.undangan.email}.`);
   } else toast.success("Akun diperbarui");

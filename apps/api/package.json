@@ -20,14 +20,12 @@
     "cloudinary": "^2.11.0",
     "drizzle-orm": "0.45.4",
     "elysia": "^1.4.30",
-    "nodemailer": "^10.1.1",
     "pg": "8.23.1",
     "react": "^19.3.0",
     "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@types/bun": "^1.4.3",
-    "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "drizzle-kit": "0.31.11",

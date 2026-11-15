@@ -2,13 +2,13 @@
 
 import { ArrowRight, CalendarClock, CheckCircle2, FileWarning, Upload } from "lucide-react";
 import Link from "next/link";
-import { ErrorState } from "@/components/shared/error-state";
-import { Panel, PanelFooter, PanelHeader } from "@/components/shared/panel";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { ErrorState } from "@/components/common/error-state";
+import { Panel, PanelFooter, PanelHeader } from "@/components/common/panel";
+import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatAngka, formatJam, formatRentangTanggal, formatTanggal } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatAngka, formatJam, formatRentangTanggal, formatTanggal } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import { useKegiatanSaya } from "../hooks/use-dashboard";
 import type { KegiatanRingkas } from "../types";
 

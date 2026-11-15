@@ -32,7 +32,7 @@ Saat pengembangan tidak perlu file `.env`. Satu-satunya pengaturan adalah `API_U
 | `build` dan `start` | Build dan jalankan produksi (di Vercel, `build` dijalankan otomatis) |
 | `lint` | ESLint (aturan Next.js dan React Compiler) |
 | `typecheck` | `tsc --noEmit` |
-| `test` | Uji unit Bun (`bun test src`): skema form, format tampilan, NIP, jam, dan kebijakan kata sandi. Saat ini 28 uji |
+| `test` | Uji unit Bun (`bun test tests`, file tes ada di folder `tests/`): skema form, format tampilan, NIP, jam, dan kebijakan kata sandi. Saat ini 28 uji |
 
 Sebelum push, jalankan `bun run typecheck`, `bun run lint`, dan `bun run test`.
 
@@ -73,15 +73,16 @@ src/
     layout.tsx, providers.tsx, not-found.tsx, global-error.tsx
   components/
     ui/                 Komponen shadcn (tidak diubah langsung)
-    shared/             Lintas fitur: DataTable, Panel, PageHeader, StatCard, StatusBadge, FilterBar,
-                        PilihCari, FileDropzone, MapPicker, MapOverview, ConfirmDialog, EmptyState, ErrorState, ...
-    layout/             AppShell (sidebar, topbar, breadcrumb), menu pengguna, pengalih tema
+    common/             Lintas fitur: AppShell (sidebar, topbar), menu pengguna, pengalih tema, DataTable, Panel,
+                        PageHeader, StatCard, StatusBadge, FilterBar, PilihCari, FileDropzone, MapPicker,
+                        ConfirmDialog, EmptyState, ErrorState, ...
   features/<fitur>/     Satu folder per fitur, isinya api/, hooks/, components/, schemas/, types.ts
                         Fitur: auth, dashboard, kegiatan, kalender, rekap, laporan, pantau,
                         pencarian, pengaturan, admin
   config/               navigation.ts (menu per peran), site.ts
   hooks/                Pembantu kecil: sapaan, count-up, periode sekarang, prefers-reduced-motion
-  lib/                  api-client, auth-client, query-client, format, nip, sandi, utils
+  lib/                  Klien pihak ketiga: api-client (axios), auth-client (better-auth), query-client (TanStack Query)
+  utils/                Fungsi murni: format, nip, sandi, navigasi-panah, cn
   types/                Tipe bersama (peran, status akun)
   proxy.ts              Pengarah berdasarkan cookie sesi
 public/images/          Logo
@@ -105,7 +106,7 @@ Komponen → hook (TanStack Query) → features/<fitur>/api → lib/api-client (
 ## Aturan penting
 
 - **Otorisasi di backend.** Menyembunyikan tombol hanya kemudahan; setiap aksi diperiksa ulang API. Petunjuk seperti `bisaUbah` dan `bisaPeriksa` datang dari backend.
-- **Waktu selalu WIB.** Semua format lewat `lib/format.ts` dengan zona Asia/Jakarta; form mengirim waktu ISO berzona `+07:00`.
+- **Waktu selalu WIB.** Semua format lewat `utils/format.ts` dengan zona Asia/Jakarta; form mengirim waktu ISO berzona `+07:00`.
 - **Status tidak dihitung di klien.** Status pelaksanaan dan status akun datang dari backend. Lencana pemeriksaan hanya tampil untuk "Perlu perbaikan"; kegiatan biasa tidak diberi lencana.
 - **Empat keadaan.** Setiap layar data menangani memuat (skeleton), kosong, galat (dengan "Coba lagi"), dan berhasil (toast).
 - **Gerak** hanya `transform` dan `opacity`, dan menghormati `prefers-reduced-motion`.

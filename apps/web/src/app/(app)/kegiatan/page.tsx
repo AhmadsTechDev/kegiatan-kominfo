@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { DataTableSkeleton } from "@/components/shared/data-table";
+import { DataTableSkeleton } from "@/components/common/data-table";
 import { KegiatanListView } from "@/features/kegiatan/components/kegiatan-list-view";
 
 /**

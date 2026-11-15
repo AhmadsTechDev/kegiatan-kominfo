@@ -5,7 +5,7 @@ import { MailCheck } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { FormDialog } from "@/components/shared/form-dialog";
+import { FormDialog } from "@/components/common/form-dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

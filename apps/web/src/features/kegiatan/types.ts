@@ -1,4 +1,4 @@
-import type { StatusPelaksanaan, StatusPemeriksaan } from "@/components/shared/status-badge";
+import type { StatusPelaksanaan, StatusPemeriksaan } from "@/components/common/status-badge";
 
 /**
  * Tipe data kegiatan, respons API, filter, draf, dan dokumen

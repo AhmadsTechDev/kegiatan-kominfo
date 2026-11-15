@@ -4,12 +4,12 @@ import { BarChart3, ChevronRight, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from "recharts";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Panel, PanelBody, PanelHeader } from "@/components/shared/panel";
+import { EmptyState } from "@/components/common/empty-state";
+import { Panel, PanelBody, PanelHeader } from "@/components/common/panel";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
-import { formatAngka, formatPeriode } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatAngka, formatPeriode } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
 import type { DashboardData } from "../types";
 

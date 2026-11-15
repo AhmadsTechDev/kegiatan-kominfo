@@ -1,0 +1,31 @@
+import { cn } from "@/utils/cn";
+
+/**
+ * Kepala halaman seragam: label kategori, judul, deskripsi, dan tombol aksi
+ */
+
+type PageHeaderProps = {
+  title: string;
+  eyebrow?: string;
+  description?: React.ReactNode;
+  actions?: React.ReactNode;
+  className?: string;
+};
+
+export function PageHeader({ title, eyebrow, description, actions, className }: PageHeaderProps) {
+  return (
+    <div className={cn("flex flex-col gap-4 md:flex-row md:items-start md:justify-between", className)}>
+      <div className="flex min-w-0 flex-col gap-1.5">
+        {eyebrow && (
+          <p className="flex items-center gap-2 text-xs font-bold tracking-widest text-primary uppercase">
+            <span aria-hidden className="h-0.5 w-4 rounded-full bg-aksen-peran" />
+            {eyebrow}
+          </p>
+        )}
+        <h1 className="font-heading text-2xl font-extrabold tracking-tight md:text-3xl">{title}</h1>
+        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      </div>
+      {actions && <div className="flex flex-wrap items-center gap-2 lg:shrink-0 lg:justify-end">{actions}</div>}
+    </div>
+  );
+}

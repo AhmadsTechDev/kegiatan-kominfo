@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/api-client";
-import { zNip } from "@/lib/nip";
+import { zNip } from "@/utils/nip";
 import { ajukanPermintaanAkun } from "../api/akun-publik";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { KepalaKartu } from "./kartu-publik";

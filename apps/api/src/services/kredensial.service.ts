@@ -216,14 +216,14 @@ export const KredensialService = {
    * Mengirim email undangan aktivasi; 502 EMAIL_GAGAL bila gagal
    */
   kirimUndangan(akun: { name: string; email: string }, token: string) {
-    return kirimWajib(akun.email, SURAT.aktivasi(akun.name, token), "Email undangan gagal dikirim. Periksa konfigurasi SMTP lalu kirim ulang undangan.");
+    return kirimWajib(akun.email, SURAT.aktivasi(akun.name, token), "Email undangan gagal dikirim. Periksa konfigurasi email lalu kirim ulang undangan.");
   },
 
   /**
    * Mengirim email tautan atur ulang kata sandi; 502 EMAIL_GAGAL bila gagal
    */
   kirimTautanReset(akun: { name: string; email: string }, token: string) {
-    return kirimWajib(akun.email, SURAT.reset(akun.name, token), "Email atur ulang kata sandi gagal dikirim. Periksa konfigurasi SMTP lalu coba lagi.");
+    return kirimWajib(akun.email, SURAT.reset(akun.name, token), "Email atur ulang kata sandi gagal dikirim. Periksa konfigurasi email lalu coba lagi.");
   },
 
   /**

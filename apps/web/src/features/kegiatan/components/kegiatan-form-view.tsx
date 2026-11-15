@@ -2,8 +2,8 @@
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { ErrorState } from "@/components/shared/error-state";
-import { PageHeader } from "@/components/shared/page-header";
+import { ErrorState } from "@/components/common/error-state";
+import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useProfil } from "@/features/auth/hooks/use-profil";

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
-import type { StatusPelaksanaan } from "@/components/shared/status-badge";
+import type { StatusPelaksanaan } from "@/components/common/status-badge";
 import type { FilterKegiatan } from "../types";
 
 /**

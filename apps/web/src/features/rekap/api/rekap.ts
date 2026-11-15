@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import type { NilaiFilter } from "@/components/shared/filter-bar";
+import type { NilaiFilter } from "@/components/common/filter-bar";
 import type { FormatEkspor, RekapData, SatuanRekap } from "../types";
 
 /**

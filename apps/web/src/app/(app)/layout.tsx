@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/layout/app-shell";
+import { AppShell } from "@/components/common/app-shell";
 
 /**
  * Layout grup rute (app): membungkus halaman dengan AppShell

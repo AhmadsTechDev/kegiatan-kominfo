@@ -9,7 +9,7 @@ const aktif = env.NODE_ENV !== "test";
 export const loggerPlugin = new Elysia({ name: "logger" })
 
   /**
-   * derive menambahkan data baru ke setiap permintaan, di sini catatan waktu mulai.
+   * derive sebelum validasi menambahkan data baru ke setiap permintaan, di sini catatan waktu mulai.
    * onAfterResponse berjalan setelah jawaban terkirim, jadi lama proses = waktu sekarang dikurangi waktuMulai.
    */
   .derive({ as: "global" }, () => ({ waktuMulai: performance.now() }))

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { site } from "@/config/site";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import type { PratinjauLaporan } from "../types";
 
 /**

@@ -1,5 +1,5 @@
-import { StatCardSkeleton } from "@/components/shared/stat-card";
-import { Panel, PanelBody } from "@/components/shared/panel";
+import { StatCardSkeleton } from "@/components/common/stat-card";
+import { Panel, PanelBody } from "@/components/common/panel";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**

@@ -4,12 +4,12 @@ import { ChevronLeft, ChevronRight, Download, ExternalLink, FileText, RefreshCw,
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { ACCEPT, FileDropzone } from "@/components/shared/file-dropzone";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { ACCEPT, FileDropzone } from "@/components/common/file-dropzone";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { formatTanggalJam, formatUkuran } from "@/lib/format";
+import { formatTanggalJam, formatUkuran } from "@/utils/format";
 import { urlDokumentasi } from "../api/dokumentasi";
 import { periksaBerkas, useAntreanUnggah, useGantiDokumentasi } from "../hooks/use-antrean-unggah";
 import { useHapusDokumentasi } from "../hooks/use-kegiatan";

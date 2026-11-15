@@ -4,11 +4,11 @@ import { FilePen, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { Panel } from "@/components/shared/panel";
-import { StatusPemeriksaanBadge } from "@/components/shared/status-badge";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { Panel } from "@/components/common/panel";
+import { StatusPemeriksaanBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
-import { formatTanggal, formatTanggalJam } from "@/lib/format";
+import { formatTanggal, formatTanggalJam } from "@/utils/format";
 import { useDaftarDraf, useHapusDraf } from "../hooks/use-kegiatan";
 import type { DrafRingkas } from "../types";
 

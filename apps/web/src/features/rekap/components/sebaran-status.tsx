@@ -1,9 +1,9 @@
 import { CircleSlash } from "lucide-react";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/shared/panel";
-import { StatusBadge, type StatusPelaksanaan } from "@/components/shared/status-badge";
-import { formatAngka } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/common/empty-state";
+import { Panel, PanelBody, PanelFooter, PanelHeader } from "@/components/common/panel";
+import { StatusBadge, type StatusPelaksanaan } from "@/components/common/status-badge";
+import { formatAngka } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import type { JumlahStatus } from "../types";
 
 /**

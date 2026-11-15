@@ -11,7 +11,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/api-client";
-import { skemaSandiBaru, type NilaiSandiBaru } from "@/lib/sandi";
+import { skemaSandiBaru, type NilaiSandiBaru } from "@/utils/sandi";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 
 /**

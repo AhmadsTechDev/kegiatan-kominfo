@@ -6,18 +6,18 @@ import { useCallback, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
-import { ErrorState } from "@/components/shared/error-state";
-import { FormDialog } from "@/components/shared/form-dialog";
-import { PaginationBar } from "@/components/shared/pagination-bar";
-import { PanelFooter } from "@/components/shared/panel";
-import { UnitChip } from "@/components/shared/unit-chip";
+import { DataTable, type DataTableColumn } from "@/components/common/data-table";
+import { ErrorState } from "@/components/common/error-state";
+import { FormDialog } from "@/components/common/form-dialog";
+import { PaginationBar } from "@/components/common/pagination-bar";
+import { PanelFooter } from "@/components/common/panel";
+import { UnitChip } from "@/components/common/unit-chip";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { formatTelp } from "@/lib/format";
+import { formatTelp } from "@/utils/format";
 import { LABEL_ROLE, type Role } from "@/types/auth";
 
 /**
@@ -26,8 +26,8 @@ import { LABEL_ROLE, type Role } from "@/types/auth";
 
 const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const satisfies readonly Role[];
 
-import { zNip } from "@/lib/nip";
-import { cn } from "@/lib/utils";
+import { zNip } from "@/utils/nip";
+import { cn } from "@/utils/cn";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
 import { usePegawaiAdmin, useSimpanPegawai, useBidangAdmin, useUndangPegawai } from "../hooks/use-admin";
 import type { FilterPegawai, PegawaiAdmin, BidangAdmin } from "../types";

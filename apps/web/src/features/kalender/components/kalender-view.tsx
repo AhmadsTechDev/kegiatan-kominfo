@@ -4,17 +4,17 @@ import { CalendarDays, CalendarX2, ChevronLeft, ChevronRight, MapPin, Plus } fro
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { ErrorState } from "@/components/shared/error-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { Panel } from "@/components/shared/panel";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { ErrorState } from "@/components/common/error-state";
+import { PageHeader } from "@/components/common/page-header";
+import { Panel } from "@/components/common/panel";
+import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGrupNav } from "@/hooks/use-grup-nav";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useLingkupPegawai } from "@/features/auth/hooks/use-lingkup";
-import { formatAngka, formatJam, formatPeriode } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatAngka, formatJam, formatPeriode } from "@/utils/format";
+import { cn } from "@/utils/cn";
 import { useKalender } from "../use-kalender";
 import type { DataKalender, KegiatanKalender } from "../types";
 

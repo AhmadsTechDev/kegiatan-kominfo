@@ -4,16 +4,16 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ChevronRight, ClipboardList, FileClock, RotateCcw, SearchX } from "lucide-react";
 import Link from "next/link";
 import { useId, useMemo, useState } from "react";
-import { AvatarInisial } from "@/components/shared/avatar-inisial";
-import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
-import { ErrorState } from "@/components/shared/error-state";
-import { KolomCari } from "@/components/shared/kolom-cari";
-import { PageHeader } from "@/components/shared/page-header";
-import { PaginationBar } from "@/components/shared/pagination-bar";
-import { PilihCari, type OpsiCari } from "@/components/shared/pilih-cari";
-import { Panel, PanelFooter } from "@/components/shared/panel";
-import { RentangTanggalPicker } from "@/components/shared/rentang-tanggal-picker";
-import { StatusBadge, StatusPemeriksaanBadge } from "@/components/shared/status-badge";
+import { AvatarInisial } from "@/components/common/avatar-inisial";
+import { DataTable, type DataTableColumn } from "@/components/common/data-table";
+import { ErrorState } from "@/components/common/error-state";
+import { KolomCari } from "@/components/common/kolom-cari";
+import { PageHeader } from "@/components/common/page-header";
+import { PaginationBar } from "@/components/common/pagination-bar";
+import { PilihCari, type OpsiCari } from "@/components/common/pilih-cari";
+import { Panel, PanelFooter } from "@/components/common/panel";
+import { RentangTanggalPicker } from "@/components/common/rentang-tanggal-picker";
+import { StatusBadge, StatusPemeriksaanBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
@@ -25,8 +25,8 @@ import { KegiatanTanpaAkses } from "@/features/kegiatan/components/kegiatan-stat
 import { useReferensi } from "@/features/kegiatan/hooks/use-kegiatan";
 import type { FilterKegiatan, KegiatanItem, StatusPemeriksaanKegiatan } from "@/features/kegiatan/types";
 import { apiClient } from "@/lib/api-client";
-import { formatAngka, formatJam, formatRentangTanggal } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatAngka, formatJam, formatRentangTanggal } from "@/utils/format";
+import { cn } from "@/utils/cn";
 
 /**
  * Pemantauan kegiatan seluruh pegawai untuk pimpinan dan admin, termasuk pemeriksaan

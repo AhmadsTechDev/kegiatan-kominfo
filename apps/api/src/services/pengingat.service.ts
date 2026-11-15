@@ -92,7 +92,8 @@ export const PengingatService = {
         await PengingatRepository.catat(k.kegiatanId, jenis, k.userId);
         hasil[jenis]++;
       } catch (e) {
-        console.error(`[pengingat] gagal mengirim ${jenis} kegiatan #${k.kegiatanId}:`, e instanceof Error ? e.message : e);
+        const pesan = (e instanceof Error && e.message) ? e.message : (e as { code?: string })?.code ?? e;
+        console.error(`[pengingat] gagal mengirim ${jenis} kegiatan #${k.kegiatanId}:`, pesan);
       }
     }
     return hasil;

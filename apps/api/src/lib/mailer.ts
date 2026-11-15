@@ -1,16 +1,4 @@
-import nodemailer from "nodemailer";
 import { env } from "@/config/env";
-
-/**
- * Nodemailer mengirim email lewat server SMTP (di development biasanya Mailpit di port 1025).
- * `transport` dibuat sekali di awal dan dipakai ulang untuk semua email.
- */
-const transport = nodemailer.createTransport({
-  host: env.SMTP_HOST,
-  port: env.SMTP_PORT,
-  secure: env.SMTP_SECURE,
-  auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
-});
 
 /**
  * Bahan satu email. Service cukup mengisi bagian-bagian ini, tata letaknya disusun di file ini agar semua email seragam.
@@ -124,12 +112,13 @@ function pengirim(dari: string) {
  * KONSEP async/await: `fetch` mengirim permintaan ke internet dan butuh waktu, jadi hasilnya ditunggu dengan `await`.
  * Bila Brevo menjawab gagal (res.ok bernilai false), galat dilempar supaya pemanggil tahu email tidak terkirim.
  */
-async function kirimLewatBrevo(kepada: string, subjek: string, isi: IsiEmail) {
+export async function kirimEmail(kepada: string, subjek: string, isi: IsiEmail) {
+  if (!env.BREVO_API_KEY) throw new Error("BREVO_API_KEY belum diisi");
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
-    headers: { "api-key": env.BREVO_API_KEY!, "content-type": "application/json", accept: "application/json" },
+    headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
-      sender: pengirim(env.SMTP_FROM),
+      sender: pengirim(env.EMAIL_FROM),
       to: [{ email: kepada }],
       subject: subjek,
       htmlContent: htmlEmail(subjek, isi),
@@ -137,15 +126,4 @@ async function kirimLewatBrevo(kepada: string, subjek: string, isi: IsiEmail) {
     }),
   });
   if (!res.ok) throw new Error(`Brevo menolak email (${res.status}): ${(await res.text()).slice(0, 300)}`);
-}
-
-/**
- * Mengirim email: lewat Brevo bila BREVO_API_KEY diisi, selain itu lewat SMTP
- */
-export async function kirimEmail(kepada: string, subjek: string, isi: IsiEmail) {
-  /**
-   * Brevo dipakai di hosting yang memblokir port SMTP; selain itu memakai SMTP biasa.
-   */
-  if (env.BREVO_API_KEY) return kirimLewatBrevo(kepada, subjek, isi);
-  await transport.sendMail({ from: env.SMTP_FROM, to: kepada, subject: subjek, html: htmlEmail(subjek, isi), text: teksEmail(isi) });
 }

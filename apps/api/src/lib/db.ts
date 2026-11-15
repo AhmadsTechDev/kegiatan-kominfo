@@ -10,7 +10,11 @@ import { env } from "@/config/env";
  * lalu diterjemahkan menjadi SQL ke PostgreSQL lewat driver pg. `max` membatasi jumlah koneksi yang dibuka
  * bersamaan (connection pool) agar database tidak kewalahan.
  */
-export const pool = new Pool({ connectionString: env.DATABASE_URL, max: env.DATABASE_POOL_MAX });
+export const pool = new Pool({
+  connectionString: env.DATABASE_URL,
+  max: env.DATABASE_POOL_MAX,
+  idleTimeoutMillis: 30_000,
+});
 export const db = drizzle(pool);
 
 /**
