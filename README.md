@@ -164,7 +164,7 @@ Pengguna → Vercel (frontend Next.js) → Render (backend Elysia) → Supabase 
 | Bagian | Layanan | Catatan |
 | --- | --- | --- |
 | Frontend | [Vercel](https://vercel.com) | Gratis. Meneruskan `/api/*` ke backend, jadi cookie login tetap milik domain Vercel |
-| Backend | [Render](https://render.com) | Paket gratis (Web Service Docker dari `apps/api/Dockerfile` atau `render.yaml`). Setiap kali menyala (`bun run start`), backend menjalankan migrasi tabel dan data awal sendiri |
+| Backend | [Render](https://render.com) | Paket gratis (Web Service Docker dari `apps/api/Dockerfile`). Setiap kali menyala (`bun run start`), backend menjalankan migrasi tabel dan data awal sendiri |
 | PostgreSQL | [Supabase](https://supabase.com) | Paket gratis (500 MB, aktif 24/7). Memakai alamat **Session pooler** (port `5432`, mendukung IPv4) |
 | Berkas | [Cloudinary](https://cloudinary.com) | Paket gratis. Foto dan PDF disimpan privat (tipe *authenticated*), hanya bisa dibuka lewat backend setelah login |
 | Email | [Brevo](https://www.brevo.com) | Paket gratis. Pengiriman email memakai REST API Brevo. Alamat Zoho atau domain dinas tetap bisa menjadi pengirimnya. Wajib: aktivasi akun, lupa sandi, dan ganti email memakai tautan email |
@@ -209,7 +209,7 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
 
 ### Langkah 3b: backend di Render
 
-1. Masuk ke [Render](https://render.com) dengan akun GitHub, lalu **New + → Web Service** (atau gunakan **New + → Blueprint** memakai file `render.yaml` di root repository) dan pilih repository tadi.
+1. Masuk ke [Render](https://render.com) dengan akun GitHub, lalu klik **New + → Web Service** dan pilih repository tadi.
 2. Atur konfigurasi layanan:
    - **Root Directory**: `apps/api`
    - **Language / Runtime**: `Docker`
