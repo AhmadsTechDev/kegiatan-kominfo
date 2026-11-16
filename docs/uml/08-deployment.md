@@ -2,7 +2,7 @@
 
 Langkah pemasangannya ada di [README utama](../../README.md).
 
-## 8.1 Render + Supabase + Vercel (yang dipakai sekarang)
+## Pemasangan di Render, Supabase, dan Vercel
 
 ```mermaid
 flowchart LR
@@ -40,32 +40,3 @@ flowchart LR
 | Supabase Postgres | Database PostgreSQL terkelola gratis, diakses melalui Session pooler (port `5432`, mendukung IPv4) |
 | Cloudinary | Foto dan PDF, disimpan privat dan hanya dibuka lewat backend |
 | Brevo | Email lewat API (tidak bergantung pada port SMTP) |
-
-## 8.2 Alternatif: VPS dengan Docker Compose
-
-Satu `docker compose` di server sendiri (mis. server Diskominfo). Hanya Caddy yang membuka port ke luar.
-
-```mermaid
-flowchart LR
-    pengguna(["👤 Peramban"])
-
-    subgraph vps["VPS / server dinas (Docker Compose)"]
-        direction TB
-        caddy["caddy<br/>:80, :443, sertifikat HTTPS otomatis"]
-        frontend["frontend<br/>apps/web/Dockerfile"]
-        backend["backend<br/>apps/api/Dockerfile"]
-        postgres[("postgres<br/>volume data")]
-        vol[("volume storage<br/>(berkas dokumentasi)")]
-        caddy --> frontend
-        frontend -- "/api/*" --> backend
-        backend --> postgres
-        backend --> vol
-    end
-
-    email["Brevo API"]
-
-    pengguna -- "HTTPS DOMAIN" --> caddy
-    backend --> email
-```
-
-Konfigurasi ada di `docker-compose.yml`, `Caddyfile`, dan `.env` di root (dibuat dari `docker.env.example`). Jangan menjalankan `docker compose down -v`, karena perintah itu menghapus volume data.

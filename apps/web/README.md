@@ -101,7 +101,7 @@ Komponen → hook (TanStack Query) → features/<fitur>/api → lib/api-client (
 - **Satu origin.** `next.config.ts` meneruskan `/api/:path*` ke `API_URL`. Peramban hanya bicara dengan domain frontend, sehingga cookie sesi milik domain itu dan tidak ada urusan CORS.
 - **Klien HTTP** (`lib/api-client.ts`) mengirim cookie sesi, memetakan galat API (`code`, `message`, `details[]`) menjadi `ApiError`, dan pada status **401** mengalihkan ke `/login?sesi=berakhir` dengan muat ulang penuh agar seluruh state lama bersih.
 - **Cache data.** `lib/query-client.ts` menetapkan data segar selama 30 detik dan membatasi percobaan ulang.
-- **Header keamanan** (X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy) dipasang di `next.config.ts`; HTTPS dan HSTS diurus Vercel atau Caddy.
+- **Header keamanan** (X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy) dipasang di `next.config.ts`; HTTPS dan HSTS diurus Vercel.
 
 ## Aturan penting
 
@@ -144,4 +144,3 @@ Komponen → hook (TanStack Query) → features/<fitur>/api → lib/api-client (
 ## Deploy
 
 - **Vercel:** Root Directory `apps/web`, satu variabel `API_URL`. Langkah lengkapnya di [README utama](../../README.md#langkah-4-frontend-di-vercel).
-- **VPS dengan Docker:** `apps/web/Dockerfile` membangun keluaran `standalone` (`NEXT_OUTPUT=standalone`), dijalankan lewat `docker compose` di root bersama backend dan Caddy.

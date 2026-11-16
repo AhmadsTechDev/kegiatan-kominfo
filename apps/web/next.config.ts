@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
   },
 
   /**
-   * Header keamanan dasar untuk halaman UI (NFR-10). HTTPS dan HSTS ditangani Vercel, atau Caddy di VPS (Caddyfile di root)
+   * Header keamanan dasar untuk halaman UI (NFR-10). HTTPS dan HSTS ditangani Vercel
    */
   async headers() {
     return [

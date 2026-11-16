@@ -1,4 +1,4 @@
-# Image backend (Bun + Elysia + Drizzle). Dibangun dari folder apps/api/ (lihat docker-compose.yml di root).
+# Image backend (Bun + Elysia + Drizzle). Dibangun dari folder apps/api/.
 # Basis Debian (glibc) agar biner sharp prebuilt langsung dipakai tanpa kompilasi.
 
 FROM oven/bun:1.4 AS dasar

@@ -92,7 +92,7 @@ Delapan diagram Mermaid di [docs/uml](docs/uml/README.md), tampil langsung di Gi
 | [ERD](docs/uml/05-erd.md) | Apa saja tabel database dan relasinya? |
 | [State](docs/uml/06-state.md) | Bagaimana status kegiatan, akun, dan permintaan akun berubah? |
 | [Component](docs/uml/07-component.md) | Apa saja bagian sistem dan layanan luar yang dipakai? |
-| [Deployment](docs/uml/08-deployment.md) | Bagaimana aplikasi dipasang di Render, Supabase, dan Vercel, atau di VPS? |
+| [Deployment](docs/uml/08-deployment.md) | Bagaimana aplikasi dipasang di Render, Supabase, dan Vercel? |
 
 ## Menjalankan untuk pengembangan
 
@@ -140,10 +140,7 @@ Setiap cara menjalankan aplikasi membaca pengaturan dari tempat yang berbeda. Se
 | Development backend | `apps/api/.env` | `apps/api/.env.example` |
 | Development frontend | `apps/web/.env` (opsional, hanya `API_URL`) | `apps/web/.env.example` |
 | Uji backend | `apps/api/.env.test` | `apps/api/.env.test.example` |
-| Deploy VPS dengan Docker | **`.env` di root proyek**, dibaca `docker-compose.yml` | `docker.env.example` |
-| Deploy Render + Supabase + Vercel | Tidak ada file; isi di tab **Environment** Render dan **Environment Variables** Vercel | Daftar di bawah |
-
-Jadi `.env` di root hanya ada di server VPS. Di laptop atau saat memakai Render + Supabase + Vercel, file itu memang tidak perlu.
+| Deploy Render + Supabase + Vercel | Tidak ada file di server; isi di tab **Environment** Render (bisa disalin dari `apps/api/.env.production`) dan **Environment Variables** Vercel | Daftar di bawah |
 
 Yang harus benar di produksi, apa pun caranya:
 
@@ -275,25 +272,4 @@ Cukup `git push`. Vercel dan Render membangun ulang sendiri, dan migrasi tabel b
 | Unggah foto gagal | `CLOUDINARY_URL` di Render (harus diawali `cloudinary://`). Pesan galatnya ada di log backend |
 | Dokumen PDF tidak bisa dibuka | Cloudinary **Settings → Security → Allow delivery of PDF and ZIP files** belum dicentang |
 | Berkas di atas 10 MB ditolak | Batas paket gratis Cloudinary untuk berkas non-gambar. Perkecil PDF-nya, atau naikkan paket Cloudinary |
-
-## Deploy ke VPS dengan Docker
-
-Alternatif dari Render + Supabase + Vercel bila aplikasi dipasang di VPS sendiri (mis. server Diskominfo). Satu `docker compose` menjalankan empat container: PostgreSQL, backend (`apps/api/Dockerfile`), frontend (`apps/web/Dockerfile`), dan Caddy (`Caddyfile`) sebagai pintu masuk HTTPS. Hanya Caddy yang membuka port ke luar (80 dan 443).
-
-1. Pasang Docker di VPS, lalu salin proyek ini ke sana (`git clone`).
-2. Arahkan DNS domain (mis. `kegiatan.palembang.go.id`) ke IP VPS. Belum punya domain? Pakai IP VPS dulu (peramban akan memberi peringatan sertifikat).
-3. Di root proyek: `cp docker.env.example .env`, lalu isi `DOMAIN`, `APP_URL`, `DB_PASSWORD`, `BETTER_AUTH_SECRET` (buat dengan `openssl rand -base64 48`), `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, dan pengaturan email (`BREVO_API_KEY`, `EMAIL_FROM`). File `.env` ini hanya ada di server dan tidak ikut ke Git.
-4. Jalankan `docker compose up -d --build`. Backend otomatis menjalankan migrasi dan membuat akun admin pertama.
-5. Buka `https://DOMAIN`, login dengan akun admin dari langkah 3, lalu uji email dengan membuat satu akun untuk email Anda sendiri (lihat langkah 5 deploy online).
-
-HTTPS wajib, karena di produksi cookie login hanya dikirim lewat HTTPS. Caddy mengurus sertifikatnya sendiri.
-
-| Keperluan | Perintah |
-| --- | --- |
-| Memperbarui aplikasi | `git pull` lalu `docker compose up -d --build` |
-| Melihat log | `docker compose logs -f backend` |
-| Cadangan database | `docker compose exec postgres pg_dump -U postgres kominfo_pd_kg > cadangan.sql` |
-| Cadangan berkas dokumentasi | `docker run --rm -v kominfo-kegiatan_storage:/data -v "$PWD":/out alpine tar czf /out/storage.tgz -C /data .` |
-
-Data PostgreSQL, berkas dokumentasi, dan sertifikat tersimpan di volume Docker, sehingga tetap aman saat container dibuat ulang. Jangan jalankan `docker compose down -v`, karena perintah itu menghapus volume.
 

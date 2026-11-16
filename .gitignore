@@ -5,6 +5,5 @@ test.txt
 .env
 .env.*
 !.env.example
-!docker.env.example
 node_modules/
 anti-slop/

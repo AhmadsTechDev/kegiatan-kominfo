@@ -11,6 +11,6 @@ Diagram Aplikasi Pendataan Kegiatan Diskominfo Kota Palembang, ditulis dengan [M
 | 5 | [ERD](05-erd.md) | Tabel PostgreSQL beserta relasinya |
 | 6 | [State](06-state.md) | Status pelaksanaan dan pemeriksaan kegiatan, status akun, status permintaan akun |
 | 7 | [Component](07-component.md) | Komponen frontend, backend, dan layanan luar |
-| 8 | [Deployment](08-deployment.md) | Render + Supabase + Vercel, dan alternatif VPS dengan Docker Compose |
+| 8 | [Deployment](08-deployment.md) | Render, Supabase, dan Vercel |
 
 Istilah yang dipakai di diagram mengikuti kode: tabel `bidang` berisi bidang dan sub bidang (sub bidang menaut ke bidang lewat `parent_id`; tanpa induk berarti bidang), *pegawai* adalah data kepegawaian (terpisah dari akun login), dan *akun* adalah tabel `user`.

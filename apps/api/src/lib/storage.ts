@@ -18,7 +18,7 @@ export interface DocumentStorage {
 }
 
 /**
- * Penyimpanan di folder disk lokal (development dan VPS tanpa Cloudinary)
+ * Penyimpanan di folder disk lokal (development lokal bila Cloudinary kosong)
  */
 class LocalStorage implements DocumentStorage {
   private readonly akar: string;
