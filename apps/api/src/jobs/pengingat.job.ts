@@ -12,9 +12,11 @@ let berjalan = false;
  * Satu putaran pengingat; dilewati bila putaran sebelumnya belum selesai
  */
 async function putaran() {
+  // kalo masih berjalan maka akan di lewati
   if (berjalan) return;
   berjalan = true;
   try {
+    // jalankan servive pengingat
     const n = await PengingatService.jalankan();
     if (n.H_MINUS_1 + n.DOKUMENTASI > 0) console.log(`[pengingat] terkirim: H-1 ${n.H_MINUS_1}, dokumentasi ${n.DOKUMENTASI}`);
   } catch (e) {
@@ -35,6 +37,8 @@ async function putaran() {
  * Keduanya berjalan di latar belakang tanpa menghentikan server melayani permintaan lain.
  */
 export function mulaiPengingat() {
+  // Kasih jeda waktu 30 detik sebelum putaran dimulai
   setTimeout(putaran, JEDA_AWAL_MS);
+  // putaran rutin yg diulang setiap 15 menit
   return setInterval(putaran, INTERVAL_MS);
 }

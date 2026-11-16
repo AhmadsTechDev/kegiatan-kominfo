@@ -9,7 +9,7 @@ export const KOP = {
   pemerintah: "PEMERINTAH KOTA PALEMBANG",
   dinas: "DINAS KOMUNIKASI DAN INFORMATIKA",
   alamat: [
-    "Jalan Nyoman Ratu No. 1271 Palembang, Provinsi Sumatera Selatan 30113",
+    "Jl. Nyoman Ratu No. 1271, Ilir, Bukit Kecil, Sungai Pangeran, Palembang, Sumatera Selatan 30113",
     "Telp. (0711) 352271, Faksimile (0711) 353262",
     "Laman : www.kominfo.palembang.go.id  Pos El : kominfo@palembang.go.id",
   ],
