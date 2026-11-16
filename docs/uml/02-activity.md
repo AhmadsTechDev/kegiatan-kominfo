@@ -7,11 +7,11 @@ Kegiatan dicatat dalam dua langkah. Isian yang belum selesai bisa disimpan sebag
 ```mermaid
 flowchart TD
     mulai([Mulai]) --> buka[Buka Tambah kegiatan]
-    buka --> langkah1["Langkah 1: judul, jenis, waktu mulai dan selesai,<br/>penanggung jawab, bidang"]
+    buka --> langkah1["Langkah 1: judul, jenis, perkiraan jumlah peserta,<br/>dan uraian kegiatan"]
     langkah1 --> lanjut{Lanjut sekarang?}
     lanjut -- Belum --> draf[(Simpan sebagai draf)]
     draf --> akhirDraf([Selesai, lanjutkan nanti dari Draf saya])
-    lanjut -- Ya --> langkah2["Langkah 2: lokasi (opsional, peta atau koordinat),<br/>uraian, jumlah peserta, nomor surat"]
+    lanjut -- Ya --> langkah2["Langkah 2: waktu mulai dan selesai,<br/>serta lokasi (opsional, peta atau koordinat)"]
     langkah2 --> simpan[Simpan]
     simpan --> valid{Valid di backend?}
     valid -- "Tidak (422)" --> perbaiki[Tampilkan galat per kolom] --> langkah2
