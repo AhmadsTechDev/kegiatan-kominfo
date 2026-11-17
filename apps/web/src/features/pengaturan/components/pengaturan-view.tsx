@@ -21,14 +21,19 @@ import { PanelKeluar, PanelSandi, PanelSesi } from "./panel-keamanan";
 import { PanelNotifikasi, PanelTema } from "./panel-preferensi";
 import { PanelKepegawaian, PanelKontak } from "./panel-profil";
 
-/**
- * Halaman pengaturan: Profil, Informasi akun, Keamanan, dan Preferensi
- */
-
-const berlangganan = () => () => {};
+type Tab = "profil" | "akun" | "keamanan" | "preferensi";
 
 const UKURAN_MAKS = 2 * 1024 * 1024;
 const JENIS_FOTO = ["image/jpeg", "image/png", "image/webp"];
+const ID_PANEL = "panel-pengaturan";
+const TAB: { nilai: Tab; label: string }[] = [
+  { nilai: "profil", label: "Profil" },
+  { nilai: "akun", label: "Informasi akun" },
+  { nilai: "keamanan", label: "Keamanan" },
+  { nilai: "preferensi", label: "Preferensi" },
+];
+
+const berlangganan = () => () => {};
 
 function KartuProfil({ p }: { p: Profil }) {
   const unggah = useUnggahFoto();
@@ -136,16 +141,6 @@ function KartuProfil({ p }: { p: Profil }) {
   );
 }
 
-type Tab = "profil" | "akun" | "keamanan" | "preferensi";
-const ID_PANEL = "panel-pengaturan";
-
-const TAB: { nilai: Tab; label: string }[] = [
-  { nilai: "profil", label: "Profil" },
-  { nilai: "akun", label: "Informasi akun" },
-  { nilai: "keamanan", label: "Keamanan" },
-  { nilai: "preferensi", label: "Preferensi" },
-];
-
 function IsiTab({ tab, p }: { tab: Tab; p: Profil }) {
   if (tab === "akun") return <PanelAkun p={p} />;
   if (tab === "keamanan") {
@@ -173,11 +168,6 @@ function IsiTab({ tab, p }: { tab: Tab; p: Profil }) {
   );
 }
 
-/**
- * Halaman pengaturan bertab (profil, informasi akun, keamanan, preferensi); tab aktif disimpan di ?tab= pada URL.
- * `terhidrasi` bernilai false saat render di server dan true di peramban, sehingga skeleton tampil
- * sampai halaman siap dan tidak ada perbedaan isi antara server dan peramban.
- */
 export function PengaturanView() {
   const profil = useProfil();
   const searchParams = useSearchParams();

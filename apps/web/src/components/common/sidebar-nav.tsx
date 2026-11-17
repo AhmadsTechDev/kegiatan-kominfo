@@ -9,10 +9,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { navAktif, type NavGroup } from "@/config/navigation";
 import { cn } from "@/utils/cn";
 
-/**
- * Menu bilah samping sesuai role, mode penuh maupun rel ikon
- */
-
 type SidebarNavProps = {
   groups: NavGroup[];
   lencana?: Record<string, number>;
@@ -21,6 +17,75 @@ type SidebarNavProps = {
   collapsed?: boolean;
   onNavigate?: () => void;
 };
+
+type ItemSidebarProps = {
+  label: string;
+  icon: LucideIcon;
+  aktif?: boolean;
+  mode: SidebarNavProps["mode"];
+  collapsed?: boolean;
+  lencana?: number;
+} & ({ href: string; onNavigate?: () => void; onClick?: never } | { href?: never; onNavigate?: never; onClick: () => void });
+
+function DaftarNavAktif(props: SidebarNavProps) {
+  return <DaftarNav {...props} pathname={usePathname()} search={useSearchParams()} />;
+}
+
+function DaftarNav({
+  groups,
+  lencana,
+  isLoading,
+  mode,
+  collapsed,
+  onNavigate,
+  pathname,
+  search,
+}: SidebarNavProps & { pathname: string | null; search: URLSearchParams | null }) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-2" aria-busy>
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} className="h-10 w-full rounded-full bg-sidebar-group" />
+        ))}
+      </div>
+    );
+  }
+
+  const aktif = pathname ? navAktif(groups, pathname, search)?.item.href : undefined;
+
+  return (
+    <nav aria-label="Menu utama" className="flex flex-col gap-4">
+      {groups.map((group) => {
+        const berkotak = group.items.length > 1;
+        return (
+          <div key={group.label} className="flex flex-col gap-1.5">
+            {(berkotak || group.tampilkanLabel) && (
+              <p className={cn("px-4 text-[10px] font-bold tracking-[0.14em] text-sidebar-foreground/70 uppercase", kelasLabel(mode, collapsed))}>
+                {group.label}
+              </p>
+            )}
+            <ul aria-label={group.label} className={cn("flex flex-col gap-1", berkotak && "rounded-[22px] bg-sidebar-group p-1")}>
+              {group.items.map((item) => (
+                <li key={item.href}>
+                  <ItemSidebar
+                    href={item.href}
+                    label={item.label}
+                    icon={item.icon}
+                    aktif={item.href === aktif}
+                    mode={mode}
+                    collapsed={collapsed}
+                    lencana={lencana?.[item.href]}
+                    onNavigate={onNavigate}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
 
 export function kelasLabel(mode: SidebarNavProps["mode"], collapsed?: boolean) {
   return mode === "responsive" ? cn("flex md:hidden lg:flex", collapsed && "lg:hidden") : "flex";
@@ -33,19 +98,6 @@ export function SidebarNav(props: SidebarNavProps) {
     </Suspense>
   );
 }
-
-function DaftarNavAktif(props: SidebarNavProps) {
-  return <DaftarNav {...props} pathname={usePathname()} search={useSearchParams()} />;
-}
-
-type ItemSidebarProps = {
-  label: string;
-  icon: LucideIcon;
-  aktif?: boolean;
-  mode: SidebarNavProps["mode"];
-  collapsed?: boolean;
-  lencana?: number;
-} & ({ href: string; onNavigate?: () => void; onClick?: never } | { href?: never; onNavigate?: never; onClick: () => void });
 
 export function ItemSidebar({ label, icon: Icon, aktif, mode, collapsed, lencana = 0, href, onNavigate, onClick }: ItemSidebarProps) {
   const rail = mode === "responsive";
@@ -104,9 +156,6 @@ export function ItemSidebar({ label, icon: Icon, aktif, mode, collapsed, lencana
       href={href}
       onClick={onNavigate}
 
-      /**
-       * Dari menu HP: halaman tujuan menggantikan entri riwayat menu, jadi Kembali langsung ke halaman asal
-       */
       replace={!!onNavigate}
       aria-current={aktif ? "page" : undefined}
       aria-label={lencana > 0 ? `${label}, ${lencana} menunggu` : label}
@@ -128,61 +177,5 @@ export function ItemSidebar({ label, icon: Icon, aktif, mode, collapsed, lencana
         {label}
       </TooltipContent>
     </Tooltip>
-  );
-}
-
-function DaftarNav({
-  groups,
-  lencana,
-  isLoading,
-  mode,
-  collapsed,
-  onNavigate,
-  pathname,
-  search,
-}: SidebarNavProps & { pathname: string | null; search: URLSearchParams | null }) {
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-2" aria-busy>
-        {Array.from({ length: 4 }, (_, i) => (
-          <Skeleton key={i} className="h-10 w-full rounded-full bg-sidebar-group" />
-        ))}
-      </div>
-    );
-  }
-
-  const aktif = pathname ? navAktif(groups, pathname, search)?.item.href : undefined;
-
-  return (
-    <nav aria-label="Menu utama" className="flex flex-col gap-4">
-      {groups.map((group) => {
-        const berkotak = group.items.length > 1;
-        return (
-          <div key={group.label} className="flex flex-col gap-1.5">
-            {(berkotak || group.tampilkanLabel) && (
-              <p className={cn("px-4 text-[10px] font-bold tracking-[0.14em] text-sidebar-foreground/70 uppercase", kelasLabel(mode, collapsed))}>
-                {group.label}
-              </p>
-            )}
-            <ul aria-label={group.label} className={cn("flex flex-col gap-1", berkotak && "rounded-[22px] bg-sidebar-group p-1")}>
-              {group.items.map((item) => (
-                <li key={item.href}>
-                  <ItemSidebar
-                    href={item.href}
-                    label={item.label}
-                    icon={item.icon}
-                    aktif={item.href === aktif}
-                    mode={mode}
-                    collapsed={collapsed}
-                    lencana={lencana?.[item.href]}
-                    onNavigate={onNavigate}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
-    </nav>
   );
 }

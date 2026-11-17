@@ -4,10 +4,6 @@ import { formatAngka, formatPeriode, periodeSebelumnya } from "@/utils/format";
 import { cn } from "@/utils/cn";
 import type { DashboardData } from "../types";
 
-/**
- * Empat kartu KPI kegiatan untuk periode terpilih
- */
-
 function Selisih({ sekarang, sebelumnya, periode }: { sekarang: number; sebelumnya: number; periode: string }) {
   const bulanLalu = formatPeriode(periodeSebelumnya(periode, 2)[1]!);
   const selisih = sekarang - sebelumnya;

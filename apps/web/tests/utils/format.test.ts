@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { formatAngka, formatJam, formatPeriode, formatRentangTanggal, formatTanggal, formatUkuran, inisial, periodeSebelumnya, tanggalWib } from "@/utils/format";
 
-/**
- * Uji fungsi format.ts: tanggal, jam WIB, rentang, angka, periode, ukuran berkas, inisial
- */
-
 describe("format", () => {
   test("tanggal dan jam selalu dalam WIB, apa pun zona perangkat", () => {
     expect(formatTanggal("2026-10-14T17:30:00Z")).toBe("15 Okt 2026");

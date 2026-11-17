@@ -22,10 +22,6 @@ import { KegiatanAksiDialog, type JenisAksi } from "./kegiatan-aksi-dialog";
 import { KegiatanDetailSkeleton, KegiatanTidakDitemukan } from "./kegiatan-states";
 import { PeriksaAksi } from "./periksa-aksi";
 
-/**
- * Detail kegiatan: status, waktu, lokasi, hasil, dokumentasi, dan riwayat pemeriksaan
- */
-
 function Paragraf({ label, isi, kosong }: { label: string; isi: string | null; kosong: string }) {
   return (
     <div className="flex flex-col gap-1">
@@ -51,20 +47,12 @@ function Fakta({ ikon: Ikon, label, children }: { ikon: typeof CalendarDays; lab
 
 const jamSaja = (iso: string) => formatJam(iso).replace(" WIB", "");
 
-/**
- * Halaman detail kegiatan. Tombol yang tampil ditentukan tanda dari backend (bisaUbah, bisaPeriksa,
- * bisaHapusDokumentasi), bukan dihitung ulang di frontend, agar aturannya hanya ada di satu tempat.
- * @param id id kegiatan dari URL
- */
 export function KegiatanDetailView({ id }: { id: number }) {
   const router = useRouter();
   const { data: k, isPending, error, refetch, isRefetching } = useKegiatan(id);
   const [aksi, setAksi] = useState<JenisAksi | null>(null);
   const adaData = !!k;
 
-  /**
-   * Tautan berakhiran #dokumentasi (mis. dari email pengingat) langsung digulir ke bagian dokumentasi setelah datanya tampil.
-   */
   useEffect(() => {
     if (adaData && window.location.hash === "#dokumentasi") {
       document.getElementById("dokumentasi")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -143,7 +131,6 @@ export function KegiatanDetailView({ id }: { id: number }) {
           <span className="text-xs text-muted-foreground">
             Dicatat {formatTanggal(k.createdAt)} oleh {k.pembuat.nama}
           </span>
-          {/* Tombol pemeriksaan (hanya pimpinan) di samping lencana statusnya, bukan kartu tersendiri */}
           {k.bisaPeriksa && <PeriksaAksi kegiatan={k} className="w-full sm:ml-auto sm:w-auto" />}
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -168,7 +155,6 @@ export function KegiatanDetailView({ id }: { id: number }) {
         </div>
       </Panel>
 
-      {/* Catatan perbaikan menggantikan pengingat "Kegiatan sudah selesai": satu kotak, satu tindakan */}
       {adaPerbaikan && (
         <div className="flex flex-col gap-3 rounded-xl border border-status-dibatalkan-foreground/20 bg-status-dibatalkan p-4 text-status-dibatalkan-foreground sm:flex-row sm:items-center">
           <MessageSquareWarning aria-hidden className="size-5 shrink-0" />

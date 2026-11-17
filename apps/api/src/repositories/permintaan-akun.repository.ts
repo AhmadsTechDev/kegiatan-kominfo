@@ -1,23 +1,17 @@
 import { and, desc, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { bidang, pegawai, permintaanAkun, user } from "@/db/schema";
-import { db, type Db } from "@/lib/db";
+import { db, type Db } from "@/db";
 import type { Halaman, StatusPermintaan } from "@/types/umum.types";
 
 type BarisBaru = { pegawaiId: number | null; nama: string; email: string; catatan: string | null; ip: string | null };
 
 export const PermintaanAkunRepository = {
-  /**
-   * Menyimpan permintaan akun baru dan mengembalikan id-nya
-   */
   async insert(nilai: BarisBaru) {
     const [baru] = await db.insert(permintaanAkun).values(nilai).returning({ id: permintaanAkun.id });
     return baru!.id;
   },
 
-  /**
-   * Permintaan yang masih menunggu untuk pegawai tertentu
-   */
   async menungguUntukPegawai(pegawaiId: number) {
     const [p] = await db
       .select({ id: permintaanAkun.id })
@@ -27,9 +21,6 @@ export const PermintaanAkunRepository = {
     return p;
   },
 
-  /**
-   * Permintaan yang masih menunggu untuk email tertentu
-   */
   async menungguUntukEmail(email: string) {
     const [p] = await db
       .select({ id: permintaanAkun.id })
@@ -39,9 +30,6 @@ export const PermintaanAkunRepository = {
     return p;
   },
 
-  /**
-   * Daftar permintaan akun terbaru dengan filter status dan paginasi
-   */
   async daftar(status: StatusPermintaan | undefined, halaman: Halaman) {
     const where = status ? eq(permintaanAkun.status, status) : undefined;
     const pemroses = alias(user, "pemroses");
@@ -73,24 +61,15 @@ export const PermintaanAkunRepository = {
     return { items: baris, total };
   },
 
-  /**
-   * Jumlah permintaan yang menunggu persetujuan
-   */
   jumlahMenunggu() {
     return db.$count(permintaanAkun, eq(permintaanAkun.status, "MENUNGGU"));
   },
 
-  /**
-   * Satu permintaan berdasarkan id
-   */
   async byId(id: number, tx: Db = db) {
     const [p] = await tx.select().from(permintaanAkun).where(eq(permintaanAkun.id, id)).limit(1);
     return p;
   },
 
-  /**
-   * Menandai permintaan selesai HANYA bila statusnya masih MENUNGGU; mengembalikan true bila berhasil
-   */
   async selesaikanJikaMenunggu(id: number, nilai: { status: StatusPermintaan; alasanTolak?: string | null; diprosesOleh: string }, tx: Db = db) {
     const hasil = await tx
       .update(permintaanAkun)
@@ -99,16 +78,10 @@ export const PermintaanAkunRepository = {
     return (hasil.rowCount ?? 0) > 0;
   },
 
-  /**
-   * Mengembalikan permintaan ke status MENUNGGU (bila pembuatan akun gagal)
-   */
   async kembalikanMenunggu(id: number) {
     await db.update(permintaanAkun).set({ status: "MENUNGGU", diprosesOleh: null, diprosesAt: null }).where(eq(permintaanAkun.id, id));
   },
 
-  /**
-   * Email semua admin yang aktif (penerima pemberitahuan)
-   */
   async emailAdmin() {
     const baris = await db
       .select({ email: user.email })

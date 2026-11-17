@@ -13,7 +13,7 @@ flowchart LR
     end
 
     subgraph render["Render (Web Service Free)"]
-        bun["Bun + Elysia<br/>image dari apps/api/Dockerfile<br/>start: migrate → hak-akses → seed → server<br/>healthcheck: /api/health"]
+        bun["Bun + Elysia<br/>image dari apps/api/Dockerfile<br/>start: migrate → seed → server<br/>healthcheck: /api/health"]
     end
 
     subgraph supabase["Supabase (PostgreSQL Free)"]
@@ -36,7 +36,7 @@ flowchart LR
 | Simpul | Isi |
 | --- | --- |
 | Vercel | Frontend Next.js. Satu-satunya variabel: `API_URL` (alamat Render) |
-| Render backend | Container dari `apps/api/Dockerfile`. Setiap menyala menjalankan migrasi, pengaturan hak akses DB, seed, lalu server pada `PORT` (3001) |
+| Render backend | Container dari `apps/api/Dockerfile`. Setiap menyala menjalankan migrasi, seed, lalu server pada `PORT` (3001) |
 | Supabase Postgres | Database PostgreSQL terkelola gratis, diakses melalui Session pooler (port `5432`, mendukung IPv4) |
 | Cloudinary | Foto dan PDF, disimpan privat dan hanya dibuka lewat backend |
 | Brevo | Email lewat API (tidak bergantung pada port SMTP) |

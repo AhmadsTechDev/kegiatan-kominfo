@@ -1,20 +1,12 @@
 import { NotFound, Unprocessable } from "@/lib/errors";
-import { db } from "@/lib/db";
+import { db } from "@/db";
 import { UndanganRepository } from "@/repositories/undangan.repository";
 import { UserRepository } from "@/repositories/user.repository";
-import type { IsiUndangan } from "@/types/undangan.types";
+import type { Role } from "@/types/umum.types";
 import { KredensialService } from "./kredensial.service";
 
 export const UndanganService = {
-  /**
-   * Mengundang pegawai dari Master data: membuat akunnya (tanpa kata sandi) lalu mengirim email aktivasi.
-   * Bila pegawai sudah punya akun yang belum diaktivasi, email/role diperbarui dan undangan dikirim ulang
-   *
-   * Dipakai di dua tempat: tombol Undang di Master data dan persetujuan permintaan akun (permintaan-akun.service).
-   * @returns id akun, email tujuan, dan apakah ini pengiriman ulang
-   * @throws Unprocessable bila pegawai sudah punya akun aktif, akunnya nonaktif, atau email dipakai akun lain
-   */
-  async undang({ pegawaiId, email: emailMentah, role }: IsiUndangan) {
+  async undang({ pegawaiId, email: emailMentah, role }: { pegawaiId: number; email: string; role: Role }) {
     const email = emailMentah.trim().toLowerCase();
     const pegawai = await UndanganRepository.pegawaiAktif(pegawaiId);
     if (!pegawai) throw NotFound("Pegawai tidak ditemukan atau nonaktif");

@@ -1,15 +1,9 @@
 import { PantauRepository } from "@/repositories/pantau.repository";
-import type { PantauQuery } from "@/types/pantau.types";
+import type { PantauQuery } from "@/validators/pantau.validator";
 import type { Aktor } from "@/types/umum.types";
 import { filterDariQuery } from "./kegiatan.service";
 
 export const PantauService = {
-  /**
-   * Ringkasan untuk pimpinan: jumlah kegiatan, yang perlu perbaikan, dan draf yang belum dikirim
-   *
-   * Total kegiatan = yang sudah dikirim (terkirim + perlu perbaikan); draf belum dihitung sebagai kegiatan.
-   * @returns total kegiatan, jumlah draf, dan jumlah yang perlu perbaikan
-   */
   async ringkasan(query: PantauQuery, aktor: Aktor, sekarang = new Date()) {
     const filter = await filterDariQuery(query, aktor);
     const [perStatus, draf] = await Promise.all([PantauRepository.perStatus(filter, sekarang), PantauRepository.jumlahDraf(filter)]);

@@ -3,10 +3,6 @@
 import * as React from "react"
 import { cn } from "cn"
 
-/**
- * Komponen dasar shadcn/ui: tabel dengan gulir horizontal
- */
-
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div

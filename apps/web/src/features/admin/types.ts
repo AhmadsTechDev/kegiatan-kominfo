@@ -1,9 +1,5 @@
 import type { Role, StatusAkun } from "@/types/auth";
 
-/**
- * Tipe data fitur admin: master data dan akun
- */
-
 export type BidangAdmin = {
   id: number;
   kode: string;
@@ -13,7 +9,6 @@ export type BidangAdmin = {
   induk: string | null;
   aktif: boolean;
   jumlahPegawaiAktif: number;
-  /** true bila belum punya pegawai, kegiatan, atau sub bidang */
   bisaDihapus: boolean;
   updatedAt: string;
 };
@@ -27,15 +22,11 @@ export type PegawaiAdmin = {
   bidang: { id: number; nama: string };
   aktif: boolean;
   kontak: string | null;
-  /** Role bawaan saat diundang; role sebenarnya ada di akun */
   roleUndangan: Role;
   akun: { id: string; email: string; aktif: boolean } | null;
   updatedAt: string;
 };
 
-/**
- * kontak: nomor telepon akun tertaut; hanya dikirim saat mengubah pegawai yang sudah punya akun
- */
 export type IsiPegawai = {
   nip: string | null;
   nama: string;
@@ -94,16 +85,10 @@ export type AkunDetail = Omit<AkunAdmin, "pegawai"> & {
   sesi: SesiAkun[];
 };
 
-/**
- * Isian form Buat/Ubah akun. NIP opsional; bidang wajib (akun selalu tertaut ke data pegawai)
- */
 export type IsiAkun = { name: string; email: string; nip: string | null; bidangId: number; role: Role };
 
 export type HasilSimpanAkun = { id: string; undangan: { email: string; galat: string | null } | null };
 
-/**
- * nonaktif: "1" hanya akun nonaktif, "0" menyembunyikannya
- */
 export type FilterAkun = { q: string; role: Role | null; status: StatusAkun | null; nonaktif: "1" | "0" | null; page: number };
 
 export type StatusPermintaan = "MENUNGGU" | "DISETUJUI" | "DITOLAK";

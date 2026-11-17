@@ -1,10 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
 
-/**
- * Komponen dasar shadcn/ui: input teks
- */
-
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input

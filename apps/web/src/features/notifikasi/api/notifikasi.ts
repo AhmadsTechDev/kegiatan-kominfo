@@ -1,9 +1,5 @@
 import { apiClient } from "@/lib/api-client";
 
-/**
- * Pemanggil endpoint notifikasi milik pengguna yang login
- */
-
 export type Notifikasi = {
   id: number;
   jenis: "perlu_perbaikan";

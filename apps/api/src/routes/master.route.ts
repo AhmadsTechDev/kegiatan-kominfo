@@ -1,40 +1,60 @@
 import { Elysia } from "elysia";
-import { MasterController } from "@/controllers/master.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { MasterService } from "@/services/master.service";
 import { MasterValidator } from "@/validators/master.validator";
 
-const ADMIN = { auth: ["ADMIN" as const] };
-const params = MasterValidator.params;
-
-/**
- * Data master (bidang dan sub bidang, pegawai, jenis kegiatan), khusus ADMIN
- */
 export const masterRoutes = new Elysia({ prefix: "/admin" })
   .use(authPlugin)
-
-  /**
-   * Bidang
-   */
-  .get("/bidang", MasterController.daftarUnit, ADMIN)
-  .post("/bidang", MasterController.buatUnit, { ...ADMIN, body: MasterValidator.buatUnit })
-  .patch("/bidang/:id", MasterController.ubahUnit, { ...ADMIN, params, body: MasterValidator.ubahUnit })
-  .delete("/bidang/:id", MasterController.hapusUnit, { ...ADMIN, params })
-
-  /**
-   * Pegawai
-   */
-  .get("/pegawai", MasterController.daftarPegawai, { ...ADMIN, query: MasterValidator.daftarPegawaiQuery })
-  .post("/pegawai", MasterController.buatPegawai, { ...ADMIN, body: MasterValidator.buatPegawai })
-  .patch("/pegawai/:id", MasterController.ubahPegawai, { ...ADMIN, params, body: MasterValidator.ubahPegawai })
-
-  /**
-   * Hapus pegawai yang belum punya akun dan belum dipakai (mis. salah input di tab Perlu diundang)
-   */
-  .delete("/pegawai/:id", MasterController.hapusPegawai, { ...ADMIN, params })
-
-  /**
-   * Jenis kegiatan
-   */
-  .get("/jenis-kegiatan", MasterController.daftarJenis, ADMIN)
-  .post("/jenis-kegiatan", MasterController.buatJenis, { ...ADMIN, body: MasterValidator.buatJenis })
-  .patch("/jenis-kegiatan/:id", MasterController.ubahJenis, { ...ADMIN, params, body: MasterValidator.ubahJenis });
+  .get("/bidang", () => MasterService.daftarUnit(), { auth: ["ADMIN"] })
+  .post(
+    "/bidang",
+    ({ body, set }) => {
+      set.status = 201;
+      return MasterService.buatUnit(body);
+    },
+    { auth: ["ADMIN"], body: MasterValidator.buatUnit },
+  )
+  .patch("/bidang/:id", ({ params, body }) => MasterService.ubahUnit(params.id, body), {
+    auth: ["ADMIN"],
+    params: MasterValidator.params,
+    body: MasterValidator.ubahUnit,
+  })
+  .delete("/bidang/:id", ({ params }) => MasterService.hapusUnit(params.id), {
+    auth: ["ADMIN"],
+    params: MasterValidator.params,
+  })
+  .get("/pegawai", ({ query }) => MasterService.daftarPegawai(query), {
+    auth: ["ADMIN"],
+    query: MasterValidator.daftarPegawaiQuery,
+  })
+  .post(
+    "/pegawai",
+    ({ body, set }) => {
+      set.status = 201;
+      return MasterService.buatPegawaiDenganUndangan(body);
+    },
+    { auth: ["ADMIN"], body: MasterValidator.buatPegawai },
+  )
+  .patch("/pegawai/:id", ({ params, body }) => MasterService.ubahPegawai(params.id, body), {
+    auth: ["ADMIN"],
+    params: MasterValidator.params,
+    body: MasterValidator.ubahPegawai,
+  })
+  .delete("/pegawai/:id", ({ params }) => MasterService.hapusPegawai(params.id), {
+    auth: ["ADMIN"],
+    params: MasterValidator.params,
+  })
+  .get("/jenis-kegiatan", () => MasterService.daftarJenis(), { auth: ["ADMIN"] })
+  .post(
+    "/jenis-kegiatan",
+    ({ body, set }) => {
+      set.status = 201;
+      return MasterService.buatJenis(body);
+    },
+    { auth: ["ADMIN"], body: MasterValidator.buatJenis },
+  )
+  .patch("/jenis-kegiatan/:id", ({ params, body }) => MasterService.ubahJenis(params.id, body), {
+    auth: ["ADMIN"],
+    params: MasterValidator.params,
+    body: MasterValidator.ubahJenis,
+  });

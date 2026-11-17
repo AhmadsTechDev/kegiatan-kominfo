@@ -19,10 +19,6 @@ import type { KegiatanDetail } from "../types";
 import { DokumentasiGaleri, type StatusAntrean } from "./dokumentasi-galeri";
 import { PeriksaAksi } from "./periksa-aksi";
 
-/**
- * Sheet dokumentasi dan hasil kegiatan tanpa meninggalkan daftar kegiatan
- */
-
 type Target = { id: number; judul: string };
 
 function Bagian({ judul, children }: { judul: string; children: React.ReactNode }) {
@@ -46,9 +42,6 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
   const kirim = () => {
     setGalat(null);
 
-    /**
-     * Isian lain dikirim apa adanya; yang berubah hanya hasil kegiatan
-     */
     const payload = keKegiatanPayload({ ...nilaiAwalForm(k), hasil });
     simpan.mutate(
       { ...payload, expectedUpdatedAt: k.updatedAt },
@@ -126,7 +119,6 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
                 Tunggu sampai unggahan selesai.
               </p>
             )}
-            {/* Batal hanya bila ada isian hasil yang bisa dibuang; tanpa itu, Selesai sudah cukup */}
             {hasilBerubah && (
               <Button type="button" variant="outline" className="h-10 pointer-coarse:min-h-11" onClick={onGantiMode} disabled={simpan.isPending || antrean === "mengunggah"}>
                 Batal
@@ -160,9 +152,6 @@ function Isi({ k, onGantiMode, mengubah }: { k: KegiatanDetail; mengubah: boolea
   );
 }
 
-/**
- * Nama tombol menyebut apa yang diubah di panel ini: hasil dan dokumentasi, bukan seluruh kegiatan
- */
 function TombolUbah({ kosong, onClick }: { kosong: boolean; onClick: () => void }) {
   return (
     <Button type="button" className="h-10 pointer-coarse:min-h-11" onClick={onClick}>
@@ -196,9 +185,6 @@ export function KegiatanDokumentasiSheet({ target, onClose }: { target: Target |
         ) : detail.isError ? (
           <ErrorState className="mx-4" message={detail.error.message} onRetry={() => detail.refetch()} retrying={detail.isRefetching} />
         ) : (
-          /**
-           * key: isian hasil dimulai ulang dari data terbaru setiap kali mode berganti
-           */
           <Isi key={`${detail.data.id}-${mengubah}`} k={detail.data} mengubah={mengubah} onGantiMode={() => setMengubah((v) => !v)} />
         )}
       </SheetContent>

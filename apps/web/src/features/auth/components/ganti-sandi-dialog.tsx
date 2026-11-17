@@ -13,9 +13,7 @@ import { ApiError } from "@/lib/api-client";
 import { periksaSandi } from "@/utils/sandi";
 import { useCurrentUser } from "../hooks/use-current-user";
 
-/**
- * Dialog ganti kata sandi sendiri, sekaligus mencabut sesi di perangkat lain
- */
+type Nilai = { sandiLama: string; sandiBaru: string; ulang: string };
 
 const schema = (email?: string) =>
   z
@@ -26,7 +24,6 @@ const schema = (email?: string) =>
       else if (v.sandiBaru === v.sandiLama) ctx.addIssue({ code: "custom", path: ["sandiBaru"], message: "Kata sandi baru harus berbeda dari yang lama" });
       if (v.sandiBaru !== v.ulang) ctx.addIssue({ code: "custom", path: ["ulang"], message: "Kata sandi tidak sama" });
     });
-type Nilai = { sandiLama: string; sandiBaru: string; ulang: string };
 
 export function GantiSandiDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { user } = useCurrentUser();

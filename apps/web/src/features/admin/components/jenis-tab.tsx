@@ -19,10 +19,6 @@ import { useJenisAdmin, useSimpanJenis } from "../hooks/use-admin";
 import type { JenisKegiatanAdmin } from "../types";
 import { AksiBaris, BadgeAktif, KartuMaster, terapkanGalatServer } from "./admin-shared";
 
-/**
- * Tab kelola jenis kegiatan: tambah, ubah nama, jumlah pemakaian, status aktif
- */
-
 const schema = z.object({ nama: z.string().trim().min(1, "Nama jenis wajib diisi").max(100, "Nama maksimal 100 karakter") });
 type Nilai = z.infer<typeof schema>;
 
@@ -98,19 +94,16 @@ export function JenisTab() {
       {
         id: "nama",
         header: "Jenis kegiatan",
-        cell: ({ row }) => <span className={cn("font-semibold", !row.original.aktif && "text-muted-foreground")}>{row.original.nama}</span>,
+        cell: (j) => <span className={cn("font-semibold", !j.aktif && "text-muted-foreground")}>{j.nama}</span>,
       },
-      { id: "jumlah", header: "Dipakai kegiatan", cell: ({ row }) => <span className="tabular-nums">{formatAngka(row.original.jumlahKegiatan)}</span> },
-      { id: "status", header: "Status", cell: ({ row }) => <BadgeAktif aktif={row.original.aktif} /> },
+      { id: "jumlah", header: "Dipakai kegiatan", cell: (j) => <span className="tabular-nums">{formatAngka(j.jumlahKegiatan)}</span> },
+      { id: "status", header: "Status", cell: (j) => <BadgeAktif aktif={j.aktif} /> },
       {
         id: "aksi",
-        header: () => <span className="block text-right">Aksi</span>,
-        cell: ({ row }) => {
-          const j = row.original;
-          return (
-            <AksiBaris nama={j.nama} aktif={j.aktif} onUbah={() => setDialog(j)} onUbahStatus={() => (j.aktif ? setKonfirmasi(j) : ubahStatus(j, true))} />
-          );
-        },
+        header: <span className="block text-right">Aksi</span>,
+        cell: (j) => (
+          <AksiBaris nama={j.nama} aktif={j.aktif} onUbah={() => setDialog(j)} onUbahStatus={() => (j.aktif ? setKonfirmasi(j) : ubahStatus(j, true))} />
+        ),
       },
     ],
     [ubahStatus],

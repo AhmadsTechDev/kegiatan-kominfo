@@ -5,10 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/**
- * Tampilan keadaan kegiatan: tidak ditemukan (404), tanpa akses (403), dan skeleton
- */
-
 function KembaliKeDaftar() {
   return (
     <Button asChild variant="outline" className="h-10">

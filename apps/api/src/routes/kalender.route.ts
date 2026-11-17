@@ -1,11 +1,12 @@
 import { Elysia } from "elysia";
-import { KalenderController } from "@/controllers/kalender.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { KalenderService } from "@/services/kalender.service";
+import { aktorDari } from "@/utils/konteks";
 import { KalenderValidator } from "@/validators/kalender.validator";
 
-/**
- * Kalender kegiatan bulanan, semua role
- */
 export const kalenderRoutes = new Elysia({ prefix: "/kalender" })
   .use(authPlugin)
-  .get("/", KalenderController.bulan, { auth: true, query: KalenderValidator.query });
+  .get("/", ({ query, user }) => KalenderService.bulan(query.bulan, aktorDari(user)), {
+    auth: true,
+    query: KalenderValidator.query,
+  });

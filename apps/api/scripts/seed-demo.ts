@@ -1,29 +1,46 @@
-/**
- * Data DEMO untuk development: pegawai, akun berbagai role/status, dan kegiatan 3 bulan ke belakang + 3 minggu ke depan.
- * Semua nama, NIP, dan kegiatan di sini fiktif dan hanya untuk mencoba tampilan; JANGAN dijalankan di produksi.
- * Jalankan: bun run db:seed:demo (bisa diulang; data demo lama dihapus lalu dibuat ulang).
- * Prasyarat: bun run db:seed sudah dijalankan (bidang dan jenis kegiatan).
- */
 import { eq, inArray, like, or } from "drizzle-orm";
 import { account, bidang, catatanPemeriksaan, jenisKegiatan, kegiatan, pegawai, user, verification } from "@/db/schema";
-import { db, pool } from "@/lib/db";
+import { db, pool } from "@/db";
 import { hashSandi } from "@/lib/sandi";
 
 if (process.env.NODE_ENV === "production") throw new Error("seed-demo dilarang dijalankan di produksi");
 
-const DOMAIN = "demo.local";
+type Orang = { nama: string; unit: string; akun?: { role: "PEGAWAI" | "PIMPINAN"; status: "AKTIF" | "MENUNGGU" | "NONAKTIF" }; nip?: boolean };
+
 export const SANDI_DEMO = "sandidemo2026";
 
-/**
- * Acak dengan benih tetap agar hasilnya sama setiap kali dijalankan
- */
+const DOMAIN = "demo.local";
+const HARI = 24 * 3600_000;
+const JADWAL_HARI = [-35, -24, -15, -10, -6, -3, -1, 0, 2, 5, 9, 14];
+
+const ORANG: Orang[] = [
+  { nama: "Sri Wahyuni", unit: "BID-TIP", akun: { role: "PIMPINAN", status: "AKTIF" }, nip: true },
+  { nama: "Andi Saputra", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
+  { nama: "Fitri Handayani", unit: "BID-KOMPUB", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
+  { nama: "Nurul Aini", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
+  { nama: "Hendra Wijaya", unit: "BID-OPINI", akun: { role: "PEGAWAI", status: "MENUNGGU" } },
+  { nama: "Siti Rohani", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "NONAKTIF" }, nip: true },
+];
+
+const LOKASI = [
+  { nama: "Kantor Diskominfo Kota Palembang", lat: -2.9776, lng: 104.7477 },
+  { nama: "Kantor Wali Kota Palembang", lat: -2.9908, lng: 104.7566 },
+  { nama: "Benteng Kuto Besak", lat: -2.9927, lng: 104.7591 },
+  { nama: "Daring (Zoom)", lat: null, lng: null },
+] as const;
+
+const JUDUL: Record<string, string[]> = {
+  Rapat: ["Rapat koordinasi bulanan", "Rapat evaluasi layanan aplikasi"],
+  Sosialisasi: ["Sosialisasi keterbukaan informasi publik", "Sosialisasi keamanan siber untuk ASN"],
+  Liputan: ["Liputan kegiatan Wali Kota", "Liputan pelantikan pejabat"],
+  Bimtek: ["Bimtek pengelolaan website OPD", "Bimtek satu data Palembang"],
+  Pemeliharaan: ["Pemeliharaan jaringan fiber optik", "Pemeliharaan server pusat data"],
+};
+
 let benih = 20261102;
 const acak = () => ((benih = (benih * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
 const pilih = <T>(daftar: readonly T[]) => daftar[Math.floor(acak() * daftar.length)]!;
 
-/**
- * NIP 18 digit yang lolos aturan utils/nip.ts (lahir 1975-1995, TMT 22-26 tahun setelahnya)
- */
 function nip(urut: number) {
   const lahir = 1975 + Math.floor(acak() * 21);
   const bln = String(1 + Math.floor(acak() * 12)).padStart(2, "0");
@@ -31,46 +48,6 @@ function nip(urut: number) {
   const tmt = `${lahir + 22 + Math.floor(acak() * 5)}${String(1 + Math.floor(acak() * 12)).padStart(2, "0")}`;
   return `${lahir}${bln}${tgl}${tmt}${1 + Math.floor(acak() * 2)}${String(urut).padStart(3, "0")}`;
 }
-
-type Orang = { nama: string; unit: string; akun?: { role: "PEGAWAI" | "PIMPINAN"; status: "AKTIF" | "MENUNGGU" | "NONAKTIF" }; nip?: boolean };
-
-const ORANG: Orang[] = [
-  { nama: "Sri Wahyuni", unit: "BID-TIP", akun: { role: "PIMPINAN", status: "AKTIF" }, nip: true },
-  { nama: "Andi Saputra", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Dewi Lestari", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Budi Santoso", unit: "BID-TIP", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Fitri Handayani", unit: "BID-KOMPUB", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Yoga Pratama", unit: "BID-OPINI", akun: { role: "PEGAWAI", status: "AKTIF" } },
-  { nama: "Nurul Aini", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "AKTIF" }, nip: true },
-  { nama: "Hendra Wijaya", unit: "BID-OPINI", akun: { role: "PEGAWAI", status: "MENUNGGU" } },
-  { nama: "Siti Rohani", unit: "BID-EGOV", akun: { role: "PEGAWAI", status: "NONAKTIF" }, nip: true },
-  { nama: "Agus Setiawan", unit: "BID-TIP", nip: true },
-  { nama: "Rina Marlina", unit: "SUBBAG-UMPEG" },
-];
-
-/**
- * Lokasi di Palembang (koordinat perkiraan untuk peta demo)
- */
-const LOKASI = [
-  { nama: "Kantor Diskominfo Kota Palembang", lat: -2.9776, lng: 104.7477 },
-  { nama: "Kantor Wali Kota Palembang", lat: -2.9908, lng: 104.7566 },
-  { nama: "Benteng Kuto Besak", lat: -2.9927, lng: 104.7591 },
-  { nama: "Kantor Camat Ilir Barat I", lat: -2.9721, lng: 104.7339 },
-  { nama: "Kantor Camat Kalidoni", lat: -2.9472, lng: 104.7871 },
-  { nama: "Kantor Camat Seberang Ulu I", lat: -3.0139, lng: 104.7626 },
-  { nama: "Aula Diskominfo", lat: -2.9776, lng: 104.7477 },
-  { nama: "Daring (Zoom)", lat: null, lng: null },
-] as const;
-
-const JUDUL: Record<string, string[]> = {
-  Rapat: ["Rapat koordinasi bulanan", "Rapat evaluasi layanan aplikasi", "Rapat persiapan HUT Kota Palembang", "Rapat pembahasan anggaran TIK"],
-  Sosialisasi: ["Sosialisasi keterbukaan informasi publik", "Sosialisasi keamanan siber untuk ASN", "Sosialisasi aplikasi layanan publik"],
-  Liputan: ["Liputan kegiatan Wali Kota", "Liputan pelantikan pejabat", "Liputan festival budaya Sungai Musi"],
-  Bimtek: ["Bimtek pengelolaan website OPD", "Bimtek satu data Palembang", "Bimtek penulisan berita"],
-  Pemeliharaan: ["Pemeliharaan jaringan fiber optik", "Pemeliharaan server pusat data", "Pemeliharaan CCTV kota"],
-};
-
-const HARI = 24 * 3600_000;
 
 async function hapusDemoLama() {
   const users = await db.select({ id: user.id, pegawaiId: user.pegawaiId }).from(user).where(like(user.email, `%@${DOMAIN}`));
@@ -118,32 +95,25 @@ for (const [i, o] of ORANG.entries()) {
     kontak: o.akun.status === "AKTIF" ? `0812-${String(1000 + i * 37).slice(-4)}-${String(2000 + i * 53).slice(-4)}` : null,
   });
 
-  /**
-   * Akun MENUNGGU tidak punya kata sandi (belum aktivasi); selainnya bisa login dengan SANDI_DEMO
-   */
   if (o.akun.status !== "MENUNGGU") await db.insert(account).values({ id: crypto.randomUUID(), accountId: id, providerId: "credential", userId: id, password: hash });
   if (o.akun.role === "PEGAWAI" && o.akun.status === "AKTIF") pelaksana.push({ userId: id, pegawaiId: p!.id, unitId });
   if (o.akun.role === "PIMPINAN" && pimpinanId === admin.id) pimpinanId = id;
 }
 
-/**
- * Kegiatan: 90 hari ke belakang sampai 21 hari ke depan, jam kerja WIB
- */
 const sekarang = Date.now();
 let jumlah = 0;
-for (let i = 0; i < 48; i++) {
-  const j = pilih(jenis);
-  const orang = pilih(pelaksana);
-  const hariKe = Math.floor(acak() * 111) - 90;
-  const mulai = new Date(sekarang + hariKe * HARI);
-  mulai.setUTCHours(1 + Math.floor(acak() * 6), acak() < 0.5 ? 0 : 30, 0, 0); // 08.00-13.30 WIB
-  const durasiJam = j.nama === "Pemeliharaan" || j.nama === "Bimtek" ? 4 + Math.floor(acak() * 4) : 1 + Math.floor(acak() * 3);
+for (const [idx, hariKe] of JADWAL_HARI.entries()) {
+  const j = jenis[idx % jenis.length]!;
+  const orang = pelaksana[idx % pelaksana.length]!;
+  const mulai = hariKe === 0 ? new Date(sekarang - 30 * 60_000) : new Date(sekarang + hariKe * HARI);
+  if (hariKe !== 0) mulai.setUTCHours(2 + (idx % 5), idx % 2 === 0 ? 0 : 30, 0, 0);
+  const durasiJam = j.nama === "Pemeliharaan" || j.nama === "Bimtek" ? 4 : 2;
   const selesai = new Date(mulai.getTime() + durasiJam * 3600_000);
   const lewat = selesai.getTime() < sekarang;
-  const batal = acak() < 0.07;
+  const batal = idx === 2;
   const lokasi = pilih(LOKASI);
   const judul = pilih(JUDUL[j.nama] ?? [`Kegiatan ${j.nama}`]);
-  const pemeriksaan = !lewat || batal ? "terkirim" : pilih(["terkirim", "terkirim", "terkirim", "perlu_perbaikan"] as const);
+  const pemeriksaan = lewat && !batal && idx === 4 ? "perlu_perbaikan" : "terkirim";
 
   const [k] = await db
     .insert(kegiatan)
@@ -159,8 +129,8 @@ for (let i = 0; i < 48; i++) {
       bidangId: orang.unitId,
       penanggungJawabId: orang.pegawaiId,
       dibuatOleh: orang.userId,
-      jumlahPeserta: 5 + Math.floor(acak() * 60),
-      hasil: lewat && !batal && acak() < 0.6 ? "Kegiatan berjalan sesuai rencana. Notulen dan daftar hadir disimpan di dokumentasi." : null,
+      jumlahPeserta: 10 + idx * 5,
+      hasil: lewat && !batal ? "Kegiatan berjalan sesuai rencana. Notulen dan daftar hadir disimpan di dokumentasi." : null,
       dibatalkanAt: batal ? new Date(mulai.getTime() - 2 * HARI) : null,
       alasanBatal: batal ? "Bentrok dengan agenda Wali Kota" : null,
       statusPemeriksaan: pemeriksaan,
@@ -173,6 +143,6 @@ for (let i = 0; i < 48; i++) {
 }
 
 console.log(`Data demo: ${ORANG.length} pegawai, ${ORANG.filter((o) => o.akun).length} akun, ${jumlah} kegiatan${dihapus ? ` (menggantikan ${dihapus} akun demo lama)` : ""}`);
-console.log(`Login akun demo: <nama.depan.belakang>@${DOMAIN} dengan sandi ${SANDI_DEMO}, mis. andi.saputra@${DOMAIN} (pegawai), rahmat.hidayat@${DOMAIN} (pimpinan)`);
+console.log(`Login akun demo: <nama.depan.belakang>@${DOMAIN} dengan sandi ${SANDI_DEMO}, mis. andi.saputra@${DOMAIN} (pegawai), sri.wahyuni@${DOMAIN} (pimpinan)`);
 await pool.end();
 process.exit(0);

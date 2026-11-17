@@ -1,5 +1,3 @@
-// Uji fungsi murni (tanpa basis data): NIP, periode WIB, status kegiatan, rekap, berkas, pembatas laju,
-// kebijakan kata sandi, token tautan email, status akun, hash kata sandi, dan perlindungan CSRF
 import { describe, expect, test } from "bun:test";
 import { hashPassword as hashScrypt } from "better-auth/crypto";
 import { cocokSandi, hashSandi, perluHashUlang } from "@/lib/sandi";

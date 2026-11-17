@@ -1,48 +1,26 @@
 import { NotFound, Unprocessable } from "@/lib/errors";
-import { db, galatDuplikat } from "@/lib/db";
+import { db, galatDuplikat } from "@/db";
 import { MasterRepository } from "@/repositories/master.repository";
 import type {
   DaftarPegawaiQuery,
   IsiJenis,
   IsiPegawai,
+  IsiPegawaiBaru,
   IsiUnit,
   NilaiPegawai,
 } from "@/types/master.types";
 import type { GalatField } from "@/types/umum.types";
 import { periksaNip } from "@/utils/nip";
 import { ReferensiService } from "./referensi.service";
+import { UndanganService } from "./undangan.service";
 
-/**
- * Service master data: bidang/sub bidang, pegawai, dan jenis kegiatan (khusus admin).
- * Pola umum di file ini: validasi isian -> simpan di dalam transaksi ->
- * ubah galat UNIQUE dari database menjadi pesan yang ramah (denganCekDuplikat).
- * Data yang sudah dipakai kegiatan tidak dihapus, cukup dinonaktifkan, supaya riwayat lama tetap bisa dibaca.
- *
- * Awalan kode otomatis per tingkat; KATA_SAMBUNG dilewati saat membuat singkatan nama.
- */
 const AWALAN_BAWAAN: Record<string, string> = { bidang: "BID", "sub bidang": "SUBBID" };
 const KATA_SAMBUNG = new Set(["dan", "serta", "atau", "di", "ke", "dari", "yang", "untuk", "pada"]);
 
-/**
- * Merapikan teks opsional: dipangkas, teks kosong menjadi null
- */
 const teks = (nilai: string | null | undefined) => nilai?.trim() || null;
 
-/**
- * Memecah teks menjadi kata (huruf/angka saja)
- */
 const kataKata = (s: string) => s.split(/[^A-Za-z0-9]+/).filter(Boolean);
 
-/**
- * Menjalankan `kerja`; bila gagal karena data UNIQUE kembar, ubah menjadi galat 422 yang ramah
- *
- * KONSEP callback: `kerja` adalah fungsi yang diteruskan sebagai parameter dan baru dijalankan di dalam fungsi ini.
- * @param field nama kolom form tempat pesan galat ditampilkan
- * @param pesan pesan untuk pengguna bila data kembar
- * @param kerja proses yang dijalankan (biasanya transaksi simpan)
- * @returns hasil dari `kerja`
- * @throws Unprocessable bila database menolak karena nilai UNIQUE sudah dipakai
- */
 async function denganCekDuplikat<T>(field: string, pesan: string, kerja: () => Promise<T>) {
   try {
     return await kerja();
@@ -52,16 +30,6 @@ async function denganCekDuplikat<T>(field: string, pesan: string, kerja: () => P
   }
 }
 
-/**
- * Membuat kode otomatis dari tingkat dan singkatan nama, contoh "BID-TIP"; ditambah "-2", "-3" bila sudah dipakai
- *
- * Contoh: nama "Bidang Teknologi Informasi dan Persandian", jenis "Bidang"
- * -> kata "Bidang" di depan dibuang, kata sambung "dan" dilewati, huruf pertama tiap kata diambil -> "BID-TIP".
- * Bila kode itu sudah ada, dicoba "BID-TIP-2", "BID-TIP-3", dan seterusnya.
- * @param nama nama bidang yang diisi admin
- * @param namaJenis "Bidang" atau "Sub bidang"
- * @returns kode unik yang belum dipakai
- */
 async function buatKodeUnit(nama: string, namaJenis: string) {
   const kataJenis = kataKata(namaJenis);
   const awalan = AWALAN_BAWAAN[namaJenis.toLowerCase()] ?? kataJenis.join("").toUpperCase().slice(0, 12);
@@ -76,22 +44,9 @@ async function buatKodeUnit(nama: string, namaJenis: string) {
   const terpakai = await MasterRepository.kodeUnitBerawalan(dasar);
   if (!terpakai.has(dasar)) return dasar;
 
-  /**
-   * Perulangan tanpa batas akhir (;;) aman di sini karena pasti berhenti begitu menemukan nomor yang belum dipakai.
-   */
   for (let i = 2; ; i++) if (!terpakai.has(`${dasar}-${i}`)) return `${dasar}-${i}`;
 }
 
-/**
- * Memeriksa isian bidang. Tanpa induk berarti bidang; dengan induk berarti sub bidang, dan induknya harus sebuah bidang (maksimal dua tingkat)
- *
- * Struktur bidang maksimal dua tingkat: Bidang -> Sub bidang. Karena itu induk harus berupa bidang (bukan sub bidang),
- * tidak boleh dirinya sendiri, dan bidang yang sudah punya sub bidang tidak bisa dipindah menjadi sub bidang.
- * @param isi isian form bidang
- * @param sebelum data lama saat mengubah (kosong saat membuat baru)
- * @returns nilai kolom yang sudah dirapikan dan nama tingkatnya ("Bidang"/"Sub bidang")
- * @throws Unprocessable berisi daftar kolom yang salah
- */
 async function validasiUnit(isi: Omit<IsiUnit, "aktif">, sebelum?: { id: number; parentId: number | null }) {
   const galat: GalatField[] = [];
   if (!isi.nama.trim()) galat.push({ field: "nama", message: "Nama wajib diisi" });
@@ -111,17 +66,12 @@ async function validasiUnit(isi: Omit<IsiUnit, "aktif">, sebelum?: { id: number;
   };
 }
 
-/**
- * Memeriksa isian pegawai: NIP sah dan belum dipakai, email belum dipakai, bidang ada dan aktif.
- * Juga dipakai user.service.ts saat admin membuat/mengubah akun beserta data pegawainya
- *
- * @param isi isian form pegawai (nip, nama, bidangId)
- * @param unitLamaId bidang lama; boleh tetap dipakai walau sekarang nonaktif
- * @param nipLama NIP lama; tidak dicek ulang bila tidak berubah
- * @param opsi pegawaiId (agar NIP miliknya sendiri tidak dianggap kembar) dan email yang ikut dicek keunikannya
- * @returns nilai kolom pegawai yang siap disimpan
- * @throws Unprocessable berisi daftar kolom yang salah
- */
+function validasiNamaJenis(nama: string) {
+  const bersih = nama.trim();
+  if (!bersih) throw Unprocessable("Nama jenis wajib diisi", [{ field: "nama", message: "Nama jenis wajib diisi" }]);
+  return bersih;
+}
+
 export async function validasiPegawai(
   isi: IsiPegawai,
   unitLamaId?: number,
@@ -145,30 +95,11 @@ export async function validasiPegawai(
   return { nip, nama: isi.nama.trim(), bidangId: isi.bidangId };
 }
 
-/**
- * Nama jenis kegiatan wajib diisi
- */
-function validasiNamaJenis(nama: string) {
-  const bersih = nama.trim();
-  if (!bersih) throw Unprocessable("Nama jenis wajib diisi", [{ field: "nama", message: "Nama jenis wajib diisi" }]);
-  return bersih;
-}
-
 export const MasterService = {
-  /**
-   * ---------- Bidang ----------
-   */
 
-  /**
-   * Semua bidang beserta jumlah pegawai aktifnya
-   */
   async daftarUnit() {
     const [unit, jumlah] = await Promise.all([MasterRepository.daftarUnit(), MasterRepository.jumlahPegawaiPerUnit()]);
 
-    /**
-     * KONSEP Map: struktur "kunci -> nilai" untuk mencari cepat. Hasil hitung per bidang diubah menjadi Map
-     * agar jumlah pegawai setiap bidang bisa diambil langsung lewat peta.get(id) tanpa mencari di array berulang kali.
-     */
     const peta = new Map(jumlah.map((j) => [j.bidangId, j.jumlah]));
     const pakai = await MasterRepository.pemakaian(unit.map((u) => u.id));
     return unit.map((u) => {
@@ -177,9 +108,6 @@ export const MasterService = {
     });
   },
 
-  /**
-   * Membuat bidang; kode dibuat otomatis bila dikosongkan
-   */
   async buatUnit(isi: IsiUnit) {
     const { nilai: isian, namaJenis } = await validasiUnit(isi);
     const nilai = { ...isian, kode: isian.kode ?? (await buatKodeUnit(isian.nama, namaJenis)) };
@@ -191,9 +119,6 @@ export const MasterService = {
     );
   },
 
-  /**
-   * Mengubah atau (non)aktifkan bidang; ditolak bila masih punya turunan/pegawai aktif
-   */
   async ubahUnit(id: number, isi: IsiUnit) {
     const sebelum = await MasterRepository.unitById(id);
     if (!sebelum) throw NotFound("Bidang tidak ditemukan");
@@ -215,17 +140,10 @@ export const MasterService = {
     );
   },
 
-  /**
-   * Menghapus bidang atau sub bidang secara permanen; ditolak bila masih punya pegawai, kegiatan, atau sub bidang
-   * (yang sudah dipakai cukup dinonaktifkan agar riwayat kegiatannya tetap utuh)
-   */
   async hapusUnit(id: number) {
     if (!(await MasterRepository.unitById(id))) throw NotFound("Bidang tidak ditemukan");
     const p = (await MasterRepository.pemakaian([id])).get(id)!;
     if (p.pegawai + p.kegiatan + p.turunan > 0) {
-      /**
-       * Menyusun daftar penyebab yang ada saja, mis. "3 pegawai, 2 kegiatan"; nilai 0 tersaring oleh filter(Boolean).
-       */
       const bagian = [p.pegawai && `${p.pegawai} pegawai`, p.kegiatan && `${p.kegiatan} kegiatan`, p.turunan && `${p.turunan} sub bidang`].filter(Boolean).join(", ");
       throw Unprocessable(`Tidak dapat dihapus karena masih punya ${bagian}. Nonaktifkan saja agar riwayatnya tetap utuh`);
     }
@@ -235,14 +153,6 @@ export const MasterService = {
     return { id };
   },
 
-  /**
-   * ---------- Pegawai ----------
-   */
-
-  /**
-   * Hapus permanen pegawai yang belum punya akun dan belum dipakai kegiatan atau permintaan akun.
-   * Yang sudah dipakai cukup dinonaktifkan agar riwayatnya tetap utuh
-   */
   async hapusPegawai(id: number) {
     if (!(await MasterRepository.pegawaiById(id))) throw NotFound("Pegawai tidak ditemukan");
     const p = await MasterRepository.pemakaianPegawai(id);
@@ -257,9 +167,6 @@ export const MasterService = {
     return { id };
   },
 
-  /**
-   * Daftar pegawai dengan filter (filter unit ikut mencakup unit turunannya)
-   */
   async daftarPegawai(query: DaftarPegawaiQuery) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
@@ -275,9 +182,6 @@ export const MasterService = {
     return { items, total, page, pageSize };
   },
 
-  /**
-   * Membuat pegawai baru (email opsional hanya dicek keunikannya; undangan dikirim oleh controller)
-   */
   async buatPegawai(isi: IsiPegawai, email?: string | null) {
     const nilai = await validasiPegawai(isi, undefined, undefined, { email });
     return denganCekDuplikat("nip", "NIP sudah terdaftar", () =>
@@ -288,10 +192,19 @@ export const MasterService = {
     );
   },
 
-  /**
-   * Mengubah atau (non)aktifkan pegawai; bila nama berubah, nama akun tertaut ikut disamakan.
-   * Nomor telepon (kontak) disimpan di akun tertaut, jadi hanya bisa diisi bila akunnya ada
-   */
+  async buatPegawaiDenganUndangan(body: IsiPegawaiBaru) {
+    const { email: emailMentah, role, ...isi } = body;
+    const email = emailMentah?.trim().toLowerCase() || null;
+    const { id } = await MasterService.buatPegawai(isi, email);
+    if (!email) return { id, undangan: null };
+    try {
+      const hasil = await UndanganService.undang({ pegawaiId: id, email, role: role ?? "PEGAWAI" });
+      return { id, undangan: { email: hasil.email, galat: null } };
+    } catch (e) {
+      return { id, undangan: { email, galat: e instanceof Error ? e.message : "Undangan gagal dikirim" } };
+    }
+  },
+
   async ubahPegawai(id: number, isi: IsiPegawai) {
     const sebelum = await MasterRepository.pegawaiById(id);
     if (!sebelum) throw NotFound("Pegawai tidak ditemukan");
@@ -305,9 +218,6 @@ export const MasterService = {
       db.transaction(async (tx) => {
         await MasterRepository.updatePegawai(id, { ...nilai, aktif: isi.aktif ?? sebelum.aktif, ...(isi.roleUndangan ? { roleUndangan: isi.roleUndangan } : {}) }, tx);
 
-        /**
-         * Nama di akun login disamakan dengan nama pegawai agar tidak ada dua versi nama orang yang sama.
-         */
         if (nilai.nama !== sebelum.nama) await MasterRepository.samakanNamaAkun(id, nilai.nama, tx);
         if (akun && kontak !== undefined && kontak !== akun.kontak) await MasterRepository.ubahKontakAkun(akun.id, kontak, tx);
         return { id };
@@ -315,22 +225,12 @@ export const MasterService = {
     );
   },
 
-  /**
-   * ---------- Jenis kegiatan ----------
-   */
-
-  /**
-   * Semua jenis kegiatan beserta jumlah kegiatan yang memakainya
-   */
   async daftarJenis() {
     const [jenis, jumlah] = await Promise.all([MasterRepository.daftarJenis(), MasterRepository.jumlahKegiatanPerJenis()]);
     const peta = new Map(jumlah.map((j) => [j.jenisId, j.jumlah]));
     return jenis.map((j) => ({ ...j, jumlahKegiatan: peta.get(j.id) ?? 0 }));
   },
 
-  /**
-   * Membuat jenis kegiatan baru
-   */
   async buatJenis(isi: IsiJenis) {
     const nama = validasiNamaJenis(isi.nama);
     return denganCekDuplikat("nama", "Nama jenis sudah ada", () =>
@@ -341,9 +241,6 @@ export const MasterService = {
     );
   },
 
-  /**
-   * Mengubah atau (non)aktifkan jenis kegiatan
-   */
   async ubahJenis(id: number, isi: IsiJenis) {
     const sebelum = await MasterRepository.jenisById(id);
     if (!sebelum) throw NotFound("Jenis kegiatan tidak ditemukan");

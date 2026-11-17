@@ -1,11 +1,7 @@
 import type { StatusPelaksanaan, StatusPemeriksaan } from "@/components/common/status-badge";
-
-/**
- * Tipe data kegiatan, respons API, filter, draf, dan dokumen
- */
+import type { KegiatanFormValues } from "./schemas/kegiatan.schema";
 
 export type StatusPemeriksaanKegiatan = Exclude<StatusPemeriksaan, "draf">;
-import type { KegiatanFormValues } from "./schemas/kegiatan.schema";
 
 type Ref = { id: number; nama: string };
 

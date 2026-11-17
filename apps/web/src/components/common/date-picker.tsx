@@ -9,18 +9,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { formatTanggal } from "@/utils/format";
 import { cn } from "@/utils/cn";
 
-/**
- * Pemilih satu tanggal (popover kalender, format Indonesia)
- */
-
-export const keDate = (nilai: string) => {
-  const [t, b, h] = nilai.split("-").map(Number);
-  return new Date(t!, b! - 1, h!);
-};
-
-export const keString = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
 type DatePickerProps = {
   id?: string;
   value: string;
@@ -29,6 +17,14 @@ type DatePickerProps = {
   placeholder?: string;
   className?: string;
 };
+
+export const keDate = (nilai: string) => {
+  const [t, b, h] = nilai.split("-").map(Number);
+  return new Date(t!, b! - 1, h!);
+};
+
+export const keString = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 export function DatePicker({ id, value, onChange, invalid, placeholder = "Pilih tanggal", className }: DatePickerProps) {
   const [buka, setBuka] = useState(false);

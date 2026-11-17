@@ -25,16 +25,15 @@ import { AkunFormDialog, dariAdmin, ItemAksiAkun, useAksiAkun, type AkunRingkas,
 import { BelumPunyaAkun } from "./akun-belum-tab";
 import { PermintaanTab } from "./permintaan-tab";
 
-/**
- * Manajemen akun: daftar, filter, buat akun, aksi akun, dan permintaan akses
- */
+type Buka = (j: JenisAksi, a: AkunRingkas) => void;
+type TabAkun = "akun" | "belum" | "nonaktif" | "permintaan";
 
 const SEMUA = "semua";
 const ROLE: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
 const STATUS: StatusAkun[] = ["MENUNGGU_AKTIVASI", "AKTIF", "NONAKTIF"];
 const FILTER_AWAL: FilterAkun = { q: "", role: null, status: null, nonaktif: "0", page: 1 };
-
-type Buka = (j: JenisAksi, a: AkunRingkas) => void;
+const TAB_SAH: TabAkun[] = ["akun", "belum", "nonaktif", "permintaan"];
+const ID_PANEL = "panel-manajemen-akun";
 
 function TombolAksi({ akun, idSaya, buka }: { akun: AkunRingkas; idSaya?: string; buka: Buka }) {
   return (
@@ -56,9 +55,6 @@ function TombolAksi({ akun, idSaya, buka }: { akun: AkunRingkas; idSaya?: string
   );
 }
 
-/**
- * Tampilan kartu di bawah md (DESIGN.md bagian 10): kolom aksi tidak tersembunyi di balik gulir menyamping
- */
 function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: Buka }) {
   return (
     <div className="flex items-start gap-3 rounded-xl border bg-card p-3">
@@ -88,16 +84,10 @@ function KartuAkun({ a, idSaya, buka }: { a: AkunAdmin; idSaya?: string; buka: B
   );
 }
 
-/**
- * nonaktif: tab Nonaktif memuat khusus akun nonaktif; tab Akun menyembunyikannya agar tidak mengganggu tabel utama
- */
 function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
   const { user } = useCurrentUser();
   const idSaya = user?.id;
 
-  /**
-   * ?status=... dipakai tautan dari dashboard (mis. akun menunggu aktivasi)
-   */
   const statusAwal = useSearchParams().get("status");
   const [filter, setFilterState] = useState<FilterAkun>(() => ({
     ...FILTER_AWAL,
@@ -116,58 +106,52 @@ function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
       {
         id: "nama",
         header: "Akun",
-        cell: ({ row }) => {
-          const a = row.original;
-          return (
-            <span className="flex max-w-80 min-w-56 items-center gap-2.5 whitespace-normal">
-              <AvatarInisial nama={a.name} src={a.foto} className="size-8" />
-              <span className="flex min-w-0 flex-col">
-                <Link
-                  href={`/admin/akun/${a.id}`}
-                  className="rounded font-semibold hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
-                  {a.name}
-                  {a.id === idSaya && <span className="ml-1.5 text-xs font-normal text-muted-foreground">(Anda)</span>}
-                </Link>
-                <span className="truncate text-xs text-muted-foreground">{a.email}</span>
-              </span>
+        cell: (a) => (
+          <span className="flex max-w-80 min-w-56 items-center gap-2.5 whitespace-normal">
+            <AvatarInisial nama={a.name} src={a.foto} className="size-8" />
+            <span className="flex min-w-0 flex-col">
+              <Link
+                href={`/admin/akun/${a.id}`}
+                className="rounded font-semibold hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {a.name}
+                {a.id === idSaya && <span className="ml-1.5 text-xs font-normal text-muted-foreground">(Anda)</span>}
+              </Link>
+              <span className="truncate text-xs text-muted-foreground">{a.email}</span>
             </span>
-          );
-        },
+          </span>
+        ),
       },
       {
         id: "role",
         header: "Role",
-        cell: ({ row }) => <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-semibold text-primary">{LABEL_ROLE[row.original.role]}</span>,
+        cell: (a) => <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-semibold text-primary">{LABEL_ROLE[a.role]}</span>,
       },
       {
         id: "status",
         header: "Status",
-        cell: ({ row }) => {
-          const a = row.original;
-          return (
-            <span className="flex flex-col items-start gap-1">
-              <StatusAkunBadge status={a.status} />
-              {a.terkunci && (
-                <span className="inline-flex items-center gap-1 text-xs text-status-berlangsung-foreground">
-                  <Lock aria-hidden className="size-3" />
-                  Terkunci sementara
-                </span>
-              )}
-              {a.emailBaru && (
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title={a.emailBaru}>
-                  <MailWarning aria-hidden className="size-3" />
-                  Ganti email menunggu
-                </span>
-              )}
-            </span>
-          );
-        },
+        cell: (a) => (
+          <span className="flex flex-col items-start gap-1">
+            <StatusAkunBadge status={a.status} />
+            {a.terkunci && (
+              <span className="inline-flex items-center gap-1 text-xs text-status-berlangsung-foreground">
+                <Lock aria-hidden className="size-3" />
+                Terkunci sementara
+              </span>
+            )}
+            {a.emailBaru && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title={a.emailBaru}>
+                <MailWarning aria-hidden className="size-3" />
+                Ganti email menunggu
+              </span>
+            )}
+          </span>
+        ),
       },
       {
         id: "aksi",
-        header: () => <span className="block text-right">Aksi</span>,
-        cell: ({ row }) => <TombolAksi akun={dariAdmin(row.original)} idSaya={idSaya} buka={buka} />,
+        header: <span className="block text-right">Aksi</span>,
+        cell: (a) => <TombolAksi akun={dariAdmin(a)} idSaya={idSaya} buka={buka} />,
       },
     ],
     [buka, idSaya],
@@ -271,10 +255,6 @@ function DaftarAkun({ nonaktif = false }: { nonaktif?: boolean }) {
     </>
   );
 }
-
-type TabAkun = "akun" | "belum" | "nonaktif" | "permintaan";
-const TAB_SAH: TabAkun[] = ["akun", "belum", "nonaktif", "permintaan"];
-const ID_PANEL = "panel-manajemen-akun";
 
 function IsiAkun() {
   const searchParams = useSearchParams();

@@ -1,18 +1,34 @@
 import { Elysia } from "elysia";
-import { DrafKegiatanController } from "@/controllers/draf-kegiatan.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { DrafKegiatanService } from "@/services/draf-kegiatan.service";
 import { PENULIS } from "@/utils/konstanta";
 import { DrafKegiatanValidator } from "@/validators/draf-kegiatan.validator";
 
-const params = DrafKegiatanValidator.params;
-
-/**
- * Draf formulir kegiatan milik user sendiri
- */
 export const drafKegiatanRoutes = new Elysia({ prefix: "/draf-kegiatan" })
   .use(authPlugin)
-  .get("/", DrafKegiatanController.daftar, { auth: [...PENULIS] })
-  .get("/:id", DrafKegiatanController.detail, { auth: [...PENULIS], params })
-  .post("/", DrafKegiatanController.buat, { auth: [...PENULIS], body: DrafKegiatanValidator.simpan })
-  .put("/:id", DrafKegiatanController.ubah, { auth: [...PENULIS], params, body: DrafKegiatanValidator.simpan })
-  .delete("/:id", DrafKegiatanController.hapus, { auth: [...PENULIS], params });
+  .get("/", ({ user }) => DrafKegiatanService.daftar(user.id), { auth: PENULIS })
+  .get("/:id", ({ params, user }) => DrafKegiatanService.detail(params.id, user.id), {
+    auth: PENULIS,
+    params: DrafKegiatanValidator.params,
+  })
+  .post(
+    "/",
+    ({ body, user, set }) => {
+      set.status = 201;
+      return DrafKegiatanService.buat(user.id, body.isi);
+    },
+    { auth: PENULIS, body: DrafKegiatanValidator.simpan },
+  )
+  .put("/:id", ({ params, body, user }) => DrafKegiatanService.ubah(params.id, user.id, body.isi), {
+    auth: PENULIS,
+    params: DrafKegiatanValidator.params,
+    body: DrafKegiatanValidator.simpan,
+  })
+  .delete(
+    "/:id",
+    async ({ params, user, set }) => {
+      await DrafKegiatanService.hapus(params.id, user.id);
+      set.status = 204;
+    },
+    { auth: PENULIS, params: DrafKegiatanValidator.params },
+  );

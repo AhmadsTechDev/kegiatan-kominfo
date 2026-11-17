@@ -5,10 +5,6 @@ import { AktivasiForm } from "@/features/auth/components/aktivasi-form";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { KartuPublik } from "@/features/auth/components/kartu-publik";
 
-/**
- * Halaman aktivasi akun lewat tautan email (/aktivasi)
- */
-
 export const metadata: Metadata = { title: "Aktivasi akun" };
 
 export default function AktivasiPage() {

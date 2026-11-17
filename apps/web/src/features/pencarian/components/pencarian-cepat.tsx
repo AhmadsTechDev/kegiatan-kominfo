@@ -12,13 +12,8 @@ import { navUntukRole } from "@/config/navigation";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { getDaftarKegiatan } from "@/features/kegiatan/api/kegiatan";
 import type { KegiatanItem } from "@/features/kegiatan/types";
-import { lepasLapisan } from "@/hooks/use-tutup-lewat-kembali";
 import { formatRentangTanggal } from "@/utils/format";
 import { cn } from "@/utils/cn";
-
-/**
- * Pencarian cepat (command palette) untuk pindah halaman dan mencari kegiatan
- */
 
 type Hasil =
   | { jenis: "halaman"; kunci: string; label: string; keterangan: string; href: string; icon: LucideIcon }
@@ -27,10 +22,6 @@ type Hasil =
 const JEDA_CARI_MS = 250;
 const BATAS_KEGIATAN = 6;
 
-/**
- * Debounce dalam bentuk hook: nilai baru baru "diteruskan" setelah tidak berubah selama `jeda` ms.
- * Teks yang diketik ditunda dulu sebelum dipakai sebagai query key, agar pencarian tidak dikirim di setiap huruf.
- */
 function useTertunda(nilai: string, jeda: number) {
   const [tertunda, setTertunda] = useState(nilai);
   useEffect(() => {
@@ -40,10 +31,6 @@ function useTertunda(nilai: string, jeda: number) {
   return tertunda;
 }
 
-/**
- * Kotak pencarian cepat (Ctrl+K / Cmd+K) untuk mencari kegiatan dan menu.
- * Pintasan keyboard dipasang di window sekali saat komponen tampil, lalu dilepas saat komponen hilang.
- */
 export function PencarianCepat() {
   const router = useRouter();
   const { user } = useCurrentUser();
@@ -95,14 +82,9 @@ export function PencarianCepat() {
     setAktif(0);
   };
 
-  /**
-   * Entri riwayat milik dialog dilepas lalu diganti halaman tujuan. Tanpa ini, penutupan dialog
-   * memanggil history.back() yang membatalkan perpindahan halaman
-   */
   const pindahKe = (href: string) => {
-    lepasLapisan();
     tutup();
-    router.replace(href);
+    router.push(href);
   };
 
   const pilih = (h: Hasil | undefined) => {

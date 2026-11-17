@@ -11,33 +11,16 @@ import { buatPembatasLaju } from "@/utils/rate-limit";
 import { aliranZip, type EntriZip } from "@/utils/zip";
 import { filterDariQuery } from "./kegiatan.service";
 
-/**
- * Service ekspor laporan: pratinjau JSON, PDF rekap, daftar dokumentasi, dan ZIP dokumentasi.
- * Semua ekspor memakai filter dan aturan lingkup baca yang sama dengan daftar kegiatan (lewat filterDariQuery),
- * jadi isi laporan selalu sama dengan yang boleh dilihat pengguna.
- */
+type Pembuat = Aktor & { nama: string };
+
 export const BATAS_EKSPOR = 5000;
 
-/**
- * Batas total ukuran dokumentasi dalam satu ZIP, agar unduhan tetap wajar untuk koneksi kantor
- */
 export const BATAS_ZIP_BYTE = 300 * 1024 * 1024;
 
-/**
- * Nama aman untuk folder dan berkas di dalam ZIP (tanpa karakter yang ditolak Windows)
- * Regex mengganti karakter yang dilarang Windows di nama berkas (\ / : * ? " < > | dan karakter kontrol) dengan garis bawah.
- */
+const periksaLaju = buatPembatasLaju({ jendelaMs: 60_000, maks: 10, pesan: "Terlalu banyak permintaan ekspor. Coba lagi dalam satu menit" });
+
 const namaAman = (teks: string, maks = 80) => teks.replace(/[\\/:*?"<>|\x00-\x1f]/g, "_").replace(/\s+/g, " ").trim().slice(0, maks) || "berkas";
 
-/**
- * Menambah " (2)", " (3)", dan seterusnya bila nama sudah dipakai
- *
- * Menghindari dua berkas bernama sama di folder ZIP yang sama, mis. "foto.jpg" lalu "foto (2).jpg".
- * `terpakai` adalah Set yang ikut diperbarui, jadi panggilan berikutnya tahu nama apa saja yang sudah dipakai.
- * @param nama nama yang diinginkan
- * @param terpakai kumpulan nama yang sudah dipakai di folder itu
- * @returns nama yang dijamin belum dipakai
- */
 function namaUnik(nama: string, terpakai: Set<string>) {
   if (!terpakai.has(nama)) return terpakai.add(nama), nama;
   const titik = nama.lastIndexOf(".");
@@ -48,41 +31,11 @@ function namaUnik(nama: string, terpakai: Set<string>) {
   }
 }
 
-/**
- * Maksimal 10 ekspor per menit per akun
- */
-const periksaLaju = buatPembatasLaju({ jendelaMs: 60_000, maks: 10, pesan: "Terlalu banyak permintaan ekspor. Coba lagi dalam satu menit" });
-
-type Pembuat = Aktor & { nama: string };
-
-/**
- * Uraian rentang waktu untuk judul laporan, contoh "Mei 2026" atau "1 Mei 2026 s.d. 15 Mei 2026"
- */
-export function uraianRentang(query: Pick<RekapQuery, "periode" | "dari" | "sampai">) {
-  const hari = (t: string) => formatTanggalPanjang(new Date(`${t}T12:00:00+07:00`));
-  if (query.dari && query.sampai) return query.dari === query.sampai ? hari(query.dari) : `${hari(query.dari)} s.d. ${hari(query.sampai)}`;
-  if (query.dari) return `Sejak ${hari(query.dari)}`;
-  if (query.sampai) return `Sampai ${hari(query.sampai)}`;
-  return query.periode ? namaBulan(query.periode) : "Semua periode";
-}
-
-/**
- * Bagian nama berkas yang menunjukkan rentang waktu
- */
 function rentangBerkas(query: Pick<RekapQuery, "periode" | "dari" | "sampai">) {
   if (query.dari || query.sampai) return `${query.dari ?? "awal"}_sd_${query.sampai ?? "sekarang"}`;
   return query.periode ?? "semua-periode";
 }
 
-/**
- * Mengambil baris laporan; ditolak bila lebih dari 5.000 kegiatan
- *
- * @param query filter laporan dari URL
- * @param aktor pengguna yang meminta laporan (menentukan lingkup bacanya)
- * @param sekarang waktu acuan untuk menghitung status kegiatan
- * @returns baris kegiatan untuk laporan
- * @throws Unprocessable bila hasilnya lebih dari 5.000 kegiatan
- */
 async function barisLaporan(query: RekapQuery, aktor: Aktor, sekarang: Date) {
   const filter = await filterDariQuery(query, aktor);
   const baris = await KegiatanRepository.untukEkspor(filter, sekarang, BATAS_EKSPOR + 1);
@@ -92,10 +45,15 @@ async function barisLaporan(query: RekapQuery, aktor: Aktor, sekarang: Date) {
   return { baris, terbatas: !!filter.lingkup };
 }
 
+export function uraianRentang(query: Pick<RekapQuery, "periode" | "dari" | "sampai">) {
+  const hari = (t: string) => formatTanggalPanjang(new Date(`${t}T12:00:00+07:00`));
+  if (query.dari && query.sampai) return query.dari === query.sampai ? hari(query.dari) : `${hari(query.dari)} s.d. ${hari(query.sampai)}`;
+  if (query.dari) return `Sejak ${hari(query.dari)}`;
+  if (query.sampai) return `Sampai ${hari(query.sampai)}`;
+  return query.periode ? namaBulan(query.periode) : "Semua periode";
+}
+
 export const EksporService = {
-  /**
-   * Data pratinjau laporan dalam bentuk JSON (isi sama dengan PDF) untuk ditampilkan di frontend
-   */
   async pratinjau(query: RekapQuery, aktor: Pembuat, sekarang = new Date()) {
     const { baris } = await barisLaporan(query, aktor, sekarang);
     const info: InfoEkspor = { periode: uraianRentang(query), dibuatOleh: aktor.nama, dibuatPada: sekarang };
@@ -108,15 +66,9 @@ export const EksporService = {
     };
   },
 
-  /**
-   * Kegiatan pada cakupan laporan beserta berkas dokumentasinya, untuk tab Dokumentasi di halaman laporan
-   */
   async dokumentasi(query: RekapQuery, aktor: Aktor, sekarang = new Date()) {
     const { baris } = await barisLaporan(query, aktor, sekarang);
 
-    /**
-     * Dokumentasi semua kegiatan diambil dengan satu query, lalu dikelompokkan per kegiatan memakai Map.
-     */
     const berkas = await DokumentasiRepository.untukKegiatan(baris.map((b) => b.id));
     const perKegiatan = new Map<number, typeof berkas>();
     for (const d of berkas) perKegiatan.set(d.kegiatanId, [...(perKegiatan.get(d.kegiatanId) ?? []), d]);
@@ -127,16 +79,6 @@ export const EksporService = {
     });
   },
 
-  /**
-   * Dokumentasi pada cakupan laporan sebagai ZIP: satu folder per kegiatan, atau berkas langsung bila satu kegiatan
-   *
-   * Total ukuran dihitung dari data di database sebelum berkas apa pun dibaca, jadi permintaan yang terlalu besar
-   * langsung ditolak tanpa membebani server.
-   * ZIP tidak disusun penuh di memori: aliranZip membaca dan mengirim berkas satu per satu (streaming).
-   * @param query filter laporan, ditambah `kegiatan` opsional untuk mengunduh satu kegiatan saja
-   * @returns aliran ZIP, nama berkas unduhan, dan jumlah berkas di dalamnya
-   * @throws NotFound bila kegiatan yang diminta di luar cakupan, Unprocessable bila kosong atau melebihi 300 MB
-   */
   async dokumentasiZip(query: DokumentasiZipQuery, aktor: Pembuat, sekarang = new Date()) {
     periksaLaju(aktor.id);
     const { kegiatan: idKegiatan, ...cakupan } = query;
@@ -175,9 +117,6 @@ export const EksporService = {
     return { aliran: aliranZip(entri), nama, jumlah: berkas.length };
   },
 
-  /**
-   * Membuat berkas PDF
-   */
   async buat(format: FormatEkspor, query: RekapQuery, aktor: Pembuat, sekarang = new Date()) {
     periksaLaju(aktor.id);
 

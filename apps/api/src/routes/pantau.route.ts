@@ -1,12 +1,13 @@
 import { Elysia } from "elysia";
-import { PantauController } from "@/controllers/pantau.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { PantauService } from "@/services/pantau.service";
 import { PEMERIKSA } from "@/utils/konstanta";
+import { aktorDari } from "@/utils/konteks";
 import { PantauValidator } from "@/validators/pantau.validator";
 
-/**
- * Pantauan status pemeriksaan, khusus pimpinan (PRD Fase 4 "Pantau Pimpinan"); admin memakai Dashboard dan daftar Kegiatan
- */
 export const pantauRoutes = new Elysia({ prefix: "/pantau" })
   .use(authPlugin)
-  .get("/ringkasan", PantauController.ringkasan, { auth: [...PEMERIKSA], query: PantauValidator.query });
+  .get("/ringkasan", ({ query, user }) => PantauService.ringkasan(query, aktorDari(user)), {
+    auth: PEMERIKSA,
+    query: PantauValidator.query,
+  });

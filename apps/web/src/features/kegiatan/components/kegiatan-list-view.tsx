@@ -39,18 +39,14 @@ import type { FilterKegiatan, KegiatanItem } from "../types";
 import { DrafSaya } from "./draf-saya";
 import { KegiatanDokumentasiSheet } from "./kegiatan-dokumentasi-sheet";
 
-/**
- * Daftar kegiatan dengan filter, paginasi, tabel di desktop, dan kartu di ponsel
- */
-
 type Lingkup = "semua" | "unit" | "saya" | "perbaikan";
 
 type BukaDokumentasi = (k: KegiatanItem) => void;
 
-/**
- * Tombol Dokumentasi: membuka panel dokumentasi dan hasil tanpa meninggalkan daftar
- * ikonSaja dipakai di tabel desktop agar kolom aksi tidak memakan lebar yang dibutuhkan kolom Lokasi
- */
+type KosongTabel = React.ComponentProps<
+  typeof DataTable<KegiatanItem>
+>["empty"];
+
 function TombolDokumentasi({
   k,
   onBuka,
@@ -93,11 +89,6 @@ function SelLokasi({ nama }: { nama: string | null }) {
   );
 }
 
-/**
- * Definisi kolom tabel untuk DataTable (TanStack Table). Setiap kolom punya `id`, `header`, dan `cell`
- * (fungsi yang menerima baris lalu mengembalikan tampilan selnya).
- * @param opsi tanpaPj menyembunyikan kolom penanggung jawab; onDokumentasi membuka panel dokumentasi
- */
 function buatKolom({
   tanpaPj,
   onDokumentasi,
@@ -109,41 +100,41 @@ function buatKolom({
     {
       id: "judul",
       header: "Kegiatan",
-      cell: ({ row }) => (
+      cell: (k) => (
         <Link
-          href={`/kegiatan/${row.original.id}`}
+          href={`/kegiatan/${k.id}`}
           className="block max-w-60 min-w-40 font-semibold whitespace-normal text-foreground hover:text-primary hover:underline"
         >
-          {row.original.judul}
+          {k.judul}
         </Link>
       ),
     },
     {
       id: "jenis",
       header: "Jenis",
-      cell: ({ row }) => (
+      cell: (k) => (
         <span className="block max-w-28 font-medium whitespace-normal text-foreground">
-          {row.original.jenis.nama}
+          {k.jenis.nama}
         </span>
       ),
     },
     {
       id: "bidang",
       header: "Bidang",
-      cell: ({ row }) => (
+      cell: (k) => (
         <UnitChip className="max-w-40 min-w-28 whitespace-normal">
-          {row.original.bidang.nama}
+          {k.bidang.nama}
         </UnitChip>
       ),
     },
     {
       id: "tanggal",
       header: "Tanggal",
-      cell: ({ row }) => (
+      cell: (k) => (
         <span className="whitespace-nowrap tabular-nums">
-          {formatRentangTanggal(row.original.tglMulai, row.original.tglSelesai)}
+          {formatRentangTanggal(k.tglMulai, k.tglSelesai)}
           <span className="block text-xs text-muted-foreground">
-            {formatJam(row.original.tglMulai)}
+            {formatJam(k.tglMulai)}
           </span>
         </span>
       ),
@@ -151,37 +142,37 @@ function buatKolom({
     {
       id: "lokasi",
       header: "Lokasi",
-      cell: ({ row }) => <SelLokasi nama={row.original.lokasiNama} />,
+      cell: (k) => <SelLokasi nama={k.lokasiNama} />,
     },
     {
       id: "status",
       header: "Status",
-      cell: ({ row }) => (
+      cell: (k) => (
         <div className="flex flex-col items-start gap-1">
-          <StatusBadge status={row.original.statusPelaksanaan} />
-          <StatusPemeriksaanBadge status={row.original.statusPemeriksaan} />
+          <StatusBadge status={k.statusPelaksanaan} />
+          <StatusPemeriksaanBadge status={k.statusPemeriksaan} />
         </div>
       ),
     },
     {
       id: "pj",
-      header: () => <span className="block max-w-24 whitespace-normal">Penanggung jawab</span>,
-      cell: ({ row }) => (
+      header: <span className="block max-w-24 whitespace-normal">Penanggung jawab</span>,
+      cell: (k) => (
         <span className="flex items-center gap-2">
           <AvatarInisial
-            nama={row.original.penanggungJawab.nama}
+            nama={k.penanggungJawab.nama}
             className="hidden size-7 2xl:flex"
           />
-          <span className="block max-w-32 whitespace-normal">{row.original.penanggungJawab.nama}</span>
+          <span className="block max-w-32 whitespace-normal">{k.penanggungJawab.nama}</span>
         </span>
       ),
     },
     {
       id: "aksi",
-      header: () => <span className="sr-only">Aksi</span>,
-      cell: ({ row }) => (
+      header: <span className="sr-only">Aksi</span>,
+      cell: (k) => (
         <div className="flex justify-end gap-2">
-          <TombolDokumentasi k={row.original} onBuka={onDokumentasi} ikonSaja />
+          <TombolDokumentasi k={k} onBuka={onDokumentasi} ikonSaja />
           <Button
             asChild
             variant="outline"
@@ -189,8 +180,8 @@ function buatKolom({
             className="h-8 gap-1 px-3 text-xs"
           >
             <Link
-              href={`/kegiatan/${row.original.id}`}
-              aria-label={`Detail ${row.original.judul}`}
+              href={`/kegiatan/${k.id}`}
+              aria-label={`Detail ${k.judul}`}
             >
               Detail
               <ChevronRight aria-hidden className="size-3.5" />
@@ -246,10 +237,6 @@ function KartuKegiatan({
     </div>
   );
 }
-
-type KosongTabel = React.ComponentProps<
-  typeof DataTable<KegiatanItem>
->["empty"];
 
 function TabelKegiatan({
   filter,
@@ -320,10 +307,6 @@ function TabelKegiatan({
   );
 }
 
-/**
- * Halaman daftar kegiatan: filter (disimpan di URL), tabel di layar lebar, dan kartu di HP.
- * Panel dokumentasi dibuka di atas daftar (sheet), jadi pengguna tidak kehilangan posisi filter dan halamannya.
- */
 export function KegiatanListView() {
   const { user } = useCurrentUser();
   const grupNav = useGrupNav("Operasional");
@@ -337,9 +320,6 @@ export function KegiatanListView() {
         ? "saya"
         : "unit";
   const judul: Record<Lingkup, { title: string; description?: string }> = {
-    /**
-     * Admin tetap "Kegiatan"; pimpinan memakai nama menu "Semua kegiatan"
-     */
     semua: { title: user?.role === "PIMPINAN" ? "Semua kegiatan" : "Kegiatan" },
     unit: {
       title: "Semua kegiatan",

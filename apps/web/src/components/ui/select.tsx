@@ -5,10 +5,6 @@ import { cn } from "cn"
 import { Select as SelectPrimitive } from "radix-ui"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-/**
- * Komponen dasar shadcn/ui: select pilihan tunggal (Radix)
- */
-
 function Select({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {

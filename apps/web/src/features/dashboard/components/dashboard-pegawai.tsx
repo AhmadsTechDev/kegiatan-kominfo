@@ -17,9 +17,17 @@ import { useKegiatanSaya } from "../hooks/use-dashboard";
 import type { AgendaPekan } from "../types";
 import { KegiatanSayaPanel } from "./kegiatan-saya";
 
-/**
- * Dashboard pegawai: agenda dan tugas pribadi
- */
+const NADA_IKON = {
+  dibatalkan: "bg-status-dibatalkan text-status-dibatalkan-foreground",
+  "akan-datang": "bg-status-akan-datang text-status-akan-datang-foreground",
+  primary: "bg-secondary text-primary",
+} as const;
+
+const ANGKA: { kunci: "dok" | "agenda" | "unit"; label: string; icon: LucideIcon; nada: "dibatalkan" | "akan-datang" | "primary" }[] = [
+  { kunci: "dok", label: "Perlu dokumentasi", icon: FileWarning, nada: "dibatalkan" },
+  { kunci: "agenda", label: "Agenda saya", icon: CalendarRange, nada: "akan-datang" },
+  { kunci: "unit", label: "Kegiatan bidang bulan ini", icon: ClipboardList, nada: "primary" },
+];
 
 function Sambutan({ hariIni }: { hariIni?: string }) {
   const sapaan = useSapaan();
@@ -59,12 +67,6 @@ function Sambutan({ hariIni }: { hariIni?: string }) {
     </section>
   );
 }
-
-const NADA_IKON = {
-  dibatalkan: "bg-status-dibatalkan text-status-dibatalkan-foreground",
-  "akan-datang": "bg-status-akan-datang text-status-akan-datang-foreground",
-  primary: "bg-secondary text-primary",
-} as const;
 
 function TautanAngka({ href, ...props }: React.ComponentProps<typeof StatCard> & { href: string; nada: keyof typeof NADA_IKON }) {
   const Ikon = props.icon;
@@ -159,12 +161,6 @@ function AgendaPekanPanel({ items, hariIni, className }: { items?: AgendaPekan[]
     </Panel>
   );
 }
-
-const ANGKA: { kunci: "dok" | "agenda" | "unit"; label: string; icon: LucideIcon; nada: "dibatalkan" | "akan-datang" | "primary" }[] = [
-  { kunci: "dok", label: "Perlu dokumentasi", icon: FileWarning, nada: "dibatalkan" },
-  { kunci: "agenda", label: "Agenda saya", icon: CalendarRange, nada: "akan-datang" },
-  { kunci: "unit", label: "Kegiatan bidang bulan ini", icon: ClipboardList, nada: "primary" },
-];
 
 export function DashboardPegawai() {
   const { data } = useKegiatanSaya();

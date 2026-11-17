@@ -2,16 +2,12 @@
 
 import { RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useId, useState } from "react";
-import type { StatusPelaksanaan } from "@/components/common/status-badge";
+import { LABEL_STATUS, type StatusPelaksanaan } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/utils/cn";
 import { RentangTanggalPicker } from "./rentang-tanggal-picker";
-
-/**
- * Panel filter daftar kegiatan: kata kunci, tanggal, bidang, jenis, status
- */
 
 export type NilaiFilter = {
   q: string;
@@ -36,13 +32,6 @@ type FilterBarProps = {
 const SEMUA = "semua";
 const JEDA_CARI_MS = 300;
 
-const LABEL_STATUS: Record<StatusPelaksanaan, string> = {
-  akan_datang: "Akan datang",
-  berlangsung: "Berlangsung",
-  selesai: "Selesai",
-  dibatalkan: "Dibatalkan",
-};
-
 function urutPohon(unit: FilterBarProps["bidang"]) {
   return unit
     .filter((u) => u.parentId === null)
@@ -52,11 +41,6 @@ function urutPohon(unit: FilterBarProps["bidang"]) {
     ]);
 }
 
-/**
- * Baris filter daftar kegiatan dan rekap: pencarian, tanggal, bidang, jenis, dan status.
- * Komponen ini tidak menyimpan filter sendiri; nilainya datang dari induk (biasanya dari URL) lewat `value`,
- * dan setiap perubahan dikirim balik lewat `onChange`.
- */
 export function FilterBar({ value, onChange, onReset, adaFilter, bidang, jenisKegiatan, className }: FilterBarProps) {
   const id = useId();
   const [bukaFilter, setBukaFilter] = useState(false);

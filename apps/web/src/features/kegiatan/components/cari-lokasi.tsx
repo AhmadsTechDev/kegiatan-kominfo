@@ -7,10 +7,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/utils/cn";
 import { cariTempat, type Tempat } from "../lib/geokode";
 
-/**
- * Kolom cari alamat/tempat (autocomplete) untuk mendapatkan koordinat
- */
-
 export function CariLokasi({ onPilih }: { onPilih: (t: Tempat) => void }) {
   const id = useId();
   const [kata, setKata] = useState("");
@@ -22,12 +18,6 @@ export function CariLokasi({ onPilih }: { onPilih: (t: Tempat) => void }) {
   const [untuk, setUntuk] = useState("");
   const wadah = useRef<HTMLDivElement>(null);
 
-  /**
-   * KONSEP debounce: pencarian baru dikirim 350 ms setelah pengguna BERHENTI mengetik, bukan di setiap huruf,
-   * agar layanan peta tidak dibanjiri permintaan. Setiap kali `kata` berubah, efek sebelumnya dibersihkan:
-   * clearTimeout membatalkan jadwal lama, dan AbortController membatalkan permintaan yang sedang berjalan,
-   * sehingga hasil pencarian lama tidak menimpa hasil yang baru.
-   */
   useEffect(() => {
     const q = kata.trim();
     if (q.length < 3) return;
@@ -55,9 +45,6 @@ export function CariLokasi({ onPilih }: { onPilih: (t: Tempat) => void }) {
     };
   }, [kata]);
 
-  /**
-   * Mengetuk di luar kotak pencarian menutup daftar hasil; pemasangan listener dibersihkan saat komponen hilang.
-   */
   useEffect(() => {
     const tutup = (e: PointerEvent) => {
       if (!wadah.current?.contains(e.target as Node)) setBuka(false);
@@ -75,9 +62,6 @@ export function CariLokasi({ onPilih }: { onPilih: (t: Tempat) => void }) {
   const cukup = kata.trim().length >= 3;
   const tampilDaftar = buka && cukup;
 
-  /**
-   * `untuk` mencatat kata yang hasilnya sedang tampil; bila berbeda dengan yang diketik, berarti hasil baru masih ditunggu.
-   */
   const menunggu = memuat || untuk !== kata.trim();
 
   return (

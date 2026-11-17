@@ -20,10 +20,6 @@ import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useProfil } from "@/features/auth/hooks/use-profil";
 import { cn } from "@/utils/cn";
 
-/**
- * Menu pengguna aktif: profil, bidang, dan tombol keluar
- */
-
 function useUnitSaya() {
   const { data } = useProfil();
   const p = data?.pegawai;
@@ -49,7 +45,6 @@ export function UserMenu() {
             <AvatarInisial nama={user.name} src={foto} />
             <span className="hidden flex-col items-start leading-tight md:flex">
               <span className="text-sm font-semibold">{user.name}</span>
-              {/* Email lebih berguna daripada keterangan role: membedakan akun yang sedang dipakai */}
               <span className="max-w-48 truncate text-xs font-normal text-muted-foreground">{user.email}</span>
             </span>
             <ChevronDown aria-hidden className="hidden size-4 text-muted-foreground md:block" />

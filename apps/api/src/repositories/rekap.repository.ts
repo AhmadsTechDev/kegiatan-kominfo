@@ -1,14 +1,11 @@
 import { eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { bidang, jenisKegiatan, kegiatan, pegawai } from "@/db/schema";
-import { db } from "@/lib/db";
+import { db } from "@/db";
 import type { FilterDaftar } from "@/types/kegiatan.types";
 import { kondisiDaftar } from "./kegiatan.repository";
 
 export const RekapRepository = {
-  /**
-   * Semua kegiatan sesuai filter dengan kolom yang dibutuhkan rekap; penjumlahan dilakukan di service
-   */
   async barisRekap(f: FilterDaftar, sekarang: Date) {
     const bidangPegawai = alias(bidang, "bidang_pegawai");
     const baris = await db

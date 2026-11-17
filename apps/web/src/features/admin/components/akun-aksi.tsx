@@ -19,10 +19,6 @@ import { useCabutSesiAkun, useHapusAkun, useKirimUlangUndangan, useResetSandi, u
 import type { AkunAdmin, AkunDetail, HasilSimpanAkun } from "../types";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
 
-/**
- * Formulir buat/ubah akun dan dialog aksi akun, dipakai di daftar dan detail akun
- */
-
 export type AkunRingkas = {
   id: string;
   name: string;
@@ -34,34 +30,15 @@ export type AkunRingkas = {
   bidangId: number | null;
 };
 
-export const dariAdmin = (a: AkunAdmin): AkunRingkas => ({
-  id: a.id,
-  name: a.name,
-  email: a.email,
-  role: a.role,
-  status: a.status,
-  bisaDihapus: a.bisaDihapus,
-  nip: a.pegawai?.nip ?? null,
-  bidangId: a.pegawai?.bidangId ?? null,
-});
-
-export const dariDetail = (a: AkunDetail): AkunRingkas => ({
-  id: a.id,
-  name: a.name,
-  email: a.email,
-  role: a.role,
-  status: a.status,
-  bisaDihapus: a.bisaDihapus,
-  nip: a.pegawai?.nip ?? null,
-  bidangId: a.pegawai?.bidang.id ?? null,
-});
+export type JenisAksi = "ubah" | "undang" | "reset" | "sesi" | "nonaktifkan" | "pulihkan" | "hapus";
 
 const ROLE: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
-const KETERANGAN_ROLE: Record<Role, string> = {
+const DESKRIPSI_ROLE: Record<Role, string> = {
   PEGAWAI: "Mencatat dan mengubah kegiatan unitnya",
   PIMPINAN: "Melihat dashboard, rekap, dan laporan tanpa mengubah data",
   ADMIN: "Mengelola akun dan master data",
 };
+const ITEM = "pointer-coarse:min-h-11";
 
 const schemaAkun = z.object({
   name: z.string().trim().min(1, "Nama wajib diisi").max(150, "Nama maksimal 150 karakter"),
@@ -101,7 +78,7 @@ function PilihRole({ value, onChange, terkunci }: { value: Role; onChange: (r: R
             )}
           >
             <span className={cn("text-sm font-semibold", aktif && "text-primary")}>{LABEL_ROLE[r]}</span>
-            <span className="text-xs leading-snug text-muted-foreground">{KETERANGAN_ROLE[r]}</span>
+            <span className="text-xs leading-snug text-muted-foreground">{DESKRIPSI_ROLE[r]}</span>
           </button>
         );
       })}
@@ -109,9 +86,6 @@ function PilihRole({ value, onChange, terkunci }: { value: Role; onChange: (r: R
   );
 }
 
-/**
- * Pesan setelah simpan: undangan terkirim, atau peringatan bila email gagal (akun tetap tersimpan)
- */
 function beriTahu(h: HasilSimpanAkun, baru: boolean) {
   if (h.undangan?.galat) {
     toast.warning(`${baru ? "Akun dibuat" : "Akun diperbarui"}, tetapi email undangan gagal dikirim. Gunakan Kirim ulang undangan setelah konfigurasi email diperbaiki.`);
@@ -119,6 +93,28 @@ function beriTahu(h: HasilSimpanAkun, baru: boolean) {
     toast.success(`${baru ? "Akun dibuat" : "Akun diperbarui"}. Tautan aktivasi dikirim ke ${h.undangan.email}.`);
   } else toast.success("Akun diperbarui");
 }
+
+export const dariAdmin = (a: AkunAdmin): AkunRingkas => ({
+  id: a.id,
+  name: a.name,
+  email: a.email,
+  role: a.role,
+  status: a.status,
+  bisaDihapus: a.bisaDihapus,
+  nip: a.pegawai?.nip ?? null,
+  bidangId: a.pegawai?.bidangId ?? null,
+});
+
+export const dariDetail = (a: AkunDetail): AkunRingkas => ({
+  id: a.id,
+  name: a.name,
+  email: a.email,
+  role: a.role,
+  status: a.status,
+  bisaDihapus: a.bisaDihapus,
+  nip: a.pegawai?.nip ?? null,
+  bidangId: a.pegawai?.bidang.id ?? null,
+});
 
 export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | "baru"; idSaya?: string; onClose: () => void }) {
   const simpan = useSimpanAkun();
@@ -180,7 +176,6 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
             Email pribadi
           </FieldLabel>
           <Input id="akun-email" type="email" placeholder="Masukkan email" inputMode="email" autoComplete="off" maxLength={255} className="h-10" aria-required aria-invalid={!!formState.errors.email} {...register("email")} />
-          {/* Hanya muncul saat email akun diganti, karena penggantian itu berdampak langsung pada pemilik akun */}
           {gantiEmail && (
             <FieldDescription>
               {awal?.status === "MENUNGGU_AKTIVASI" ? "Undangan baru dikirim ke email ini; tautan lama tidak berlaku." : "Email login berubah dan ditandai belum terverifikasi."}
@@ -221,13 +216,6 @@ export function AkunFormDialog({ akun, idSaya, onClose }: { akun: AkunRingkas | 
   );
 }
 
-export type JenisAksi = "ubah" | "undang" | "reset" | "sesi" | "nonaktifkan" | "pulihkan" | "hapus";
-
-/**
- * Custom hook yang mengelola semua aksi akun (ubah, undang ulang, reset sandi, cabut sesi, nonaktifkan, aktifkan, hapus)
- * dalam satu tempat, supaya daftar akun dan halaman detail akun memakai dialog yang sama persis.
- * @returns { buka, dialog }: panggil buka(jenis, akun) untuk membuka aksi, lalu render `dialog` di halaman
- */
 export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelahHapus?: () => void } = {}) {
   const [aksi, setAksi] = useState<{ jenis: JenisAksi; akun: AkunRingkas } | null>(null);
   const [alasan, setAlasan] = useState("");
@@ -355,11 +343,6 @@ export function useAksiAkun({ idSaya, setelahHapus }: { idSaya?: string; setelah
 
   return { buka, dialog };
 }
-
-/**
- * Butir menu setinggi 44 px di layar sentuh (R-03); ukuran desktop tidak berubah
- */
-const ITEM = "pointer-coarse:min-h-11";
 
 export function ItemAksiAkun({ akun, idSaya, buka, denganDetail }: { akun: AkunRingkas; idSaya?: string; buka: (j: JenisAksi, a: AkunRingkas) => void; denganDetail?: boolean }) {
   const diriSendiri = akun.id === idSaya;

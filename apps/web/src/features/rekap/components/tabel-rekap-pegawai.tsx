@@ -8,10 +8,6 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { formatAngka } from "@/utils/format";
 import type { RekapData } from "../types";
 
-/**
- * Tabel peringkat pegawai menurut jumlah kegiatan pada periode terpilih
- */
-
 function hrefDaftar(filter: NilaiFilter, pegawaiId: number) {
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries({ ...filter, pegawai: String(pegawaiId) })) if (v) params.set(k, String(v));

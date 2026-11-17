@@ -6,17 +6,11 @@ import type { Aktor } from "@/types/umum.types";
 import { awalHariJakarta, geserPeriode, kodePeriode, periodeSekarang, rentangPeriode, tanggalJakarta, type Periode } from "@/utils/periode";
 import { lingkupBaca } from "./kegiatan.service";
 
-/**
- * Service dashboard: mengumpulkan data ringkasan untuk halaman dashboard dan beranda.
- */
 const JUMLAH_BULAN_TREN = 6;
 const BATAS_DAFTAR = 5;
 const HARI_PEKAN = 7;
 const BATAS_PEKAN = 30;
 
-/**
- * Tren 6 bulan terakhir: jumlah kegiatan per bulan untuk setiap unit induk (kunci = kode unit)
- */
 async function trenUnitBulanan(periode: Periode) {
   const awal = geserPeriode(periode, -(JUMLAH_BULAN_TREN - 1));
   const [baris, unitInduk] = await Promise.all([
@@ -24,9 +18,6 @@ async function trenUnitBulanan(periode: Periode) {
     DashboardRepository.daftarUnitInduk(),
   ]);
 
-  /**
-   * Array.from membuat 6 elemen (satu per bulan); setiap bulan berisi jumlah kegiatan untuk setiap bidang induk, 0 bila tidak ada.
-   */
   const data = Array.from({ length: JUMLAH_BULAN_TREN }, (_, i) => {
     const bulan = kodePeriode(geserPeriode(awal, i));
     const jumlah = Object.fromEntries(unitInduk.map((u) => [u.kode, baris.find((r) => r.bulan === bulan && r.unitIndukId === u.id)?.jumlah ?? 0]));
@@ -36,16 +27,9 @@ async function trenUnitBulanan(periode: Periode) {
 }
 
 export const DashboardService = {
-  /**
-   * Dashboard pimpinan/admin untuk satu bulan: KPI, tren, sebaran jenis, peta, dan agenda terdekat.
-   * Admin juga menerima jumlah akun yang menunggu aktivasi.
-   */
   async ringkasan(periode: Periode, aktor: Aktor, sekarang = new Date()) {
     const rentang = rentangPeriode(periode);
 
-    /**
-     * Delapan query dijalankan bersamaan supaya dashboard cepat; jumlah akun menunggu aktivasi hanya dihitung untuk admin.
-     */
     const [kpi, totalSebelumnya, tren, jenis, jenisAktif, peta, mendatang, menungguAktivasi] = await Promise.all([
       DashboardRepository.hitungKpi(rentang, sekarang),
       DashboardRepository.hitungTotal(rentangPeriode(geserPeriode(periode, -1))),
@@ -57,9 +41,6 @@ export const DashboardService = {
       aktor.role === "ADMIN" ? UserRepository.hitungStatus("MENUNGGU_AKTIVASI") : null,
     ]);
 
-    /**
-     * Jenis kegiatan yang tidak dipakai bulan ini tetap ditampilkan dengan jumlah 0.
-     */
     const tanpaKegiatan = jenisAktif.filter((j) => !jenis.some((g) => g.id === j.id)).map((j) => ({ ...j, jumlah: 0 }));
 
     return {
@@ -74,9 +55,6 @@ export const DashboardService = {
     };
   },
 
-  /**
-   * Beranda untuk semua role: kegiatan saya yang perlu dokumentasi, agenda, kegiatan pekan ini, dan ringkasan unit
-   */
   async saya(aktor: Aktor, sekarang = new Date()) {
     const milik = { userId: aktor.id, pegawaiId: aktor.pegawaiId };
     const lingkup = await lingkupBaca(aktor);

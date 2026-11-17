@@ -2,7 +2,6 @@
 
 import { ChevronRight, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
-import { lepasLapisan } from "@/hooks/use-tutup-lewat-kembali";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,10 +18,6 @@ import { Brand } from "./brand";
 import { kelasLabel, SidebarNav } from "./sidebar-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { SidebarAccount, UserMenu } from "./user-menu";
-
-/**
- * Kerangka halaman setelah login: bilah samping, bilah atas, dan area konten
- */
 
 function subHalaman(pathname: string) {
   if (pathname === "/kegiatan/baru") return "Tambah kegiatan";
@@ -128,12 +123,6 @@ function IsiSidebar({
   );
 }
 
-/**
- * Kerangka semua halaman setelah login: sidebar (menjadi drawer di HP), topbar dengan breadcrumb,
- * pencarian cepat, notifikasi, pengganti tema, dan menu pengguna. Menu yang tampil mengikuti role pengguna.
- * Atribut data-peran pada <html> dipakai CSS untuk memberi warna aksen emas khusus pimpinan.
- * @param children isi halaman yang sedang dibuka
- */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, isPending } = useCurrentUser();
   const [collapsed, setCollapsed] = useState(false);
@@ -142,9 +131,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const permintaan = useJumlahPermintaan(user?.role === "ADMIN");
   const lencana = { "/admin/akun": permintaan.data?.menunggu ?? 0 };
 
-  /**
-   * Penanda peran untuk token warna (globals.css): pimpinan mendapat aksen emas
-   */
   const peran = user?.role === "PIMPINAN" ? "pimpinan" : null;
   useEffect(() => {
     const akar = document.documentElement;
@@ -188,10 +174,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <SheetDescription className="sr-only">Navigasi utama aplikasi</SheetDescription>
               <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-sidebar-border bg-sidebar shadow-xl">
-                <IsiSidebar groups={groups} lencana={lencana} isLoading={isPending} mode="full" onNavigate={() => {
-                    lepasLapisan();
-                    setDrawerOpen(false);
-                  }} />
+                <IsiSidebar groups={groups} lencana={lencana} isLoading={isPending} mode="full" onNavigate={() => setDrawerOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>
@@ -200,7 +183,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Suspense>
           <div className="ml-auto flex items-center gap-2">
             <PencarianCepat />
-            {/* Notifikasi hasil pemeriksaan hanya untuk pegawai (pencatat kegiatan) */}
             {user?.role === "PEGAWAI" && <LoncengNotifikasi />}
             <ThemeToggle />
             <span aria-hidden className="hidden h-6 w-px bg-border md:block" />

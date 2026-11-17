@@ -14,9 +14,7 @@ import { ApiError } from "@/lib/api-client";
 import { skemaSandiBaru, type NilaiSandiBaru } from "@/utils/sandi";
 import { useFokusAwal } from "../hooks/use-fokus-awal";
 
-/**
- * Formulir kata sandi baru (aktivasi dan reset) beserta tampilan berhasil / tautan kedaluwarsa
- */
+export const NADA_SUKSES = "bg-status-selesai text-status-selesai-foreground";
 
 export function Keadaan({ ikon: Ikon, nada, judul, children }: { ikon: typeof CircleCheck; nada: string; judul: string; children: React.ReactNode }) {
   return (
@@ -31,8 +29,6 @@ export function Keadaan({ ikon: Ikon, nada, judul, children }: { ikon: typeof Ci
     </div>
   );
 }
-
-export const NADA_SUKSES = "bg-status-selesai text-status-selesai-foreground";
 
 export function TautanTidakBerlaku({ pesan, aksi }: { pesan: string; aksi?: { label: string; href: string } }) {
   return (
@@ -78,7 +74,6 @@ export function FormSandiBaru({
 
   return (
     <form onSubmit={kirim} noValidate className="flex flex-col gap-5">
-      {/* Agar pengelola kata sandi menyimpan sandi baru untuk email yang benar */}
       <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />
       {galatUmum && (
         <Alert variant="destructive" aria-live="polite">

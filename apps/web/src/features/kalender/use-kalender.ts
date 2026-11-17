@@ -2,11 +2,13 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { kegiatanKeys } from "@/features/kegiatan/hooks/use-kegiatan";
-import { getKalender } from "./api";
+import { apiClient } from "@/lib/api-client";
+import type { DataKalender } from "./types";
 
-/**
- * Hook kalender bulanan; data lama ditahan agar tidak berkedip saat ganti bulan
- */
+async function getKalender(bulan: string | null) {
+  const { data } = await apiClient.get<DataKalender>("/kalender", { params: bulan ? { bulan } : undefined });
+  return data;
+}
 
 export function useKalender(bulan: string | null) {
   return useQuery({

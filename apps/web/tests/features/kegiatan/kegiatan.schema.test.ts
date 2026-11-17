@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { bagianWib, keIsoWib, keKegiatanPayload, kegiatanSchema, nilaiAwalForm } from "@/features/kegiatan/schemas/kegiatan.schema";
 
-/**
- * Uji validasi formulir kegiatan dan konversi waktu ke WIB
- */
-
 const isian = {
   ...nilaiAwalForm(undefined, 7),
   judul: "  Rapat koordinasi  ",
@@ -22,9 +18,6 @@ describe("nilai awal kegiatan baru", () => {
     const mulai = new Date(keIsoWib(v.tanggalMulai, v.jamMulai)).getTime();
     const selesai = new Date(keIsoWib(v.tanggalSelesai, v.jamSelesai)).getTime();
 
-    /**
-     * jam dibulatkan ke menit, jadi mulai paling lama satu menit sebelum sekarang
-     */
     expect(sebelum - mulai).toBeLessThan(60_000 + 1000);
     expect(mulai).toBeLessThanOrEqual(Date.now());
     expect(selesai - mulai).toBe(3600_000);

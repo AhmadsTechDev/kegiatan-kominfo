@@ -7,36 +7,35 @@ import { Panel, PanelBody, PanelHeader } from "@/components/common/panel";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { formatAngka, formatPeriode, formatTanggal } from "@/utils/format";
 import { cn } from "@/utils/cn";
-import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
+import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-media-query";
 import type { RekapData, SatuanRekap } from "../types";
 
-/**
- * Grafik tren jumlah kegiatan, plus daftar rincian untuk pembaca layar
- */
+type Props = { data: RekapData; animasi: boolean; className?: string };
+type TooltipTrenProps = {
+  active?: boolean;
+  payload?: ReadonlyArray<{ payload: { periode: string; jumlah: number } }>;
+  satuan: SatuanRekap;
+};
 
 const config = { jumlah: { label: "Kegiatan", color: "var(--chart-1)" } } satisfies ChartConfig;
 const RADIUS_ATAS: [number, number, number, number] = [4, 4, 0, 0];
-
-export function labelPeriode(kode: string, satuan: SatuanRekap, ringkas = false) {
-  if (satuan === "hari") return ringkas ? String(Number(kode.slice(8, 10))) : formatTanggal(`${kode}T12:00:00+07:00`);
-  if (satuan === "bulan") return formatPeriode(kode, !ringkas);
-  return kode;
-}
-
 const NAMA_SATUAN: Record<SatuanRekap, string> = { hari: "harian", bulan: "bulanan", tahun: "tahunan" };
 
-type Props = { data: RekapData; animasi: boolean; className?: string };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- tipe generik tooltip Recharts terlalu rumit untuk dirinci
-function TooltipTren({ active, payload, satuan }: any) {
+function TooltipTren({ active, payload, satuan }: TooltipTrenProps) {
   if (!active || !payload?.length) return null;
-  const t = payload[0].payload as { periode: string; jumlah: number };
+  const t = payload[0].payload;
   return (
     <div className="rounded-xl border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-xl">
       <p className="font-semibold text-muted-foreground">{labelPeriode(t.periode, satuan)}</p>
       <p className="mt-0.5 font-heading text-sm font-bold tabular-nums">{formatAngka(t.jumlah)} kegiatan</p>
     </div>
   );
+}
+
+export function labelPeriode(kode: string, satuan: SatuanRekap, ringkas = false) {
+  if (satuan === "hari") return ringkas ? String(Number(kode.slice(8, 10))) : formatTanggal(`${kode}T12:00:00+07:00`);
+  if (satuan === "bulan") return formatPeriode(kode, !ringkas);
+  return kode;
 }
 
 export function TrenRekap({ data, animasi, className }: Props) {
@@ -66,9 +65,6 @@ export function TrenRekap({ data, animasi, className }: Props) {
               className="aspect-auto h-72 w-full"
               role="img"
 
-              /**
-               * HP: menggulir melewati grafik tidak memunculkan tooltip; tooltip dibuka dengan ketukan
-               */
               {...(sentuh ? redamGeserGrafik : {})}
               aria-label={`Grafik batang jumlah kegiatan ${NAMA_SATUAN[satuan]}, ${tren.length} periode, total ${data.total.total} kegiatan. Angka per periode tersedia di daftar di sampingnya.`}
             >

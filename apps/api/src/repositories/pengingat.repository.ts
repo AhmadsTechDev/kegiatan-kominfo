@@ -1,8 +1,6 @@
 import { and, eq, gt, gte, isNull, lt, lte, notExists, or, sql, type SQL } from "drizzle-orm";
 import { dokumentasi, kegiatan, pengingat, preferensiPengguna, user, type JenisPengingat } from "@/db/schema";
-import { db } from "@/lib/db";
-
-const BATAS_PER_PUTARAN = 200;
+import { db } from "@/db";
 
 export type KandidatPengingat = {
   kegiatanId: number;
@@ -15,10 +13,8 @@ export type KandidatPengingat = {
   nama: string;
 };
 
-/**
- * Kegiatan yang perlu diingatkan + akun penanggung jawabnya, kecuali yang sudah pernah dikirimi pengingat jenis ini.
- * Akun penerima harus aktif dan tidak mematikan notifikasi jenis ini di Preferensi (belum punya preferensi = mau)
- */
+const BATAS_PER_PUTARAN = 200;
+
 function kandidat(jenis: JenisPengingat, syarat: SQL): Promise<KandidatPengingat[]> {
   const notifNyala = eq(jenis === "H_MINUS_1" ? preferensiPengguna.notifPengingatKegiatan : preferensiPengguna.notifPengingatDokumentasi, true);
   const sudahDikirim = db
@@ -44,16 +40,10 @@ function kandidat(jenis: JenisPengingat, syarat: SQL): Promise<KandidatPengingat
 }
 
 export const PengingatRepository = {
-  /**
-   * Kegiatan yang mulai dalam 24 jam ke depan
-   */
   hMinus1(sekarang: Date) {
     return kandidat("H_MINUS_1", and(gt(kegiatan.tglMulai, sekarang), lte(kegiatan.tglMulai, new Date(sekarang.getTime() + 24 * 3600_000)))!);
   },
 
-  /**
-   * Kegiatan yang selesai (antara `batasMs` lalu sampai `jedaMs` lalu) tetapi belum berdokumentasi
-   */
   tanpaDokumentasi(sekarang: Date, jedaMs: number, batasMs: number) {
     const tanpaBerkas = notExists(
       db
@@ -64,9 +54,6 @@ export const PengingatRepository = {
     return kandidat("DOKUMENTASI", and(lt(kegiatan.tglSelesai, new Date(sekarang.getTime() - jedaMs)), gte(kegiatan.tglSelesai, new Date(sekarang.getTime() - batasMs)), tanpaBerkas)!);
   },
 
-  /**
-   * Mencatat bahwa pengingat sudah dikirim (abaikan bila sudah tercatat)
-   */
   async catat(kegiatanId: number, jenis: JenisPengingat, userId: string) {
     await db.insert(pengingat).values({ kegiatanId, jenis, userId }).onConflictDoNothing();
   },

@@ -5,10 +5,6 @@ import { cn } from "@/utils/cn";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatPeriode, periodeSebelumnya } from "@/utils/format";
 
-/**
- * Pilih bulan dan tahun (12 bulan terakhir) untuk filter dashboard
- */
-
 type PeriodePickerProps = {
   value: string;
   periodeSekarang: string;

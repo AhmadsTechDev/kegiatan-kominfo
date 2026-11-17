@@ -1,10 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { Profil } from "@/features/auth/hooks/use-profil";
 
-/**
- * Pemanggil endpoint /api/me: kontak, email, kata sandi, sesi, dan preferensi
- */
-
 export type Tema = "light" | "dark" | "system";
 export type Preferensi = { tema: Tema; notifPengingatKegiatan: boolean; notifPengingatDokumentasi: boolean };
 export type SesiLogin = {

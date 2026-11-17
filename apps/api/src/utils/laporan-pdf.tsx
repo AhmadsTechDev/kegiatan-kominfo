@@ -2,32 +2,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Document, Font, Image, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import type { BarisEkspor, InfoEkspor } from "@/types/ekspor.types";
-import type { StatusPelaksanaan } from "@/types/umum.types";
 import { formatRentang } from "./format-waktu";
-
-export const KOP = {
-  pemerintah: "PEMERINTAH KOTA PALEMBANG",
-  dinas: "DINAS KOMUNIKASI DAN INFORMATIKA",
-  alamat: [
-    "Jl. Nyoman Ratu No. 1271, Ilir, Bukit Kecil, Sungai Pangeran, Palembang, Sumatera Selatan 30113",
-    "Telp. (0711) 352271, Faksimile (0711) 353262",
-    "Laman : www.kominfo.palembang.go.id  Pos El : kominfo@palembang.go.id",
-  ],
-};
-
-const LOGO = { data: readFileSync(join(import.meta.dir, "../../assets/logo-palembang.png")), format: "png" as const };
-
-Font.registerHyphenationCallback((kata) => [kata]);
 
 const NAVY = "#0f2a4a";
 const ABU = "#64748b";
 const GARIS = "#cbd5e1";
 
-/**
- * KONSEP @react-pdf/renderer: PDF disusun dengan komponen mirip React (Document, Page, View, Text),
- * lalu diubah menjadi berkas PDF di server. Tata letaknya memakai StyleSheet dengan aturan mirip CSS (flexbox),
- * dan ukuran dalam satuan "pt" (1/72 inci). File ini berekstensi .tsx karena memakai sintaks JSX.
- */
+const LOGO = { data: readFileSync(join(import.meta.dir, "../../assets/logo-palembang.png")), format: "png" as const };
+
 const s = StyleSheet.create({
   page: { paddingTop: 28, paddingBottom: 28, paddingHorizontal: 32, fontSize: 8.5, fontFamily: "Helvetica", color: "#0f172a" },
   kop: { flexDirection: "row", alignItems: "center", paddingBottom: 8 },
@@ -46,6 +28,16 @@ const s = StyleSheet.create({
   kosong: { padding: 16, textAlign: "center", color: ABU },
 });
 
+export const KOP = {
+  pemerintah: "PEMERINTAH KOTA PALEMBANG",
+  dinas: "DINAS KOMUNIKASI DAN INFORMATIKA",
+  alamat: [
+    "Jl. Nyoman Ratu No. 1271, Ilir, Bukit Kecil, Sungai Pangeran, Palembang, Sumatera Selatan 30113",
+    "Telp. (0711) 352271, Faksimile (0711) 353262",
+    "Laman : www.kominfo.palembang.go.id  Pos El : kominfo@palembang.go.id",
+  ],
+};
+
 export const KOLOM = [
   { judul: "No", lebar: "4%" },
   { judul: "Kegiatan", lebar: "31%" },
@@ -58,35 +50,8 @@ export const KOLOM = [
 
 export const JUDUL_LAPORAN = "REKAP KEGIATAN";
 
-/**
- * Teks di bawah judul laporan: rentang waktu yang direkap
- */
-export const subjudul = (info: InfoEkspor) => `Periode ${info.periode}`;
+Font.registerHyphenationCallback((kata) => [kata]);
 
-/**
- * Isi teks setiap sel tabel untuk satu kegiatan (dipakai PDF dan pratinjau di frontend)
- */
-export function isiSel(b: BarisEkspor) {
-  return {
-    judul: b.judul,
-    lokasi: b.lokasiNama,
-    jenis: b.jenis,
-    bidang: b.bidang,
-    penanggungJawab: b.penanggungJawab,
-    waktu: formatRentang(b.tglMulai, b.tglSelesai),
-    peserta: b.jumlahPeserta == null ? "–" : b.jumlahPeserta.toLocaleString("id-ID"),
-  };
-}
-
-/**
- * Komponen dokumen PDF laporan (A4 mendatar, berkop dinas)
- *
- * Komponen dokumen PDF: kop dinas, judul, periode, lalu tabel kegiatan.
- * Elemen dengan `fixed` (kepala tabel) diulang otomatis di setiap halaman, dan `wrap={false}` menjaga
- * satu baris kegiatan tidak terpotong di antara dua halaman.
- * @param baris kegiatan yang masuk laporan
- * @param info periode dan pembuat laporan
- */
 function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
   const sel = (i: number) => [s.sel, { width: KOLOM[i]!.lebar }];
 
@@ -140,11 +105,20 @@ function Laporan({ baris, info }: { baris: BarisEkspor[]; info: InfoEkspor }) {
   );
 }
 
-/**
- * Membuat berkas PDF rekap kegiatan
- *
- * @returns Promise berisi isi berkas PDF (Buffer) yang siap dikirim sebagai unduhan
- */
+export const subjudul = (info: InfoEkspor) => `Periode ${info.periode}`;
+
+export function isiSel(b: BarisEkspor) {
+  return {
+    judul: b.judul,
+    lokasi: b.lokasiNama,
+    jenis: b.jenis,
+    bidang: b.bidang,
+    penanggungJawab: b.penanggungJawab,
+    waktu: formatRentang(b.tglMulai, b.tglSelesai),
+    peserta: b.jumlahPeserta == null ? "–" : b.jumlahPeserta.toLocaleString("id-ID"),
+  };
+}
+
 export function buatPdf(baris: BarisEkspor[], info: InfoEkspor) {
   return renderToBuffer(<Laporan baris={baris} info={info} />);
 }

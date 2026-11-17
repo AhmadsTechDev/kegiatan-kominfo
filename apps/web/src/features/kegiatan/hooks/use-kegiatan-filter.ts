@@ -5,10 +5,6 @@ import { useCallback, useMemo } from "react";
 import type { StatusPelaksanaan } from "@/components/common/status-badge";
 import type { FilterKegiatan } from "../types";
 
-/**
- * Filter dan paginasi daftar kegiatan disimpan di URL agar bisa dibagikan
- */
-
 const STATUS: StatusPelaksanaan[] = ["akan_datang", "berlangsung", "selesai", "dibatalkan"];
 const KUNCI = ["q", "dari", "sampai", "periode", "unit", "jenis", "status", "pegawai", "milik", "pemeriksaan", "page"] as const;
 const RUTE_MENU = ["milik", "pemeriksaan"] as const;
@@ -23,20 +19,11 @@ function rentangDariPeriode(periode: string | null) {
   return { dari: `${periode}-01`, sampai: `${periode}-${String(hariAkhir).padStart(2, "0")}` };
 }
 
-/**
- * Filter disimpan di URL (?status=selesai&unit=2), bukan di state React, supaya:
- * halaman bisa dibagikan/di-bookmark, filter bertahan saat dimuat ulang, dan tombol Kembali mengembalikan filter sebelumnya.
- * Nilai dari URL selalu diperiksa dulu (regex, daftar status) karena siapa pun bisa mengetik URL sembarangan.
- * @returns filter saat ini, fungsi setFilter dan resetFilter, serta penanda adaFilter
- */
 export function useKegiatanFilter() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  /**
-   * KONSEP useMemo: hasil perhitungan disimpan dan baru dihitung ulang bila searchParams berubah, sehingga objek filter tetap sama di antara render.
-   */
   const filter = useMemo<FilterKegiatan>(() => {
     const status = searchParams.get("status");
     const page = Number(searchParams.get("page"));
@@ -56,18 +43,11 @@ export function useKegiatanFilter() {
       pegawai: /^\d+$/.test(searchParams.get("pegawai") ?? "") ? searchParams.get("pegawai") : null,
       milik: searchParams.get("milik") === "saya" ? "saya" : null,
 
-      /**
-       * Menu "Perlu perbaikan": hanya nilai ini yang dipakai sebagai rute menu
-       */
       pemeriksaan: searchParams.get("pemeriksaan") === "perlu_perbaikan" ? "perlu_perbaikan" : null,
       page: Number.isInteger(page) && page > 0 ? page : 1,
     };
   }, [searchParams]);
 
-  /**
-   * useCallback menjaga fungsi tetap sama di antara render (selama dependensinya sama).
-   * Setiap perubahan filter mengembalikan ke halaman 1; router.replace mengganti URL tanpa menambah riwayat dan tanpa menggulir ke atas.
-   */
   const setFilter = useCallback(
     (ubah: Partial<FilterKegiatan>) => {
       const params = new URLSearchParams(searchParams);
@@ -83,9 +63,6 @@ export function useKegiatanFilter() {
     [pathname, router, searchParams],
   );
 
-  /**
-   * milik dan pemeriksaan adalah rute menu (Kegiatan saya, Perlu perbaikan), bukan isian filter, jadi tetap dipertahankan
-   */
   const rute = new URLSearchParams();
   for (const k of RUTE_MENU) {
     const v = searchParams.get(k);

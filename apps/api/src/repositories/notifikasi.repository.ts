@@ -1,13 +1,10 @@
 import { and, desc, eq, isNull, ne, or } from "drizzle-orm";
 import { notifikasi, user } from "@/db/schema";
-import { db, type Db } from "@/lib/db";
+import { db, type Db } from "@/db";
 
 const BATAS_DAFTAR = 20;
 
 export const NotifikasiRepository = {
-  /**
-   * Notifikasi terbaru milik user beserta jumlah yang belum dibaca
-   */
   async daftar(userId: string) {
     const [items, belumDibaca] = await Promise.all([
       db
@@ -29,9 +26,6 @@ export const NotifikasiRepository = {
     return { items, belumDibaca };
   },
 
-  /**
-   * Pegawai yang terkait kegiatan: pembuatnya dan akun penanggung jawabnya (kecuali aktor sendiri)
-   */
   penerimaKegiatan(k: { dibuatOleh: string; penanggungJawabId: number }, kecuali: string, tx: Db) {
     return tx
       .select({ id: user.id })
@@ -43,9 +37,6 @@ export const NotifikasiRepository = {
     if (data.length) await tx.insert(notifikasi).values(data);
   },
 
-  /**
-   * Menandai dibaca; hanya milik user sendiri. Mengembalikan jumlah baris yang berubah
-   */
   async tandaiDibaca(userId: string, id?: number) {
     const hasil = await db
       .update(notifikasi)

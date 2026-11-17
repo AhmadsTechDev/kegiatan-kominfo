@@ -17,18 +17,18 @@ import { formatTanggalJam, formatUkuran } from "@/utils/format";
 import { unduhDokumentasiZip } from "../api";
 import type { CakupanLaporan, KegiatanDokumentasi } from "../types";
 
-/**
- * Tab Dokumentasi di halaman laporan: berkas tiap kegiatan pada cakupan yang dipilih, bisa diunduh satu per satu atau sebagai ZIP
- */
+type TargetUnduh = "semua" | number;
+
+type Props = {
+  cakupan: CakupanLaporan;
+  data?: KegiatanDokumentasi[];
+  galat?: Error | null;
+  onUlang: () => void;
+  mengulang: boolean;
+  memudar: boolean;
+};
 
 const adalahFoto = (d: Dokumentasi) => d.mime.startsWith("image/");
-
-export const hitungBerkas = (data: KegiatanDokumentasi[]) => data.reduce((n, k) => n + k.dokumentasi.length, 0);
-
-/**
- * "semua" untuk seluruh cakupan, angka untuk satu kegiatan
- */
-type TargetUnduh = "semua" | number;
 
 function Meta({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: React.ReactNode }) {
   return (
@@ -189,22 +189,12 @@ function PratinjauFoto({ foto, indeks, onIndeks, onTutup }: { foto: Dokumentasi[
   );
 }
 
-type Props = {
-  cakupan: CakupanLaporan;
-  data?: KegiatanDokumentasi[];
-  galat?: Error | null;
-  onUlang: () => void;
-  mengulang: boolean;
-  memudar: boolean;
-};
+export const hitungBerkas = (data: KegiatanDokumentasi[]) => data.reduce((n, k) => n + k.dokumentasi.length, 0);
 
 export function LaporanDokumentasi({ cakupan, data, galat, onUlang, mengulang, memudar }: Props) {
   const [lihat, setLihat] = useState<{ foto: Dokumentasi[]; indeks: number } | null>(null);
   const [mengunduh, setMengunduh] = useState<TargetUnduh | null>(null);
 
-  /**
-   * Satu ZIP disiapkan dalam satu waktu; tombol lain menunggu agar server tidak dibebani unduhan ganda
-   */
   const unduhZip = async (target: TargetUnduh) => {
     setMengunduh(target);
     try {

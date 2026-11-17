@@ -112,9 +112,9 @@ Tiga lapisan, dengan **satu origin** untuk UI dan API.
 | Lapisan | Teknologi | Peran |
 | --- | --- | --- |
 | Frontend | Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query | Antarmuka. Meneruskan `/api/*` ke backend sehingga cookie sesi milik domain frontend dan tidak ada urusan CORS |
-| Backend | Bun, Elysia, Drizzle, Better Auth | API REST berlapis: route, controller, service, repository. Autentikasi, validasi, hak akses, rekap, PDF, email, dan pengingat |
+| Backend | Bun, Elysia, Drizzle, Better Auth | API REST berlapis: route, service, repository. Autentikasi, validasi, hak akses, rekap, PDF, email, dan pengingat |
 | Database | PostgreSQL 17 | Data kegiatan, akun, dan master data |
-| Berkas | Cloudinary (atau folder lokal bila tidak diisi) | Foto dan PDF, disimpan privat |
+| Berkas | Cloudinary | Foto dan PDF, disimpan privat |
 | Email | Brevo API | Aktivasi, atur ulang sandi, dan pengingat |
 
 **Deployment.** Frontend di Vercel, backend di Render, dan PostgreSQL di Supabase. Langkahnya ada di [README](../README.md#deploy-online-lewat-render-supabase-dan-vercel), dan gambarnya di [docs/uml/04-deployment.md](uml/04-deployment.md) dan [docs/uml/06-arsitektur.md](uml/06-arsitektur.md).

@@ -1,10 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
 
-/**
- * Komponen dasar shadcn/ui: kartu
- */
-
 function Card({
   className,
   size = "default",

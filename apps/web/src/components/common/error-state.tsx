@@ -3,10 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/utils/cn";
 
-/**
- * Kartu galat saat data gagal dimuat, dengan tombol muat ulang
- */
-
 type ErrorStateProps = {
   message?: string;
   onRetry?: () => void;

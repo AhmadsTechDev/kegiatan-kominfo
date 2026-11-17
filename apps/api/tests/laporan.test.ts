@@ -1,12 +1,8 @@
-// Uji laporan: rekap, ekspor PDF, pratinjau, dashboard, kalender, dan pantau harus menghitung angka yang sama.
-// Setiap uji memakai bidang baru dan periode khusus (tahun 2031 / 2020) agar angkanya tidak tercampur data uji lain.
 import { describe, expect, test } from "bun:test";
 import { buatBidang, buatKegiatan, buatPengguna, formBerkas, idJenis, isiKegiatan, loginAdmin, panggil, PNG } from "./helpers";
 
-// Waktu WIB pada tanggal tertentu, contoh wib("2031-03-05", 9)
 const wib = (tanggal: string, jam: number) => `${tanggal}T${String(jam).padStart(2, "0")}:00:00+07:00`;
 
-// Satu bidang baru berisi satu pegawai dengan tiga kegiatan di Maret 2031 (satu dibatalkan)
 async function siapkanMaret2031() {
   const bidang = await buatBidang();
   const u = await buatPengguna({ unitId: bidang.id });
@@ -57,7 +53,6 @@ describe("angka laporan konsisten", () => {
     const dashboard = await panggil("/dashboard?periode=2031-03", { cookie: admin });
     expect(dashboard.data.kpi).toMatchObject({ total: 3, akanDatang: 2, berlangsung: 0, totalPeriodeSebelumnya: 0 });
     expect(dashboard.data.trenUnitBulanan.data.at(-1)).toMatchObject({ bulan: "2031-03", jumlah: { [bidang.kode]: 3 } });
-    // Jenis aktif tanpa kegiatan ikut tampil dengan jumlah 0 di belakang
     expect(dashboard.data.sebaranJenis.filter((j: { jumlah: number }) => j.jumlah > 0)).toEqual(rekap.data.perJenis);
     expect(dashboard.data.sebaranJenis.slice(rekap.data.perJenis.length).every((j: { jumlah: number }) => j.jumlah === 0)).toBe(true);
     expect(dashboard.data.admin).toEqual({ menungguAktivasi: expect.any(Number) });
@@ -88,7 +83,6 @@ describe("angka laporan konsisten", () => {
 
     const sebelum = await panggil("/dashboard?periode=2020-05", { cookie: admin });
     expect(sebelum.data.kpi).toMatchObject({ selesai: 1 });
-    // Dashboard dinas tidak lagi memantau dokumentasi (opsional)
     expect(sebelum.data.kpi.selesaiTanpaDokumentasi).toBeUndefined();
     expect(sebelum.data.perluPerhatian).toBeUndefined();
     const saya = await panggil("/dashboard/saya", { cookie: u.cookie });

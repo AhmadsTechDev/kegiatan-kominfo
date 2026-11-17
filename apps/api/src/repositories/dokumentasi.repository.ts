@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { dokumentasi, kegiatan } from "@/db/schema";
-import { db, type Db } from "@/lib/db";
+import { db, type Db } from "@/db";
 import { KEGIATAN_AKTIF } from "./kegiatan.repository";
 
 type NilaiDokumentasi = {
@@ -14,9 +14,6 @@ type NilaiDokumentasi = {
 };
 
 export const DokumentasiRepository = {
-  /**
-   * Berkas dokumentasi banyak kegiatan sekaligus (untuk laporan), urut waktu unggah
-   */
   untukKegiatan(kegiatanIds: number[]) {
     return db
       .select({
@@ -33,9 +30,6 @@ export const DokumentasiRepository = {
       .orderBy(asc(dokumentasi.id));
   },
 
-  /**
-   * Satu dokumentasi beserta data kegiatannya (untuk cek hak akses); undefined bila kegiatan sudah dihapus
-   */
   async findDenganKegiatan(id: number) {
     const [baris] = await db
       .select({
@@ -49,32 +43,20 @@ export const DokumentasiRepository = {
     return baris;
   },
 
-  /**
-   * Jumlah berkas dokumentasi sebuah kegiatan
-   */
   hitung(kegiatanId: number, tx: Db = db) {
     return tx.$count(dokumentasi, eq(dokumentasi.kegiatanId, kegiatanId));
   },
 
-  /**
-   * Menyimpan metadata berkas baru dan mengembalikan barisnya
-   */
   async insert(nilai: NilaiDokumentasi, tx: Db) {
     const [baris] = await tx.insert(dokumentasi).values(nilai).returning();
     return baris!;
   },
 
-  /**
-   * Mengganti metadata berkas (berkas lama diganti); undefined bila dokumentasi tidak ada
-   */
   async ganti(id: number, nilai: Omit<NilaiDokumentasi, "kegiatanId"> & { createdAt: Date }, tx: Db) {
     const [baris] = await tx.update(dokumentasi).set(nilai).where(eq(dokumentasi.id, id)).returning();
     return baris;
   },
 
-  /**
-   * Menghapus metadata berkas
-   */
   async hapus(id: number, tx: Db) {
     await tx.delete(dokumentasi).where(eq(dokumentasi.id, id));
   },

@@ -3,18 +3,8 @@ import { site } from "@/config/site";
 import { cn } from "@/utils/cn";
 import type { PratinjauLaporan } from "../types";
 
-/**
- * Tata letak halaman laporan A4 mendatar untuk pratinjau dan cetak
- */
-
 const BARIS_HALAMAN_PERTAMA = 7;
 const BARIS_PER_HALAMAN = 12;
-
-export function bagiHalaman<T>(baris: T[]): T[][] {
-  const halaman: T[][] = [baris.slice(0, BARIS_HALAMAN_PERTAMA)];
-  for (let i = BARIS_HALAMAN_PERTAMA; i < baris.length; i += BARIS_PER_HALAMAN) halaman.push(baris.slice(i, i + BARIS_PER_HALAMAN));
-  return halaman;
-}
 
 function Kop({ data }: { data: PratinjauLaporan }) {
   return (
@@ -36,6 +26,12 @@ function Kop({ data }: { data: PratinjauLaporan }) {
       <p className="mt-1 mb-4 text-center text-[12px]">{data.subjudul}</p>
     </>
   );
+}
+
+export function bagiHalaman<T>(baris: T[]): T[][] {
+  const halaman: T[][] = [baris.slice(0, BARIS_HALAMAN_PERTAMA)];
+  for (let i = BARIS_HALAMAN_PERTAMA; i < baris.length; i += BARIS_PER_HALAMAN) halaman.push(baris.slice(i, i + BARIS_PER_HALAMAN));
+  return halaman;
 }
 
 export function HalamanLaporan({ data, className }: { data: PratinjauLaporan; className?: string }) {

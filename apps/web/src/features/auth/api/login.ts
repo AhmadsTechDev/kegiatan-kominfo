@@ -1,24 +1,7 @@
 import { authClient } from "@/lib/auth-client";
 import type { LoginInput } from "../schemas/login.schema";
 
-/**
- * Login lewat Better Auth dan menerjemahkan galatnya ke pesan berbahasa Indonesia
- */
-
 export type LoginErrorKind = "kredensial" | "terkunci" | "nonaktif" | "terlalu_sering" | "validasi" | "server";
-
-export class LoginError extends Error {
-  constructor(
-    public kind: LoginErrorKind,
-    message: string,
-    public lockedUntil?: Date,
-  ) {
-    super(message);
-  }
-
-  readonly diterimaPada = Date.now();
-}
-
 type AuthClientError = { status: number; code?: string; message?: string; lockedUntil?: string };
 
 function petakanError(error: AuthClientError): LoginError {
@@ -39,6 +22,18 @@ function petakanError(error: AuthClientError): LoginError {
     return new LoginError("validasi", "Periksa kembali email dan kata sandi.");
   }
   return new LoginError("server", "Server tidak dapat dihubungi. Coba lagi beberapa saat.");
+}
+
+export class LoginError extends Error {
+  constructor(
+    public kind: LoginErrorKind,
+    message: string,
+    public lockedUntil?: Date,
+  ) {
+    super(message);
+  }
+
+  readonly diterimaPada = Date.now();
 }
 
 export async function login({ email, password }: LoginInput) {

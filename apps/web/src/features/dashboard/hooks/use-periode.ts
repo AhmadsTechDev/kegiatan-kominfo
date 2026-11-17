@@ -3,10 +3,6 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
-/**
- * Baca dan ubah ?periode=YYYY-MM di URL tanpa muat ulang halaman
- */
-
 export function usePeriode() {
   const searchParams = useSearchParams();
   const router = useRouter();

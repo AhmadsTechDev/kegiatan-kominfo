@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { periksaNip, zNip } from "@/utils/nip";
 
-/**
- * Uji validasi NIP 18 digit agar sama persis dengan backend
- */
-
 const SEKARANG = new Date("2026-10-19T00:00:00Z");
 
 describe("periksaNip (sama dengan backend)", () => {

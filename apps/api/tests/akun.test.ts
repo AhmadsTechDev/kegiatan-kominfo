@@ -1,17 +1,14 @@
-// Uji manajemen akun oleh admin, dan permintaan akun dari halaman login
 import { describe, expect, test } from "bun:test";
 import { eq } from "drizzle-orm";
 import { account, pegawai, user, verification } from "@/db/schema";
-import { db } from "@/lib/db";
+import { db } from "@/db";
 import { aktifkan, buatKegiatan, buatPengguna, emailAcak, idUnit, ipAcak, isiAkun, isiKegiatan, login, loginAdmin, nipAcak, panggil, SANDI, tokenTerakhir } from "./helpers";
 import { kotakSurat, suratTerakhir } from "./surel-palsu";
 
-// Id akun admin bawaan
 async function idAdmin() {
   return (await panggil("/me", { cookie: await loginAdmin() })).data.id as string;
 }
 
-// Isian form akun untuk akun yang sudah ada (role/email bisa diganti)
 async function isiDari(u: { email: string; nip: string }, ubah: Record<string, unknown> = {}) {
   return isiAkun({ name: "Nama Tetap", email: u.email, nip: u.nip, ...ubah });
 }
@@ -192,7 +189,6 @@ describe("undangan, reset sandi, dan sesi oleh admin", () => {
     expect(kotakSurat.slice(sebelum).map((s) => s.kepada)).toEqual([u.email]);
     expect(suratTerakhir(u.email)!.subjek).toBe("Atur ulang kata sandi");
     expect((await panggil("/me", { cookie: u.cookie })).status).toBe(401);
-    // Kata sandi lama tetap berlaku sampai pemiliknya membuat yang baru
     expect((await login(u.email, SANDI)).status).toBe(200);
 
     const menunggu = await panggil("/admin/akun", { cookie: admin, json: await isiAkun() });
@@ -206,7 +202,6 @@ describe("undangan, reset sandi, dan sesi oleh admin", () => {
     const res = await panggil(`/admin/akun/${u.userId}/cabut-sesi`, { method: "POST", cookie: admin });
     expect(res.data.jumlah).toBe(2);
     expect((await panggil("/me", { cookie: u.cookie })).status).toBe(401);
-    // Admin mencabut sesinya sendiri: sesi yang sedang dipakai tetap berlaku
     await panggil(`/admin/akun/${await idAdmin()}/cabut-sesi`, { method: "POST", cookie: admin });
     expect((await panggil("/me", { cookie: admin })).status).toBe(200);
   });
@@ -223,7 +218,6 @@ describe("permintaan akun", () => {
     const jumlah = await panggil("/admin/permintaan-akun/jumlah", { cookie: admin });
     expect(jumlah.data.menunggu).toBeGreaterThanOrEqual(1);
 
-    // Tanpa bidang ditolak, dan permintaan tetap menunggu
     const kurang = await panggil(`/admin/permintaan-akun/${ajukan.data.id}/setujui`, { cookie: admin, json: { role: "PEGAWAI" } });
     expect(kurang.status).toBe(422);
     expect(kurang.data.details.map((d: { field: string }) => d.field)).toEqual(["bidangId"]);

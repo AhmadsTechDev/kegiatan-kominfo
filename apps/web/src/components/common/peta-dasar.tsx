@@ -7,19 +7,22 @@ import { useSyncExternalStore } from "react";
 import { cn } from "@/utils/cn";
 import type { StatusPelaksanaan } from "./status-badge";
 
-/**
- * Konfigurasi dasar peta MapLibre wilayah Palembang: tema gelap, gestur, gedung 3D
- */
+type Ekspresi = unknown;
+type PropertiCat = Parameters<PetaGL["setPaintProperty"]>[1];
+
+type OpsiPeta = {
+  gelap: boolean;
+  pusat?: [number, number];
+  zoom?: number;
+  pitch?: number;
+  bearing?: number;
+  interaktif?: boolean;
+};
 
 export const PUSAT_AWAL: [number, number] = [104.7754, -2.9761];
 export const ZOOM_AWAL = 12;
 export const KEMIRINGAN_3D = 55;
 
-/**
- * Liberty (OpenFreeMap, data OpenStreetMap/OpenMapTiles): selain jalan dan wilayah, memuat lapisan POI
- * (fasilitas umum, sekolah, rumah sakit, ibadah, halte), nama kawasan, dan label sungai.
- * Positron yang dipakai sebelumnya tidak punya lapisan POI sehingga hanya nama jalan yang terlihat
- */
 const GAYA = "https://tiles.openfreemap.org/styles/liberty";
 
 const GELAP = {
@@ -36,9 +39,6 @@ const GELAP = {
   rel: "#2a3756",
   batas: "#3b4b6d",
 
-  /**
-   * Teks label minimal 4,5:1 terhadap latar #0f1a2e
-   */
   label: "#b4c0d4",
   labelKota: "#e6ecf5",
   labelJalan: "#9aa8c2",
@@ -47,56 +47,11 @@ const GELAP = {
   halo: "rgba(11,17,32,0.9)",
 };
 
-function warnaLapisGelap(id: string, jenis: string): Record<string, string | number> {
-  if (jenis === "background") return { "background-color": GELAP.latar };
-  if (jenis === "fill") {
-    if (id === "water") return { "fill-color": GELAP.air };
-    if (id.startsWith("landuse_") && id !== "landuse_residential") return { "fill-color": GELAP.taman, "fill-opacity": 0.5 };
-    if (id === "park" || id.startsWith("landcover_wood")) return { "fill-color": GELAP.taman };
-    if (id === "building") return { "fill-color": GELAP.gedung, "fill-outline-color": GELAP.gedungTepi };
-    if (id.startsWith("aeroway") || id.startsWith("road_area")) return { "fill-color": GELAP.jalanKecil };
-    return { "fill-color": GELAP.pemukiman };
-  }
-  if (jenis === "line") {
-    if (id.startsWith("waterway")) return { "line-color": GELAP.air };
-    if (id.includes("hatching")) return { "line-color": GELAP.rel };
-    if (id.includes("path_pedestrian")) return { "line-color": GELAP.jalanKecil };
-    if (id.includes("casing")) return { "line-color": GELAP.tepiJalan };
-    if (id.includes("dashline")) return { "line-color": GELAP.latar };
-    if (id.startsWith("railway")) return { "line-color": GELAP.rel };
-    if (id.startsWith("boundary")) return { "line-color": GELAP.batas };
-    if (id.includes("motorway")) return { "line-color": GELAP.jalanTol };
-    if (id.includes("major")) return { "line-color": GELAP.jalanBesar };
-    return { "line-color": GELAP.jalanKecil };
-  }
-  if (jenis === "raster") return { "raster-opacity": 0.15 };
-  if (jenis === "symbol") {
-    const warna = id.startsWith("poi") || id === "airport"
-      ? GELAP.labelPoi
-      : id.startsWith("water")
-      ? GELAP.labelAir
-      : id.startsWith("highway")
-        ? GELAP.labelJalan
-        : /^label_(city|town|village|country|state|other)/.test(id)
-          ? GELAP.labelKota
-          : GELAP.label;
-    return { "text-color": warna, "text-halo-color": GELAP.halo };
-  }
-  return {};
-}
-
 export const WARNA_STATUS: Record<StatusPelaksanaan, string> = {
   akan_datang: "#0284c7",
   berlangsung: "#d97706",
   selesai: "#16a34a",
   dibatalkan: "#e11d48",
-};
-
-export const LABEL_STATUS: Record<StatusPelaksanaan, string> = {
-  akan_datang: "Akan datang",
-  berlangsung: "Berlangsung",
-  selesai: "Selesai",
-  dibatalkan: "Dibatalkan",
 };
 
 const LOKAL: Record<string, string> = {
@@ -109,18 +64,47 @@ const LOKAL: Record<string, string> = {
   "CooperativeGesturesHandler.MobileHelpText": "Gunakan dua jari untuk menggeser peta",
 };
 
-export const layarSentuh = () => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+const PEMBANDING = new Set(["<", "<=", ">", ">="]);
+const IKON_KOSONG = { width: 1, height: 1, data: new Uint8Array(4) };
 
-export const geraknyaDikurangi = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-export function usePetaGelap() {
-  const { resolvedTheme } = useTheme();
-  const kelasGelap = useSyncExternalStore(
-    () => () => {},
-    () => document.documentElement.classList.contains("dark"),
-    () => false,
-  );
-  return resolvedTheme ? resolvedTheme === "dark" : kelasGelap;
+function warnaLapisGelap(id: string, jenis: string): [PropertiCat, string | number][] {
+  if (jenis === "background") return [["background-color", GELAP.latar]];
+  if (jenis === "fill") {
+    if (id === "water") return [["fill-color", GELAP.air]];
+    if (id.startsWith("landuse_") && id !== "landuse_residential") {
+      return [["fill-color", GELAP.taman], ["fill-opacity", 0.5]];
+    }
+    if (id === "park" || id.startsWith("landcover_wood")) return [["fill-color", GELAP.taman]];
+    if (id === "building") return [["fill-color", GELAP.gedung], ["fill-outline-color", GELAP.gedungTepi]];
+    if (id.startsWith("aeroway") || id.startsWith("road_area")) return [["fill-color", GELAP.jalanKecil]];
+    return [["fill-color", GELAP.pemukiman]];
+  }
+  if (jenis === "line") {
+    if (id.startsWith("waterway")) return [["line-color", GELAP.air]];
+    if (id.includes("hatching")) return [["line-color", GELAP.rel]];
+    if (id.includes("path_pedestrian")) return [["line-color", GELAP.jalanKecil]];
+    if (id.includes("casing")) return [["line-color", GELAP.tepiJalan]];
+    if (id.includes("dashline")) return [["line-color", GELAP.latar]];
+    if (id.startsWith("railway")) return [["line-color", GELAP.rel]];
+    if (id.startsWith("boundary")) return [["line-color", GELAP.batas]];
+    if (id.includes("motorway")) return [["line-color", GELAP.jalanTol]];
+    if (id.includes("major")) return [["line-color", GELAP.jalanBesar]];
+    return [["line-color", GELAP.jalanKecil]];
+  }
+  if (jenis === "raster") return [["raster-opacity", 0.15]];
+  if (jenis === "symbol") {
+    const warna = id.startsWith("poi") || id === "airport"
+      ? GELAP.labelPoi
+      : id.startsWith("water")
+      ? GELAP.labelAir
+      : id.startsWith("highway")
+        ? GELAP.labelJalan
+        : /^label_(city|town|village|country|state|other)/.test(id)
+          ? GELAP.labelKota
+          : GELAP.label;
+    return [["text-color", warna], ["text-halo-color", GELAP.halo]];
+  }
+  return [];
 }
 
 function aktifkanGulirSaatDiklik(peta: PetaGL, wadah: HTMLElement) {
@@ -135,13 +119,6 @@ function aktifkanGulirSaatDiklik(peta: PetaGL, wadah: HTMLElement) {
   peta.getCanvasContainer().addEventListener("mouseleave", () => atur(false));
 }
 
-/**
- * Filter Liberty membandingkan angka (rank POI, ref_length) yang di sebagian ubin kosong, sehingga
- * MapLibre menulis "Expected value to be of type number, but found null" berulang di konsol.
- * Nilai kosong diganti 99: POI tanpa rank masuk kelompok prioritas terendah, perisai tanpa nomor tidak tampil
- */
-const PEMBANDING = new Set(["<", "<=", ">", ">="]);
-type Ekspresi = unknown;
 function amankanFilter(f: Ekspresi): Ekspresi {
   if (!Array.isArray(f)) return f;
   if (PEMBANDING.has(f[0]))
@@ -149,20 +126,19 @@ function amankanFilter(f: Ekspresi): Ekspresi {
   return f.map(amankanFilter);
 }
 
-/**
- * Sprite OpenFreeMap tidak memuat semua ikon POI (office, atm, gate, ...); ikon yang hilang diganti
- * gambar transparan 1x1 agar labelnya tetap tampil tanpa peringatan di konsol
- */
-const IKON_KOSONG = { width: 1, height: 1, data: new Uint8Array(4) };
+export const layarSentuh = () => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
 
-type OpsiPeta = {
-  gelap: boolean;
-  pusat?: [number, number];
-  zoom?: number;
-  pitch?: number;
-  bearing?: number;
-  interaktif?: boolean;
-};
+export const geraknyaDikurangi = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+export function usePetaGelap() {
+  const { resolvedTheme } = useTheme();
+  const kelasGelap = useSyncExternalStore(
+    () => () => {},
+    () => document.documentElement.classList.contains("dark"),
+    () => false,
+  );
+  return resolvedTheme ? resolvedTheme === "dark" : kelasGelap;
+}
 
 export function buatPeta(
   wadah: HTMLElement,
@@ -185,9 +161,6 @@ export function buatPeta(
     if (!peta.hasImage(e.id)) peta.addImage(e.id, IKON_KOSONG);
   });
   peta.once("style.load", () => {
-    /**
-     * Ekstrusi gedung bawaan Liberty diganti lapisan gedung-3d sendiri (hanya tampil di mode 3D)
-     */
     if (peta.getLayer("building-3d")) peta.setLayoutProperty("building-3d", "visibility", "none");
     for (const l of peta.getStyle().layers) {
       if (!("filter" in l) || !l.filter) continue;
@@ -196,14 +169,11 @@ export function buatPeta(
     }
     if (!gelap) return;
     for (const l of peta.getStyle().layers) {
-      /**
-       * Pola isian (rawa, area jalan) tidak bisa diwarnai ulang; disembunyikan di tema gelap
-       */
       if (l.type === "fill" && l.paint && "fill-pattern" in l.paint) {
         peta.setLayoutProperty(l.id, "visibility", "none");
         continue;
       }
-      for (const [properti, nilai] of Object.entries(warnaLapisGelap(l.id, l.type))) peta.setPaintProperty(l.id, properti, nilai);
+      for (const [properti, nilai] of warnaLapisGelap(l.id, l.type)) peta.setPaintProperty(l.id, properti, nilai);
     }
   });
   if (!layarSentuh()) aktifkanGulirSaatDiklik(peta, wadah);

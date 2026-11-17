@@ -1,42 +1,33 @@
 import { Elysia } from "elysia";
-import { PermintaanAkunController } from "@/controllers/permintaan-akun.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { PermintaanAkunService } from "@/services/permintaan-akun.service";
+import { adminDari, requestMeta } from "@/utils/konteks";
 import { PermintaanAkunValidator } from "@/validators/permintaan-akun.validator";
 
-/**
- * Opsi bersama untuk rute khusus admin; `{ ...ADMIN, params }` menyalin isinya lalu menambah opsi lain.
- */
-const ADMIN = { auth: ["ADMIN" as const] };
-const params = PermintaanAkunValidator.params;
-
-/**
- * Rute permintaan akun: satu endpoint publik (tanpa opsi auth, jadi bisa dipanggil tanpa login)
- * dan sisanya khusus admin untuk meninjau, menyetujui, atau menolak permintaan.
- */
 export const permintaanAkunRoutes = new Elysia()
   .use(authPlugin)
-
-  /**
-   * Mengajukan permintaan akun dari halaman login (tanpa login)
-   */
-  .post("/permintaan-akun", PermintaanAkunController.ajukan, { body: PermintaanAkunValidator.ajukan })
-
-  /**
-   * Daftar permintaan akun (admin)
-   */
-  .get("/admin/permintaan-akun", PermintaanAkunController.daftar, { ...ADMIN, query: PermintaanAkunValidator.daftarQuery })
-
-  /**
-   * Jumlah permintaan yang menunggu (admin)
-   */
-  .get("/admin/permintaan-akun/jumlah", PermintaanAkunController.jumlah, ADMIN)
-
-  /**
-   * Setujui permintaan (admin)
-   */
-  .post("/admin/permintaan-akun/:id/setujui", PermintaanAkunController.setujui, { ...ADMIN, params, body: PermintaanAkunValidator.setujui })
-
-  /**
-   * Tolak permintaan (admin)
-   */
-  .post("/admin/permintaan-akun/:id/tolak", PermintaanAkunController.tolak, { ...ADMIN, params, body: PermintaanAkunValidator.tolak });
+  .post(
+    "/permintaan-akun",
+    ({ body, request, set }) => {
+      set.status = 201;
+      return PermintaanAkunService.ajukan(body, requestMeta(request.headers));
+    },
+    { body: PermintaanAkunValidator.ajukan },
+  )
+  .get("/admin/permintaan-akun", ({ query }) => PermintaanAkunService.daftar(query), {
+    auth: ["ADMIN"],
+    query: PermintaanAkunValidator.daftarQuery,
+  })
+  .get("/admin/permintaan-akun/jumlah", async () => ({ menunggu: await PermintaanAkunService.jumlahMenunggu() }), {
+    auth: ["ADMIN"],
+  })
+  .post("/admin/permintaan-akun/:id/setujui", ({ params, body, user }) => PermintaanAkunService.setujui(params.id, body, adminDari(user)), {
+    auth: ["ADMIN"],
+    params: PermintaanAkunValidator.params,
+    body: PermintaanAkunValidator.setujui,
+  })
+  .post("/admin/permintaan-akun/:id/tolak", ({ params, body, user }) => PermintaanAkunService.tolak(params.id, body.alasan, adminDari(user)), {
+    auth: ["ADMIN"],
+    params: PermintaanAkunValidator.params,
+    body: PermintaanAkunValidator.tolak,
+  });

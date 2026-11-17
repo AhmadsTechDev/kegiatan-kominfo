@@ -19,9 +19,7 @@ import type { PermintaanAkun, StatusPermintaan } from "../types";
 import { PilihanTab } from "./admin-shared";
 import { UndangDialog } from "./undang-dialog";
 
-/**
- * Tab tinjau, setujui, atau tolak permintaan akun dari halaman minta akun
- */
+type Filter = "MENUNGGU" | "SEMUA";
 
 const LABEL_STATUS: Record<StatusPermintaan, string> = { MENUNGGU: "Menunggu", DISETUJUI: "Disetujui", DITOLAK: "Ditolak" };
 const NADA_STATUS: Record<StatusPermintaan, string> = {
@@ -30,9 +28,6 @@ const NADA_STATUS: Record<StatusPermintaan, string> = {
   DITOLAK: "bg-status-dibatalkan text-status-dibatalkan-foreground",
 };
 
-/**
- * Tampilan kartu di bawah md: tombol Tolak dan Setujui tidak tersembunyi di balik gulir menyamping
- */
 function KartuPermintaan({ p, onTolak, onSetujui }: { p: PermintaanAkun; onTolak: () => void; onSetujui: () => void }) {
   return (
     <div className="flex flex-col gap-3 rounded-lg border bg-card p-3">
@@ -62,8 +57,6 @@ function KartuPermintaan({ p, onTolak, onSetujui }: { p: PermintaanAkun; onTolak
   );
 }
 
-type Filter = "MENUNGGU" | "SEMUA";
-
 export function PermintaanTab() {
   const [filter, setFilter] = useState<Filter>("MENUNGGU");
   const [page, setPage] = useState(1);
@@ -85,8 +78,7 @@ export function PermintaanTab() {
       {
         id: "pemohon",
         header: "Pemohon",
-        cell: ({ row }) => {
-          const p = row.original;
+        cell: (p) => {
           if (!p.pegawai) {
             return (
               <span className="flex max-w-72 min-w-56 flex-col items-start gap-1 whitespace-normal">
@@ -100,9 +92,7 @@ export function PermintaanTab() {
             <span className="flex max-w-72 min-w-56 flex-col gap-0.5 whitespace-normal">
               <span className="font-semibold">{p.pegawai.nama}</span>
               {p.pegawai.nip && <span className="text-xs text-muted-foreground tabular-nums">NIP {p.pegawai.nip}</span>}
-              <span className="text-xs text-muted-foreground">
-                {p.bidang}
-              </span>
+              <span className="text-xs text-muted-foreground">{p.bidang}</span>
               {namaBeda && <span className="text-xs text-status-berlangsung-foreground">Nama diisi: {p.nama}</span>}
             </span>
           );
@@ -111,15 +101,15 @@ export function PermintaanTab() {
       {
         id: "email",
         header: "Email",
-        cell: ({ row }) => <span className="block max-w-64 min-w-44 text-sm break-all whitespace-normal">{row.original.email}</span>,
+        cell: (p) => <span className="block max-w-64 min-w-44 text-sm break-all whitespace-normal">{p.email}</span>,
       },
       {
         id: "catatan",
         header: "Catatan",
-        cell: ({ row }) =>
-          row.original.catatan ? (
-            <span className="line-clamp-3 block max-w-64 min-w-32 text-sm whitespace-normal" title={row.original.catatan}>
-              {row.original.catatan}
+        cell: (p) =>
+          p.catatan ? (
+            <span className="line-clamp-3 block max-w-64 min-w-32 text-sm whitespace-normal" title={p.catatan}>
+              {p.catatan}
             </span>
           ) : (
             <span className="text-sm text-muted-foreground">-</span>
@@ -128,29 +118,26 @@ export function PermintaanTab() {
       {
         id: "status",
         header: "Status",
-        cell: ({ row }) => {
-          const p = row.original;
-          return (
-            <span className="flex max-w-56 flex-col items-start gap-1 whitespace-normal">
-              <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold", NADA_STATUS[p.status])}>{LABEL_STATUS[p.status]}</span>
-              <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">Diajukan {formatTanggalJam(p.createdAt)}</span>
-              {p.status !== "MENUNGGU" && p.diprosesOleh && <span className="text-xs text-muted-foreground">oleh {p.diprosesOleh}</span>}
-              {p.alasanTolak && <span className="text-xs text-muted-foreground">Alasan: {p.alasanTolak}</span>}
-            </span>
-          );
-        },
+        cell: (p) => (
+          <span className="flex max-w-56 flex-col items-start gap-1 whitespace-normal">
+            <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold", NADA_STATUS[p.status])}>{LABEL_STATUS[p.status]}</span>
+            <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">Diajukan {formatTanggalJam(p.createdAt)}</span>
+            {p.status !== "MENUNGGU" && p.diprosesOleh && <span className="text-xs text-muted-foreground">oleh {p.diprosesOleh}</span>}
+            {p.alasanTolak && <span className="text-xs text-muted-foreground">Alasan: {p.alasanTolak}</span>}
+          </span>
+        ),
       },
       {
         id: "aksi",
-        header: () => <span className="block text-right">Aksi</span>,
-        cell: ({ row }) =>
-          row.original.status === "MENUNGGU" ? (
+        header: <span className="block text-right">Aksi</span>,
+        cell: (p) =>
+          p.status === "MENUNGGU" ? (
             <div className="flex justify-end gap-1.5">
-              <Button variant="outline" size="sm" className="h-8 gap-1 text-xs pointer-coarse:h-11" onClick={() => setTolak(row.original)}>
+              <Button variant="outline" size="sm" className="h-8 gap-1 text-xs pointer-coarse:h-11" onClick={() => setTolak(p)}>
                 <X aria-hidden className="size-3.5" />
                 Tolak
               </Button>
-              <Button size="sm" className="h-8 gap-1 text-xs pointer-coarse:h-11" onClick={() => setSetujui(row.original)}>
+              <Button size="sm" className="h-8 gap-1 text-xs pointer-coarse:h-11" onClick={() => setSetujui(p)}>
                 <Check aria-hidden className="size-3.5" />
                 Setujui
               </Button>

@@ -1,10 +1,6 @@
 import Image from "next/image";
 import { site } from "@/config/site";
 
-/**
- * Kartu halaman publik: lambang kota dan nama aplikasi, judul isi lewat KepalaKartu
- */
-
 export function KartuPublik({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex w-full max-w-md flex-col gap-6 rounded-xl border border-t-4 border-t-chart-3 bg-card p-6 shadow-sm md:p-8">

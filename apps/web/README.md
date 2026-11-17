@@ -4,9 +4,9 @@ Antarmuka web aplikasi. Kembali ke [README utama](../../README.md). Backend-nya 
 
 | Teknologi | Dipakai untuk |
 | --- | --- |
-| Next.js 16 (App Router, `cacheComponents`, React Compiler) | Routing dan render halaman |
+| Next.js 16 (App Router, React Compiler) | Routing dan render halaman |
 | Tailwind CSS 4, shadcn/ui (Radix), lucide-react | Tampilan, komponen dasar, ikon |
-| TanStack Query dan TanStack Table | Pengambilan data dengan cache, dan tabel |
+| TanStack Query | Pengambilan data dengan cache |
 | React Hook Form dan Zod | Formulir dan validasi |
 | Better Auth (klien) | Login, logout, dan membaca sesi |
 | Axios | Klien HTTP ke API |

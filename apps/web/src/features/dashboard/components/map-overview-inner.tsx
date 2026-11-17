@@ -2,9 +2,6 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-/**
- * Diimpor eksplisit (bukan namespace global GeoJSON) agar editor dan tsc sama-sama menemukannya
- */
 import type { FeatureCollection, Point } from "geojson";
 import { type GeoJSONSource, LngLatBounds, type LngLatBoundsLike, type Map as PetaGL, type MapLayerMouseEvent, Popup } from "maplibre-gl";
 import { Maximize } from "lucide-react";
@@ -13,7 +10,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { formatRentangTanggal } from "@/utils/format";
 import { cn } from "@/utils/cn";
 import {
-  LABEL_STATUS,
   Tombol3d,
   WARNA_STATUS,
   aturMode3d,
@@ -22,11 +18,7 @@ import {
   tambahGedung3d,
   usePetaGelap,
 } from "@/components/common/peta-dasar";
-import type { StatusPelaksanaan } from "@/components/common/status-badge";
-
-/**
- * Peta sebaran kegiatan (MapLibre) dengan kluster titik dan popup info
- */
+import { LABEL_STATUS, type StatusPelaksanaan } from "@/components/common/status-badge";
 
 export type TitikPeta = {
   id: number;
@@ -40,12 +32,10 @@ export type TitikPeta = {
   bidang?: string;
 };
 
+type PropsTitik = { id: number; judul: string; rentang: string; status: StatusPelaksanaan; lokasi: string; bidang: string };
+
 const URUTAN: StatusPelaksanaan[] = ["akan_datang", "berlangsung", "selesai", "dibatalkan"];
 
-/**
- * Pin berbentuk tetes per status, digambar di kanvas sekali lalu didaftarkan sebagai ikon peta.
- * Ikon (bukan lingkaran) agar titik kegiatan berbeda dari POI basemap; warna = status pelaksanaan
- */
 function gambarPin(warna: string, tepi: string) {
   const r = 2;
   const w = 30 * r;
@@ -77,7 +67,6 @@ function gambarPin(warna: string, tepi: string) {
   return { image: c.getImageData(0, 0, w, h), pixelRatio: r };
 }
 
-
 function keGeoJson(titik: TitikPeta[]): FeatureCollection<Point> {
   return {
     type: "FeatureCollection",
@@ -96,11 +85,6 @@ function keGeoJson(titik: TitikPeta[]): FeatureCollection<Point> {
   };
 }
 
-type PropsTitik = { id: number; judul: string; rentang: string; status: StatusPelaksanaan; lokasi: string; bidang: string };
-
-/**
- * Baris keterangan berlabel di popup (lokasi, bidang); dilewati bila datanya kosong
- */
 function baris(label: string, nilai: string) {
   const p = document.createElement("p");
   p.className = "text-xs text-muted-foreground [overflow-wrap:anywhere]";
@@ -154,9 +138,6 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
   const peta = useRef<PetaGL | null>(null);
   const gelap = usePetaGelap();
 
-  /**
-   * Tampak atas lebih mudah dibaca untuk sebaran titik; 3D tetap bisa dipilih
-   */
   const [tigaD, setTigaD] = useState(false);
   const [sembunyi, setSembunyi] = useState<StatusPelaksanaan[]>([]);
   const [siap, setSiap] = useState(false);
@@ -191,9 +172,6 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
     peta.current = p;
     const popup = new Popup({ closeButton: true, maxWidth: "none", offset: [0, -34] });
 
-    /**
-     * Tooltip nama saat kursor di atas pin (hanya perangkat dengan kursor)
-     */
     const tooltip = new Popup({ closeButton: false, closeOnClick: false, maxWidth: "240px", offset: [0, -36], className: "peta-tooltip" });
     const pin = (s: StatusPelaksanaan) => `pin-${s}`;
 
@@ -206,9 +184,6 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
       }
       p.addSource("kegiatan", { type: "geojson", data: keGeoJson(terkini.current.titik), cluster: true, clusterRadius: 48, clusterMaxZoom: 15 });
 
-      /**
-       * Kluster: cincin luar transparan + inti, ukurannya naik bertahap sesuai jumlah kegiatan
-       */
       p.addLayer({
         id: "kluster-cincin",
         type: "circle",
@@ -271,9 +246,6 @@ export default function MapOverviewInner({ titik, className }: { titik: TitikPet
       tooltip.remove();
       const titikPin = (f.geometry as Point).coordinates as [number, number];
 
-      /**
-       * Popup (~220 px di atas ujung pin) tidak boleh tertutup tombol 2D/3D di tepi atas: geser peta bila perlu
-       */
       const yPin = p.project(titikPin).y;
       const yAman = Math.min(290, p.getContainer().clientHeight - 40);
       if (yPin < yAman) p.panBy([0, yPin - yAman], { duration: geraknyaDikurangi() ? 0 : 400 });

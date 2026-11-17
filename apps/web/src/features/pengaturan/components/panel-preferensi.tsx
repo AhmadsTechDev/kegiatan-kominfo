@@ -11,18 +11,14 @@ import { cn } from "@/utils/cn";
 import type { Preferensi } from "../api/akun-saya";
 import { usePreferensi, useTema, useUbahPreferensi } from "../hooks/use-akun-saya";
 
-/**
- * Panel preferensi tema dan email pengingat; disimpan di akun agar ikut ke perangkat lain
- */
-
-const berlangganan = () => () => {};
-
 const TEMA = [
   { nilai: "light", label: "Terang", ikon: Sun },
   { nilai: "dark", label: "Gelap", ikon: Moon },
   { nilai: "system", label: "Sistem", ikon: Monitor },
 ] as const;
 const NILAI_TEMA = TEMA.map((t) => t.nilai);
+
+const berlangganan = () => () => {};
 
 function Saklar({ id, aktif, onChange, label, keterangan }: { id: string; aktif: boolean; onChange: (v: boolean) => void; label: string; keterangan: string }) {
   return (
@@ -35,8 +31,6 @@ function Saklar({ id, aktif, onChange, label, keterangan }: { id: string; aktif:
           {keterangan}
         </p>
       </div>
-      {/* Tombol membungkus lintasan agar area sentuh 44 px di layar sentuh. Saat mati, lintasan bergaris
-          muted-foreground (7:1 terhadap card) supaya bentuknya tetap terlihat, bukan hanya beda warna isi */}
       <button
         id={id}
         type="button"

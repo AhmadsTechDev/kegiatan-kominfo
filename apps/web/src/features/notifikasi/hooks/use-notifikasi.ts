@@ -3,10 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { bacaNotifikasi, bacaSemuaNotifikasi, getNotifikasi } from "../api/notifikasi";
 
-/**
- * Hook daftar notifikasi (disegarkan berkala) dan tandai dibaca
- */
-
 export const notifikasiKeys = { all: ["notifikasi"] as const };
 
 export function useNotifikasi(aktif = true) {

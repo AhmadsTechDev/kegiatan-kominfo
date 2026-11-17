@@ -1,13 +1,5 @@
 import { cn } from "@/utils/cn";
 
-/**
- * Pembungkus konten bergaya kartu: kepala, badan, dan kaki
- */
-
-export function Panel({ className, ...props }: React.ComponentProps<"section">) {
-  return <section className={cn("flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm", className)} {...props} />;
-}
-
 type PanelHeaderProps = {
   title: React.ReactNode;
   description?: React.ReactNode;
@@ -15,6 +7,10 @@ type PanelHeaderProps = {
   className?: string;
   as?: "h2" | "h3";
 };
+
+export function Panel({ className, ...props }: React.ComponentProps<"section">) {
+  return <section className={cn("flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm", className)} {...props} />;
+}
 
 export function PanelHeader({ title, description, action, className, as: Judul = "h2" }: PanelHeaderProps) {
   return (

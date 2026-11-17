@@ -5,10 +5,6 @@ import { cn } from "cn"
 import * as RechartsPrimitive from "recharts"
 import type { TooltipValueType } from "recharts"
 
-/**
- * Komponen dasar shadcn/ui: pembungkus grafik Recharts dengan warna tema
- */
-
 const THEMES = { light: "", dark: ".dark" } as const
 
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const

@@ -5,23 +5,11 @@ import { cn } from "cn"
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
-import { useOpenTerkendali } from "@/hooks/use-tutup-lewat-kembali"
 
-/**
- * Komponen dasar shadcn/ui: dialog konfirmasi (Radix)
- */
-
-/**
- * Tombol Kembali di HP menutup konfirmasi, bukan meninggalkan halaman
- */
 function AlertDialog({
-  open,
-  defaultOpen,
-  onOpenChange,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
-  const [terbuka, ubah] = useOpenTerkendali(open, defaultOpen, onOpenChange)
-  return <AlertDialogPrimitive.Root data-slot="alert-dialog" open={terbuka} onOpenChange={ubah} {...props} />
+  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
 }
 
 function AlertDialogTrigger({

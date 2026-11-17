@@ -19,23 +19,13 @@ import { KartuMaster, KolomCari, TombolUbah } from "./admin-shared";
 import { PegawaiDialog } from "./pegawai-tab";
 import { UndangDialog } from "./undang-dialog";
 
-/**
- * Tab pegawai aktif yang belum punya akun, dengan tombol Undang
- */
-
 export const FILTER_BELUM: FilterPegawai = { q: "", unit: null, aktif: "1", akun: "tanpa", page: 1 };
 
-/**
- * Role bawaan adalah Pegawai; hanya role lain yang perlu ditandai
- */
 function LabelRole({ role }: { role: PegawaiAdmin["roleUndangan"] }) {
   if (role === "PEGAWAI") return null;
   return <span className="mt-0.5 block text-xs font-normal text-muted-foreground">Akan diundang sebagai {LABEL_ROLE[role]}</span>;
 }
 
-/**
- * Hapus pegawai salah input; backend menolak bila sudah dipakai kegiatan atau permintaan akun
- */
 function TombolHapus({ p, onClick }: { p: PegawaiAdmin; onClick: () => void }) {
   return (
     <Button
@@ -76,27 +66,27 @@ export function BelumPunyaAkun() {
       {
         id: "nama",
         header: "Pegawai",
-        cell: ({ row }) => (
+        cell: (p) => (
           <span className="block max-w-64 min-w-40 font-semibold whitespace-normal">
-            {row.original.nama}
-            <LabelRole role={row.original.roleUndangan} />
+            {p.nama}
+            <LabelRole role={p.roleUndangan} />
           </span>
         ),
       },
-      { id: "unit", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-72 whitespace-normal">{row.original.bidang.nama}</UnitChip> },
+      { id: "unit", header: "Bidang", cell: (p) => <UnitChip className="max-w-72 whitespace-normal">{p.bidang.nama}</UnitChip> },
       {
         id: "nip",
         header: "NIP",
-        cell: ({ row }) => <span className="text-sm tabular-nums">{row.original.nip ?? <span className="text-muted-foreground">-</span>}</span>,
+        cell: (p) => <span className="text-sm tabular-nums">{p.nip ?? <span className="text-muted-foreground">-</span>}</span>,
       },
       {
         id: "aksi",
-        header: () => <span className="block text-right">Aksi</span>,
-        cell: ({ row }) => (
+        header: <span className="block text-right">Aksi</span>,
+        cell: (p) => (
           <div className="flex items-center justify-end gap-1">
-            <TombolUbah nama={row.original.nama} onClick={() => setUbah(row.original)} />
-            <TombolUndang p={row.original} onClick={() => setUndang(row.original)} />
-            <TombolHapus p={row.original} onClick={() => setAkanDihapus(row.original)} />
+            <TombolUbah nama={p.nama} onClick={() => setUbah(p)} />
+            <TombolUndang p={p} onClick={() => setUndang(p)} />
+            <TombolHapus p={p} onClick={() => setAkanDihapus(p)} />
           </div>
         ),
       },

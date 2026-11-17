@@ -16,16 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
 import { formatTelp } from "@/utils/format";
 import { LABEL_ROLE, type Role } from "@/types/auth";
-
-/**
- * Tab kelola data pegawai ASN dan non-ASN (akun login diurus di Manajemen akun)
- */
-
-const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const satisfies readonly Role[];
-
 import { zNip } from "@/utils/nip";
 import { cn } from "@/utils/cn";
 import { UKURAN_HALAMAN_ADMIN } from "../api/admin";
@@ -34,7 +26,11 @@ import type { FilterPegawai, PegawaiAdmin, BidangAdmin } from "../types";
 import { BadgeAktif, KartuMaster, KolomCari, PilihUnit, TombolUbah, terapkanGalatServer } from "./admin-shared";
 import { UndangDialog } from "./undang-dialog";
 
+type PegawaiBaru = { id: number; nama: string; nip: string | null; bidang: string };
+
+const ROLES = ["PEGAWAI", "PIMPINAN", "ADMIN"] as const satisfies readonly Role[];
 const SEMUA = "semua";
+const FILTER_AWAL: FilterPegawai = { q: "", unit: null, aktif: null, akun: "ada", page: 1 };
 
 const schema = z.object({
   nip: z.union([z.literal(""), zNip()]),
@@ -50,14 +46,6 @@ const schema = z.object({
 });
 type Nilai = z.infer<typeof schema>;
 
-/**
- * Pegawai yang belum punya akun juga bisa diberi role bawaan; role itu dipakai saat pegawai diundang
- */
-type PegawaiBaru = { id: number; nama: string; nip: string | null; bidang: string };
-
-/**
- * onDibuat: dipanggil setelah pegawai baru tersimpan, agar pemanggil bisa langsung membuka dialog Undang
- */
 export function PegawaiDialog({
   pegawai,
   unit,
@@ -139,9 +127,6 @@ export function PegawaiDialog({
           <FieldError errors={[formState.errors.nip]} />
         </Field>
         {awal && (
-          /**
-           * Nomor telepon tersimpan di akun, jadi baru bisa diisi setelah pegawai diundang
-           */
           <Field data-invalid={!!formState.errors.kontak} data-disabled={!awal.akun || undefined}>
             <FieldLabel htmlFor="pegawai-kontak">
               No. telp
@@ -223,11 +208,6 @@ export function PegawaiDialog({
   );
 }
 
-/**
- * Master data hanya menampilkan pegawai yang sudah punya akun; yang belum ada di Manajemen akun > Perlu diundang
- */
-const FILTER_AWAL: FilterPegawai = { q: "", unit: null, aktif: null, akun: "ada", page: 1 };
-
 export function PegawaiTab() {
   const [filter, setFilterState] = useState<FilterPegawai>(FILTER_AWAL);
   const setFilter = useCallback((ubah: Partial<FilterPegawai>) => setFilterState((f) => ({ ...f, page: 1, ...ubah })), []);
@@ -243,24 +223,24 @@ export function PegawaiTab() {
       {
         id: "nama",
         header: "Pegawai",
-        cell: ({ row }) => <span className={cn("block max-w-64 min-w-40 font-semibold whitespace-normal", !row.original.aktif && "text-muted-foreground")}>{row.original.nama}</span>,
+        cell: (p) => <span className={cn("block max-w-64 min-w-40 font-semibold whitespace-normal", !p.aktif && "text-muted-foreground")}>{p.nama}</span>,
       },
-      { id: "unit", header: "Bidang", cell: ({ row }) => <UnitChip className="max-w-72 whitespace-normal">{row.original.bidang.nama}</UnitChip> },
+      { id: "unit", header: "Bidang", cell: (p) => <UnitChip className="max-w-72 whitespace-normal">{p.bidang.nama}</UnitChip> },
       {
         id: "kontak",
         header: "No. telp",
-        cell: ({ row }) => <span className="text-sm whitespace-nowrap tabular-nums">{row.original.kontak ? formatTelp(row.original.kontak) : <span className="text-muted-foreground">-</span>}</span>,
+        cell: (p) => <span className="text-sm whitespace-nowrap tabular-nums">{p.kontak ? formatTelp(p.kontak) : <span className="text-muted-foreground">-</span>}</span>,
       },
       {
         id: "nip",
         header: "NIP",
-        cell: ({ row }) => <span className="text-sm tabular-nums">{row.original.nip ?? <span className="text-muted-foreground">-</span>}</span>,
+        cell: (p) => <span className="text-sm tabular-nums">{p.nip ?? <span className="text-muted-foreground">-</span>}</span>,
       },
-      { id: "status", header: "Status", cell: ({ row }) => <BadgeAktif aktif={row.original.aktif} /> },
+      { id: "status", header: "Status", cell: (p) => <BadgeAktif aktif={p.aktif} /> },
       {
         id: "aksi",
-        header: () => <span className="block text-right">Aksi</span>,
-        cell: ({ row }) => <TombolUbah nama={row.original.nama} onClick={() => setDialog(row.original)} />,
+        header: <span className="block text-right">Aksi</span>,
+        cell: (p) => <TombolUbah nama={p.nama} onClick={() => setDialog(p)} />,
       },
     ],
     [],
@@ -358,7 +338,6 @@ export function PegawaiTab() {
       )}
 
       {dialog && unit.data && <PegawaiDialog pegawai={dialog} unit={unit.data} onClose={() => setDialog(null)} onDibuat={setUndangBaru} />}
-      {/* Pegawai baru belum punya akun, jadi langsung ditawari undangan. Bila dibatalkan, ia tetap ada di Manajemen akun > Perlu diundang */}
       {undangBaru && (
         <UndangDialog
           title={`Undang ${undangBaru.nama}`}

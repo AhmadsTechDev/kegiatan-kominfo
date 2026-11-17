@@ -20,11 +20,8 @@ import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { KepalaKartu } from "./kartu-publik";
 import { FormSandiBaru, Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
 
-/**
- * Pemulihan kata sandi tanpa login: minta tautan, lalu buat kata sandi baru
- */
-
 const schemaEmail = z.object({ email: z.string().trim().min(1, "Email wajib diisi").pipe(z.email("Format email tidak valid")) });
+const PESAN_TIDAK_BERLAKU = "Tautan atur ulang kata sandi sudah kedaluwarsa, sudah pernah dipakai, atau tidak lengkap. Minta tautan baru.";
 
 export function LupaSandiForm() {
   const minta = useMutation({ mutationFn: mintaResetSandi });
@@ -73,8 +70,6 @@ export function LupaSandiForm() {
   );
 }
 
-const PESAN_TIDAK_BERLAKU = "Tautan atur ulang kata sandi sudah kedaluwarsa, sudah pernah dipakai, atau tidak lengkap. Minta tautan baru.";
-
 export function ResetSandiForm() {
   const token = useSearchParams().get("token") ?? "";
   const info = useQuery({ queryKey: ["reset-sandi", token], queryFn: () => getInfoReset(token), enabled: token.length > 0, retry: false });
@@ -82,9 +77,6 @@ export function ResetSandiForm() {
     mutationFn: async (password: string) => {
       const hasil = await resetSandi(token, password);
 
-      /**
-       * Sesi akun lain di browser ini dikeluarkan agar "Masuk" tidak dialihkan ke dashboard akun tersebut
-       */
       await authClient.signOut().catch(() => undefined);
       return hasil;
     },

@@ -12,10 +12,6 @@ import { useCurrentUser } from "../hooks/use-current-user";
 import { KepalaKartu } from "./kartu-publik";
 import { Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
 
-/**
- * Menyelesaikan ganti email dari tautan yang dikirim ke email baru
- */
-
 const PESAN_TIDAK_BERLAKU = "Tautan verifikasi sudah kedaluwarsa, sudah pernah dipakai, atau dibatalkan. Ajukan ulang perubahan email dari halaman Pengaturan.";
 
 export function KonfirmasiEmailView() {
@@ -29,7 +25,6 @@ export function KonfirmasiEmailView() {
     return (
       <Keadaan ikon={CircleCheck} nada={NADA_SUKSES} judul="Email terverifikasi">
         <p className="text-sm text-muted-foreground">Mulai sekarang masuk dengan {konfirmasi.data.email}. Email lama tidak dapat dipakai lagi.</p>
-        {/* Tautan email sering dibuka di peramban lain; tanpa sesi, Pengaturan hanya memantul ke login */}
         <Button asChild className="mx-auto mt-3 h-10 pointer-coarse:min-h-11">
           {user ? <Link href="/pengaturan?tab=akun">Ke pengaturan akun</Link> : <Link href="/login">Masuk dengan email baru</Link>}
         </Button>

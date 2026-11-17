@@ -1,8 +1,5 @@
-/**
- * Tipe Role dan label hak akses untuk UI
- */
-
 export type Role = "PEGAWAI" | "PIMPINAN" | "ADMIN";
+export type StatusAkun = "MENUNGGU_AKTIVASI" | "AKTIF" | "NONAKTIF";
 
 export const LABEL_ROLE: Record<Role, string> = {
   PEGAWAI: "Pegawai",
@@ -15,8 +12,6 @@ export const KETERANGAN_ROLE: Record<Role, string> = {
   PIMPINAN: "Pimpinan",
   ADMIN: "Administrator aplikasi",
 };
-
-export type StatusAkun = "MENUNGGU_AKTIVASI" | "AKTIF" | "NONAKTIF";
 
 export const LABEL_STATUS_AKUN: Record<StatusAkun, string> = {
   MENUNGGU_AKTIVASI: "Menunggu aktivasi",

@@ -1,12 +1,13 @@
 import { Elysia } from "elysia";
-import { RekapController } from "@/controllers/rekap.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { RekapService } from "@/services/rekap.service";
 import { PEMERIKSA } from "@/utils/konstanta";
+import { aktorDari } from "@/utils/konteks";
 import { RekapValidator } from "@/validators/rekap.validator";
 
-/**
- * Rekap jumlah kegiatan: pimpinan dan admin (pegawai ditolak 403)
- */
 export const rekapRoutes = new Elysia({ prefix: "/rekap" })
   .use(authPlugin)
-  .get("/", RekapController.rekap, { auth: [...PEMERIKSA], query: RekapValidator.rekapQuery });
+  .get("/", ({ query, user }) => RekapService.rekap(query, aktorDari(user)), {
+    auth: PEMERIKSA,
+    query: RekapValidator.rekapQuery,
+  });

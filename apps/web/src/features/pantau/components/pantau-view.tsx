@@ -28,25 +28,79 @@ import { apiClient } from "@/lib/api-client";
 import { formatAngka, formatJam, formatRentangTanggal } from "@/utils/format";
 import { cn } from "@/utils/cn";
 
-/**
- * Pemantauan kegiatan seluruh pegawai untuk pimpinan dan admin, termasuk pemeriksaan
- */
-
 type Ringkasan = { total: number; draf: number; perluPerbaikan: number };
 type Penyaring = { q: string; unit: string | null; pegawai: string | null; dari: string | null; sampai: string | null };
+type Tampilan = "semua" | "perlu_perbaikan";
 
 const SEMUA = "semua";
 const KOSONG: Penyaring = { q: "", unit: null, pegawai: null, dari: null, sampai: null };
+const ID_PANEL = "panel-pantau";
+
+const kolom: DataTableColumn<KegiatanItem>[] = [
+  {
+    id: "judul",
+    header: "Kegiatan",
+    cell: (k) => (
+      <div className="flex max-w-72 min-w-48 flex-col gap-0.5 whitespace-normal">
+        <Link href={`/kegiatan/${k.id}`} className="font-semibold hover:text-primary hover:underline">
+          {k.judul}
+        </Link>
+        <span className="text-xs text-muted-foreground">{k.jenis.nama}</span>
+      </div>
+    ),
+  },
+  {
+    id: "pegawai",
+    header: "Pegawai",
+    cell: (k) => (
+      <span className="flex min-w-40 items-center gap-2">
+        <AvatarInisial nama={k.penanggungJawab.nama} className="size-7" />
+        <span className="flex min-w-0 flex-col">
+          {k.penanggungJawab.nama}
+          <span className="line-clamp-1 max-w-48 text-xs whitespace-normal text-muted-foreground" title={k.bidang.nama}>
+            {k.bidang.nama}
+          </span>
+        </span>
+      </span>
+    ),
+  },
+  {
+    id: "tanggal",
+    header: "Tanggal",
+    cell: (k) => (
+      <span className="whitespace-nowrap tabular-nums">
+        {formatRentangTanggal(k.tglMulai, k.tglSelesai)}
+        <span className="block text-xs text-muted-foreground">{formatJam(k.tglMulai)}</span>
+      </span>
+    ),
+  },
+  {
+    id: "status",
+    header: "Status",
+    cell: (k) => (
+      <div className="flex flex-col items-start gap-1">
+        <StatusBadge status={k.statusPelaksanaan} />
+        <StatusPemeriksaanBadge status={k.statusPemeriksaan} />
+      </div>
+    ),
+  },
+  {
+    id: "aksi",
+    header: <span className="sr-only">Aksi</span>,
+    cell: (k) => (
+      <div className="flex items-center justify-end gap-2">
+        <PeriksaAksi kegiatan={k} ringkas />
+        <TombolDetail k={k} />
+      </div>
+    ),
+  },
+];
 
 async function getRingkasan(p: Penyaring) {
   const params = Object.fromEntries(Object.entries(p).filter(([, v]) => v));
   const { data } = await apiClient.get<Ringkasan>("/pantau/ringkasan", { params });
   return data;
 }
-
-type Tampilan = "semua" | "perlu_perbaikan";
-
-const ID_PANEL = "panel-pantau";
 
 function TombolDetail({ k, className }: { k: KegiatanItem; className?: string }) {
   return (
@@ -59,69 +113,6 @@ function TombolDetail({ k, className }: { k: KegiatanItem; className?: string })
   );
 }
 
-const kolom: DataTableColumn<KegiatanItem>[] = [
-  {
-    id: "judul",
-    header: "Kegiatan",
-    cell: ({ row }) => (
-      <div className="flex max-w-72 min-w-48 flex-col gap-0.5 whitespace-normal">
-        <Link href={`/kegiatan/${row.original.id}`} className="font-semibold hover:text-primary hover:underline">
-          {row.original.judul}
-        </Link>
-        <span className="text-xs text-muted-foreground">{row.original.jenis.nama}</span>
-      </div>
-    ),
-  },
-  {
-    id: "pegawai",
-    header: "Pegawai",
-    cell: ({ row }) => (
-      <span className="flex min-w-40 items-center gap-2">
-        <AvatarInisial nama={row.original.penanggungJawab.nama} className="size-7" />
-        <span className="flex min-w-0 flex-col">
-          {row.original.penanggungJawab.nama}
-          <span className="line-clamp-1 max-w-48 text-xs whitespace-normal text-muted-foreground" title={row.original.bidang.nama}>
-            {row.original.bidang.nama}
-          </span>
-        </span>
-      </span>
-    ),
-  },
-  {
-    id: "tanggal",
-    header: "Tanggal",
-    cell: ({ row }) => (
-      <span className="whitespace-nowrap tabular-nums">
-        {formatRentangTanggal(row.original.tglMulai, row.original.tglSelesai)}
-        <span className="block text-xs text-muted-foreground">{formatJam(row.original.tglMulai)}</span>
-      </span>
-    ),
-  },
-  {
-    id: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="flex flex-col items-start gap-1">
-        <StatusBadge status={row.original.statusPelaksanaan} />
-        <StatusPemeriksaanBadge status={row.original.statusPemeriksaan} />
-      </div>
-    ),
-  },
-  {
-    id: "aksi",
-    header: () => <span className="sr-only">Aksi</span>,
-    cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-2">
-        <PeriksaAksi kegiatan={row.original} ringkas />
-        <TombolDetail k={row.original} />
-      </div>
-    ),
-  },
-];
-
-/**
- * HP: satu kartu per kegiatan; status dan tombol periksa langsung terlihat tanpa menggeser tabel
- */
 function KartuPemeriksaan({ k }: { k: KegiatanItem }) {
   return (
     <div className="flex flex-col gap-3 rounded-lg border bg-card p-3">
@@ -152,9 +143,6 @@ export function PantauView() {
   const id = useId();
   const { user } = useCurrentUser();
 
-  /**
-   * Nama halaman mengikuti menu: "Pemeriksaan kegiatan" untuk pimpinan, "Pantau" untuk admin
-   */
   const judulHalaman = user?.role === "PIMPINAN" ? "Pemeriksaan kegiatan" : "Pantau";
   const grupNav = useGrupNav("Pengawasan");
   const referensi = useReferensi();
@@ -200,9 +188,6 @@ export function PantauView() {
     return (referensi.data?.pegawai ?? []).filter((p) => ids.has(p.bidangId));
   }, [penyaring.unit, referensi.data, bidang]);
 
-  /**
-   * Bidang ikut ditampilkan dan dicari: membedakan pegawai bernama sama dan memudahkan mencari per bidang
-   */
   const opsiPegawai = useMemo<OpsiCari[]>(() => {
     const namaUnit = new Map(bidang.map((u) => [u.id, u.nama]));
     return pegawaiPilihan.map((p) => ({ nilai: String(p.id), label: p.nama, keterangan: namaUnit.get(p.bidangId) ?? "" }));

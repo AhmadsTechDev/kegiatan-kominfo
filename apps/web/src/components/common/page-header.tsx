@@ -1,9 +1,5 @@
 import { cn } from "@/utils/cn";
 
-/**
- * Kepala halaman seragam: label kategori, judul, deskripsi, dan tombol aksi
- */
-
 type PageHeaderProps = {
   title: string;
   eyebrow?: string;

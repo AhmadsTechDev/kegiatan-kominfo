@@ -28,10 +28,6 @@ import { TabelRekapUnit } from "./tabel-rekap-unit";
 import { SebaranStatus } from "./sebaran-status";
 import { labelPeriode, TrenRekap } from "./tren-rekap";
 
-/**
- * Halaman rekap: kartu ringkasan, tren, peringkat bidang/pegawai, dan jenis kegiatan
- */
-
 const SATUAN: { nilai: SatuanRekap; label: string }[] = [
   { nilai: "hari", label: "Harian" },
   { nilai: "bulan", label: "Bulanan" },
@@ -104,22 +100,6 @@ function hrefLaporan(filter: NilaiFilter) {
   for (const [k, v] of Object.entries({ dari: filter.dari, sampai: filter.sampai, unit: filter.unit, pegawai: filter.pegawai })) if (v) params.set(k, v);
   const qs = params.toString();
   return qs ? `/laporan?${qs}` : "/laporan";
-}
-
-/**
- * Rekap dan laporan hanya untuk pimpinan dan admin; backend juga menolak 403 untuk pegawai
- */
-export function RekapView() {
-  const { user } = useCurrentUser();
-  if (user?.role === "PEGAWAI") {
-    return (
-      <>
-        <PageHeader eyebrow="Kegiatan" title="Rekap kegiatan" />
-        <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin." />
-      </>
-    );
-  }
-  return <RekapIsi />;
 }
 
 function RekapIsi() {
@@ -216,4 +196,17 @@ function RekapIsi() {
       )}
     </>
   );
+}
+
+export function RekapView() {
+  const { user } = useCurrentUser();
+  if (user?.role === "PEGAWAI") {
+    return (
+      <>
+        <PageHeader eyebrow="Kegiatan" title="Rekap kegiatan" />
+        <KegiatanTanpaAkses pesan="Halaman ini untuk pimpinan dan admin." />
+      </>
+    );
+  }
+  return <RekapIsi />;
 }

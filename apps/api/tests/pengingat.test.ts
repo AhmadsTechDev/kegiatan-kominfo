@@ -1,10 +1,8 @@
-// Uji pengingat email otomatis: H-1 sebelum kegiatan dan kegiatan selesai yang belum berdokumentasi
 import { describe, expect, test } from "bun:test";
 import type { IsiEmail } from "@/lib/mailer";
 import { PengingatService } from "@/services/pengingat.service";
 import { buatKegiatan, buatPengguna, formBerkas, isiKegiatan, jamLagi, loginAdmin, panggil, PNG } from "./helpers";
 
-// Menjalankan satu putaran pengingat dan mengembalikan email yang dikirim ke alamat tertentu
 async function putaran(kepada: string) {
   const terkirim: { kepada: string; subjek: string; isi: IsiEmail }[] = [];
   await PengingatService.jalankan(new Date(), async (ke, subjek, isi) => {

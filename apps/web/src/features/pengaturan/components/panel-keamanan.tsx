@@ -14,10 +14,6 @@ import { GantiSandiDialog } from "@/features/auth/components/ganti-sandi-dialog"
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useCabutSesi, useCabutSesiLain, useSesi } from "../hooks/use-akun-saya";
 
-/**
- * Panel keamanan: ganti kata sandi, sesi login aktif, dan keluar
- */
-
 export function PanelSandi() {
   const [buka, setBuka] = useState(false);
   return (
@@ -110,15 +106,11 @@ export function PanelKeluar() {
   const cabutLain = useCabutSesiLain();
   const sibuk = pending || cabutLain.isPending;
 
-  /**
-   * Semua perangkat lain dikeluarkan lebih dulu, baru perangkat ini
-   */
   const keluarSemua = () =>
     cabutLain.mutate(undefined, { onSuccess: logout, onError: (e) => toast.error(e.message) });
 
   return (
     <Panel>
-      {/* Panel tanpa PanelHeader, jadi PanelBody perlu padding atas sendiri */}
       <PanelBody className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center md:pt-5">
         <p className="min-w-0 flex-1 text-sm font-medium">Keluar dari akun</p>
         <div className="flex flex-col gap-2 sm:flex-row">

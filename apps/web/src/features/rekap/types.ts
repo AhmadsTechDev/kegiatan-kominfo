@@ -1,7 +1,3 @@
-/**
- * Tipe data rekap (FR-08) dan ekspor
- */
-
 export type JumlahStatus = {
   total: number;
   akanDatang: number;

@@ -14,19 +14,6 @@ import type { IsiUndangan } from "../types";
 import { useBidangAdmin } from "../hooks/use-admin";
 import { PilihUnit, terapkanGalatServer } from "./admin-shared";
 
-/**
- * Dialog kirim email undangan aktivasi akun (role PEGAWAI atau PIMPINAN)
- */
-
-const ROLE_UNDANGAN: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
-
-const schema = z.object({
-  email: z.email("Email tidak valid").max(255),
-  role: z.enum(["PEGAWAI", "PIMPINAN", "ADMIN"]),
-  bidangId: z.string(),
-});
-type Nilai = z.infer<typeof schema>;
-
 type Props = {
   title: string;
   penerima: React.ReactNode;
@@ -39,6 +26,15 @@ type Props = {
   pilihUnit?: boolean;
 };
 
+const ROLE_UNDANGAN: Role[] = ["PEGAWAI", "PIMPINAN", "ADMIN"];
+
+const schema = z.object({
+  email: z.email("Email tidak valid").max(255),
+  role: z.enum(["PEGAWAI", "PIMPINAN", "ADMIN"]),
+  bidangId: z.string(),
+});
+type Nilai = z.infer<typeof schema>;
+
 export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole = "PEGAWAI", submitLabel, pending, onSubmit, onClose, pilihUnit }: Props) {
   const unit = useBidangAdmin();
   const [galat, setGalat] = useState<string | null>(null);
@@ -50,9 +46,6 @@ export function UndangDialog({ title, penerima, defaultEmail = "", defaultRole =
   const kirim = handleSubmit((v) => {
     setGalat(null);
 
-    /**
-     * Setiap akun tertaut ke data pegawai, jadi pemohon tanpa data pegawai wajib diberi bidang
-     */
     if (pilihUnit && !v.bidangId) return setError("bidangId", { message: "Bidang wajib dipilih" });
     const isi: IsiUndangan = { email: v.email.trim().toLowerCase(), role: v.role };
     if (pilihUnit) Object.assign(isi, { bidangId: Number(v.bidangId) });

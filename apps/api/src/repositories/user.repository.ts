@@ -1,14 +1,11 @@
 import { and, asc, desc, eq, gt, inArray, ne, not, or } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { bidang, catatanPemeriksaan, dokumentasi, kegiatan, pegawai, session, user } from "@/db/schema";
-import { db, memuat, mengandung, type Db } from "@/lib/db";
+import { db, memuat, mengandung, type Db } from "@/db";
 import type { Halaman, Role, StatusAkun } from "@/types/umum.types";
-import type { FilterAkun } from "@/types/user.types";
+import type { FilterAkun } from "@/validators/user.validator";
 import { kondisiStatus, punyaKredensial } from "@/utils/status-akun";
 
-/**
- * Kolom akun yang ditampilkan
- */
 const PILIH_AKUN = {
   id: user.id,
   name: user.name,
@@ -24,9 +21,6 @@ const PILIH_AKUN = {
   punyaKredensial,
 };
 
-/**
- * Menyusun WHERE dari filter daftar akun
- */
 function kondisi(f: FilterAkun) {
   const nipCocok = f.q ? db.select({ id: pegawai.id }).from(pegawai).where(memuat(pegawai.nip, f.q)) : undefined;
   return and(
@@ -38,17 +32,10 @@ function kondisi(f: FilterAkun) {
 }
 
 export const UserRepository = {
-  /**
-   * Jumlah akun dengan status tertentu
-   */
   hitungStatus(status: StatusAkun) {
     return db.$count(user, kondisiStatus(status));
   },
 
-  /**
-   * Daftar akun dengan filter dan paginasi, beserta pegawai tertaut dan status kredensialnya.
-   * Akun yang menunggu aktivasi selalu di atas (admin perlu memantaunya), lalu urut nama
-   */
   async daftar(f: FilterAkun, halaman: Halaman) {
     const where = kondisi(f);
     const induk = alias(bidang, "induk");
@@ -78,17 +65,11 @@ export const UserRepository = {
     return { items, total };
   },
 
-  /**
-   * Satu akun berdasarkan id
-   */
   async byId(id: string, tx: Db = db) {
     const [a] = await tx.select(PILIH_AKUN).from(user).where(eq(user.id, id)).limit(1);
     return a;
   },
 
-  /**
-   * Detail akun untuk halaman detail admin: data akun, pegawai beserta bidangnya, dan sesi yang masih berlaku
-   */
   async detail(id: string, sekarang = new Date()) {
     const induk = alias(bidang, "induk");
     const [baris] = await db
@@ -117,30 +98,18 @@ export const UserRepository = {
     };
   },
 
-  /**
-   * Membuat akun tanpa kata sandi (status MENUNGGU_AKTIVASI sampai pemiliknya mengaktifkan lewat email)
-   */
   async insert(nilai: { id: string; name: string; email: string; role: Role; pegawaiId: number | null }, tx: Db) {
     await tx.insert(user).values({ ...nilai, emailVerified: false });
   },
 
-  /**
-   * Mengubah kolom akun
-   */
   async update(id: string, data: Partial<typeof user.$inferInsert>, tx: Db) {
     await tx.update(user).set(data).where(eq(user.id, id));
   },
 
-  /**
-   * Menghapus akun (sesi, kredensial, dan draf ikut terhapus lewat ON DELETE CASCADE)
-   */
   async hapus(id: string, tx: Db) {
     await tx.delete(user).where(eq(user.id, id));
   },
 
-  /**
-   * Akun lain (selain kecualiUserId) yang sudah tertaut ke pegawai ini
-   */
   async akunLainUntukPegawai(pegawaiId: number, kecualiUserId?: string) {
     const [u] = await db
       .select({ id: user.id, email: user.email })
@@ -150,25 +119,16 @@ export const UserRepository = {
     return u;
   },
 
-  /**
-   * Pegawai pemilik NIP tertentu
-   */
   async pegawaiByNip(nip: string) {
     const [p] = await db.select({ id: pegawai.id, nama: pegawai.nama, aktif: pegawai.aktif }).from(pegawai).where(eq(pegawai.nip, nip)).limit(1);
     return p;
   },
 
-  /**
-   * Pegawai berdasarkan id
-   */
   async pegawai(id: number) {
     const [p] = await db.select({ id: pegawai.id, nip: pegawai.nip, bidangId: pegawai.bidangId, aktif: pegawai.aktif }).from(pegawai).where(eq(pegawai.id, id)).limit(1);
     return p;
   },
 
-  /**
-   * Id akun yang meninggalkan data kegiatan (membuat kegiatan, mengunggah dokumentasi, atau memeriksa) sehingga tidak boleh dihapus.
-   */
   async terpakai(ids: string[]) {
     if (!ids.length) return new Set<string>();
     const [pembuat, pengunggah, pemeriksa] = await Promise.all([

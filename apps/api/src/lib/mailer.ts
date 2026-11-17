@@ -1,14 +1,10 @@
-import { env } from "@/config/env";
+import { appConfig } from "@/config/app";
+import { mailConfig } from "@/config/mail";
 
-/**
- * Bahan satu email. Service cukup mengisi bagian-bagian ini, tata letaknya disusun di file ini agar semua email seragam.
- */
 export type IsiEmail = {
   judul: string;
-  /** Cuplikan satu kalimat yang tampil di daftar kotak masuk (preheader) */
   pratinjau: string;
   paragraf: string[];
-  /** Rincian berlabel, mis. waktu dan lokasi kegiatan */
   rincian?: { label: string; nilai: string }[];
   tombol?: { label: string; url: string };
   catatan?: string;
@@ -16,28 +12,15 @@ export type IsiEmail = {
 
 const NAVY = "#1a2a6e";
 const TEKS = "#0d1b3e";
-const REDUP = "#5b6785"; // 5,6:1 di putih, 5,2:1 di latar abu
+const REDUP = "#5b6785";
 const LATAR = "#f4f6fb";
 const GARIS = "#e3e7f0";
 
-/**
- * Mengamankan teks sebelum dimasukkan ke HTML (mencegah injeksi HTML/XSS)
- */
 const escapeHtml = (teks: string) =>
   teks.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-/**
- * Logo dilayani frontend dari public/images; gambar perlu URL publik agar tampil di aplikasi email
- */
-const urlLogo = () => `${env.FRONTEND_URL}/images/logo-email.png`;
+const urlLogo = () => `${appConfig.FRONTEND_URL}/images/logo-email.png`;
 
-/**
- * Menyusun badan email versi HTML dengan kepala logo dinas
- *
- * Email HTML memakai <table> dan style di setiap tag (inline style), bukan CSS modern,
- * karena banyak aplikasi email (Gmail, Outlook) hanya mendukung HTML model lama.
- * Semua teks dari luar melewati escapeHtml terlebih dahulu sebelum disisipkan.
- */
 function htmlEmail(subjek: string, { judul, pratinjau, paragraf, rincian, tombol, catatan }: IsiEmail) {
   const p = paragraf.map((t) => `<p style="margin:0 0 14px;line-height:1.6">${escapeHtml(t)}</p>`).join("");
   const r = rincian?.length
@@ -58,9 +41,6 @@ ${rincian
     ? `<p style="margin:18px 0 0;padding-top:16px;border-top:1px solid ${GARIS};font-size:12px;color:${REDUP};line-height:1.5">${escapeHtml(catatan)}</p>`
     : "";
 
-  /**
-   * Spasi kosong setelah preheader mencegah aplikasi email menarik teks badan ke cuplikan
-   */
   const pengisi = "&#847;&zwnj;&nbsp;".repeat(60);
   return `<!doctype html><html lang="id"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -82,9 +62,6 @@ ${rincian
 </td></tr></table></body></html>`;
 }
 
-/**
- * Menyusun badan email versi teks biasa (untuk aplikasi email tanpa HTML)
- */
 function teksEmail({ judul, paragraf, rincian, tombol, catatan }: IsiEmail) {
   return [
     judul,
@@ -98,27 +75,18 @@ function teksEmail({ judul, paragraf, rincian, tombol, catatan }: IsiEmail) {
   ].join("\n");
 }
 
-/**
- * Memecah "Nama <alamat@email>" menjadi { name, email } untuk API Brevo
- */
 function pengirim(dari: string) {
   const cocok = dari.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/);
   return cocok ? { name: cocok[1]!.trim(), email: cocok[2]!.trim() } : { email: dari.trim() };
 }
 
-/**
- * Mengirim email lewat REST API Brevo
- *
- * KONSEP async/await: `fetch` mengirim permintaan ke internet dan butuh waktu, jadi hasilnya ditunggu dengan `await`.
- * Bila Brevo menjawab gagal (res.ok bernilai false), galat dilempar supaya pemanggil tahu email tidak terkirim.
- */
 export async function kirimEmail(kepada: string, subjek: string, isi: IsiEmail) {
-  if (!env.BREVO_API_KEY) throw new Error("BREVO_API_KEY belum diisi");
+  if (!mailConfig.brevoApiKey) throw new Error("BREVO_API_KEY belum diisi");
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
-    headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
+    headers: { "api-key": mailConfig.brevoApiKey, "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
-      sender: pengirim(env.EMAIL_FROM),
+      sender: pengirim(mailConfig.from),
       to: [{ email: kepada }],
       subject: subjek,
       htmlContent: htmlEmail(subjek, isi),

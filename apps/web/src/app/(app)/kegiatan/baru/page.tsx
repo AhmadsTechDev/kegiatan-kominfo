@@ -3,13 +3,9 @@ import { Suspense } from "react";
 import { KegiatanFormSkeleton } from "@/features/kegiatan/components/kegiatan-states";
 import { KegiatanBaruView } from "@/features/kegiatan/components/kegiatan-form-view";
 
-/**
- * Halaman catat kegiatan baru, termasuk melanjutkan draf (/kegiatan/baru)
- */
+type Props = { searchParams: Promise<{ draf?: string }> };
 
 export const metadata: Metadata = { title: "Tambah kegiatan" };
-
-type Props = { searchParams: Promise<{ draf?: string }> };
 
 async function Isi({ searchParams }: Props) {
   const { draf } = await searchParams;

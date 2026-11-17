@@ -13,9 +13,7 @@ import type { Profil } from "@/features/auth/hooks/use-profil";
 import { ApiError } from "@/lib/api-client";
 import { useUbahKontak } from "../hooks/use-akun-saya";
 
-/**
- * Panel profil: data kepegawaian (hanya baca) dan nomor kontak yang bisa diubah
- */
+const POLA_KONTAK = /^[0-9+()\-\s]*$/;
 
 export function Baris({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -31,9 +29,6 @@ export const Kosong = ({ teks = "-" }: { teks?: string }) => <span className="fo
 export function PanelKepegawaian({ p }: { p: Profil }) {
   const unit = p.pegawai?.bidang;
 
-  /**
-   * Admin mengelola datanya sendiri lewat Manajemen akun; role lain harus meminta admin
-   */
   const admin = p.role === "ADMIN";
   return (
     <Panel>
@@ -77,8 +72,6 @@ export function PanelKepegawaian({ p }: { p: Profil }) {
   );
 }
 
-const POLA_KONTAK = /^[0-9+()\-\s]*$/;
-
 export function PanelKontak({ p }: { p: Profil }) {
   const simpan = useUbahKontak();
   const awal = p.kontak ?? "";
@@ -114,7 +107,6 @@ export function PanelKontak({ p }: { p: Profil }) {
             />
             {galat ? <FieldError>{galat}</FieldError> : <FieldDescription>Contoh: 0812-3456-7890</FieldDescription>}
           </Field>
-          {/* Tombol utama baru muncul saat ada perubahan; tombol utama yang dipudarkan tampak kusam di tema gelap */}
           <Button type="submit" variant={kontak === awal ? "outline" : "default"} className="h-10 pointer-coarse:min-h-11 w-fit" disabled={kontak === awal || simpan.isPending}>
             {simpan.isPending ? <Spinner /> : <Check aria-hidden />}
             Simpan kontak

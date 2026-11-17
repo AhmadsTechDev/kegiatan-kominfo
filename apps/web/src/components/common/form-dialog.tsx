@@ -4,10 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 
-/**
- * Dialog pembungkus formulir singkat (master data, akun, kata sandi)
- */
-
 type FormDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -26,10 +22,6 @@ export function FormDialog({ open, onOpenChange, title, description, onSubmit, p
       <DialogContent
         className="sm:max-w-lg"
 
-        /**
-         * Tanpa autofocus ke kolom pertama: di HP keyboard tidak langsung muncul menutupi dialog.
-         * Fokus tetap dipindah ke dialog agar pembaca layar dan Tab mulai dari dalam dialog
-         */
         onOpenAutoFocus={(e) => {
           e.preventDefault();
           (e.currentTarget as HTMLElement).focus();

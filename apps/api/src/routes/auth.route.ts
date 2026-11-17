@@ -1,84 +1,63 @@
 import { Elysia } from "elysia";
-import { AuthController } from "@/controllers/auth.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { AkunSayaService } from "@/services/akun-saya.service";
+import { AuthService } from "@/services/auth.service";
+import { KredensialService } from "@/services/kredensial.service";
+import { requestMeta } from "@/utils/konteks";
 import { AuthValidator } from "@/validators/auth.validator";
 
-const LOGIN = { auth: true as const };
-
-/**
- * Akun sendiri (semua role). Login/logout/sesi ditangani Better Auth di /api/auth/*
- */
 export const authRoutes = new Elysia({ prefix: "/me" })
   .use(authPlugin)
+  .get("/", ({ user }) => AuthService.profil(user.id), { auth: true })
+  .patch("/", ({ user, body }) => AuthService.ubahProfil(user.id, body), { auth: true, body: AuthValidator.ubahProfil })
+  .post("/foto", ({ user, body }) => AuthService.unggahFoto(user.id, body.berkas), { auth: true, body: AuthValidator.unggahFoto })
+  .delete("/foto", ({ user }) => AuthService.hapusFoto(user.id), { auth: true })
+  .get(
+    "/foto/:userId",
+    async ({ params }) =>
+      new Response(await AuthService.bacaFoto(params.userId), {
+        headers: {
+          "Content-Type": "image/webp",
+          "X-Content-Type-Options": "nosniff",
+          "Cache-Control": "private, max-age=86400",
+        },
+      }),
+    { auth: true, params: AuthValidator.fotoParams },
+  )
+  .patch("/email", ({ user, body }) => KredensialService.mintaGantiEmail(user.id, body), { auth: true, body: AuthValidator.gantiEmail })
+  .delete("/email", ({ user }) => KredensialService.batalGantiEmail(user.id), { auth: true })
+  .patch("/sandi", ({ user, session, body }) => AkunSayaService.gantiSandi(user.id, session.id, body), {
+    auth: true,
+    body: AuthValidator.gantiSandi,
+  })
+  .get("/sesi", ({ user, session }) => AkunSayaService.daftarSesi(user.id, session.id), { auth: true })
+  .delete("/sesi", ({ user, session }) => AkunSayaService.cabutSesiLain(user.id, session.id), { auth: true })
+  .delete("/sesi/:id", ({ user, session, params }) => AkunSayaService.cabutSesi(user.id, session.id, params.id), {
+    auth: true,
+    params: AuthValidator.sesiParams,
+  })
+  .get("/preferensi", ({ user }) => AkunSayaService.preferensi(user.id), { auth: true })
+  .patch("/preferensi", ({ user, body }) => AkunSayaService.ubahPreferensi(user.id, body), {
+    auth: true,
+    body: AuthValidator.preferensi,
+  });
 
-  /**
-   * Profil, data kepegawaian (baca saja), dan info akun
-   */
-  .get("/", AuthController.me, LOGIN)
-
-  /**
-   * Ubah kontak
-   */
-  .patch("/", AuthController.ubahProfil, { ...LOGIN, body: AuthValidator.ubahProfil })
-
-  /**
-   * Ganti foto profil
-   */
-  .post("/foto", AuthController.unggahFoto, { ...LOGIN, body: AuthValidator.unggahFoto })
-
-  /**
-   * Hapus foto profil
-   */
-  .delete("/foto", AuthController.hapusFoto, LOGIN)
-
-  /**
-   * Lihat foto profil user mana pun (untuk avatar)
-   */
-  .get("/foto/:userId", AuthController.foto, { ...LOGIN, params: AuthValidator.fotoParams })
-
-  /**
-   * Minta ganti email (tautan verifikasi dikirim ke email baru)
-   */
-  .patch("/email", AuthController.gantiEmail, { ...LOGIN, body: AuthValidator.gantiEmail })
-
-  /**
-   * Batalkan ganti email yang belum diverifikasi
-   */
-  .delete("/email", AuthController.batalGantiEmail, LOGIN)
-
-  /**
-   * Ganti kata sandi
-   */
-  .patch("/sandi", AuthController.gantiSandi, { ...LOGIN, body: AuthValidator.gantiSandi })
-
-  /**
-   * Sesi login aktif
-   */
-  .get("/sesi", AuthController.daftarSesi, LOGIN)
-
-  /**
-   * Cabut semua sesi lain
-   */
-  .delete("/sesi", AuthController.cabutSesiLain, LOGIN)
-
-  /**
-   * Cabut satu sesi
-   */
-  .delete("/sesi/:id", AuthController.cabutSesi, { ...LOGIN, params: AuthValidator.sesiParams })
-
-  /**
-   * Preferensi tema dan notifikasi
-   */
-  .get("/preferensi", AuthController.preferensi, LOGIN)
-  .patch("/preferensi", AuthController.ubahPreferensi, { ...LOGIN, body: AuthValidator.preferensi });
-
-/**
- * Tautan dari email, tanpa login: aktivasi akun, lupa/atur ulang kata sandi, verifikasi email baru
- */
 export const akunPublikRoutes = new Elysia()
-  .get("/aktivasi", AuthController.infoAktivasi, { query: AuthValidator.tokenQuery })
-  .post("/aktivasi", AuthController.aktivasi, { body: AuthValidator.aturSandi })
-  .post("/lupa-sandi", AuthController.lupaSandi, { body: AuthValidator.lupaSandi })
-  .get("/reset-sandi", AuthController.infoReset, { query: AuthValidator.tokenQuery })
-  .post("/reset-sandi", AuthController.resetSandi, { body: AuthValidator.aturSandi })
-  .post("/konfirmasi-email", AuthController.konfirmasiEmail, { body: AuthValidator.tokenBody });
+  .get("/aktivasi", ({ query, request }) => KredensialService.infoAktivasi(query.token, requestMeta(request.headers)), {
+    query: AuthValidator.tokenQuery,
+  })
+  .post("/aktivasi", ({ body, request }) => KredensialService.aktivasi(body, requestMeta(request.headers)), {
+    body: AuthValidator.aturSandi,
+  })
+  .post("/lupa-sandi", ({ body, request }) => KredensialService.lupaSandi(body.email, requestMeta(request.headers)), {
+    body: AuthValidator.lupaSandi,
+  })
+  .get("/reset-sandi", ({ query, request }) => KredensialService.infoReset(query.token, requestMeta(request.headers)), {
+    query: AuthValidator.tokenQuery,
+  })
+  .post("/reset-sandi", ({ body, request }) => KredensialService.resetSandi(body, requestMeta(request.headers)), {
+    body: AuthValidator.aturSandi,
+  })
+  .post("/konfirmasi-email", ({ body, request }) => KredensialService.konfirmasiEmail(body.token, requestMeta(request.headers)), {
+    body: AuthValidator.tokenBody,
+  });

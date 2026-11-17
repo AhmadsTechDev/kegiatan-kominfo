@@ -1,15 +1,12 @@
-// Uji login, sesi, penguncian akun, endpoint Better Auth yang ditutup, CSRF, hash kata sandi, hak akses role,
-// aktivasi akun dari email undangan, serta lupa/atur ulang kata sandi
 import { describe, expect, test } from "bun:test";
 import { hashPassword as hashScrypt } from "better-auth/crypto";
 import { and, eq, like } from "drizzle-orm";
 import { account, user, verification } from "@/db/schema";
-import { db } from "@/lib/db";
+import { db } from "@/db";
 import { hashToken } from "@/utils/token";
 import { aktifkan, buatPengguna, emailAcak, idUnit, ipAcak, isiAkun, login, loginAdmin, nipAcak, panggil, SANDI, tokenTerakhir } from "./helpers";
 import { kotakSurat, suratTerakhir } from "./surel-palsu";
 
-// Membuat akun lewat admin tanpa mengaktifkannya
 async function akunMenunggu(ubah: Record<string, unknown> = {}) {
   const isi = await isiAkun(ubah);
   const res = await panggil("/admin/akun", { cookie: await loginAdmin(), json: isi });
@@ -167,7 +164,6 @@ describe("hak akses role", () => {
     expect((await panggil("/pantau/ringkasan", { cookie: pegawai.cookie })).status).toBe(403);
     const dashPimpinan = await panggil("/dashboard", { cookie: pimpinan.cookie });
     expect(dashPimpinan.status).toBe(200);
-    // Hitungan akun hanya dikirim ke admin
     expect(dashPimpinan.data.admin).toBeNull();
     expect((await panggil("/pantau/ringkasan", { cookie: pimpinan.cookie })).status).toBe(200);
     expect((await panggil("/pantau/ringkasan", { cookie: await loginAdmin() })).status).toBe(200);
@@ -182,7 +178,6 @@ describe("aktivasi akun dari email undangan", () => {
     expect(surel.subjek).toBe("Aktifkan akun Anda");
     const token = tokenTerakhir(email);
 
-    // Basis data hanya menyimpan hash token
     const baris = await db.select().from(verification).where(eq(verification.value, id));
     expect(baris.map((b) => b.identifier)).toEqual([`aktivasi:${hashToken(token)}`]);
     expect(JSON.stringify(baris)).not.toContain(token);

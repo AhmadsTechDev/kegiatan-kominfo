@@ -2,22 +2,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Mode gelap aktif lewat kelas .dark di <html>, dipasang next-themes (pilihan pengguna atau preferensi sistem) */
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Token desain sesuai DESIGN.md bagian 2, tema terang (putih) sebagai bawaan.
- * Palet mengacu pada identitas visual Diskominfo Kota Palembang:
- *   - Biru navy (#1a2a6e) sebagai warna utama institusi
- *   - Kuning emas (#c8a951) dari lambang Kota Palembang sebagai aksen grafik
- *   - Putih bersih untuk permukaan konten
- * Semua pasangan teks/latar dipilih agar memenuhi kontras WCAG AA di kedua tema.
- * Jangan mengganti nilai hex tanpa memeriksa ulang kontras.
- */
 :root {
   --radius: 0.75rem;
 
-  /* Permukaan: latar hampir putih, kartu putih murni */
   --background: #f7f8fb;
   --foreground: #0d1b3e;
   --card: #ffffff;
@@ -25,28 +14,22 @@
   --popover: #ffffff;
   --popover-foreground: #0d1b3e;
 
-  /* Aksi utama: biru navy institusional */
   --primary: #1a2a6e;
   --primary-foreground: #ffffff;
   --secondary: #eaeefa;
   --secondary-foreground: #1a2a6e;
 
-  /* Netral */
   --muted: #f0f2f7;
   --muted-foreground: #4f5a78;
   --accent: #e4e9f7;
   --accent-foreground: #1a2a6e;
   --border: #e3e7f0;
-  /* Batas kolom isian: 3,44:1 terhadap card, 3,24:1 terhadap background (komponen UI minimal 3:1) */
   --input: #7f8aa8;
   --ring: #2563eb;
 
-  /* Bahaya */
   --destructive: #b91c1c;
   --destructive-foreground: #ffffff;
 
-  /* Sidebar mengambang (reference/dashboard-admin/assets/img/Sidebar UI.webp):
-   * kartu putih di tema terang, navy gelap di tema gelap. Item aktif berupa ikon bulat + pil label. */
   --sidebar: #ffffff;
   --sidebar-foreground: #5b6785;
   --sidebar-strong: #0d1b3e;
@@ -56,7 +39,6 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-border: #e6e9f2;
 
-  /* Status pelaksanaan (latar lembut + teks gelap untuk kontras) */
   --status-akan-datang-bg: #e0f2fe;
   --status-akan-datang-fg: #075985;
   --status-berlangsung-bg: #fef3c7;
@@ -66,8 +48,6 @@
   --status-dibatalkan-bg: #ffe4e6;
   --status-dibatalkan-fg: #9f1239;
 
-  /* Palet grafik (6 warna, aman untuk buta warna umum).
-   * chart-1 selaras dengan primary navy, chart-3 memakai emas lambang kota. */
   --chart-1: #1a2a6e;
   --chart-2: #0d9488;
   --chart-3: #c8a951;
@@ -76,7 +56,6 @@
   --chart-6: #64748b;
 }
 
-/* Tema gelap: navy pekat seperti sidebar referensi. Primary dibuat terang dengan teks gelap agar kontras tetap AA. */
 .dark {
   --background: #0b1120;
   --foreground: #e6ebf5;
@@ -95,13 +74,9 @@
   --accent: #1e2a45;
   --accent-foreground: #dbe5ff;
   --border: #233049;
-  /* Batas kolom isian: 3,5:1 terhadap card, 3,79:1 terhadap background */
   --input: #61708f;
   --ring: #60a5fa;
 
-  /* Merah dipakai sebagai teks (galat, tombol/menu Hapus): #dc2626 hanya 3,5:1 di atas card gelap.
-     #f87171 = 6,3:1 terhadap card, 4,8:1 di atas latar tombol destructive saat hover.
-     Lencana merah solid memakai destructive-foreground gelap: 5,8:1 */
   --destructive: #f87171;
   --destructive-foreground: #450a0a;
 
@@ -133,11 +108,6 @@
   color-scheme: dark;
 }
 
-/* Pimpinan: aksen emas lambang kota menggantikan biru pada penanda menu aktif, avatar sidebar,
- * dan garis eyebrow, supaya tampilan pimpinan langsung terasa beda. Atribut data-peran dipasang
- * AppShell di <html> agar laci menu ponsel (portal) ikut terpengaruh.
- * Emas tua #8a6d1f: 4,9:1 di putih (teks hover) dan teks putih di atasnya 4,9:1. Mode gelap memakai
- * emas terang #e2c46f dengan teks gelap (10:1). */
 :root {
   --aksen-peran: var(--primary);
 }
@@ -219,7 +189,6 @@
     @apply font-sans;
   }
 
-  /* Tailwind v4 mengembalikan kursor tombol ke panah; kontrol yang bisa diklik ditandai kursor tangan di satu tempat */
   a[href],
   button,
   summary,
@@ -247,8 +216,6 @@
   }
 }
 
-/* Butir menu dan pilihan shadcn memakai utilitas cursor-default. Aturan ini sengaja di luar @layer agar menang
-   atas utilitas tanpa mengubah komponen di components/ui (DESIGN.md bagian 4) */
 [data-slot="dropdown-menu-item"]:not([data-disabled]),
 [data-slot="dropdown-menu-checkbox-item"]:not([data-disabled]),
 [data-slot="dropdown-menu-radio-item"]:not([data-disabled]),
@@ -257,13 +224,11 @@
   cursor: pointer;
 }
 
-/* Gerak (DESIGN.md bagian 8). Kurva dipakai lewat kelas ease-out-expo dan ease-in-out-smooth. */
 @theme inline {
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* masuk: cepat di awal, mendarat halus */
-  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1); /* perpindahan dua posisi */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* Menyorot baris yang baru disimpan, lalu memudar */
 @keyframes sorot-baris {
   from {
     background-color: var(--accent);
@@ -273,7 +238,6 @@
   }
 }
 
-/* Batang progres tumbuh dari kiri (grafik sebaran jenis), hanya transform sesuai DESIGN.md bagian 8 */
 @keyframes tumbuh-x {
   from {
     transform: scaleX(0);
@@ -290,7 +254,6 @@
   }
 }
 
-/* Pengguna yang mematikan animasi di sistem operasi tidak boleh dipaksa melihatnya */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -302,8 +265,6 @@
   }
 }
 
-/* Kontrol dan popup MapLibre mengikuti token tema (terang dan gelap).
- * Selector popup diawali .maplibregl-map agar menang atas CSS bawaan MapLibre yang dimuat belakangan (latar putih) */
 .maplibregl-map {
   font-family: inherit;
 }
@@ -315,7 +276,6 @@
   padding: 0.75rem 2rem 0.75rem 0.875rem;
   box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.35);
 }
-/* Tooltip judul saat kursor di atas pin kegiatan: ringkas, tanpa tombol tutup, tidak menangkap klik */
 .maplibregl-map .peta-tooltip {
   pointer-events: none;
 }
@@ -378,13 +338,10 @@
 .maplibregl-cooperative-gesture-screen {
   font-size: 0.875rem;
 }
-/* Warna latar peta gelap sebelum tile pertama tergambar, agar tidak berkedip terang */
 .dark .maplibregl-map {
   background: #0f1a2e;
 }
 
-/* Cetak langsung laporan (features/laporan): hanya salinan laporan di .laporan-cetak yang tercetak,
-   tanpa menu, tombol, atau elemen aplikasi lain. Setiap .halaman-laporan menjadi satu lembar A4 mendatar. */
 .laporan-cetak {
   display: none;
 }

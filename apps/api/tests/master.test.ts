@@ -1,8 +1,7 @@
-// Uji data master: bidang dan sub bidang (aturan induk, kode otomatis, nonaktif), jenis kegiatan, pegawai
 import { describe, expect, test } from "bun:test";
 import { asc, eq, inArray } from "drizzle-orm";
 import { bidang as tabelBidang } from "@/db/schema";
-import { db } from "@/lib/db";
+import { db } from "@/db";
 import { buatBidang, buatKegiatan, buatPengguna, formBerkas, idUnit, isiKegiatan, login, loginAdmin, nipAcak, panggil, SANDI } from "./helpers";
 
 const kodeAcak = () => crypto.randomUUID().slice(0, 6);
@@ -182,7 +181,6 @@ describe("pegawai", () => {
     expect((await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: { ...isi, kontak: "0812 3333 4444" } })).status).toBe(200);
     expect((await panggil("/me", { cookie: u.cookie })).data.kontak).toBe("0812 3333 4444");
     expect((await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: { ...isi, kontak: "telp-ku" } })).status).toBe(422);
-    // Tanpa field kontak, nomor lama tetap
     await panggil(`/admin/pegawai/${u.pegawaiId}`, { method: "PATCH", cookie: admin, json: isi });
     expect((await panggil("/me", { cookie: u.cookie })).data.kontak).toBe("0812 3333 4444");
 
@@ -205,7 +203,6 @@ describe("pegawai", () => {
     expect((await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, roleUndangan: "ADMIN" } })).status).toBe(200);
     expect((await ambil()).roleUndangan).toBe("ADMIN");
     await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, roleUndangan: "PIMPINAN" } });
-    // Tanpa field roleUndangan, pilihan lama tidak berubah
     await panggil(`/admin/pegawai/${baru.data.id}`, { method: "PATCH", cookie: admin, json: { ...isi, nip: null } });
     expect((await ambil()).roleUndangan).toBe("PIMPINAN");
   });

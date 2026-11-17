@@ -21,3 +21,7 @@ export const PermintaanAkunValidator = {
   }),
   tolak: t.Object({ alasan: t.String({ minLength: 1, maxLength: 500, error: "Alasan penolakan wajib diisi" }) }),
 };
+
+export type IsiPermintaan = typeof PermintaanAkunValidator.ajukan.static;
+export type DaftarPermintaanQuery = typeof PermintaanAkunValidator.daftarQuery.static;
+export type SetujuiPermintaan = typeof PermintaanAkunValidator.setujui.static;

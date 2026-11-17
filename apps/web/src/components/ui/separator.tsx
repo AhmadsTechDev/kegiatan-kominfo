@@ -4,10 +4,6 @@ import * as React from "react"
 import { cn } from "cn"
 import { Separator as SeparatorPrimitive } from "radix-ui"
 
-/**
- * Komponen dasar shadcn/ui: garis pemisah (Radix)
- */
-
 function Separator({
   className,
   orientation = "horizontal",

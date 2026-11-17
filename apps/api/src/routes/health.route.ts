@@ -1,7 +1,8 @@
+import { sql } from "drizzle-orm";
 import { Elysia } from "elysia";
-import { HealthController } from "@/controllers/health.controller";
+import { db } from "@/db";
 
-/**
- * Cek kesehatan server dan basis data (dipakai Docker healthcheck), tanpa login
- */
-export const healthRoutes = new Elysia({ prefix: "/health" }).get("/", HealthController.cek);
+export const healthRoutes = new Elysia({ prefix: "/health" }).get("/", async () => {
+  await db.execute(sql`SELECT 1`);
+  return { status: "ok" };
+});

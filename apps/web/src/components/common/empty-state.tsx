@@ -1,10 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/utils/cn";
 
-/**
- * Tampilan saat data kosong atau filter tidak menemukan hasil
- */
-
 type EmptyStateProps = {
   icon: LucideIcon;
   title: string;

@@ -12,10 +12,6 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
 
-/**
- * Komponen dasar shadcn/ui: kalender pemilih tanggal (react-day-picker)
- */
-
 function Calendar({
   className,
   classNames,

@@ -3,10 +3,6 @@ import { Button } from "@/components/ui/button";
 import { formatAngka } from "@/utils/format";
 import { cn } from "@/utils/cn";
 
-/**
- * Navigasi halaman data dengan ringkasan rentang baris
- */
-
 type PaginationBarProps = {
   page: number;
   pageSize: number;

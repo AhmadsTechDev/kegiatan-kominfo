@@ -6,18 +6,6 @@ import { useCountUp } from "@/hooks/use-count-up";
 import { formatAngka } from "@/utils/format";
 import { cn } from "@/utils/cn";
 
-/**
- * Kartu angka ringkasan (KPI) dengan ikon dan animasi angka
- */
-
-const NADA = {
-  primary: "bg-secondary text-primary",
-  "akan-datang": "bg-status-akan-datang text-status-akan-datang-foreground",
-  berlangsung: "bg-status-berlangsung text-status-berlangsung-foreground",
-  selesai: "bg-status-selesai text-status-selesai-foreground",
-  dibatalkan: "bg-status-dibatalkan text-status-dibatalkan-foreground",
-} as const;
-
 type StatCardProps = {
   label: string;
   value: number;
@@ -27,6 +15,14 @@ type StatCardProps = {
   className?: string;
 };
 
+const NADA = {
+  primary: "bg-secondary text-primary",
+  "akan-datang": "bg-status-akan-datang text-status-akan-datang-foreground",
+  berlangsung: "bg-status-berlangsung text-status-berlangsung-foreground",
+  selesai: "bg-status-selesai text-status-selesai-foreground",
+  dibatalkan: "bg-status-dibatalkan text-status-dibatalkan-foreground",
+} as const;
+
 export function StatCard({ label, value, icon: Icon, nada = "primary", keterangan, className }: StatCardProps) {
   const tampil = useCountUp(value);
 
@@ -34,7 +30,6 @@ export function StatCard({ label, value, icon: Icon, nada = "primary", keteranga
     <div className={cn("@container flex min-w-0 flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm md:p-5", className)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-        {/* Di kartu sempit (grid 2 kolom di HP) ikon disembunyikan agar label tidak terjepit */}
         <span aria-hidden className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg @max-3xs:hidden", NADA[nada])}>
           <Icon className="size-5" />
         </span>

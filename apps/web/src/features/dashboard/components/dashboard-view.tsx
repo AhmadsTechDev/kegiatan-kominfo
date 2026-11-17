@@ -21,20 +21,6 @@ import { KpiCards } from "./kpi-cards";
 import { PeriodePicker } from "./periode-picker";
 import { PetaKegiatan } from "./peta-kegiatan";
 
-/**
- * Dashboard utama; isi dan tata letak menyesuaikan role
- */
-
-export function DashboardView() {
-  const { user, isPending } = useCurrentUser();
-  if (isPending || !user) return <DashboardSkeleton />;
-  return user.role === "PEGAWAI" ? (
-    <DashboardPegawai />
-  ) : (
-    <DashboardDinas namaDepan={user.name.split(" ")[0] ?? user.name} />
-  );
-}
-
 function AkunMenunggu({ jumlah }: { jumlah: number }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border bg-card px-4 py-3 text-sm shadow-sm">
@@ -69,9 +55,6 @@ function DashboardDinas({ namaDepan }: { namaDepan: string }) {
         eyebrow="Ringkasan dinas"
         title={`${sapaan}, ${namaDepan}`}
         actions={
-          /**
-           * HP: periode + muat ulang sebaris, Tambah selebar layar, waktu pembaruan di bawah
-           */
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             {dataUpdatedAt > 0 && (
               <span className="order-last text-xs text-muted-foreground sm:order-first" aria-live="polite">
@@ -115,5 +98,15 @@ function DashboardDinas({ namaDepan }: { namaDepan: string }) {
         </div>
       )}
     </>
+  );
+}
+
+export function DashboardView() {
+  const { user, isPending } = useCurrentUser();
+  if (isPending || !user) return <DashboardSkeleton />;
+  return user.role === "PEGAWAI" ? (
+    <DashboardPegawai />
+  ) : (
+    <DashboardDinas namaDepan={user.name.split(" ")[0] ?? user.name} />
   );
 }

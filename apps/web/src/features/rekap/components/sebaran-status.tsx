@@ -6,10 +6,6 @@ import { formatAngka } from "@/utils/format";
 import { cn } from "@/utils/cn";
 import type { JumlahStatus } from "../types";
 
-/**
- * Komposisi status pelaksanaan: satu batang bertumpuk plus rincian jumlah dan persentase
- */
-
 const STATUS: { kunci: Exclude<keyof JumlahStatus, "total" | "peserta">; status: StatusPelaksanaan; batang: string }[] = [
   { kunci: "selesai", status: "selesai", batang: "bg-status-selesai-foreground" },
   { kunci: "berlangsung", status: "berlangsung", batang: "bg-status-berlangsung-foreground" },
@@ -29,7 +25,6 @@ export function SebaranStatus({ total, animasi, className }: { total: JumlahStat
           <EmptyState icon={CircleSlash} title="Belum ada kegiatan pada periode ini." />
         ) : (
           <>
-            {/* Celah 2 px antarsegmen memisahkan warna yang bersebelahan tanpa mengandalkan beda warna saja */}
             <div aria-hidden className="flex h-3 gap-0.5 overflow-hidden rounded-full">
               {isi.map((s, i) => (
                 <div

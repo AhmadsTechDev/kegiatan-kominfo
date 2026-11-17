@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { preferensiPengguna } from "@/db/schema";
-import { db } from "@/lib/db";
-import type { Preferensi } from "@/types/auth.types";
+import { db } from "@/db";
+import type { Preferensi } from "@/validators/auth.validator";
 
 const PILIH = {
   tema: preferensiPengguna.tema,
@@ -10,18 +10,11 @@ const PILIH = {
 };
 
 export const PreferensiRepository = {
-  /**
-   * Preferensi user; undefined bila belum pernah diubah (pakai nilai bawaan)
-   */
   async ambil(userId: string) {
     const [p] = await db.select(PILIH).from(preferensiPengguna).where(eq(preferensiPengguna.userId, userId)).limit(1);
     return p;
   },
 
-  /**
-   * Menyimpan sebagian preferensi (baris dibuat bila belum ada)
-   * Setara SQL: INSERT ... ON CONFLICT (user_id) DO UPDATE SET ...
-   */
   async simpan(userId: string, isi: Partial<Preferensi>) {
     const [p] = await db
       .insert(preferensiPengguna)

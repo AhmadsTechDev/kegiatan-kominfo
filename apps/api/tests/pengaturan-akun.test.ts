@@ -1,9 +1,7 @@
-// Uji pengaturan akun sendiri: profil (data kepegawaian hanya dibaca), ganti email dengan verifikasi,
-// ganti kata sandi, sesi aktif, dan preferensi
 import { describe, expect, test } from "bun:test";
 import { eq } from "drizzle-orm";
 import { user } from "@/db/schema";
-import { db } from "@/lib/db";
+import { db } from "@/db";
 import { buatPengguna, emailAcak, formBerkas, login, loginAdmin, panggil, PNG, SANDI, tokenTerakhir } from "./helpers";
 import { kotakSurat, suratTerakhir } from "./surel-palsu";
 
@@ -82,7 +80,6 @@ describe("ganti email", () => {
     expect(suratTerakhir(baru)!.subjek).toBe("Verifikasi email baru Anda");
     expect(suratTerakhir(u.email)!.subjek).toBe("Permintaan ganti email akun Anda");
 
-    // Sebelum verifikasi: email lama tetap berlaku, email baru belum bisa dipakai login
     expect((await panggil("/me", { cookie: u.cookie })).data).toMatchObject({ email: u.email, emailBaru: baru });
     expect((await login(u.email, SANDI)).status).toBe(200);
     expect((await login(baru, SANDI)).status).toBe(401);

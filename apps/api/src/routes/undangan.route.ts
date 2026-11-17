@@ -1,19 +1,16 @@
 import { Elysia } from "elysia";
-import { UndanganController } from "@/controllers/undangan.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { UndanganService } from "@/services/undangan.service";
 import { UndanganValidator } from "@/validators/undangan.validator";
 
-/**
- * Rute undangan akun untuk pegawai yang belum punya akun
- */
 export const undanganRoutes = new Elysia()
   .use(authPlugin)
-
-  /**
-   * Admin mengundang pegawai membuat akun (email berisi tautan aktivasi)
-   */
-  .post("/admin/pegawai/:id/undang", UndanganController.undang, {
-    auth: ["ADMIN"],
-    params: UndanganValidator.params,
-    body: UndanganValidator.undang,
-  });
+  .post(
+    "/admin/pegawai/:id/undang",
+    ({ params, body }) => UndanganService.undang({ pegawaiId: params.id, email: body.email, role: body.role }),
+    {
+      auth: ["ADMIN"],
+      params: UndanganValidator.params,
+      body: UndanganValidator.undang,
+    },
+  );

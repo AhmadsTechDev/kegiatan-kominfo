@@ -10,19 +10,8 @@ import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { formatAngka, formatPeriode } from "@/utils/format";
 import { cn } from "@/utils/cn";
-import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-layar-sentuh";
+import { redamGeserGrafik, useLayarSentuh } from "@/hooks/use-media-query";
 import type { DashboardData } from "../types";
-
-/**
- * Grafik batang bertumpuk kegiatan per bidang selama 6 bulan terakhir
- */
-
-const JUMLAH_WARNA = 6;
-const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-const namaBulanPendek = (kode: string) => BULAN[Number(kode.slice(5, 7)) - 1] ?? kode;
-const RADIUS_ATAS: [number, number, number, number] = [6, 6, 0, 0];
-
-const namaPendek = (nama: string) => nama.replace(/^Bidang\s+/i, "").replace(/^Pengelolaan\s+/i, "");
 
 type Props = {
   data: DashboardData["trenUnitBulanan"];
@@ -32,11 +21,15 @@ type Props = {
 
 type Baris = { kode: string; bulan: string; total: number; puncak: string | null } & Record<string, number | string | null>;
 
+const JUMLAH_WARNA = 6;
+const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const RADIUS_ATAS: [number, number, number, number] = [6, 6, 0, 0];
+
+const namaBulanPendek = (kode: string) => BULAN[Number(kode.slice(5, 7)) - 1] ?? kode;
+const namaPendek = (nama: string) => nama.replace(/^Bidang\s+/i, "").replace(/^Pengelolaan\s+/i, "");
+
 function Ringkasan({ label, nilai, keterangan }: { label: string; nilai: string; keterangan?: string }) {
   return (
-    /**
-     * HP: satu baris label–nilai agar angka tidak terpotong; mulai sm: tiga kotak sejajar
-     */
     <div className="flex min-w-0 items-baseline justify-between gap-3 rounded-xl bg-muted/60 px-3.5 py-2 sm:flex-col sm:items-start sm:justify-start sm:gap-0.5 sm:py-2.5">
       <span className="text-[11px] font-semibold text-muted-foreground">{label}</span>
       <span className="flex min-w-0 items-baseline gap-1.5 sm:flex-col sm:items-start sm:gap-0.5">
@@ -85,14 +78,10 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
       return baru;
     });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- tipe generik tooltip Recharts terlalu rumit untuk dirinci
-  function TooltipKustom({ active, payload }: any) {
-    if (!active || !payload?.length) return null;
-    const b = payload[0].payload as Baris;
+  function TooltipKustom({ active, payload }: { active?: boolean; payload?: readonly { payload?: Baris }[] }) {
+    const b = active ? payload?.[0]?.payload : undefined;
+    if (!b) return null;
 
-    /**
-     * Bidang bernilai 0 disembunyikan di layar sentuh agar tooltip tidak menutupi grafik
-     */
     return (
       <div className="rounded-xl border bg-popover px-3 py-2.5 text-xs text-popover-foreground shadow-xl pointer-fine:min-w-52 pointer-coarse:max-w-48 pointer-coarse:px-2.5 pointer-coarse:py-2">
         <p className="mb-2 font-semibold text-muted-foreground pointer-coarse:mb-1">{formatPeriode(b.kode, true)}</p>
@@ -153,15 +142,9 @@ export function ChartUnitBulanan({ data, animasi, className }: Props) {
             <ChartContainer
               config={config}
 
-              /**
-               * lg: grafik mengisi sisa tinggi kartu bila kolom sebelahnya lebih tinggi
-               */
               className="aspect-auto h-72 w-full lg:h-auto lg:min-h-72 lg:flex-1"
               role="img"
 
-              /**
-               * HP: menggulir melewati grafik tidak memunculkan tooltip; tooltip dibuka dengan ketukan
-               */
               {...(sentuh ? redamGeserGrafik : {})}
               aria-label={`Grafik batang bertumpuk jumlah kegiatan per bidang, total ${totalTampil} kegiatan dalam enam bulan`}
             >

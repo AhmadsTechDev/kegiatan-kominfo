@@ -6,13 +6,28 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/utils/cn";
 
-/**
- * Masukan jam 24 jam (WIB) dengan pilihan per 15 menit atau diketik bebas
- */
+type Props = {
+  id?: string;
+  value: string;
+  onChange: (nilai: string) => void;
+  onBlur?: () => void;
+  invalid?: boolean;
+  "aria-label"?: string;
+  mulai?: string;
+};
+
+const PILIHAN = Array.from({ length: 96 }, (_, i) => `${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}`);
 
 const dua = (n: number) => String(n).padStart(2, "0");
-const PILIHAN = Array.from({ length: 96 }, (_, i) => `${dua(Math.floor(i / 4))}:${dua((i % 4) * 15)}`);
 const menit = (jam: string) => Number(jam.slice(0, 2)) * 60 + Number(jam.slice(3, 5));
+
+function durasi(dari: string, ke: string) {
+  const selisih = menit(ke) - menit(dari);
+  if (selisih <= 0) return null;
+  const j = Math.floor(selisih / 60);
+  const m = selisih % 60;
+  return [j && `${j} jam`, m && `${m} mnt`].filter(Boolean).join(" ");
+}
 
 export function normalisasiJam(teks: string): string | null {
   const bersih = teks.trim().replace(/[.,]/g, ":");
@@ -29,24 +44,6 @@ export function normalisasiJam(teks: string): string | null {
   }
   return j < 24 && m < 60 ? `${dua(j)}:${dua(m)}` : null;
 }
-
-function durasi(dari: string, ke: string) {
-  const selisih = menit(ke) - menit(dari);
-  if (selisih <= 0) return null;
-  const j = Math.floor(selisih / 60);
-  const m = selisih % 60;
-  return [j && `${j} jam`, m && `${m} mnt`].filter(Boolean).join(" ");
-}
-
-type Props = {
-  id?: string;
-  value: string;
-  onChange: (nilai: string) => void;
-  onBlur?: () => void;
-  invalid?: boolean;
-  "aria-label"?: string;
-  mulai?: string;
-};
 
 export function JamPicker({ id, value, onChange, onBlur, invalid, mulai, "aria-label": label }: Props) {
   const [buka, setBuka] = useState(false);

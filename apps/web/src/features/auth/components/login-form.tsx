@@ -16,10 +16,6 @@ import { useFokusAwal } from "../hooks/use-fokus-awal";
 import { useLogin } from "../hooks/use-login";
 import { loginSchema, type LoginInput } from "../schemas/login.schema";
 
-/**
- * Formulir login: validasi, kirim, dan tampilan akun terkunci sementara
- */
-
 export function LoginForm() {
   const [tampilkanSandi, setTampilkanSandi] = useState(false);
   const loginMutation = useLogin();

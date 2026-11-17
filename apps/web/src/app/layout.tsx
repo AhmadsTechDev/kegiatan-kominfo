@@ -4,15 +4,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "./providers";
 import "./globals.css";
 
-/**
- * Root layout: font, metadata, Providers global, dan toast
- */
-
-/**
- * KONSEP App Router: struktur folder di src/app menentukan alamat halaman. layout.tsx membungkus semua halaman
- * di foldernya, dan root layout ini membungkus SELURUH aplikasi (tag <html> dan <body> hanya ada di sini).
- * next/font mengunduh font saat build lalu menyajikannya dari server sendiri, jadi tidak ada permintaan ke Google saat dibuka.
- */
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -20,9 +11,6 @@ const jakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-/**
- * Judul tab peramban; `%s` diganti judul tiap halaman, mis. "Kalender kegiatan · Pendataan Kegiatan".
- */
 export const metadata: Metadata = {
   title: {
     default: "Pendataan Kegiatan",
@@ -32,10 +20,6 @@ export const metadata: Metadata = {
   icons: { icon: "/icon.png", apple: "/apple-icon.png" },
 };
 
-/**
- * LayoutProps adalah tipe global buatan Next.js (tidak perlu di-import) berisi `children`, yaitu halaman yang sedang dibuka.
- * suppressHydrationWarning dibutuhkan karena next-themes mengubah kelas tema pada <html> sebelum React siap.
- */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className={`${inter.variable} ${jakarta.variable}`} suppressHydrationWarning>

@@ -10,26 +10,17 @@ import { formatTanggal, tanggalWib } from "@/utils/format";
 import { cn } from "@/utils/cn";
 import { keDate, keString } from "./date-picker";
 
-/**
- * Pemilih rentang tanggal dengan pintasan (hari ini, bulan ini, tahun ini)
- */
-
 export type RentangTanggal = { dari: string | null; sampai: string | null };
 
-const tampil = (t: string) => formatTanggal(`${t}T12:00:00+07:00`);
-
-export function labelRentang({ dari, sampai }: RentangTanggal, kosong = "Semua tanggal") {
-  if (dari && sampai) return dari === sampai ? tampil(dari) : `${tampil(dari)} – ${tampil(sampai)}`;
-  if (dari) return `Sejak ${tampil(dari)}`;
-  if (sampai) return `Sampai ${tampil(sampai)}`;
-  return kosong;
-}
-
-const geser = (t: string, hari: number) => {
-  const d = keDate(t);
-  d.setDate(d.getDate() + hari);
-  return keString(d);
+type Props = {
+  id?: string;
+  value: RentangTanggal;
+  onChange: (nilai: RentangTanggal) => void;
+  placeholder?: string;
+  bolehKosong?: boolean;
+  className?: string;
 };
+
 const PILIHAN_CEPAT: { label: string; hitung: (hariIni: string) => RentangTanggal }[] = [
   { label: "Hari ini", hitung: (h) => ({ dari: h, sampai: h }) },
   { label: "7 hari terakhir", hitung: (h) => ({ dari: geser(h, -6), sampai: h }) },
@@ -44,14 +35,20 @@ const PILIHAN_CEPAT: { label: string; hitung: (hariIni: string) => RentangTangga
   { label: "Tahun ini", hitung: (h) => ({ dari: `${h.slice(0, 4)}-01-01`, sampai: h }) },
 ];
 
-type Props = {
-  id?: string;
-  value: RentangTanggal;
-  onChange: (nilai: RentangTanggal) => void;
-  placeholder?: string;
-  bolehKosong?: boolean;
-  className?: string;
+const tampil = (t: string) => formatTanggal(`${t}T12:00:00+07:00`);
+
+const geser = (t: string, hari: number) => {
+  const d = keDate(t);
+  d.setDate(d.getDate() + hari);
+  return keString(d);
 };
+
+export function labelRentang({ dari, sampai }: RentangTanggal, kosong = "Semua tanggal") {
+  if (dari && sampai) return dari === sampai ? tampil(dari) : `${tampil(dari)} – ${tampil(sampai)}`;
+  if (dari) return `Sejak ${tampil(dari)}`;
+  if (sampai) return `Sampai ${tampil(sampai)}`;
+  return kosong;
+}
 
 export function RentangTanggalPicker({ id, value, onChange, placeholder = "Semua tanggal", bolehKosong = true, className }: Props) {
   const [buka, setBuka] = useState(false);

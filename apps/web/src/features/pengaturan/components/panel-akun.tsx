@@ -20,9 +20,7 @@ import { LABEL_ROLE } from "@/types/auth";
 import { useBatalGantiEmail, useGantiEmail } from "../hooks/use-akun-saya";
 import { Baris } from "./panel-profil";
 
-/**
- * Panel informasi akun: email, verifikasi, role, status, dan ganti email
- */
+type NilaiEmail = { email: string; password: string };
 
 const schemaEmail = (lama: string) =>
   z.object({
@@ -34,7 +32,6 @@ const schemaEmail = (lama: string) =>
       .refine((v) => v.toLowerCase() !== lama.toLowerCase(), "Email baru sama dengan email saat ini"),
     password: z.string().min(1, "Kata sandi saat ini wajib diisi"),
   });
-type NilaiEmail = { email: string; password: string };
 
 function GantiEmailDialog({ emailLama, onClose }: { emailLama: string; onClose: () => void }) {
   const ganti = useGantiEmail();

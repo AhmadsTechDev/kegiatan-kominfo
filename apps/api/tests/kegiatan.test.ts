@@ -1,9 +1,7 @@
-// Uji kegiatan: validasi isian, hak akses per role dan unit, konflik ubah bersamaan (409),
-// batal, periksa, hapus, filter daftar, dan draf kegiatan
 import { describe, expect, test } from "bun:test";
 import { eq } from "drizzle-orm";
 import { pegawai } from "@/db/schema";
-import { db } from "@/lib/db";
+import { db } from "@/db";
 import { buatKegiatan, buatPengguna, formBerkas, idJenis, idUnit, isiKegiatan, jamLagi, loginAdmin, panggil, PNG } from "./helpers";
 
 describe("mencatat kegiatan", () => {
@@ -70,7 +68,6 @@ describe("mencatat kegiatan", () => {
       expect((await panggil(`/kegiatan/${k.id}`, { method: "DELETE", cookie })).status).toBe(403);
       expect((await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie, form: formBerkas(PNG) })).status).toBe(403);
       expect((await panggil("/draf-kegiatan", { cookie, json: { isi: { judul: "x" } } })).status).toBe(403);
-      // Tetap bisa membaca
       expect((await panggil(`/kegiatan/${k.id}`, { cookie })).data).toMatchObject({ id: k.id, bisaUbah: false, bisaPeriksa: true });
     }
   });
@@ -165,10 +162,8 @@ describe("lingkup baca dan hak ubah", () => {
     const notif = await panggil("/notifikasi", { cookie: pemilik.cookie });
     expect(notif.data.belumDibaca).toBe(2);
     expect(notif.data.items[1]).toMatchObject({ jenis: "perlu_perbaikan", isi: "Foto belum ada", kegiatanId: k.id, dibacaAt: null });
-    // Pemeriksa tidak menerima notifikasinya sendiri
     expect((await panggil("/notifikasi", { cookie: admin })).data.items.some((n: { kegiatanId: number }) => n.kegiatanId === k.id)).toBe(false);
 
-    // Hanya pemilik yang bisa menandai dibaca
     const id = notif.data.items[1].id;
     expect((await panggil(`/notifikasi/${id}/baca`, { cookie: pimpinan.cookie, json: {} })).data.jumlah).toBe(0);
     expect((await panggil(`/notifikasi/${id}/baca`, { cookie: pemilik.cookie, json: {} })).data.jumlah).toBe(1);

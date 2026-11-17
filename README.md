@@ -4,7 +4,7 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 
 | Folder | Isi |
 | --- | --- |
-| [`apps/api/`](apps/api/README.md) | API REST: Bun, Elysia, Drizzle (PostgreSQL), Better Auth. Arsitektur berlapis: route, controller, service, repository |
+| [`apps/api/`](apps/api/README.md) | API REST: Bun, Elysia, Drizzle (PostgreSQL), Better Auth. Arsitektur berlapis: route, service, repository |
 | [`apps/web/`](apps/web/README.md) | Antarmuka: Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query, MapLibre GL |
 | [`docs/api/`](docs/api/README.md) | Dokumentasi API: ringkasan semua endpoint, aturan umum, hak akses, serta rincian header, body, dan respons |
 | [`docs/features/`](docs/features/README.md) | Spesifikasi per fitur: tujuan, kriteria selesai, dan daftar tugas |
@@ -77,7 +77,7 @@ API REST di `apps/api` (Bun, Elysia, Drizzle, Better Auth), alamat dasar `/api`.
 | Dashboard, kalender, rekap, pantau, ekspor | `/api/dashboard`, `/api/kalender`, `/api/rekap`, `/api/ekspor/kegiatan.pdf` | [api-laporan.md](docs/api/api-laporan.md) |
 | Administrasi | `/api/admin/akun`, `/api/admin/pegawai`, `/api/admin/bidang` | [api-admin.md](docs/api/api-admin.md) |
 
-Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses) → **repository** (query Drizzle). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram arsitektur sistem](docs/uml/06-arsitektur.md).
+Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **service** (aturan bisnis, hak akses) → **repository** (query Drizzle). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram arsitektur sistem](docs/uml/06-arsitektur.md).
 
 ## Diagram UML
 
@@ -100,7 +100,7 @@ Prasyarat: [Bun](https://bun.sh) 1.4 dan PostgreSQL 17 (atau basis data PostgreS
 # 1. Backend
 cd apps/api
 bun install
-cp .env.example .env            # isi BETTER_AUTH_SECRET dan SEED_ADMIN_PASSWORD
+cp .env.example .env.development # isi BETTER_AUTH_SECRET, SEED_ADMIN_PASSWORD, dan CLOUDINARY_URL
 bun run db:migrate              # menerapkan migrasi basis data
 bun run db:seed                 # bidang, jenis kegiatan, akun admin
 bun run db:seed:demo            # opsional: pegawai, akun, dan kegiatan fiktif untuk mencoba tampilan (ditolak di produksi)
@@ -112,7 +112,7 @@ bun install
 bun run dev                     # http://localhost:3000
 ```
 
-Frontend meneruskan `/api/*` ke backend, sehingga UI dan API berada di satu origin seperti di produksi. Frontend tidak butuh file `.env` saat development; satu-satunya pengaturannya, `API_URL`, dijelaskan di `apps/web/.env.example`.
+Frontend meneruskan `/api/*` ke backend, sehingga UI dan API berada di satu origin seperti di produksi. Frontend tidak butuh file `.env.development` saat development; satu-satunya pengaturannya, `API_URL`, dijelaskan di `apps/web/.env.example`.
 
 ## Pengujian
 
@@ -135,10 +135,10 @@ Setiap cara menjalankan aplikasi membaca pengaturan dari tempat yang berbeda. Se
 
 | Dipakai saat | File atau tempat | Dibuat dari |
 | --- | --- | --- |
-| Development backend | `apps/api/.env` | `apps/api/.env.example` |
-| Development frontend | `apps/web/.env` (opsional, hanya `API_URL`) | `apps/web/.env.example` |
+| Development backend | `apps/api/.env.development` | `apps/api/.env.example` |
+| Development frontend | `apps/web/.env.development` (opsional, hanya `API_URL`) | `apps/web/.env.example` |
 | Uji backend | `apps/api/.env.test` | `apps/api/.env.test.example` |
-| Deploy Render + Supabase + Vercel | Tidak ada file di server; isi di tab **Environment** Render (bisa disalin dari `apps/api/.env.production`) dan **Environment Variables** Vercel | Daftar di bawah |
+| Deploy Render + Supabase + Vercel | Tidak ada file di server; isi di tab **Environment** Render dan **Environment Variables** Vercel | Daftar di bawah |
 
 Yang harus benar di produksi, apa pun caranya:
 
@@ -200,7 +200,7 @@ File rahasia (`.env`, `test.txt`) tidak ikut terunggah karena sudah dikecualikan
    postgresql://postgres.xxxxx:PASSWORD_ANDA@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres
    ```
 
-   Pastikan memakai **Session pooler** (`pooler.supabase.com` port `5432`) karena mendukung jaringan IPv4 di Render dan kompatibel dengan migrasi serta query server (`apps/api/scripts/migrate.ts` juga otomatis mengalihkan `:6543` ke `:5432` saat migrasi).
+   Pastikan memakai **Session pooler** (`pooler.supabase.com` port `5432`) karena mendukung jaringan IPv4 di Render dan kompatibel dengan migrasi serta query server (`apps/api/src/db/migrate.ts` juga otomatis mengalihkan `:6543` ke `:5432` saat migrasi).
 
 ### Langkah 3b: backend di Render
 
@@ -250,9 +250,9 @@ Setelah admin pertama bisa masuk, ganti sandinya lewat **Pengaturan → Keamanan
 
 ### Memperbarui aplikasi
 
-Cukup `git push`. Vercel dan Render membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala (`bun scripts/migrate.ts`).
+Cukup `git push`. Vercel dan Render membangun ulang sendiri, dan migrasi tabel baru berjalan otomatis saat backend menyala (`bun src/db/migrate.ts`).
 
-**Mengubah skema database.** Ubah `apps/api/src/db/schema.ts`, lalu di komputer sendiri jalankan `bun run db:generate` (membuat file SQL baru di `apps/api/drizzle/`) dan `bun run db:migrate` (menerapkannya ke database lokal). Periksa file SQL-nya, jalankan tes, lalu commit folder `drizzle/` bersama kodenya dan `git push`. Jangan mengedit migrasi yang sudah ter-deploy dan jangan mengubah skema langsung di database Supabase. Menambah tabel atau kolom aman bagi data lama (kolom wajib baru butuh nilai bawaan). **Menghapus atau mengganti nama kolom dan tabel menghilangkan datanya**; buat cadangan lebih dulu (`pg_dump` dari URI Supabase) dan ubah penggantian nama menjadi `RENAME` manual di SQL migrasi.
+**Mengubah skema database.** Ubah `apps/api/src/db/schema.ts`, lalu di komputer sendiri jalankan `bun run db:generate` (membuat file SQL baru di `apps/api/src/db/migrations/`) dan `bun run db:migrate` (menerapkannya ke database lokal). Periksa file SQL-nya, jalankan tes, lalu commit folder `src/db/migrations/` bersama kodenya dan `git push`. Jangan mengedit migrasi yang sudah ter-deploy dan jangan mengubah skema langsung di database Supabase. Menambah tabel atau kolom aman bagi data lama (kolom wajib baru butuh nilai bawaan). **Menghapus atau mengganti nama kolom dan tabel menghilangkan datanya**; buat cadangan lebih dulu (`pg_dump` dari URI Supabase) dan ubah penggantian nama menjadi `RENAME` manual di SQL migrasi.
 
 ### Bila ada masalah
 

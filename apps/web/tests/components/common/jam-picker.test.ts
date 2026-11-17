@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { normalisasiJam } from "@/components/common/jam-picker";
 
-/**
- * Uji normalisasiJam: teks jam bebas jadi format 24 jam, masukan salah ditolak
- */
-
 describe("normalisasiJam", () => {
   test.each([
     ["8", "08:00"],

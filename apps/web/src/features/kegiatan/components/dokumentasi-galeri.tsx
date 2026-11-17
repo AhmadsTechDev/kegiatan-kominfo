@@ -15,9 +15,7 @@ import { periksaBerkas, useAntreanUnggah, useGantiDokumentasi } from "../hooks/u
 import { useHapusDokumentasi } from "../hooks/use-kegiatan";
 import type { Dokumentasi, KegiatanDetail } from "../types";
 
-/**
- * Galeri dokumentasi kegiatan: lihat, unggah, ganti, pratinjau, dan hapus foto/PDF
- */
+export type StatusAntrean = "kosong" | "menunggu" | "mengunggah";
 
 const adalahFoto = (d: Dokumentasi) => d.mime.startsWith("image/");
 
@@ -70,12 +68,6 @@ function AksiBerkas({
   );
 }
 
-export type StatusAntrean = "kosong" | "menunggu" | "mengunggah";
-
-/**
- * bacaSaja: hanya tampilan dan pratinjau (halaman detail); unggah, ganti, dan hapus ada di halaman ubah
- * onAntreanBerubah: induk menahan tombol Simpan selama ada berkas yang belum diunggah atau sedang diunggah
- */
 export function DokumentasiGaleri({
   kegiatan,
   bacaSaja = false,
@@ -87,9 +79,6 @@ export function DokumentasiGaleri({
 }) {
   const bisaUbah = kegiatan.bisaUbah && !bacaSaja;
 
-  /**
-   * Admin boleh menghapus dokumentasi walau tidak bisa mengunggah atau menggantinya, juga di tampilan baca saja
-   */
   const bisaHapus = bisaUbah || !!kegiatan.bisaHapusDokumentasi;
   const antrean = useAntreanUnggah(kegiatan.dokumentasi.length);
   const statusAntrean: StatusAntrean = antrean.berjalan
@@ -109,9 +98,6 @@ export function DokumentasiGaleri({
   const [akanDihapus, setAkanDihapus] = useState<Dokumentasi | null>(null);
   const dipratinjau = indeksPratinjau === null ? null : foto[indeksPratinjau];
 
-  /**
-   * Berkas langsung diunggah begitu dipilih; yang berhasil pindah ke galeri, yang gagal tetap di daftar dengan pesannya
-   */
   const tambahDanUnggah = async (berkas: File[]) => {
     const baru = antrean.tambah(berkas);
     if (!baru.some((it) => it.status === "menunggu")) return;

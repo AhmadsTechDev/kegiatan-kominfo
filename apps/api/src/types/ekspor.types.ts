@@ -2,9 +2,6 @@ import type { StatusPelaksanaan } from "./umum.types";
 
 export type FormatEkspor = "pdf";
 
-/**
- * Satu baris kegiatan di berkas ekspor
- */
 export type BarisEkspor = {
   id: number;
   judul: string;
@@ -25,7 +22,4 @@ export type BarisEkspor = {
   statusPelaksanaan: StatusPelaksanaan;
 };
 
-/**
- * Keterangan laporan: periode, pembuat, dan waktu dibuat
- */
 export type InfoEkspor = { periode: string; dibuatOleh: string; dibuatPada: Date };

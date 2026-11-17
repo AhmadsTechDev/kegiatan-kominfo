@@ -12,10 +12,6 @@ import { aktifkanAkun, getInfoAktivasi, tautanRusak, tokenTidakBerlaku } from ".
 import { KepalaKartu } from "./kartu-publik";
 import { FormSandiBaru, Keadaan, NADA_SUKSES, TautanTidakBerlaku } from "./form-sandi-baru";
 
-/**
- * Aktivasi akun dari tautan email: cek token lalu buat kata sandi pertama
- */
-
 const PESAN_TIDAK_BERLAKU = "Tautan aktivasi sudah kedaluwarsa, sudah pernah dipakai, atau tidak lengkap. Minta administrator mengirim ulang undangan.";
 
 export function AktivasiForm() {
@@ -25,10 +21,6 @@ export function AktivasiForm() {
     mutationFn: async (password: string) => {
       const hasil = await aktifkanAkun(token, password);
 
-      /**
-       * Bila browser ini masih login sebagai akun lain (mis. admin yang mengundang), keluarkan dulu.
-       * Tanpa ini "Masuk sekarang" langsung dialihkan ke dashboard akun lama
-       */
       await authClient.signOut().catch(() => undefined);
       return hasil;
     },

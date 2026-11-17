@@ -8,10 +8,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { formatUkuran } from "@/utils/format";
 import { cn } from "@/utils/cn";
 
-/**
- * Area seret-lepas untuk unggah foto atau PDF; proses unggah diurus pemanggil
- */
-
 export type StatusUnggah = "menunggu" | "mengunggah" | "berhasil" | "gagal";
 
 export type ItemUnggah = {
@@ -29,7 +25,6 @@ type FileDropzoneProps = {
   items: ItemUnggah[];
   onTambah: (berkas: File[]) => void;
   onHapus: (id: string) => void;
-  /** Bila diisi, berkas tidak langsung diunggah: tombol Unggah muncul setelah ada berkas yang menunggu */
   onUnggah?: () => void;
   sisa: number;
   disabled?: boolean;
@@ -72,7 +67,6 @@ export function FileDropzone({ items, onTambah, onHapus, onUnggah, sisa, disable
         <span aria-hidden className="flex size-10 items-center justify-center rounded-lg bg-secondary text-primary">
           <Upload className="size-5" />
         </span>
-        {/* Layar sentuh tidak bisa menyeret berkas, cukup tombol Pilih berkas */}
         <p className="text-sm font-semibold pointer-coarse:hidden">Seret berkas ke sini atau pilih berkas</p>
         <p id={idKeterangan} className="text-xs text-muted-foreground">
           JPEG, PNG, WebP, atau PDF · Maksimal 20 MB per berkas ·{" "}

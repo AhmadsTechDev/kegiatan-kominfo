@@ -1,13 +1,13 @@
 import { Elysia } from "elysia";
-import { NotifikasiController } from "@/controllers/notifikasi.controller";
 import { authPlugin } from "@/plugins/auth.plugin";
+import { NotifikasiService } from "@/services/notifikasi.service";
 import { NotifikasiValidator } from "@/validators/notifikasi.validator";
 
-/**
- * Notifikasi dalam aplikasi milik user yang sedang masuk (semua role; isinya hanya miliknya sendiri)
- */
 export const notifikasiRoutes = new Elysia({ prefix: "/notifikasi" })
   .use(authPlugin)
-  .get("/", NotifikasiController.daftar, { auth: true })
-  .post("/baca-semua", NotifikasiController.bacaSemua, { auth: true })
-  .post("/:id/baca", NotifikasiController.baca, { auth: true, params: NotifikasiValidator.params });
+  .get("/", ({ user }) => NotifikasiService.daftar(user.id), { auth: true })
+  .post("/baca-semua", ({ user }) => NotifikasiService.baca(user.id), { auth: true })
+  .post("/:id/baca", ({ params, user }) => NotifikasiService.baca(user.id, params.id), {
+    auth: true,
+    params: NotifikasiValidator.params,
+  });

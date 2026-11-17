@@ -11,51 +11,47 @@ import { Button } from "@/components/ui/button";
 import { formatJam, formatRentangTanggal } from "@/utils/format";
 import type { KegiatanRingkas } from "../types";
 
-/**
- * Panel kegiatan terdekat yang akan dilaksanakan
- */
-
 const kolom: DataTableColumn<KegiatanRingkas>[] = [
   {
     id: "judul",
     header: "Kegiatan",
-    cell: ({ row }) => (
+    cell: (k) => (
       <div className="flex max-w-72 min-w-44 flex-col gap-0.5 whitespace-normal">
-        <Link href={`/kegiatan/${row.original.id}`} className="font-semibold text-foreground hover:text-primary hover:underline">
-          {row.original.judul}
+        <Link href={`/kegiatan/${k.id}`} className="font-semibold text-foreground hover:text-primary hover:underline">
+          {k.judul}
         </Link>
-        <span className="text-xs text-muted-foreground">{row.original.jenis}</span>
+        <span className="text-xs text-muted-foreground">{k.jenis}</span>
       </div>
     ),
   },
   {
     id: "bidang",
     header: "Bidang",
-    cell: ({ row }) => <UnitChip className="max-w-52 min-w-32 whitespace-normal">{row.original.bidang}</UnitChip>,
+    cell: (k) => <UnitChip className="max-w-52 min-w-32 whitespace-normal">{k.bidang}</UnitChip>,
   },
   {
     id: "tanggal",
     header: "Tanggal",
-    cell: ({ row }) => (
+    cell: (k) => (
       <span className="tabular-nums">
-        {formatRentangTanggal(row.original.tglMulai, row.original.tglSelesai)}
-        <span className="block text-xs text-muted-foreground">{formatJam(row.original.tglMulai)}</span>
+        {formatRentangTanggal(k.tglMulai, k.tglSelesai)}
+        <span className="block text-xs text-muted-foreground">{formatJam(k.tglMulai)}</span>
       </span>
     ),
   },
   {
     id: "lokasi",
     header: "Lokasi",
-    cell: ({ row }) => <span className="block max-w-44 min-w-28 whitespace-normal">{row.original.lokasiNama ?? "–"}</span>,
+    cell: (k) => <span className="block max-w-44 min-w-28 whitespace-normal">{k.lokasiNama ?? "–"}</span>,
   },
-  { id: "status", header: "Status", cell: ({ row }) => <StatusBadge status={row.original.statusPelaksanaan} /> },
+  { id: "status", header: "Status", cell: (k) => <StatusBadge status={k.statusPelaksanaan} /> },
   {
     id: "pj",
     header: "Penanggung jawab",
-    cell: ({ row }) => (
+    cell: (k) => (
       <span className="flex items-center gap-2">
-        <AvatarInisial nama={row.original.penanggungJawab} className="size-7" />
-        {row.original.penanggungJawab}
+        <AvatarInisial nama={k.penanggungJawab} className="size-7" />
+        {k.penanggungJawab}
       </span>
     ),
   },

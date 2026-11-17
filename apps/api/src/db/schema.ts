@@ -13,59 +13,35 @@ import {
   varchar,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import type { IsiDraf } from "@/types/draf-kegiatan.types";
+import type { Role, Tema } from "@/types/umum.types";
+import type { IsiDraf } from "@/validators/draf-kegiatan.validator";
 
-/**
- * Skema basis data untuk Drizzle ORM. Setiap pgTable mewakili satu tabel PostgreSQL:
- * kunci objek (mis. emailVerified) dipakai di kode TypeScript, teks di dalamnya (mis. "email_verified") adalah nama kolom asli.
- *
- * Perubahan struktur: ubah file ini, lalu `bun run db:generate` untuk membuat file migrasi SQL baru di folder drizzle/.
- */
-
-/**
- * Kolom waktu standar: timestamp dengan zona waktu, presisi milidetik
- */
 const waktu = (nama: string) => timestamp(nama, { withTimezone: true, precision: 3 });
 
-/**
- * created_at otomatis saat baris dibuat
- */
 const dibuatPada = () => waktu("created_at").notNull().defaultNow();
 
-/**
- * updated_at otomatis saat baris dibuat dan diperbarui oleh aplikasi
- */
 const diubahPada = () =>
   waktu("updated_at")
     .notNull()
     .defaultNow()
     .$onUpdate(() => new Date());
 
-/**
- * Kunci utama angka yang bertambah otomatis
- */
 const idAngka = () => integer("id").primaryKey().generatedByDefaultAsIdentity();
 
 export const statusPermintaan = pgEnum("status_permintaan", ["MENUNGGU", "DISETUJUI", "DITOLAK"]);
 export const jenisPengingat = pgEnum("jenis_pengingat", ["H_MINUS_1", "DOKUMENTASI"]);
 export type JenisPengingat = (typeof jenisPengingat.enumValues)[number];
 
-/**
- * Autentikasi (dipakai Better Auth). Login hanya dengan email; NIP disimpan di pegawai.
- * Status akun diturunkan, tidak disimpan: MENUNGGU_AKTIVASI (belum punya kredensial), AKTIF, NONAKTIF (banned).
- * Token aktivasi, reset sandi, dan ganti email disimpan di tabel verification sebagai hash SHA-256 (lihat utils/token.ts).
- */
 export const user = pgTable("user", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 150 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique("user_email_unique"),
   emailVerified: boolean("email_verified").notNull().default(false),
-  /** Email baru yang menunggu diverifikasi; email lama tetap dipakai sampai verifikasi selesai */
   emailBaru: varchar("email_baru", { length: 255 }),
   image: text("image"),
   createdAt: dibuatPada(),
   updatedAt: diubahPada(),
-  role: varchar("role", { length: 20 }).notNull().default("PEGAWAI"),
+  role: varchar("role", { length: 20 }).$type<Role>().notNull().default("PEGAWAI"),
   banned: boolean("banned").notNull().default(false),
   banReason: text("ban_reason"),
   banExpires: waktu("ban_expires"),
@@ -75,14 +51,11 @@ export const user = pgTable("user", {
   lockedUntil: waktu("locked_until"),
 });
 
-/**
- * Preferensi tampilan dan notifikasi, terpisah dari data autentikasi. Baris dibuat saat pertama diubah.
- */
 export const preferensiPengguna = pgTable("preferensi_pengguna", {
   userId: varchar("user_id", { length: 36 })
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
-  tema: varchar("tema", { length: 10 }).notNull().default("system"),
+  tema: varchar("tema", { length: 10 }).$type<Tema>().notNull().default("system"),
   notifPengingatKegiatan: boolean("notif_pengingat_kegiatan").notNull().default(true),
   notifPengingatDokumentasi: boolean("notif_pengingat_dokumentasi").notNull().default(true),
   updatedAt: diubahPada(),
@@ -141,10 +114,6 @@ export const verification = pgTable(
   (t) => [index("verification_identifier_idx").on(t.identifier)],
 );
 
-/**
- * Bidang dan sub bidang dalam satu tabel. Tanpa induk berarti bidang, dengan induk berarti sub bidang (maksimal dua tingkat).
- * Data master dinonaktifkan lewat kolom aktif; bidang yang belum dipakai boleh dihapus.
- */
 export const bidang = pgTable(
   "bidang",
   {
@@ -169,8 +138,7 @@ export const pegawai = pgTable(
       .notNull()
       .references(() => bidang.id, { onDelete: "restrict" }),
     aktif: boolean("aktif").notNull().default(true),
-    /** Role bawaan saat pegawai diundang (PEGAWAI, PIMPINAN, atau ADMIN); role sebenarnya ada di akun */
-    roleUndangan: varchar("role_undangan", { length: 20 }).notNull().default("PEGAWAI"),
+    roleUndangan: varchar("role_undangan", { length: 20 }).$type<Role>().notNull().default("PEGAWAI"),
     createdAt: dibuatPada(),
     updatedAt: diubahPada(),
   },
@@ -185,9 +153,6 @@ export const jenisKegiatan = pgTable("jenis_kegiatan", {
   updatedAt: diubahPada(),
 });
 
-/**
- * Kegiatan dan turunannya. Waktu disimpan UTC (timestamptz). updatedAt dipakai sebagai "versi" untuk deteksi bentrok ubah (HTTP 409).
- */
 export const kegiatan = pgTable(
   "kegiatan",
   {
@@ -315,9 +280,6 @@ export const pengingat = pgTable(
   (t) => [unique("pengingat_kegiatan_jenis_user_uq").on(t.kegiatanId, t.jenis, t.userId), index("pengingat_user_id_idx").on(t.userId)],
 );
 
-/**
- * Notifikasi dalam aplikasi (ikon lonceng). Saat ini dibuat ketika pimpinan/admin memeriksa kegiatan.
- */
 export const notifikasi = pgTable(
   "notifikasi",
   {

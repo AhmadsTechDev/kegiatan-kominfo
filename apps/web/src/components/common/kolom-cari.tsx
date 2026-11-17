@@ -5,10 +5,6 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils/cn";
 
-/**
- * Kolom pencarian dengan jeda ketik 300 ms agar kueri tidak dikirim tiap ketukan
- */
-
 export function KolomCari({
   id,
   value,
@@ -17,7 +13,6 @@ export function KolomCari({
   label,
   className,
 }: {
-  /** Diisi bila ada label terlihat (htmlFor); aria-label tetap dipasang untuk kolom tanpa label */
   id?: string;
   value: string;
   onChange: (v: string) => void;

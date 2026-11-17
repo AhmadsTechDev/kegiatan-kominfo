@@ -1,9 +1,5 @@
 import type { StatusPelaksanaan } from "@/components/common/status-badge";
 
-/**
- * Tipe data dashboard: statistik dinas dan aktivitas pegawai
- */
-
 export type KegiatanRingkas = {
   id: number;
   judul: string;
@@ -33,7 +29,6 @@ export type DashboardData = {
   sebaranJenis: { id: number; nama: string; jumlah: number }[];
   peta: (KegiatanRingkas & { lat: number; lng: number })[];
   akanDatang: KegiatanRingkas[];
-  /** Hanya terisi untuk ADMIN */
   admin: { menungguAktivasi: number } | null;
 };
 

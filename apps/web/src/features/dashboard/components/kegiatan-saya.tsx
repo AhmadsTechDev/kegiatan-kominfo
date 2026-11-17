@@ -12,10 +12,6 @@ import { cn } from "@/utils/cn";
 import { useKegiatanSaya } from "../hooks/use-dashboard";
 import type { KegiatanRingkas } from "../types";
 
-/**
- * Panel tugas pegawai: kegiatan yang perlu dokumentasi dan agenda mendatang
- */
-
 function JudulKolom({ ikon: Ikon, judul, jumlah, nada }: { ikon: typeof FileWarning; judul: string; jumlah: number; nada: string }) {
   return (
     <div className="flex items-center gap-2">

@@ -1,31 +1,35 @@
 "use client";
 
-import { tableFeatures, useTable, type ColumnDef, type RowData } from "@tanstack/react-table";
 import { Inbox, type LucideIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/utils/cn";
 import { EmptyState } from "./empty-state";
 
-/**
- * Tabel data generik dengan skeleton, kartu di ponsel, dan keadaan kosong
- */
+export type DataTableColumn<TData> = {
+  id: string;
+  header: React.ReactNode;
+  cell: (row: TData) => React.ReactNode;
+};
 
-export const dataTableFeatures = tableFeatures({});
-export type DataTableColumn<TData extends RowData> = ColumnDef<typeof dataTableFeatures, TData>;
+export type DataTableEmpty = {
+  icon?: LucideIcon;
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+};
 
-type DataTableProps<TData extends RowData> = {
+type DataTableProps<TData> = {
   columns: DataTableColumn<TData>[];
   data: TData[];
   isLoading?: boolean;
   skeletonRows?: number;
-  empty?: { icon?: LucideIcon; title: string; description?: string; action?: React.ReactNode };
+  empty?: DataTableEmpty;
   renderMobileCard?: (row: TData) => React.ReactNode;
   getRowKey?: (row: TData, index: number) => string;
   caption?: string;
   animasiMasuk?: boolean;
   bleed?: boolean;
-  /** Jarak antarkolom lebih rapat, untuk tabel dengan banyak kolom agar tidak perlu digeser */
   padat?: boolean;
   className?: string;
 };
@@ -50,15 +54,7 @@ export function DataTableSkeleton({ rows = 5, className }: { rows?: number; clas
   );
 }
 
-/**
- * Tabel data serbaguna berbasis TanStack Table, dipakai hampir di semua halaman daftar.
- * Generic <TData> membuat tabel ini bisa menerima baris apa saja (kegiatan, akun, pegawai) dengan tipe yang tetap aman.
- * Sudah menangani keadaan memuat (skeleton), kosong (EmptyState), dan tampilan kartu di HP (renderMobileCard).
- * @param columns definisi kolom (header dan cara menampilkan sel)
- * @param data baris yang ditampilkan
- * @param renderMobileCard bila diisi, layar sempit menampilkan kartu alih-alih tabel
- */
-export function DataTable<TData extends RowData>({
+export function DataTable<TData>({
   columns,
   data,
   isLoading,
@@ -72,13 +68,6 @@ export function DataTable<TData extends RowData>({
   padat,
   className,
 }: DataTableProps<TData>) {
-  const table = useTable({
-    features: dataTableFeatures,
-    columns,
-    data,
-    getRowId: getRowKey ? (row, index) => getRowKey(row, index) : undefined,
-  });
-
   if (isLoading) return <DataTableSkeleton rows={skeletonRows} className={cn(bleed && "px-4 pb-4", className)} />;
 
   if (data.length === 0) {
@@ -99,22 +88,24 @@ export function DataTable<TData extends RowData>({
       <Table className={cn(renderMobileCard && "hidden md:table")}>
         {caption && <caption className="sr-only">{caption}</caption>}
         <TableHeader>
-          {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id} className="border-y bg-background hover:bg-background">
-              {group.headers.map((header) => (
-                <TableHead key={header.id} scope="col" className={cn("h-10 px-4 text-xs font-bold tracking-wider text-muted-foreground uppercase", padat && "px-3")}>
-                  {header.isPlaceholder ? null : <table.FlexRender header={header} />}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
+          <TableRow className="border-y bg-background hover:bg-background">
+            {columns.map((kolom) => (
+              <TableHead
+                key={kolom.id}
+                scope="col"
+                className={cn("h-10 px-4 text-xs font-bold tracking-wider text-muted-foreground uppercase", padat && "px-3")}
+              >
+                {kolom.header}
+              </TableHead>
+            ))}
+          </TableRow>
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows.map((row, i) => (
-            <TableRow key={row.id} {...animasiBaris(animasiMasuk, i)}>
-              {row.getAllCells().map((cell) => (
-                <TableCell key={cell.id} className={cn("px-4 py-3", padat && "px-3")}>
-                  <table.FlexRender cell={cell} />
+          {data.map((row, i) => (
+            <TableRow key={getRowKey?.(row, i) ?? i} {...animasiBaris(animasiMasuk, i)}>
+              {columns.map((kolom) => (
+                <TableCell key={kolom.id} className={cn("px-4 py-3", padat && "px-3")}>
+                  {kolom.cell(row)}
                 </TableCell>
               ))}
             </TableRow>

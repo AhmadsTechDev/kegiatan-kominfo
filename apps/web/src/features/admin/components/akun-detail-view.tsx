@@ -22,15 +22,10 @@ import type { AkunDetail } from "../types";
 import { AdminGuard } from "./admin-shared";
 import { dariDetail, ItemAksiAkun, useAksiAkun, type AkunRingkas, type JenisAksi } from "./akun-aksi";
 
-/**
- * Detail satu akun: identitas, status, kepegawaian, undangan, dan sesi
- */
-
 function Kepala({ a, idSaya, buka }: { a: AkunDetail; idSaya?: string; buka: (j: JenisAksi, akun: AkunRingkas) => void }) {
   const ringkas = dariDetail(a);
   return (
     <Panel>
-      {/* Tanpa PanelHeader, jadi padding atas ditambahkan agar sama dengan bawah */}
       <PanelBody className="flex flex-col gap-4 pt-4 sm:flex-row sm:items-center md:pt-5">
         <AvatarInisial nama={a.name} src={a.foto} className="size-16 rounded-2xl text-lg" />
         <div className="min-w-0 flex-1">

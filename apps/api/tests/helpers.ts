@@ -1,7 +1,7 @@
 import { app } from "@/app";
 import { eq } from "drizzle-orm";
 import { bidang, jenisKegiatan, user } from "@/db/schema";
-import { db } from "@/lib/db";
+import { db } from "@/db";
 import type { Role } from "@/types/umum.types";
 import { suratTerakhir, tokenDari } from "./surel-palsu";
 
@@ -13,20 +13,15 @@ type Opsi = {
   form?: FormData;
   cookie?: string;
   ip?: string;
-  // Header Origin; null = tanpa Origin (bawaan: origin frontend)
   origin?: string | null;
 };
 
-// Angka acak bulat antara a dan b (termasuk keduanya)
 const acak = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
 
-// IP palsu acak, agar pembatas laju per IP tidak saling mengganggu antar-uji
 export const ipAcak = () => `10.${acak(0, 255)}.${acak(0, 255)}.${acak(1, 254)}`;
 
-// Email unik untuk akun uji
 export const emailAcak = (awalan = "uji") => `${awalan}-${crypto.randomUUID().slice(0, 8)}@uji.local`;
 
-// NIP 18 digit yang sah (tanggal lahir, tahun pengangkatan, jenis kelamin, nomor urut) dan hampir pasti unik
 export function nipAcak() {
   const thnLahir = acak(1970, 1995);
   const lahir = `${thnLahir}${String(acak(1, 12)).padStart(2, "0")}${String(acak(1, 28)).padStart(2, "0")}`;
@@ -34,7 +29,6 @@ export function nipAcak() {
   return `${lahir}${tmt}${acak(1, 2)}${String(acak(1, 999)).padStart(3, "0")}`;
 }
 
-// Memanggil API lewat app.handle (tanpa membuka port). Mengembalikan status, data (JSON/teks/bytes), dan header
 export async function panggil(path: string, opsi: Opsi = {}) {
   const headers = new Headers({ "x-forwarded-for": opsi.ip ?? ipAcak() });
   const origin = opsi.origin === undefined ? process.env.FRONTEND_URL! : opsi.origin;
@@ -52,7 +46,6 @@ export async function panggil(path: string, opsi: Opsi = {}) {
   return { status: res.status, data: data as any, headers: res.headers };
 }
 
-// Login dengan email; mengembalikan respons beserta cookie sesinya
 export async function login(email: string, password: string, ip?: string) {
   const res = await panggil("/auth/sign-in/email", { json: { email, password }, ip });
   const cookie = res.headers
@@ -62,23 +55,19 @@ export async function login(email: string, password: string, ip?: string) {
   return { ...res, cookie };
 }
 
-// Token dari tautan email terakhir yang dikirim ke alamat tertentu
 export const tokenTerakhir = (email: string) => tokenDari(suratTerakhir(email)!);
 
-// Membuat kata sandi lewat tautan aktivasi terakhir yang dikirim ke email tersebut
 export async function aktifkan(email: string, password = SANDI) {
   const res = await panggil("/aktivasi", { json: { token: tokenTerakhir(email), password } });
   if (res.status !== 200) throw new Error(`Aktivasi gagal ${res.status}: ${JSON.stringify(res.data)}`);
 }
 
-// Isian form Buat akun yang sah
 export async function isiAkun(ubah: Record<string, unknown> = {}) {
   return { name: `Akun Uji ${crypto.randomUUID().slice(0, 4)}`, email: emailAcak(), bidangId: await idUnit("SEKSI-DATA"), role: "PEGAWAI", ...ubah };
 }
 
 let cookieAdmin: string | undefined;
 
-// Cookie admin bawaan dari seed (login sekali lalu disimpan)
 export async function loginAdmin() {
   if (!cookieAdmin) {
     const res = await login(process.env.SEED_ADMIN_EMAIL!, process.env.SEED_ADMIN_PASSWORD!);
@@ -88,19 +77,16 @@ export async function loginAdmin() {
   return cookieAdmin;
 }
 
-// Id bidang dari kodenya
 export async function idUnit(kode: string) {
   const [b] = await db.select({ id: bidang.id }).from(bidang).where(eq(bidang.kode, kode));
   return b!.id;
 }
 
-// Id jenis kegiatan dari namanya
 export async function idJenis(nama = "Rapat") {
   const [j] = await db.select({ id: jenisKegiatan.id }).from(jenisKegiatan).where(eq(jenisKegiatan.nama, nama));
   return j!.id;
 }
 
-// Membuat unit tertinggi baru (Bidang) dengan nama unik; berguna agar angka rekap uji tidak tercampur
 export async function buatBidang(awalan = "Bidang Uji") {
   const admin = await loginAdmin();
   const res = await panggil("/admin/bidang", { cookie: admin, json: { nama: `${awalan} ${crypto.randomUUID().slice(0, 6)}`, parentId: null } });
@@ -111,7 +97,6 @@ export async function buatBidang(awalan = "Bidang Uji") {
 
 type Pengguna = { cookie: string; userId: string; pegawaiId: number; email: string; nip: string };
 
-// Membuat akun (beserta data pegawainya) dengan role tertentu, mengaktifkannya lewat email undangan, lalu login
 export async function buatPengguna({ role = "PEGAWAI", unitId }: { role?: Role; unitId?: number } = {}): Promise<Pengguna> {
   const admin = await loginAdmin();
   const nip = nipAcak();
@@ -126,10 +111,8 @@ export async function buatPengguna({ role = "PEGAWAI", unitId }: { role?: Role; 
   return { cookie: masuk.cookie, userId: akun.data.id, pegawaiId: pegawaiId!, email, nip };
 }
 
-// Waktu ISO sekian jam dari sekarang (negatif = lampau)
 export const jamLagi = (jam: number) => new Date(Date.now() + jam * 3600_000).toISOString();
 
-// Isian kegiatan yang sah untuk penanggung jawab tertentu
 export async function isiKegiatan(penanggungJawabId: number, ubah: Record<string, unknown> = {}) {
   return {
     judul: `Kegiatan uji ${crypto.randomUUID().slice(0, 6)}`,
@@ -143,17 +126,14 @@ export async function isiKegiatan(penanggungJawabId: number, ubah: Record<string
   };
 }
 
-// Membuat kegiatan lewat API dan memastikan berhasil
 export async function buatKegiatan(cookie: string, isi: Record<string, unknown>) {
   const res = await panggil("/kegiatan", { cookie, json: isi });
   if (res.status !== 201) throw new Error(`Buat kegiatan gagal ${res.status}: ${JSON.stringify(res.data)}`);
   return res.data as { id: number; updatedAt: string };
 }
 
-// Berkas PNG 1x1 piksel yang sah
 export const PNG = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="), (c) => c.charCodeAt(0));
 
-// FormData berisi satu berkas di field "berkas"
 export function formBerkas(isi: Uint8Array, nama = "foto.png") {
   const fd = new FormData();
   fd.append("berkas", new File([isi], nama));

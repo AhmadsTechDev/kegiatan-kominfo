@@ -20,9 +20,9 @@ import { useBidangAdmin, useHapusBidang, useSimpanBidang } from "../hooks/use-ad
 import type { BidangAdmin } from "../types";
 import { AksiBaris, BadgeAktif, KartuMaster, KolomCari, PilihanTab, terapkanGalatServer } from "./admin-shared";
 
-/**
- * Tab kelola bidang dan sub bidang (tanpa induk = bidang, dengan induk = sub bidang)
- */
+export type TingkatUnit = "utama" | "turunan";
+
+const SEMUA = "semua";
 
 const schema = z.object({
   kode: z
@@ -34,9 +34,6 @@ const schema = z.object({
   parentId: z.string(),
 });
 type Nilai = z.infer<typeof schema>;
-
-export type TingkatUnit = "utama" | "turunan";
-const SEMUA = "semua";
 
 function SelNamaUnit({ u, turunan }: { u: BidangAdmin; turunan: boolean }) {
   return (
@@ -58,9 +55,6 @@ function SelNamaUnit({ u, turunan }: { u: BidangAdmin; turunan: boolean }) {
   );
 }
 
-/**
- * Tingkat mengikuti tab: tab Bidang membuat bidang (tanpa induk), tab Sub bidang membuat sub bidang di bawah satu bidang
- */
 function UnitDialog({ unit, semua, tingkat, onClose }: { unit: BidangAdmin | "baru"; semua: BidangAdmin[]; tingkat: TingkatUnit; onClose: () => void }) {
   const simpan = useSimpanBidang();
   const [galat, setGalat] = useState<string | null>(null);
@@ -207,15 +201,15 @@ export function BidangTab({
 
   const kolom = useMemo<DataTableColumn<BidangAdmin>[]>(
     () => [
-      { id: "nama", header: turunan ? "Sub bidang" : "Bidang", cell: ({ row }) => <SelNamaUnit u={row.original} turunan={turunan} /> },
+      { id: "nama", header: turunan ? "Sub bidang" : "Bidang", cell: (u) => <SelNamaUnit u={u} turunan={turunan} /> },
       ...(turunan
         ? [
             {
               id: "induk",
               header: "Di bawah",
-              cell: ({ row }: { row: { original: BidangAdmin } }) => (
+              cell: (u: BidangAdmin) => (
                 <span className="block max-w-72 min-w-40 text-sm whitespace-normal text-muted-foreground">
-                  {row.original.parentId !== null ? perId.get(row.original.parentId)?.nama : "-"}
+                  {u.parentId !== null ? perId.get(u.parentId)?.nama : "-"}
                 </span>
               ),
             },
@@ -226,13 +220,13 @@ export function BidangTab({
             {
               id: "turunan",
               header: "Sub bidang",
-              cell: ({ row }: { row: { original: BidangAdmin } }) => {
-                const n = jumlahTurunan.get(row.original.id) ?? 0;
+              cell: (u: BidangAdmin) => {
+                const n = jumlahTurunan.get(u.id) ?? 0;
                 if (!n) return <span className="text-sm text-muted-foreground">-</span>;
                 return (
                   <button
                     type="button"
-                    onClick={() => onLihatTurunan?.(row.original.id)}
+                    onClick={() => onLihatTurunan?.(u.id)}
                     className="inline-flex items-center gap-1 rounded text-sm font-medium whitespace-nowrap text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
                     {n} sub bidang
@@ -245,30 +239,27 @@ export function BidangTab({
         : []),
       {
         id: "pegawai",
-        header: () => <span className="block text-right">Pegawai aktif</span>,
-        cell: ({ row }) => (
-          <span className={cn("flex items-center justify-end gap-1.5 tabular-nums", row.original.jumlahPegawaiAktif === 0 && "text-muted-foreground")}>
+        header: <span className="block text-right">Pegawai aktif</span>,
+        cell: (u) => (
+          <span className={cn("flex items-center justify-end gap-1.5 tabular-nums", u.jumlahPegawaiAktif === 0 && "text-muted-foreground")}>
             <Users aria-hidden className="size-3.5 text-muted-foreground" />
-            {formatAngka(row.original.jumlahPegawaiAktif)}
+            {formatAngka(u.jumlahPegawaiAktif)}
           </span>
         ),
       },
-      { id: "status", header: "Status", cell: ({ row }) => <BadgeAktif aktif={row.original.aktif} /> },
+      { id: "status", header: "Status", cell: (u) => <BadgeAktif aktif={u.aktif} /> },
       {
         id: "aksi",
-        header: () => <span className="block text-right">Aksi</span>,
-        cell: ({ row }) => {
-          const u = row.original;
-          return (
-            <AksiBaris
-              nama={u.nama}
-              aktif={u.aktif}
-              onUbah={() => setDialog(u)}
-              onUbahStatus={() => (u.aktif ? setKonfirmasi(u) : ubahStatus(u, true))}
-              onHapus={u.bisaDihapus ? () => setHapusTarget(u) : undefined}
-            />
-          );
-        },
+        header: <span className="block text-right">Aksi</span>,
+        cell: (u) => (
+          <AksiBaris
+            nama={u.nama}
+            aktif={u.aktif}
+            onUbah={() => setDialog(u)}
+            onUbahStatus={() => (u.aktif ? setKonfirmasi(u) : ubahStatus(u, true))}
+            onHapus={u.bisaDihapus ? () => setHapusTarget(u) : undefined}
+          />
+        ),
       },
     ],
     [turunan, perId, jumlahTurunan, onLihatTurunan, ubahStatus],

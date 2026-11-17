@@ -3,11 +3,6 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { cn } from "@/utils/cn";
 
-/**
- * Logo dan nama dinas di kepala bilah samping (tautan ke beranda).
- * Mode gelap: tanpa lingkaran putih, lambang berlatar transparan dan sudah punya isian putih sendiri
- */
-
 export function Brand({ hideTextClassName }: { hideTextClassName?: string }) {
   return (
     <Link

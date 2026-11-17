@@ -2,10 +2,6 @@ import { apiClient } from "@/lib/api-client";
 import type { NilaiFilter } from "@/components/common/filter-bar";
 import type { FormatEkspor, RekapData, SatuanRekap } from "../types";
 
-/**
- * Pemanggil endpoint rekap dan unduh ekspor PDF
- */
-
 function paramsFilter(filter: NilaiFilter) {
   const { q, dari, sampai, unit, jenis, status, pegawai } = filter;
   return Object.fromEntries(
@@ -13,14 +9,14 @@ function paramsFilter(filter: NilaiFilter) {
   );
 }
 
-export async function getRekap(filter: NilaiFilter, satuan: SatuanRekap) {
-  const { data } = await apiClient.get<RekapData>("/rekap", { params: { ...paramsFilter(filter), satuan } });
-  return data;
-}
-
 function namaBerkas(disposisi: string | undefined, format: FormatEkspor) {
   const cocok = disposisi?.match(/filename="([^"]+)"/);
   return cocok?.[1] ?? `rekap-kegiatan.${format}`;
+}
+
+export async function getRekap(filter: NilaiFilter, satuan: SatuanRekap) {
+  const { data } = await apiClient.get<RekapData>("/rekap", { params: { ...paramsFilter(filter), satuan } });
+  return data;
 }
 
 export async function unduhEkspor(format: FormatEkspor, filter: NilaiFilter) {

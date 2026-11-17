@@ -8,10 +8,6 @@ import { formatAngka } from "@/utils/format";
 import { cn } from "@/utils/cn";
 import type { JumlahStatus, RekapData } from "../types";
 
-/**
- * Tabel rekap per bidang: sebaran status, total kegiatan, dan peserta
- */
-
 const KOLOM: { kunci: keyof JumlahStatus; label: string }[] = [
   { kunci: "akanDatang", label: "Akan datang" },
   { kunci: "berlangsung", label: "Berlangsung" },
@@ -35,9 +31,6 @@ function SelAngka({ nilai, tebal }: { nilai: number; tebal?: boolean }) {
   );
 }
 
-/**
- * Batang di sel Total dibandingkan dengan bidang terbanyak, agar bidang tersibuk terlihat tanpa membaca semua angka
- */
 function SelTotal({ nilai, maks }: { nilai: number; maks: number }) {
   return (
     <TableCell className="text-right tabular-nums">

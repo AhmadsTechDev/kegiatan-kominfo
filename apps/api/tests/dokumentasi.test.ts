@@ -1,8 +1,6 @@
-// Uji unggah dokumentasi: jenis berkas dicek dari isinya, batas 20 MB dan 10 berkas, hak akses, unduh, ganti, hapus
 import { describe, expect, test } from "bun:test";
 import { buatKegiatan, buatPengguna, formBerkas, idUnit, isiKegiatan, loginAdmin, panggil, PNG } from "./helpers";
 
-// Pegawai beserta satu kegiatan miliknya
 async function siapkan() {
   const u = await buatPengguna();
   const k = await buatKegiatan(u.cookie, await isiKegiatan(u.pegawaiId!));
@@ -108,7 +106,6 @@ describe("unduh, ganti, hapus dokumentasi", () => {
     expect((await panggil(`/kegiatan/${k.id}`, { cookie: admin })).data.bisaHapusDokumentasi).toBe(true);
     expect((await panggil(`/dokumentasi/${d.data.id}`, { method: "DELETE", cookie: admin })).status).toBe(204);
     expect((await panggil(`/dokumentasi/${d.data.id}`, { cookie: u.cookie })).status).toBe(404);
-    // Admin tetap tidak bisa mengganti berkas
     const d2 = await panggil(`/kegiatan/${k.id}/dokumentasi`, { cookie: u.cookie, form: formBerkas(PNG) });
     expect((await panggil(`/dokumentasi/${d2.data.id}`, { method: "PUT", cookie: admin, form: formBerkas(PNG) })).status).toBe(403);
   });

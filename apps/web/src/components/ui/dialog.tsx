@@ -5,24 +5,12 @@ import { cn } from "cn"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
-import { useOpenTerkendali } from "@/hooks/use-tutup-lewat-kembali"
 import { XIcon } from "lucide-react"
 
-/**
- * Komponen dasar shadcn/ui: dialog modal (Radix)
- */
-
-/**
- * Tombol Kembali di HP menutup dialog, bukan meninggalkan halaman
- */
 function Dialog({
-  open,
-  defaultOpen,
-  onOpenChange,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  const [terbuka, ubah] = useOpenTerkendali(open, defaultOpen, onOpenChange)
-  return <DialogPrimitive.Root data-slot="dialog" open={terbuka} onOpenChange={ubah} {...props} />
+  return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
 function DialogTrigger({
