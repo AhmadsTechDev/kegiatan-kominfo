@@ -8,7 +8,7 @@ Aplikasi web untuk mencatat, memantau, dan melaporkan kegiatan dinas. Pegawai me
 | [`apps/web/`](apps/web/README.md) | Antarmuka: Next.js 16 (App Router), Tailwind CSS 4, shadcn/ui, TanStack Query, MapLibre GL |
 | [`docs/api/`](docs/api/README.md) | Dokumentasi API: ringkasan semua endpoint, aturan umum, hak akses, serta rincian header, body, dan respons |
 | [`docs/features/`](docs/features/README.md) | Spesifikasi per fitur: tujuan, kriteria selesai, dan daftar tugas |
-| [`docs/uml/`](docs/uml/README.md) | Diagram UML dalam Mermaid (use case, activity, sequence, class, ERD, state, component, deployment) |
+| [`docs/uml/`](docs/uml/README.md) | Diagram UML dan rancangan sistem dalam Mermaid (use case, activity, sequence, deployment, ERD, arsitektur sistem) |
 | [`docs/PRD.md`](docs/PRD.md) | Kebutuhan produk (FR, NFR, kriteria penerimaan) |
 | [`apps/web/DESIGN.md`](apps/web/DESIGN.md) | Spesifikasi tampilan dan perilaku UI |
 
@@ -32,7 +32,7 @@ Aturan hak akses ditegakkan di backend pada setiap permintaan. Kegiatan di luar 
 4. **Pimpinan memantau** lewat dashboard, kalender, dan rekap, serta boleh menandai kegiatan *Perlu perbaikan* (dengan catatan untuk pegawai).
 5. **Siapa pun mengunduh laporan PDF** berkop dinas sesuai lingkup bacanya.
 
-Alurnya digambar lengkap di [diagram activity](docs/uml/02-activity.md), dan perubahan statusnya di [diagram state](docs/uml/06-state.md).
+Alurnya digambar lengkap di [diagram activity](docs/uml/02-activity.md).
 
 ### Daftar fitur
 
@@ -77,22 +77,20 @@ API REST di `apps/api` (Bun, Elysia, Drizzle, Better Auth), alamat dasar `/api`.
 | Dashboard, kalender, rekap, pantau, ekspor | `/api/dashboard`, `/api/kalender`, `/api/rekap`, `/api/ekspor/kegiatan.pdf` | [api-laporan.md](docs/api/api-laporan.md) |
 | Administrasi | `/api/admin/akun`, `/api/admin/pegawai`, `/api/admin/bidang` | [api-admin.md](docs/api/api-admin.md) |
 
-Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses) → **repository** (query Drizzle). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram class](docs/uml/04-class.md#42-lapisan-backend).
+Arsitektur backend berlapis: **route** (alamat, peran, validasi) → **controller** → **service** (aturan bisnis, hak akses) → **repository** (query Drizzle). Penjelasannya ada di [apps/api/README.md](apps/api/README.md) dan [diagram arsitektur sistem](docs/uml/06-arsitektur.md).
 
 ## Diagram UML
 
-Delapan diagram Mermaid di [docs/uml](docs/uml/README.md), tampil langsung di GitHub dan di VS Code:
+Enam diagram Mermaid di [docs/uml](docs/uml/README.md) yang selaras dengan Laporan KP, tampil langsung di GitHub dan di VS Code:
 
 | Diagram | Menjawab pertanyaan |
 | --- | --- |
-| [Use case](docs/uml/01-use-case.md) | Siapa saja penggunanya, dan apa yang bisa dilakukan masing-masing? |
-| [Activity](docs/uml/02-activity.md) | Bagaimana alur mencatat kegiatan sampai dokumentasi, dan alur akun sampai aktif? |
+| [Use case](docs/uml/01-use-case.md) | Siapa saja aktor sistem, dan apa 14 use case yang dilakukan masing-masing? |
+| [Activity](docs/uml/02-activity.md) | Bagaimana alur login, mencatat kegiatan sampai dokumentasi, memeriksa kegiatan, dan membuat laporan PDF? |
 | [Sequence](docs/uml/03-sequence.md) | Apa yang terjadi antar komponen saat login, aktivasi akun, dan unggah dokumentasi? |
-| [Class](docs/uml/04-class.md) | Apa saja kelas domainnya, dan bagaimana lapisan backend tersusun? |
+| [Deployment](docs/uml/04-deployment.md) | Bagaimana aplikasi dipasang di Render, Supabase, dan Vercel? |
 | [ERD](docs/uml/05-erd.md) | Apa saja tabel database dan relasinya? |
-| [State](docs/uml/06-state.md) | Bagaimana status kegiatan, akun, dan permintaan akun berubah? |
-| [Component](docs/uml/07-component.md) | Apa saja bagian sistem dan layanan luar yang dipakai? |
-| [Deployment](docs/uml/08-deployment.md) | Bagaimana aplikasi dipasang di Render, Supabase, dan Vercel? |
+| [Arsitektur sistem](docs/uml/06-arsitektur.md) | Apa saja bagian sistem frontend, backend, dan layanan luar yang dipakai? |
 
 ## Menjalankan untuk pengembangan
 

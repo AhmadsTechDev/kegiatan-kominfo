@@ -1,4 +1,6 @@
-# 7. Component
+# 6. Arsitektur Sistem
+
+Sesuai **Subbab 4.6.4 (Gambar 4.1)** Laporan KP.
 
 ```mermaid
 flowchart LR

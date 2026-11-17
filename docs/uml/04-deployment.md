@@ -1,6 +1,6 @@
-# 8. Deployment
+# 4. Deployment Diagram
 
-Langkah pemasangannya ada di [README utama](../../README.md).
+Sesuai **Subbab 4.7.4 (Gambar 4.10)** Laporan KP. Langkah pemasangannya ada di [README utama](../../README.md).
 
 ## Pemasangan di Render, Supabase, dan Vercel
 

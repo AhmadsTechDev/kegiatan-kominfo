@@ -103,7 +103,7 @@ Ada dua status yang berbeda:
 | **Pelaksanaan** | Akan datang, Berlangsung, Selesai, Dibatalkan | **Dihitung di backend** dari waktu mulai, waktu selesai, dan pembatalan, lalu dikirim sebagai `statusPelaksanaan`. Antarmuka tidak menghitung sendiri. Tidak bisa dipilih manual; *Dibatalkan* hanya lewat tombol Batalkan |
 | **Pemeriksaan** | Biasa (`terkirim`), Perlu perbaikan | Ditandai pimpinan dengan catatan. Opsional: kegiatan yang tidak ditandai tetap sah. Setiap perubahan kegiatan menghapus tanda *Perlu perbaikan* |
 
-Diagram perubahannya ada di [docs/uml/06-state.md](uml/06-state.md).
+Alurnya dapat dilihat pada [diagram activity](uml/02-activity.md#22-activity-diagram-mencatat-kegiatan-sampai-dokumentasi).
 
 ## 8. Arsitektur dan deployment
 
@@ -117,7 +117,7 @@ Tiga lapisan, dengan **satu origin** untuk UI dan API.
 | Berkas | Cloudinary (atau folder lokal bila tidak diisi) | Foto dan PDF, disimpan privat |
 | Email | Brevo API | Aktivasi, atur ulang sandi, dan pengingat |
 
-**Deployment.** Frontend di Vercel, backend di Render, dan PostgreSQL di Supabase. Langkahnya ada di [README](../README.md#deploy-online-lewat-render-supabase-dan-vercel), dan gambarnya di [docs/uml/08-deployment.md](uml/08-deployment.md) dan [docs/uml/07-component.md](uml/07-component.md).
+**Deployment.** Frontend di Vercel, backend di Render, dan PostgreSQL di Supabase. Langkahnya ada di [README](../README.md#deploy-online-lewat-render-supabase-dan-vercel), dan gambarnya di [docs/uml/04-deployment.md](uml/04-deployment.md) dan [docs/uml/06-arsitektur.md](uml/06-arsitektur.md).
 
 ## 9. Penanganan galat
 

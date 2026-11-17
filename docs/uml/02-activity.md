@@ -1,8 +1,28 @@
-# 2. Activity
+# 2. Activity Diagram
 
-## 2.1 Mencatat kegiatan sampai dokumentasi
+Sesuai **Subbab 4.7.2 (Gambar 4.3 s.d. Gambar 4.6)** Laporan KP.
 
-Kegiatan dicatat dalam dua langkah. Isian yang belum selesai bisa disimpan sebagai draf. Dokumentasi dan hasil dilengkapi setelah kegiatan berlangsung; status pelaksanaan dihitung otomatis dari waktu.
+## 2.1 Activity Diagram Login
+
+Menggambarkan proses pengguna masuk ke aplikasi, termasuk penguncian akun selama 15 menit setelah lima kali salah kata sandi (`Gambar 4.3`).
+
+```mermaid
+flowchart TD
+    mulai([Mulai]) --> buka[Pengguna membuka halaman login]
+    buka --> isi[Mengisi email dan kata sandi]
+    isi --> terkunci{Akun sedang terkunci?}
+    terkunci -- Ya --> pesanTerkunci[Sistem menampilkan pesan coba lagi nanti] --> isi
+    terkunci -- Tidak --> valid{Email dan sandi benar?}
+    valid -- Tidak --> tambahGagal["Sistem menambah jumlah gagal; gagal ke-5<br/>mengunci akun 15 menit"]
+    tambahGagal --> pesanSalah[Tampilkan pesan email atau sandi salah] --> isi
+    valid -- Ya --> sesi[Sistem membuat sesi login]
+    sesi --> dash[Tampilkan dashboard sesuai peran]
+    dash --> akhir([Selesai])
+```
+
+## 2.2 Activity Diagram Mencatat Kegiatan sampai Dokumentasi
+
+Kegiatan dicatat dalam dua langkah. Isian yang belum selesai bisa disimpan sebagai draf. Dokumentasi dan hasil dilengkapi setelah kegiatan berlangsung; status pelaksanaan dihitung otomatis dari waktu (`Gambar 4.4`).
 
 ```mermaid
 flowchart TD
@@ -32,28 +52,38 @@ flowchart TD
 
 Kegiatan yang tidak jadi dilaksanakan dibatalkan (alasan wajib, tetap tercatat sebagai *Dibatalkan*). Menghapus kegiatan mengeluarkannya dari daftar dan rekap.
 
-## 2.2 Akun: dari permintaan sampai aktif
+## 2.3 Activity Diagram Memeriksa Kegiatan
 
-Tidak ada pendaftaran mandiri. Akun dibuat admin, baik langsung maupun dari permintaan akun, lalu pemiliknya membuat sandi sendiri lewat tautan email.
+Menggambarkan proses pimpinan (atau admin) memeriksa kegiatan. Kegiatan yang ditandai *Perlu perbaikan* memicu notifikasi kepada pemilik kegiatan (`Gambar 4.5`).
 
 ```mermaid
 flowchart TD
-    mulai([Mulai]) --> jalur{Siapa memulai?}
-    jalur -- Calon pengguna --> minta[Isi form Minta akun di halaman login]
-    minta --> tersimpan[(Permintaan MENUNGGU)]
-    tersimpan --> notif[Email ke semua admin]
-    notif --> tinjau{Admin meninjau}
-    tinjau -- Tolak --> tolak[(Permintaan DITOLAK + alasan)] --> akhirTolak([Selesai])
-    tinjau -- Setujui --> buat
-    jalur -- Admin --> buat["Admin membuat akun: nama, email pribadi,<br/>NIP opsional, bidang, role"]
-    buat --> token["Buat token aktivasi<br/>(disimpan sebagai hash SHA-256)"]
-    token --> kirim[Kirim email undangan lewat Brevo]
-    kirim --> terkirim{Email terkirim?}
-    terkirim -- Tidak --> galat[Akun tetap tersimpan,<br/>admin melihat galat] --> ulang[Admin: Kirim ulang undangan] --> token
-    terkirim -- Ya --> klik[Pemilik membuka tautan aktivasi]
-    klik --> berlaku{Token berlaku?}
-    berlaku -- "Tidak (kedaluwarsa/dipakai)" --> ulang
-    berlaku -- Ya --> sandi["Pemilik membuat sandi<br/>(min. 8 karakter, huruf dan angka)"]
-    sandi --> aktif[(Akun AKTIF)]
-    aktif --> login[Login dengan email dan sandi] --> akhir([Selesai])
+    mulai([Mulai]) --> buka[Pimpinan membuka halaman Pemeriksaan]
+    buka --> saring[Menyaring kegiatan per bidang, pegawai, atau tanggal]
+    saring --> detail[Membuka detail kegiatan]
+    detail --> sesuai{Kegiatan sudah sesuai?}
+    sesuai -- Ya --> akhir([Selesai])
+    sesuai -- Tidak --> tandai[Tandai Perlu perbaikan dan tulis catatan]
+    tandai --> notif[Sistem menyimpan catatan dan mengirim notifikasi ke pemilik kegiatan]
+    notif --> perbaiki[Pegawai memperbaiki kegiatan]
+    perbaiki --> detail
+```
+
+## 2.4 Activity Diagram Membuat Laporan PDF
+
+Menggambarkan proses mencetak atau mengunduh laporan PDF berkop dinas berdasarkan periode, bidang, dan pegawai yang dipilih (`Gambar 4.6`).
+
+```mermaid
+flowchart TD
+    mulai([Mulai]) --> buka[Pengguna membuka halaman Laporan]
+    buka --> filter[Memilih periode, bidang, dan pegawai]
+    filter --> pratinjau[Sistem menampilkan pratinjau laporan]
+    pratinjau --> ada{Ada kegiatan?}
+    ada -- Tidak --> filter
+    ada -- Ya --> aksi{Cetak atau unduh?}
+    aksi -- Unduh PDF --> limit{Melebihi 10 ekspor per menit?}
+    limit -- Ya --> tunggu[Tampilkan pesan tunggu sebentar] --> aksi
+    limit -- Tidak --> buatPdf[Sistem membuat PDF berkop dinas]
+    buatPdf --> unduh[PDF diunduh] --> akhir([Selesai])
+    aksi -- Cetak --> dialog[Peramban membuka dialog cetak] --> akhir
 ```
